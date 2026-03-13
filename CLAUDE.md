@@ -47,9 +47,20 @@
 - Implementado en: `offerLoadLyrics()`, `generateOfflineLyrics()`, constante `BYFLOW_SIGNATURE`
 
 ## Letras originales de ArT-AtR (referencia)
+- `data/letras_art_atr.txt` — **CATALOGO MAESTRO** con 41 canciones de 4 fuentes (OneNote, Google Photos, archivo local, Suno). 11 letras transcritas completas + 30 canciones Suno catalogadas.
+- **INTEGRADO EN LA APP:** Las 11 letras completas estan hardcodeadas en `index.html` (array `_artLetras`) y son cargables al teleprompter desde el Estudio de Letras > "Mis Letras"
+- **Catalogo Suno** tambien integrado en la app (array `_sunoTracks`, 30 tracks) accesible desde Estudio de Letras > "Suno"
 - `C:\Users\art44\Desktop\perro.txt` — Rap de desamor y traicion (~21 lineas). Estilo crudo, callejero.
 - `C:\Users\art44\Desktop\verciones antiguas byflow\byfl\actualizar v7\Es un rimador experto en verso pros.txt` — Archivo maestro: identidad ArT-AtR, cancion "Let it flow" (ES+EN), cancion melancolica con SFX (Intro/Verso/Coro/Puente/Outro), script Python compositor
 - `C:\Users\art44\OneDrive\galgo\letras galgo.jpg` — Imagen con letras del proyecto Galgo
+- **Suno.com perfil ART-ATR** (suno.com/me) — ~100+ tracks, 10 paginas. Proyectos: TEC-PATL (serie nahua), Codigo (tech-lirica), ByFlow Trinity. Canciones clave: SENTIDO PERDIDO, LA BACHA, El Alma (Tributo a Mama), ITZTLI, EL TABLERO DE JUDAS.
+
+## Estudio de Letras (ecosistema completo)
+El Estudio de Letras tiene 3 pestanyas:
+1. **Generar** — Engine offline v2 (192 frases, 65+ rimas, Fisher-Yates shuffle)
+2. **Mis Letras** — 11 letras originales de ArT-AtR con busqueda, preview y carga al teleprompter
+3. **Suno** — Catalogo de 30 canciones del perfil ART-ATR con genero, tema y plays
+- Todas las letras generadas llevan firma obligatoria `BYFLOW_SIGNATURE` (50/50)
 
 ## Politica anti-pirateria
 - No existe endpoint de descarga de audio
