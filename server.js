@@ -419,6 +419,47 @@ app.get('/api/license/admin/list', (req, res) => {
   res.json(state.license.licenses);
 });
 
+// ── Superusuario: auto-genera y activa licencia con todo ─────────────────
+app.post('/api/license/admin/superuser', (req, res) => {
+  const adminKey = req.headers['x-admin-key'];
+  if (adminKey !== ADMIN_SECRET) {
+    return res.status(401).json({ error: 'Admin key invalida' });
+  }
+  const fp = getDeviceFingerprint();
+  const allFeatures = ['bares', 'music_streaming', 'ollama_ai', 'stem_engine', 'dj_mode', 'analytics'];
+
+  // Check if superuser already exists for this device
+  let entry = state.license.licenses.find(l => l.owner === 'SUPERUSER-IARTLABS' && l.deviceFingerprint === fp);
+  if (entry) {
+    // Update features in case new ones were added
+    entry.features = allFeatures;
+    entry.activated = true;
+    saveJSON('licenses.json', state.license);
+    return res.json({
+      message: 'Superusuario ya existia, features actualizados',
+      key: entry.key, owner: entry.owner, features: entry.features
+    });
+  }
+
+  // Generate and auto-activate
+  const key = generateLicenseKey();
+  entry = {
+    key, owner: 'SUPERUSER-IARTLABS', features: allFeatures,
+    created: new Date().toISOString(),
+    activated: true,
+    activatedAt: new Date().toISOString(),
+    deviceFingerprint: fp,
+    isSuperuser: true
+  };
+  state.license.licenses.push(entry);
+  saveJSON('licenses.json', state.license);
+  res.json({
+    message: 'Superusuario creado y activado',
+    key, owner: entry.owner, features: allFeatures,
+    device: fp
+  });
+});
+
 // Health
 app.get('/api/health', (req, res) => res.json({
   status: 'ok', version: '2.0.0', uptime: process.uptime(),
