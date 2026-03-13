@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>VibeFlow Pro — Display</title>
+  <script src="/socket.io/socket.io.js"></script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { overflow: hidden; background: #000; color: #fff; font-family: sans-serif; }
+    #main-content { width: 100vw; height: 100vh; position: relative; }
+
+    #yt-player {
+      width: 100%; height: 100%;
+      border: none; display: block;
+    }
+
+    /* Overlay layer for promos */
+    #overlay {
+      position: absolute; top: 0; left: 0;
+      width: 100%; height: 100%;
+      display: none; z-index: 1000;
+      background: #000;
+    }
+    #overlay.active { display: flex; align-items: center; justify-content: center; }
+    #overlay.fade-in  { animation: fadeIn 0.5s ease-in; }
+    #overlay.fade-out { animation: fadeOut 0.5s ease-out; }
+
+    #promo-video { max-width: 100%; max-height: 100%; }
+
+    /* Scoreboard */
+    #scoreboard {
+      position: absolute; top: 0; left: 0;
+      width: 100%; height: 100%;
+      display: none; z-index: 900;
+      background: rgba(0,0,0,0.85);
+      flex-direction: column; align-items: center; justify-content: center;
+    }
+    #scoreboard.active { display: flex; }
+    #scoreboard h1 { font-size: 4rem; margin-bottom: 1rem; }
+    #scoreboard p  { font-size: 2rem; opacity: 0.7; }
+
+    /* Waiting / song queue screen */
+    #waiting {
+      position: absolute; top: 0; left: 0;
+      width: 100%; height: 100%;
+      display: none; z-index: 800;
+      background: #111;
+      flex-direction: column; align-items: center; justify-content: center;
+    }
+    #waiting.active { display: flex; }
+    #waiting h2 { font-size: 3rem; }
+    #waiting p  { font-size: 1.5rem; margin-top: 1rem; opacity: 0.6; }
+
+    /* Skip button (studio) */
+    #skip-btn {
+      position: absolute; bottom: 2rem; right: 2rem;
+      z-index: 1100; padding: 1rem 2rem;
+      font-size: 1.2rem; background: rgba(255,255,255,0.2);
+      color: #fff; border: 1px solid rgba(255,255,255,0.4);
+      border-radius: 8px; cursor: pointer; display: none;
+    }
+    #skip-btn:hover { background: rgba(255,255,255,0.35); }
+
+    /* Capture moment toast */
+    #capture-toast {
+      position: absolute; bottom: 3rem; left: 50%;
+      transform: translateX(-50%); z-index: 1200;
+      background: rgba(255,255,255,0.15); backdrop-filter: blur(10px);
+      padding: 1.5rem 3rem; border-radius: 16px;
+      font-size: 1.4rem; text-align: center;
+      display: none;
+    }
+    #capture-toast.active { display: block; animation: slideUp 0.4s ease-out; }
+
+    @keyframes fadeIn  { from { opacity: 0; } to { opacity: 1; } }
+    @keyframes fadeOut { from { opacity: 1; } to { opacity: 0; } }
+    @keyframes slideUp { from { transform: translateX(-50%) translateY(40px); opacity: 0; }
+                          to   { transform: translateX(-50%) translateY(0);    opacity: 1; } }
+  </style>
+</head>
+<body>
+  <div id="main-content">
+    <iframe id="yt-player" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+  </div>
+
+  <div id="overlay">
+    <video id="promo-video" autoplay muted playsinline></video>
+  </div>
+
+  <div id="scoreboard">
+    <h1 id="score-value">--</h1>
+    <p>Puntuación</p>
+  </div>
+
+  <div id="waiting">
+    <h2>Selecciona la siguiente canción</h2>
+    <p>VibeFlow Pro</p>
+  </div>
+
+  <button id="skip-btn" onclick="skipOverlay()">Saltar ▶</button>
+
+  <div id="capture-toast"></div>
+
+  <script>
+    // ==========================================
+    // CONNECT TO VIBEFLOW BACKEND
+    // ==========================================
+    const params = new URLSearchParams(location.search);
+    const roomId = params.get('room') || 'sala1';
+    const socket = io();
+
+    socket.on('connect', () => {
+      socket.emit('join-room', roomId);
+      console.log('Connected to VibeFlow — room:', roomId);
+    });
+
+    // ==========================================
+    // SEQUENCE HANDLER (karaoke transitions)
+    // ==========================================
+    let overlayTimer = null;
+
+    socket.on('sequence', async (data) => {
+      for (const step of data.steps) {
+        await executeStep(step);
+      }
+    });
+
+    async function executeStep(step) {
+      switch (step.type) {
+        case 'scoreboard':
+          showScoreboard(step.data);
+          await wait(step.duration);
+          hideScoreboard();
+          break;
+        case 'overlay':
+          await showOverlay(step.content, step.duration);
+          break;
+        case 'awaiting':
+          showWaiting();
+          break;
+      }
+    }
+
+    // ==========================================
+    // OVERLAY (promos)
+    // ==========================================
+    function showOverlay(videoSrc, duration) {
+      return new Promise((resolve) => {
+        const overlay = document.getElementById('overlay');
+        const video = document.getElementById('promo-video');
+
+        video.src = '/videos/' + videoSrc;
+        overlay.classList.remove('fade-out');
+        overlay.classList.add('active', 'fade-in');
+
+        clearTimeout(overlayTimer);
+        overlayTimer = setTimeout(() => {
+          hideOverlay();
+          resolve();
+        }, duration);
+      });
+    }
+
+    function hideOverlay() {
+      const overlay = document.getElementById('overlay');
+      const video = document.getElementById('promo-video');
+      overlay.classList.remove('active', 'fade-in');
+      video.pause();
+      video.removeAttribute('src');
+      document.getElementById('skip-btn').style.display = 'none';
+      clearTimeout(overlayTimer);
+    }
+
+    function skipOverlay() {
+      hideOverlay();
+    }
+
+    socket.on('force-overlay', (data) => {
+      showOverlay(data.content, data.duration);
+    });
+
+    socket.on('cancel-overlay', () => hideOverlay());
+    socket.on('clear-overlay', () => hideOverlay());
+
+    // ==========================================
+    // STUDIO OVERLAY (tips, skippable)
+    // ==========================================
+    socket.on('studio-overlay', (data) => {
+      showOverlay(data.content, data.duration);
+      if (data.skippable) {
+        document.getElementById('skip-btn').style.display = 'block';
+      }
+    });
+
+    // ==========================================
+    // SCOREBOARD
+    // ==========================================
+    function showScoreboard(data) {
+      const sb = document.getElementById('scoreboard');
+      sb.classList.add('active');
+    }
+
+    function hideScoreboard() {
+      document.getElementById('scoreboard').classList.remove('active');
+    }
+
+    // ==========================================
+    // WAITING SCREEN
+    // ==========================================
+    function showWaiting() {
+      document.getElementById('waiting').classList.add('active');
+    }
+
+    socket.on('load-song', () => {
+      document.getElementById('waiting').classList.remove('active');
+    });
+
+    // ==========================================
+    // IDLE SCREENSAVER
+    // ==========================================
+    socket.on('idle-screensaver', (data) => {
+      showOverlay(data.content, 30000);
+    });
+
+    // ==========================================
+    // CAPTURE VIRAL MOMENT
+    // ==========================================
+    socket.on('capture-moment', (data) => {
+      const toast = document.getElementById('capture-toast');
+      toast.textContent = data.message;
+      toast.classList.add('active');
+      setTimeout(() => toast.classList.remove('active'), 8000);
+    });
+
+    // ==========================================
+    // RECORDING INDICATOR
+    // ==========================================
+    socket.on('recording-started', () => {
+      hideOverlay();
+    });
+
+    // ==========================================
+    // HELPERS
+    // ==========================================
+    function wait(ms) { return new Promise((r) => setTimeout(r, ms)); }
+  </script>
+</body>
+</html>

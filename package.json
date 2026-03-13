@@ -1,0 +1,18 @@
+{
+  "name": "vibeflow_pro",
+  "version": "1.0.0",
+  "description": "Karaoke + Studio + Promotional overlay system with real-time AI detection",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "grok-client": "node grok-client.js"
+  },
+  "keywords": ["karaoke", "studio", "signage", "socket.io"],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^4.18.2",
+    "socket.io": "^4.7.4"
+  }
+}
