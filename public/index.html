@@ -1305,7 +1305,7 @@ select.inp{cursor:pointer;}
           </div>
           <span class="speed-display" id="speed-label" title="Velocidad actual del teleprompter">1.0x</span>
           <div style="display:flex;flex-direction:column;align-items:center;gap:3px;">
-            <button class="ctrl-btn play" id="btn-play" onclick="toggleAutoScroll()" title="Iniciar o pausar el scroll automatico de la letra">
+            <button class="ctrl-btn play" id="btn-play" onclick="toggleAutoScroll(); this.blur();" title="Iniciar o pausar el scroll automatico de la letra">
               <svg id="ico-play" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
               <svg id="ico-pause" viewBox="0 0 24 24" fill="currentColor" style="display:none"><path d="M6 19h4V5H6zm8-14v14h4V5z"/></svg>
             </button>
@@ -2362,13 +2362,11 @@ function startManualScroll() {
 }
 
 function startLRCPlayback() {
-  // If a music player is active, the bridge (onMusicTimeUpdate) handles LRC sync.
-  // Only use performance.now() fallback when no player is connected.
-  if (_activePlayerType) {
-    // Player bridge is active — it calls onMusicTimeUpdate() directly.
-    // Just start polling to keep the bridge alive.
-    startPlayerSync();
-    console.log('[ByFlow] LRC sync via ' + _activePlayerType + ' player bridge');
+  // Si hay un reproductor gemelo activo, el bridge maneja el sync LRC.
+  // Solo usar performance.now() fallback cuando no hay player conectado.
+  if (_twinMode && _activePlayerType) {
+    _startTwinSync();
+    console.log('[Gemelos] LRC sync via ' + _activePlayerType);
     return;
   }
 
@@ -2430,6 +2428,7 @@ function stopAutoScroll() {
   tpState.autoScrolling = false;
   clearInterval(tpState.intervalId);
   clearInterval(tpState.lrcTimerId);
+  _stopTwinSync(); // Detener polling de Reproductores Gemelos
   // Save pause position for LRC resume
   if (tpState.isLRC && tpState.startTime > 0) {
     tpState.pauseOffset = performance.now() - tpState.startTime;
@@ -3877,65 +3876,146 @@ function switchMusicSource(source) {
   }
 }
 
-// ── Music-Teleprompter Bridge ──────────────────────────────────────────
-// Unified bridge: all players feed currentTimeSec to the LRC engine
+// ══════════════════════════════════════════════════════════════════════════
+// ── REPRODUCTORES GEMELOS — Teleprompter se acopla al reproductor activo ─
+// ══════════════════════════════════════════════════════════════════════════
+// Concepto: el reproductor de texto (teleprompter) se sincroniza automáticamente
+// con el reproductor de audio (YouTube/SoundCloud/Jamendo). Son gemelos:
+// - Player da PLAY → teleprompter arranca
+// - Player da PAUSE → teleprompter pausa
+// - Si hay LRC con timestamps → sync exacto por segundo
+// - Si no hay LRC → scroll automático por velocidad
+// - Botón PLAY manual sigue funcionando como override cuando no hay player
+
 let _activePlayerType = null; // 'youtube' | 'soundcloud' | 'jamendo' | null
 let _ytPlayer = null;
 let _scWidget = null;
 let _playerSyncInterval = null;
+let _twinMode = false; // true cuando el teleprompter está acoplado a un player
 
-function onMusicTimeUpdate(currentTimeSec) {
-  // Feed real playback time to LRC engine instead of performance.now()
-  if (tpState.isLRC && tpState.lrcData && tpState.autoScrolling) {
-    const elapsed = currentTimeSec * tpState.speed;
-    let activeLine = -1;
-    for (let i = tpState.lrcData.length - 1; i >= 0; i--) {
-      if (elapsed >= tpState.lrcData[i].time) { activeLine = i; break; }
+// ── Eventos del reproductor → controlan el teleprompter ──
+function onPlayerPlay(playerType) {
+  _activePlayerType = playerType;
+  _twinMode = true;
+  console.log('[Gemelos] ▶ ' + playerType + ' → teleprompter arranca');
+  // Auto-iniciar teleprompter si tiene letras cargadas
+  if (tpState.words.length > 0 && !tpState.autoScrolling) {
+    tpState.autoScrolling = true;
+    updatePlayBtn();
+    // Si tiene LRC, solo activamos el sync interval (no el timer de performance.now)
+    if (tpState.isLRC && tpState.lrcData) {
+      _startTwinSync();
+    } else {
+      startManualScroll();
     }
-    if (activeLine >= 0 && activeLine !== tpState.currentLine) {
-      const line = tpState.lines[activeLine];
-      if (line && line.words.length > 0) {
-        for (let li = tpState.currentLine + 1; li <= activeLine; li++) {
-          const prevLine = tpState.lines[li];
-          if (prevLine) prevLine.words.forEach(w => {
-            const el = document.getElementById('tw-' + w.globalIdx);
-            if (el && !el.classList.contains('tp-done')) { el.classList.remove('tp-active'); el.classList.add('tp-done'); }
-          });
-        }
-        highlightWord(line.words[0].globalIdx);
-        const lineWordCount = line.words.length;
-        if (lineWordCount > 1) {
-          const nextLineTime = (activeLine + 1 < tpState.lrcData.length)
-            ? tpState.lrcData[activeLine + 1].time : tpState.lrcData[activeLine].time + 5;
-          const lineDuration = (nextLineTime - tpState.lrcData[activeLine].time) * 1000 / tpState.speed;
-          const wordDelay = lineDuration / lineWordCount;
-          for (let wi = 1; wi < lineWordCount; wi++) {
-            setTimeout(() => {
-              if (tpState.currentLine === activeLine && tpState.autoScrolling) highlightWord(line.words[wi].globalIdx);
-            }, wordDelay * wi);
-          }
+  } else if (tpState.autoScrolling && tpState.isLRC) {
+    // Ya estaba scrolleando, asegurar que el sync corre
+    _startTwinSync();
+  }
+  updateTwinBadge();
+}
+
+function onPlayerPause(playerType) {
+  console.log('[Gemelos] ⏸ ' + playerType + ' → teleprompter pausa');
+  if (_twinMode && tpState.autoScrolling) {
+    // Pausar teleprompter sin perder posición
+    tpState.autoScrolling = false;
+    clearInterval(tpState.intervalId);
+    clearInterval(tpState.lrcTimerId);
+    _stopTwinSync();
+    if (tpState.isLRC && tpState.startTime > 0) {
+      tpState.pauseOffset = performance.now() - tpState.startTime;
+    }
+    updatePlayBtn();
+  }
+  updateTwinBadge();
+}
+
+function onPlayerEnd(playerType) {
+  console.log('[Gemelos] ⏹ ' + playerType + ' → fin');
+  _twinMode = false;
+  _activePlayerType = null;
+  _stopTwinSync();
+  if (tpState.autoScrolling) {
+    stopAutoScroll();
+  }
+  updateTwinBadge();
+}
+
+// ── Sync interval: alimenta tiempo real del player al LRC engine ──
+function _startTwinSync() {
+  _stopTwinSync();
+  _playerSyncInterval = setInterval(() => {
+    if (!tpState.autoScrolling) return; // No avanzar si está pausado
+    if (_activePlayerType === 'youtube' && _ytPlayer && typeof _ytPlayer.getCurrentTime === 'function') {
+      try { _feedTimeToLRC(_ytPlayer.getCurrentTime()); } catch {}
+    } else if (_activePlayerType === 'soundcloud' && _scWidget) {
+      _scWidget.getPosition(pos => _feedTimeToLRC(pos / 1000));
+    }
+    // Jamendo usa timeupdate event directo, no necesita polling
+  }, 50);
+}
+
+function _stopTwinSync() {
+  if (_playerSyncInterval) { clearInterval(_playerSyncInterval); _playerSyncInterval = null; }
+}
+
+function _feedTimeToLRC(currentTimeSec) {
+  // Solo avanza si el teleprompter está activo y tiene LRC
+  if (!tpState.isLRC || !tpState.lrcData || !tpState.autoScrolling) return;
+  const elapsed = currentTimeSec; // Tiempo real del player, sin multiplicar por speed
+  let activeLine = -1;
+  for (let i = tpState.lrcData.length - 1; i >= 0; i--) {
+    if (elapsed >= tpState.lrcData[i].time) { activeLine = i; break; }
+  }
+  if (activeLine >= 0 && activeLine !== tpState.currentLine) {
+    const line = tpState.lines[activeLine];
+    if (line && line.words.length > 0) {
+      for (let li = tpState.currentLine + 1; li <= activeLine; li++) {
+        const prevLine = tpState.lines[li];
+        if (prevLine) prevLine.words.forEach(w => {
+          const el = document.getElementById('tw-' + w.globalIdx);
+          if (el && !el.classList.contains('tp-done')) { el.classList.remove('tp-active'); el.classList.add('tp-done'); }
+        });
+      }
+      highlightWord(line.words[0].globalIdx);
+      const lineWordCount = line.words.length;
+      if (lineWordCount > 1) {
+        const nextLineTime = (activeLine + 1 < tpState.lrcData.length)
+          ? tpState.lrcData[activeLine + 1].time : tpState.lrcData[activeLine].time + 5;
+        const lineDuration = (nextLineTime - tpState.lrcData[activeLine].time) * 1000;
+        const wordDelay = lineDuration / lineWordCount;
+        for (let wi = 1; wi < lineWordCount; wi++) {
+          setTimeout(() => {
+            if (tpState.currentLine === activeLine && tpState.autoScrolling) highlightWord(line.words[wi].globalIdx);
+          }, wordDelay * wi);
         }
       }
     }
   }
 }
 
-function startPlayerSync() {
-  stopPlayerSync();
-  _playerSyncInterval = setInterval(() => {
-    if (_activePlayerType === 'youtube' && _ytPlayer && typeof _ytPlayer.getCurrentTime === 'function') {
-      try { onMusicTimeUpdate(_ytPlayer.getCurrentTime()); } catch {}
-    } else if (_activePlayerType === 'soundcloud' && _scWidget) {
-      _scWidget.getPosition(pos => onMusicTimeUpdate(pos / 1000));
-    }
-    // Jamendo uses 'timeupdate' event directly, no polling needed
-  }, 50);
+// ── Badge visual que muestra el estado de acoplamiento ──
+function updateTwinBadge() {
+  const badge = document.getElementById('tp-mode-badge');
+  if (!badge) return;
+  if (_twinMode && _activePlayerType) {
+    const names = { youtube: 'YouTube', soundcloud: 'SoundCloud', jamendo: 'Jamendo' };
+    badge.textContent = '🔗 Gemelo: ' + (names[_activePlayerType] || _activePlayerType);
+    badge.className = 'tp-lrc-badge lrc';
+  } else if (tpState.isLRC) {
+    badge.textContent = 'Modo LRC';
+    badge.className = 'tp-lrc-badge lrc';
+  } else {
+    badge.textContent = 'Modo manual';
+    badge.className = 'tp-lrc-badge manual';
+  }
 }
 
-function stopPlayerSync() {
-  if (_playerSyncInterval) { clearInterval(_playerSyncInterval); _playerSyncInterval = null; }
-  _activePlayerType = null;
-}
+// Backward compat aliases (legacy code paths)
+function startPlayerSync() { _startTwinSync(); }
+function stopPlayerSync() { _stopTwinSync(); _activePlayerType = null; _twinMode = false; }
+function onMusicTimeUpdate(t) { _feedTimeToLRC(t); } // Legacy alias
 
 // Load YouTube IFrame API once
 if (!window.YT) {
@@ -3946,7 +4026,7 @@ if (!window.YT) {
 window.onYouTubeIframeAPIReady = function() { console.log('[ByFlow] YouTube IFrame API ready'); };
 
 function ytEmbed(videoId, title) {
-  stopPlayerSync();
+  onPlayerEnd(_activePlayerType); // Limpiar player anterior
   if (_ytPlayer) { try { _ytPlayer.destroy(); } catch {} _ytPlayer = null; }
   const container = document.getElementById('embed-container');
   const player = document.getElementById('music-player-embed');
@@ -3960,10 +4040,11 @@ function ytEmbed(videoId, title) {
       videoId: videoId,
       playerVars: { autoplay: 1, rel: 0, modestbranding: 1 },
       events: {
-        onReady: () => { _activePlayerType = 'youtube'; startPlayerSync(); },
+        onReady: () => onPlayerPlay('youtube'),
         onStateChange: (e) => {
-          if (e.data === YT.PlayerState.PLAYING) { _activePlayerType = 'youtube'; startPlayerSync(); }
-          else if (e.data === YT.PlayerState.PAUSED || e.data === YT.PlayerState.ENDED) { stopPlayerSync(); }
+          if (e.data === YT.PlayerState.PLAYING) onPlayerPlay('youtube');
+          else if (e.data === YT.PlayerState.PAUSED) onPlayerPause('youtube');
+          else if (e.data === YT.PlayerState.ENDED) onPlayerEnd('youtube');
         }
       }
     });
@@ -3981,7 +4062,7 @@ if (!window.SC) {
 }
 
 function scEmbed(trackUrl, title) {
-  stopPlayerSync();
+  onPlayerEnd(_activePlayerType); // Limpiar player anterior
   _scWidget = null;
   const container = document.getElementById('embed-container');
   const player = document.getElementById('music-player-embed');
@@ -3997,9 +4078,9 @@ function scEmbed(trackUrl, title) {
     const iframe = document.getElementById(iframeId);
     if (!iframe || !window.SC || !SC.Widget) { setTimeout(initSCWidget, 300); return; }
     _scWidget = SC.Widget(iframe);
-    _scWidget.bind(SC.Widget.Events.PLAY, () => { _activePlayerType = 'soundcloud'; startPlayerSync(); });
-    _scWidget.bind(SC.Widget.Events.PAUSE, () => stopPlayerSync());
-    _scWidget.bind(SC.Widget.Events.FINISH, () => stopPlayerSync());
+    _scWidget.bind(SC.Widget.Events.PLAY, () => onPlayerPlay('soundcloud'));
+    _scWidget.bind(SC.Widget.Events.PAUSE, () => onPlayerPause('soundcloud'));
+    _scWidget.bind(SC.Widget.Events.FINISH, () => onPlayerEnd('soundcloud'));
   }
   setTimeout(initSCWidget, 500);
   showToast('▶️ ' + title.substring(0, 35));
@@ -4107,7 +4188,7 @@ function jmSaveKey() {
 }
 
 function jmPlay(audioUrl, title, artist, trackId) {
-  stopPlayerSync();
+  onPlayerEnd(_activePlayerType); // Limpiar player anterior
   if (jmAudio) { jmAudio.pause(); jmAudio = null; }
   const container = document.getElementById('embed-container');
   const player = document.getElementById('music-player-embed');
@@ -4126,11 +4207,12 @@ function jmPlay(audioUrl, title, artist, trackId) {
   const audioEl = document.getElementById('jm-audio-player');
   if (audioEl) {
     jmAudio = audioEl;
-    _activePlayerType = 'jamendo';
-    audioEl.addEventListener('timeupdate', () => onMusicTimeUpdate(audioEl.currentTime));
-    audioEl.addEventListener('play', () => { _activePlayerType = 'jamendo'; });
-    audioEl.addEventListener('pause', () => { _activePlayerType = null; });
-    audioEl.addEventListener('ended', () => { _activePlayerType = null; });
+    audioEl.addEventListener('timeupdate', () => {
+      if (_twinMode && tpState.isLRC && tpState.autoScrolling) _feedTimeToLRC(audioEl.currentTime);
+    });
+    audioEl.addEventListener('play', () => onPlayerPlay('jamendo'));
+    audioEl.addEventListener('pause', () => onPlayerPause('jamendo'));
+    audioEl.addEventListener('ended', () => onPlayerEnd('jamendo'));
     // Also connect to Web Audio API for FX processing
     connectAudioToFX(audioEl);
   }
