@@ -137,12 +137,94 @@ select.inp{cursor:pointer;}
 /* ── Center ──────────────────────────────────────────────────────────── */
 .center{flex:1;display:flex;flex-direction:column;position:relative;overflow:hidden;}
 .visualizer-canvas{position:absolute;inset:0;opacity:.18;pointer-events:none;z-index:0;}
-.tp-area{flex:1;display:flex;align-items:center;justify-content:center;padding:32px;position:relative;z-index:2;overflow-y:auto;}
-#tp-display{font-size:5rem;line-height:1.5;text-align:center;max-width:1100px;font-weight:300;letter-spacing:.01em;}
-.tp-word{opacity:.15;transition:all .22s;cursor:pointer;padding:2px 6px;border-radius:6px;display:inline-block;}
-.tp-word:hover{opacity:.45;background:rgba(255,255,255,.05);}
-.tp-word.tp-active{opacity:1;color:var(--p);font-weight:800;font-size:1.1em;text-shadow:0 0 40px var(--glow-p),0 0 80px var(--glow-p);transform:scale(1.05);}
-.tp-word.tp-done{opacity:.3;color:var(--s);}
+.tp-area{
+  flex:1;display:flex;align-items:flex-start;justify-content:center;
+  padding:40px 32px 20px;position:relative;z-index:2;overflow-y:auto;
+  scroll-behavior:smooth;
+}
+#tp-display{
+  font-size:4.5rem;line-height:1.6;text-align:center;max-width:1100px;
+  font-weight:300;letter-spacing:.01em;position:relative;
+  padding-top:30vh;padding-bottom:40vh;
+}
+/* ── Teleprompter Lines ──────────────────────────────────────────────── */
+.tp-line{
+  display:block;margin-bottom:12px;position:relative;
+  transition:opacity .3s, transform .3s;
+  opacity:.12;
+}
+.tp-line.tp-line-active{opacity:1;transform:scale(1.02);}
+.tp-line.tp-line-next{opacity:.35;}
+.tp-line.tp-line-done{opacity:.2;}
+.tp-line-break{display:block;height:24px;}
+
+/* ── Teleprompter Words ──────────────────────────────────────────────── */
+.tp-word{
+  opacity:.6;transition:all .18s ease-out;cursor:pointer;
+  padding:2px 5px;border-radius:6px;display:inline-block;
+  position:relative;
+}
+.tp-word:hover{opacity:.8;background:rgba(255,255,255,.06);}
+.tp-word.tp-active{
+  opacity:1;color:var(--p);font-weight:800;
+  text-shadow:0 0 30px var(--glow-p),0 0 60px rgba(255,0,110,.15);
+  transform:scale(1.08);
+  animation:wordPop .2s ease-out;
+}
+@keyframes wordPop{
+  0%{transform:scale(1);} 50%{transform:scale(1.15);} 100%{transform:scale(1.08);}
+}
+.tp-word.tp-done{opacity:.45;color:var(--s);transition:opacity .4s, color .4s;}
+
+/* ── Progress bar for teleprompter ───────────────────────────────────── */
+.tp-progress{
+  position:absolute;top:0;left:0;right:0;height:3px;z-index:10;
+  background:rgba(255,255,255,.05);
+}
+.tp-progress-fill{
+  height:100%;width:0%;
+  background:linear-gradient(90deg,var(--p),var(--s));
+  transition:width .15s linear;
+  box-shadow:0 0 8px var(--glow-p);
+}
+
+/* ── Fullscreen teleprompter ─────────────────────────────────────────── */
+.center.tp-fullscreen{
+  position:fixed;inset:0;z-index:999;background:var(--bg);
+}
+.center.tp-fullscreen .fx-bar{display:none;}
+.center.tp-fullscreen .now-singing{
+  position:fixed;top:0;left:0;right:0;z-index:1000;
+}
+.center.tp-fullscreen #tp-display{font-size:6rem;max-width:1400px;}
+.tp-fullscreen-btn{
+  position:absolute;top:10px;right:14px;z-index:15;
+  width:34px;height:34px;border:1px solid var(--border);border-radius:8px;
+  background:rgba(0,0,0,.5);backdrop-filter:blur(8px);
+  color:var(--sub);display:flex;align-items:center;justify-content:center;
+  cursor:pointer;transition:all .2s;
+}
+.tp-fullscreen-btn:hover{background:rgba(255,255,255,.1);color:#fff;}
+.tp-fullscreen-btn svg{width:16px;height:16px;}
+
+/* ── LRC timestamp badge ─────────────────────────────────────────────── */
+.tp-lrc-badge{
+  display:inline-flex;align-items:center;gap:4px;
+  padding:3px 8px;border-radius:12px;font-size:9px;font-weight:700;
+  background:rgba(0,245,160,.1);color:var(--g);border:1px solid rgba(0,245,160,.2);
+  letter-spacing:.5px;
+}
+.tp-lrc-badge.manual{background:rgba(131,56,236,.1);color:var(--s);border-color:rgba(131,56,236,.2);}
+
+/* ── Search lyrics button ────────────────────────────────────────────── */
+.tp-search-lyrics-btn{
+  padding:8px 14px;border:1px solid rgba(0,245,160,.2);border-radius:8px;
+  background:rgba(0,245,160,.08);color:var(--g);font-size:11px;font-weight:700;
+  cursor:pointer;transition:all .2s;display:flex;align-items:center;gap:6px;
+  letter-spacing:.3px;
+}
+.tp-search-lyrics-btn:hover{background:rgba(0,245,160,.15);border-color:rgba(0,245,160,.4);transform:translateY(-1px);}
+.tp-search-lyrics-btn svg{width:14px;height:14px;}
 
 /* Effects bar */
 .fx-bar{
@@ -1149,11 +1231,22 @@ select.inp{cursor:pointer;}
       </div>
 
       <canvas class="visualizer-canvas" id="main-viz"></canvas>
-      <div class="tp-area">
+      <!-- Progress bar -->
+      <div class="tp-progress"><div class="tp-progress-fill" id="tp-progress-fill"></div></div>
+      <!-- Fullscreen toggle -->
+      <button class="tp-fullscreen-btn" onclick="tpToggleFullscreen()" title="Pantalla completa">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>
+      </button>
+      <div class="tp-area" id="tp-area">
         <div id="tp-display">
           <div id="tp-welcome" style="opacity:.5;font-size:1rem;max-width:500px;text-align:center;line-height:2;">
-            <div style="font-size:3rem;margin-bottom:8px;opacity:.3;">&#x1F3A4;</div>
-            <div style="font-size:.9rem;color:var(--sub);">Agrega un cantante en la cola o selecciona una cancion del catalogo para comenzar</div>
+            <div style="font-size:4rem;margin-bottom:12px;opacity:.4;">&#x1F3A4;</div>
+            <div style="font-size:1.1rem;color:rgba(255,255,255,.5);font-weight:600;margin-bottom:8px;">Vive Cantando con ByFlow</div>
+            <div style="font-size:.85rem;color:var(--sub);margin-bottom:16px;">Agrega un cantante en la cola o selecciona una cancion del catalogo</div>
+            <button class="tp-search-lyrics-btn" onclick="openLyricsSearch()" style="margin:0 auto;">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+              Buscar letra en internet
+            </button>
           </div>
         </div>
       </div>
@@ -1227,6 +1320,15 @@ select.inp{cursor:pointer;}
             </button>
             <span style="font-size:8px;color:rgba(255,255,255,.25);letter-spacing:.5px;">PARAR</span>
           </div>
+          <div style="display:flex;flex-direction:column;align-items:center;gap:3px;">
+            <button class="ctrl-btn" onclick="openLyricsSearch()" title="Buscar letra automaticamente en internet" style="background:rgba(0,245,160,.08);border-color:rgba(0,245,160,.2);">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:20px;height:20px;"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            </button>
+            <span style="font-size:8px;color:rgba(0,245,160,.6);letter-spacing:.5px;">LETRA</span>
+          </div>
+        </div>
+        <div id="tp-mode-indicator" style="display:flex;justify-content:center;margin-top:6px;gap:8px;align-items:center;">
+          <span class="tp-lrc-badge manual" id="tp-mode-badge">Modo manual</span>
         </div>
       </div>
     </div>
@@ -1626,6 +1728,30 @@ select.inp{cursor:pointer;}
   </div><!-- /main -->
 </div><!-- /app -->
 
+<!-- ═══ LYRICS SEARCH MODAL ═══ -->
+<div class="catalog-overlay" id="lyrics-overlay" onclick="if(event.target===this)closeLyricsSearch()">
+  <div class="catalog-modal" style="position:relative;max-width:560px;">
+    <button class="catalog-close" onclick="closeLyricsSearch()">&times;</button>
+    <div class="catalog-top">
+      <h3 style="background:linear-gradient(135deg,var(--g),var(--a));-webkit-background-clip:text;-webkit-text-fill-color:transparent;">Buscar Letra en Internet</h3>
+      <div style="font-size:10px;color:var(--sub);margin-bottom:10px;">Busca letras sincronizadas (LRC) o texto plano desde LRCLib (gratuito)</div>
+      <div style="display:flex;gap:6px;">
+        <input class="catalog-search" id="lyrics-search-title" placeholder="Titulo de la cancion..." style="flex:1;"
+               onkeypress="if(event.key==='Enter')searchLyricsOnline()">
+        <input class="catalog-search" id="lyrics-search-artist" placeholder="Artista (opcional)..." style="flex:1;"
+               onkeypress="if(event.key==='Enter')searchLyricsOnline()">
+      </div>
+      <button class="tp-search-lyrics-btn" onclick="searchLyricsOnline()" style="margin-top:8px;width:100%;justify-content:center;">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        Buscar
+      </button>
+    </div>
+    <div id="lyrics-results" style="padding:12px;max-height:400px;overflow-y:auto;">
+      <div style="text-align:center;padding:30px;opacity:.3;font-size:12px;">Escribe el titulo y artista para buscar letras</div>
+    </div>
+  </div>
+</div>
+
 <!-- ═══ WELCOME OVERLAY ═══ -->
 <div class="welcome-overlay" id="welcome-overlay">
   <div class="welcome-brand">powered by IArtLabs</div>
@@ -1817,42 +1943,243 @@ async function connectSocket() {
   socket.on('disconnect', () => console.log('[WS] Desconectado'));
 }
 
-// ── Teleprompter ─────────────────────────────────────────────────────────
-const tpState = { words:[], rawText:'', currentIdx:-1, speed:1.0, autoScrolling:false, intervalId:null };
+// ── Teleprompter Engine v2 ────────────────────────────────────────────────
+// Supports: line-by-line view, LRC timestamps, word highlight, progress bar,
+// fullscreen, auto-scroll with smart pacing, LRCLib search
+const tpState = {
+  words: [],        // flat word array for backward compat
+  lines: [],        // [{text, words:[{text,globalIdx}], lineIdx}]
+  rawText: '',
+  lrcData: null,    // [{time, text}] if LRC mode
+  isLRC: false,
+  currentIdx: -1,   // current word index (global)
+  currentLine: -1,  // current line index
+  speed: 1.0,
+  autoScrolling: false,
+  intervalId: null,
+  lrcTimerId: null,
+  startTime: 0,     // for LRC playback
+  pauseOffset: 0,   // accumulated pause time for LRC
+};
 
+// ── Parse LRC format ─────────────────────────────────────────────────────
+function parseLRC(text) {
+  const lines = [];
+  const regex = /\[(\d{2}):(\d{2})\.(\d{2,3})\](.*)/;
+  text.split('\n').forEach(line => {
+    const m = line.match(regex);
+    if (m) {
+      const min = parseInt(m[1]);
+      const sec = parseInt(m[2]);
+      const ms  = parseInt(m[3].padEnd(3, '0'));
+      const time = min * 60 + sec + ms / 1000;
+      const txt  = m[4].trim();
+      if (txt) lines.push({ time, text: txt });
+    }
+  });
+  lines.sort((a, b) => a.time - b.time);
+  return lines.length > 2 ? lines : null;
+}
+
+// ── Set lyrics (auto-detects LRC vs plain text) ──────────────────────────
 function setLyrics(text) {
+  stopAutoScroll();
   tpState.rawText = text;
-  tpState.words   = text.trim().split(/\s+/).filter(w => w.length > 0);
   tpState.currentIdx = -1;
+  tpState.currentLine = -1;
+  tpState.lrcData = null;
+  tpState.isLRC = false;
+  tpState.pauseOffset = 0;
+
   const el = document.getElementById('tp-display');
-  if (!tpState.words.length) {
-    const w = document.getElementById('tp-welcome');
-    if (w) w.style.display = '';
-    else el.innerHTML = '<span style="opacity:.25;font-size:1.1rem;">Selecciona una cancion o agrega la letra</span>';
+  const welcome = document.getElementById('tp-welcome');
+
+  if (!text || !text.trim()) {
+    if (welcome) welcome.style.display = '';
+    updateProgress(0);
+    updateModeBadge();
     return;
   }
-  const welcome = document.getElementById('tp-welcome');
   if (welcome) welcome.style.display = 'none';
-  el.innerHTML = tpState.words.map((w, i) =>
-    '<span id="tw-' + i + '" class="tp-word" onclick="highlightWord(' + i + ')">' + escHtml(w) + '</span>'
-  ).join(' ');
+
+  // Try LRC parse
+  const lrc = parseLRC(text);
+  if (lrc) {
+    tpState.isLRC = true;
+    tpState.lrcData = lrc;
+    buildLRCDisplay(lrc, el);
+  } else {
+    buildPlainDisplay(text, el);
+  }
+
   updateWordCounter();
+  updateProgress(0);
+  updateModeBadge();
 }
 
+// ── Build LRC display (line-by-line with timestamps) ─────────────────────
+function buildLRCDisplay(lrcLines, el) {
+  tpState.lines = [];
+  tpState.words = [];
+  let globalIdx = 0;
+
+  let html = '';
+  lrcLines.forEach((line, li) => {
+    const lineWords = line.text.split(/\s+/).filter(w => w);
+    const lineObj = { text: line.text, words: [], lineIdx: li, time: line.time };
+
+    const wordsHtml = lineWords.map(w => {
+      lineObj.words.push({ text: w, globalIdx });
+      tpState.words.push(w);
+      const h = '<span id="tw-' + globalIdx + '" class="tp-word" onclick="highlightWord(' + globalIdx + ')">' + escHtml(w) + '</span>';
+      globalIdx++;
+      return h;
+    }).join(' ');
+
+    tpState.lines.push(lineObj);
+    html += '<div class="tp-line" id="tl-' + li + '">' + wordsHtml + '</div>';
+  });
+
+  el.innerHTML = html;
+}
+
+// ── Build plain text display (line-by-line from newlines) ────────────────
+function buildPlainDisplay(text, el) {
+  tpState.lines = [];
+  tpState.words = [];
+  let globalIdx = 0;
+
+  // Split by line breaks, keep structure
+  const rawLines = text.split(/\n/).map(l => l.trim());
+  let html = '';
+
+  rawLines.forEach((line, li) => {
+    if (!line) {
+      html += '<div class="tp-line-break"></div>';
+      return;
+    }
+    const lineWords = line.split(/\s+/).filter(w => w);
+    const lineObj = { text: line, words: [], lineIdx: tpState.lines.length };
+
+    const wordsHtml = lineWords.map(w => {
+      lineObj.words.push({ text: w, globalIdx });
+      tpState.words.push(w);
+      const h = '<span id="tw-' + globalIdx + '" class="tp-word" onclick="highlightWord(' + globalIdx + ')">' + escHtml(w) + '</span>';
+      globalIdx++;
+      return h;
+    }).join(' ');
+
+    tpState.lines.push(lineObj);
+    html += '<div class="tp-line" id="tl-' + lineObj.lineIdx + '">' + wordsHtml + '</div>';
+  });
+
+  el.innerHTML = html;
+}
+
+// ── Highlight a word + update line states ─────────────────────────────────
 function highlightWord(idx) {
   if (idx < 0 || idx >= tpState.words.length) return;
+
+  // Remove previous highlight
   const prev = document.getElementById('tw-' + tpState.currentIdx);
-  const next = document.getElementById('tw-' + idx);
   if (prev) { prev.classList.remove('tp-active'); prev.classList.add('tp-done'); }
-  if (next) { next.classList.add('tp-active'); next.scrollIntoView({ behavior:'smooth', block:'center' }); }
+
+  // Add new highlight
+  const next = document.getElementById('tw-' + idx);
+  if (next) {
+    next.classList.add('tp-active');
+    // Smooth scroll the word into view within the tp-area
+    const area = document.getElementById('tp-area');
+    if (area && next) {
+      const wordRect = next.getBoundingClientRect();
+      const areaRect = area.getBoundingClientRect();
+      const wordCenter = wordRect.top + wordRect.height / 2;
+      const areaCenter = areaRect.top + areaRect.height / 2;
+      const offset = wordCenter - areaCenter;
+      if (Math.abs(offset) > 60) {
+        area.scrollBy({ top: offset, behavior: 'smooth' });
+      }
+    }
+  }
+
   tpState.currentIdx = idx;
+
+  // Find which line this word belongs to and update line highlights
+  const newLine = tpState.lines.findIndex(l =>
+    l.words.some(w => w.globalIdx === idx)
+  );
+  if (newLine !== tpState.currentLine) {
+    updateLineHighlights(newLine);
+    tpState.currentLine = newLine;
+  }
+
   updateWordCounter();
-  if (socket && socket.connected) socket.emit('tp_scroll', { currentWord:idx, isPlaying:tpState.autoScrolling });
+  updateProgress((idx + 1) / tpState.words.length);
+  if (socket && socket.connected) socket.emit('tp_scroll', { currentWord: idx, isPlaying: tpState.autoScrolling });
 }
 
-function tpNext()  { if (tpState.currentIdx < tpState.words.length - 1) highlightWord(tpState.currentIdx + 1); }
-function tpPrev()  { if (tpState.currentIdx > 0) highlightWord(tpState.currentIdx - 1); }
-function tpReset() { stopAutoScroll(); tpState.currentIdx = -1; setLyrics(tpState.rawText); }
+// ── Update line CSS states ───────────────────────────────────────────────
+function updateLineHighlights(activeLineIdx) {
+  tpState.lines.forEach((line, i) => {
+    const el = document.getElementById('tl-' + line.lineIdx);
+    if (!el) return;
+    el.classList.remove('tp-line-active', 'tp-line-next', 'tp-line-done');
+    if (i === activeLineIdx) el.classList.add('tp-line-active');
+    else if (i === activeLineIdx + 1) el.classList.add('tp-line-next');
+    else if (i < activeLineIdx) el.classList.add('tp-line-done');
+  });
+}
+
+// ── Progress bar ─────────────────────────────────────────────────────────
+function updateProgress(ratio) {
+  const fill = document.getElementById('tp-progress-fill');
+  if (fill) fill.style.width = Math.min(100, ratio * 100).toFixed(1) + '%';
+}
+
+// ── Mode badge ───────────────────────────────────────────────────────────
+function updateModeBadge() {
+  const badge = document.getElementById('tp-mode-badge');
+  if (!badge) return;
+  if (tpState.isLRC) {
+    badge.className = 'tp-lrc-badge';
+    badge.textContent = 'LRC sincronizado';
+  } else if (tpState.words.length > 0) {
+    badge.className = 'tp-lrc-badge manual';
+    badge.textContent = 'Modo manual — ' + tpState.lines.length + ' lineas';
+  } else {
+    badge.className = 'tp-lrc-badge manual';
+    badge.textContent = 'Sin letra';
+  }
+}
+
+// ── Navigation ───────────────────────────────────────────────────────────
+function tpNext() {
+  if (tpState.currentIdx < tpState.words.length - 1) highlightWord(tpState.currentIdx + 1);
+}
+function tpPrev() {
+  if (tpState.currentIdx > 0) highlightWord(tpState.currentIdx - 1);
+}
+function tpNextLine() {
+  const nextL = tpState.currentLine + 1;
+  if (nextL < tpState.lines.length) {
+    highlightWord(tpState.lines[nextL].words[0].globalIdx);
+  }
+}
+function tpPrevLine() {
+  const prevL = tpState.currentLine - 1;
+  if (prevL >= 0) {
+    highlightWord(tpState.lines[prevL].words[0].globalIdx);
+  }
+}
+function tpReset() {
+  stopAutoScroll();
+  tpState.currentIdx = -1;
+  tpState.currentLine = -1;
+  tpState.pauseOffset = 0;
+  setLyrics(tpState.rawText);
+}
+
+// ── Speed ────────────────────────────────────────────────────────────────
 function tpSpeedUp() {
   tpState.speed = Math.min(tpState.speed + 0.2, 5.0);
   document.getElementById('speed-label').textContent = tpState.speed.toFixed(1) + 'x';
@@ -1865,17 +2192,120 @@ function tpSpeedDown() {
   if (socket) socket.emit('tp_speed', { speed: tpState.speed });
   if (tpState.autoScrolling) { stopAutoScroll(); startAutoScroll(); }
 }
+
+// ── Auto-scroll (word-by-word for plain text, LRC timing for synced) ─────
 function toggleAutoScroll() { tpState.autoScrolling ? stopAutoScroll() : startAutoScroll(); }
+
 function startAutoScroll() {
   if (!tpState.words.length) return;
-  tpState.autoScrolling = true; updatePlayBtn();
-  const interval = Math.max(80, 600 / tpState.speed);
+  tpState.autoScrolling = true;
+  updatePlayBtn();
+
+  if (tpState.isLRC && tpState.lrcData) {
+    startLRCPlayback();
+  } else {
+    startManualScroll();
+  }
+}
+
+function startManualScroll() {
+  // Smart pacing: longer words = slightly longer display
+  const baseInterval = Math.max(100, 500 / tpState.speed);
   tpState.intervalId = setInterval(() => {
     if (tpState.currentIdx >= tpState.words.length - 1) { stopAutoScroll(); return; }
-    highlightWord(tpState.currentIdx + 1);
-  }, interval);
+    const nextIdx = tpState.currentIdx + 1;
+    const nextWord = tpState.words[nextIdx] || '';
+    // Add a small pause at line boundaries
+    const isLineStart = tpState.lines.some(l =>
+      l.words.length > 0 && l.words[0].globalIdx === nextIdx
+    );
+    highlightWord(nextIdx);
+    // If crossing to a new line, add brief pause
+    if (isLineStart && nextIdx > 0) {
+      clearInterval(tpState.intervalId);
+      setTimeout(() => {
+        if (tpState.autoScrolling) startManualScroll();
+      }, baseInterval * 1.5);
+    }
+  }, baseInterval);
 }
-function stopAutoScroll() { tpState.autoScrolling = false; clearInterval(tpState.intervalId); updatePlayBtn(); }
+
+function startLRCPlayback() {
+  // Use timestamps from LRC data
+  const now = performance.now();
+  if (tpState.pauseOffset > 0) {
+    tpState.startTime = now - tpState.pauseOffset;
+  } else {
+    // Find start time based on current position
+    let startOffset = 0;
+    if (tpState.currentLine >= 0 && tpState.lrcData[tpState.currentLine]) {
+      startOffset = tpState.lrcData[tpState.currentLine].time * 1000;
+    }
+    tpState.startTime = now - startOffset;
+  }
+
+  tpState.lrcTimerId = setInterval(() => {
+    const elapsed = ((performance.now() - tpState.startTime) / 1000) * tpState.speed;
+    // Find the line that should be active
+    let activeLine = -1;
+    for (let i = tpState.lrcData.length - 1; i >= 0; i--) {
+      if (elapsed >= tpState.lrcData[i].time) { activeLine = i; break; }
+    }
+    if (activeLine >= 0 && activeLine !== tpState.currentLine) {
+      // Highlight first word of new line
+      const line = tpState.lines[activeLine];
+      if (line && line.words.length > 0) {
+        // Mark all words in the line as done for previous lines
+        for (let li = tpState.currentLine + 1; li <= activeLine; li++) {
+          const prevLine = tpState.lines[li];
+          if (prevLine) {
+            prevLine.words.forEach(w => {
+              const el = document.getElementById('tw-' + w.globalIdx);
+              if (el && !el.classList.contains('tp-done')) {
+                el.classList.remove('tp-active');
+                el.classList.add('tp-done');
+              }
+            });
+          }
+        }
+        // Now animate words in the current line
+        highlightWord(line.words[0].globalIdx);
+        // Progressively highlight remaining words with even spacing
+        const lineWordCount = line.words.length;
+        if (lineWordCount > 1) {
+          const nextLineTime = (activeLine + 1 < tpState.lrcData.length)
+            ? tpState.lrcData[activeLine + 1].time : tpState.lrcData[activeLine].time + 5;
+          const lineDuration = (nextLineTime - tpState.lrcData[activeLine].time) * 1000 / tpState.speed;
+          const wordDelay = lineDuration / lineWordCount;
+          for (let wi = 1; wi < lineWordCount; wi++) {
+            setTimeout(() => {
+              if (tpState.currentLine === activeLine && tpState.autoScrolling) {
+                highlightWord(line.words[wi].globalIdx);
+              }
+            }, wordDelay * wi);
+          }
+        }
+      }
+    }
+    // Check end
+    if (activeLine >= tpState.lrcData.length - 1) {
+      // Mark last line words done after a delay
+      setTimeout(() => stopAutoScroll(), 2000);
+    }
+  }, 50); // Check every 50ms for precision
+}
+
+function stopAutoScroll() {
+  tpState.autoScrolling = false;
+  clearInterval(tpState.intervalId);
+  clearInterval(tpState.lrcTimerId);
+  // Save pause position for LRC resume
+  if (tpState.isLRC && tpState.startTime > 0) {
+    tpState.pauseOffset = performance.now() - tpState.startTime;
+  }
+  updatePlayBtn();
+}
+
 function updatePlayBtn() {
   document.getElementById('ico-play').style.display  = tpState.autoScrolling ? 'none' : 'block';
   document.getElementById('ico-pause').style.display = tpState.autoScrolling ? 'block' : 'none';
@@ -1883,6 +2313,112 @@ function updatePlayBtn() {
 function updateWordCounter() {
   const c = Math.max(0, tpState.currentIdx + 1);
   document.getElementById('word-counter').textContent = c + '/' + tpState.words.length;
+}
+
+// ── Fullscreen ───────────────────────────────────────────────────────────
+function tpToggleFullscreen() {
+  const center = document.querySelector('.center');
+  center.classList.toggle('tp-fullscreen');
+  // Update button icon
+  const btn = document.querySelector('.tp-fullscreen-btn');
+  if (center.classList.contains('tp-fullscreen')) {
+    btn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 14h6v6m10-10h-6V4M4 10h6V4m10 10h-6v6"/></svg>';
+    showToast('Pantalla completa — ESC para salir');
+  } else {
+    btn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>';
+  }
+}
+
+// ── LRCLib Lyrics Search ─────────────────────────────────────────────────
+function openLyricsSearch() {
+  document.getElementById('lyrics-overlay').classList.add('open');
+  // Pre-fill from current singer if available
+  const nsName = document.getElementById('ns-song');
+  if (nsName && nsName.textContent && nsName.textContent !== '—') {
+    document.getElementById('lyrics-search-title').value = nsName.textContent;
+  }
+  setTimeout(() => document.getElementById('lyrics-search-title').focus(), 100);
+}
+
+function closeLyricsSearch() {
+  document.getElementById('lyrics-overlay').classList.remove('open');
+}
+
+async function searchLyricsOnline() {
+  const title  = document.getElementById('lyrics-search-title').value.trim();
+  const artist = document.getElementById('lyrics-search-artist').value.trim();
+  if (!title) { showToast('Escribe el titulo de la cancion'); return; }
+
+  const results = document.getElementById('lyrics-results');
+  results.innerHTML = '<div style="text-align:center;padding:30px;"><div style="font-size:24px;animation:pulse 1s infinite;">🔍</div><div style="font-size:12px;color:var(--sub);margin-top:8px;">Buscando letras...</div></div>';
+
+  try {
+    let url = 'https://lrclib.net/api/search?track_name=' + encodeURIComponent(title);
+    if (artist) url += '&artist_name=' + encodeURIComponent(artist);
+
+    const r = await fetch(url);
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    const data = await r.json();
+
+    if (!data.length) {
+      results.innerHTML = '<div style="text-align:center;padding:30px;opacity:.4;font-size:12px;">No se encontraron letras para "' + escHtml(title) + '"<br><br>Intenta con otro titulo o artista</div>';
+      return;
+    }
+
+    results.innerHTML = data.slice(0, 15).map((item, i) => {
+      const hasLRC = item.syncedLyrics && item.syncedLyrics.length > 10;
+      const hasPlain = item.plainLyrics && item.plainLyrics.length > 10;
+      const duration = item.duration ? Math.floor(item.duration / 60) + ':' + String(Math.floor(item.duration % 60)).padStart(2, '0') : '';
+      return `
+        <div style="padding:10px;border:1px solid var(--border);border-radius:8px;margin-bottom:6px;background:rgba(255,255,255,.02);">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+            <div>
+              <div style="font-size:12px;font-weight:700;">${escHtml(item.trackName || title)}</div>
+              <div style="font-size:10px;color:var(--sub);">${escHtml(item.artistName || artist || 'Artista')}${duration ? ' &middot; ' + duration : ''}</div>
+            </div>
+            <div style="display:flex;gap:4px;">
+              ${hasLRC ? '<span class="tp-lrc-badge" style="font-size:8px;">LRC</span>' : ''}
+              ${hasPlain ? '<span class="tp-lrc-badge manual" style="font-size:8px;">TXT</span>' : ''}
+            </div>
+          </div>
+          <div style="display:flex;gap:6px;margin-top:8px;">
+            ${hasLRC ? '<button class="tp-search-lyrics-btn" style="flex:1;justify-content:center;font-size:10px;padding:6px;" onclick="loadOnlineLyrics(' + i + ',true)">Cargar LRC sincronizado</button>' : ''}
+            ${hasPlain ? '<button class="tp-search-lyrics-btn" style="flex:1;justify-content:center;font-size:10px;padding:6px;background:rgba(131,56,236,.08);border-color:rgba(131,56,236,.2);color:var(--s);" onclick="loadOnlineLyrics(' + i + ',false)">Cargar texto plano</button>' : ''}
+          </div>
+        </div>`;
+    }).join('');
+
+    // Store results for loading
+    window._lyricsSearchResults = data.slice(0, 15);
+  } catch (err) {
+    results.innerHTML = '<div style="text-align:center;padding:30px;opacity:.4;font-size:12px;">Error buscando letras<br><small>' + escHtml(err.message) + '</small></div>';
+  }
+}
+
+function loadOnlineLyrics(idx, useLRC) {
+  const item = window._lyricsSearchResults && window._lyricsSearchResults[idx];
+  if (!item) return;
+
+  const lyrics = useLRC ? item.syncedLyrics : item.plainLyrics;
+  if (!lyrics) { showToast('No hay letra disponible'); return; }
+
+  setLyrics(lyrics);
+  if (socket) socket.emit('tp_lyrics', { lyrics });
+  closeLyricsSearch();
+
+  const type = useLRC ? 'LRC sincronizado' : 'texto';
+  showToast('🎵 Letra cargada (' + type + '): ' + (item.trackName || 'cancion'));
+
+  // Also save to catalog for future use
+  const titulo  = item.trackName  || document.getElementById('lyrics-search-title').value;
+  const artista = item.artistName || document.getElementById('lyrics-search-artist').value;
+  if (titulo) {
+    fetch('/api/canciones', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ titulo, artista, letra: lyrics })
+    }).catch(() => {});
+  }
 }
 
 // ── Cola ──────────────────────────────────────────────────────────────────
@@ -2770,12 +3306,19 @@ function showToast(msg) {
 document.addEventListener('keydown', (e) => {
   if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
   switch (e.key) {
-    case ' ':         e.preventDefault(); toggleAutoScroll(); break;
-    case 'ArrowRight': tpNext();      break;
-    case 'ArrowLeft':  tpPrev();      break;
-    case 'ArrowUp':    tpSpeedUp();   break;
-    case 'ArrowDown':  tpSpeedDown(); break;
+    case ' ':          e.preventDefault(); toggleAutoScroll(); break;
+    case 'ArrowRight': e.preventDefault(); tpNext();      break;
+    case 'ArrowLeft':  e.preventDefault(); tpPrev();      break;
+    case 'ArrowUp':    e.preventDefault(); tpSpeedUp();   break;
+    case 'ArrowDown':  e.preventDefault(); tpSpeedDown(); break;
     case 'r': case 'R': tpReset();   break;
+    case 'f': case 'F': tpToggleFullscreen(); break;
+    case 'l': case 'L': openLyricsSearch(); break;
+    case 'Escape':
+      if (document.querySelector('.center.tp-fullscreen')) tpToggleFullscreen();
+      break;
+    case 'PageDown':   e.preventDefault(); tpNextLine(); break;
+    case 'PageUp':     e.preventDefault(); tpPrevLine(); break;
   }
 });
 
