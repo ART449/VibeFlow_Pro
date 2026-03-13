@@ -921,6 +921,101 @@ select.inp{cursor:pointer;}
 }
 .ns-next-btn:hover{box-shadow:0 4px 16px var(--glow-p);transform:translateY(-1px);}
 
+/* ── Settings Panel ─────────────────────────────────────────────────── */
+.settings-panel{
+  width:340px;background:var(--card);border-left:1px solid var(--border);
+  display:none;flex-direction:column;flex-shrink:0;overflow-y:auto;
+}
+.settings-panel.active{display:flex;}
+.settings-header{
+  padding:14px 16px;border-bottom:1px solid var(--border);
+  background:linear-gradient(135deg,rgba(58,134,255,.08),rgba(0,245,160,.04));
+}
+.settings-title{
+  font-size:13px;font-weight:800;letter-spacing:.3px;
+  background:linear-gradient(135deg,var(--a),var(--g));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+  display:flex;align-items:center;gap:7px;
+}
+.settings-body{padding:12px 14px;display:flex;flex-direction:column;gap:14px;}
+.settings-section{
+  background:rgba(255,255,255,.025);border:1px solid var(--border);
+  border-radius:10px;padding:12px;
+}
+.settings-section-title{
+  font-size:10px;text-transform:uppercase;letter-spacing:1.5px;color:var(--sub);
+  font-weight:700;margin-bottom:10px;display:flex;align-items:center;gap:6px;
+}
+.settings-section-title svg{width:14px;height:14px;opacity:.5;}
+.settings-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;}
+.settings-row:last-child{margin-bottom:0;}
+.settings-label{font-size:11px;color:rgba(255,255,255,.7);}
+.settings-value{font-size:11px;color:var(--a);font-weight:700;}
+.settings-inp{
+  width:100%;padding:7px 10px;background:rgba(255,255,255,.04);
+  border:1px solid var(--border);border-radius:8px;color:#fff;font-size:12px;
+  outline:none;transition:border-color .2s;margin-bottom:6px;
+}
+.settings-inp:focus{border-color:var(--a);}
+.settings-btn{
+  width:100%;padding:8px;background:linear-gradient(135deg,var(--a),var(--s));
+  border:none;border-radius:8px;color:#fff;font-size:11px;font-weight:700;
+  letter-spacing:.5px;transition:all .2s;cursor:pointer;
+}
+.settings-btn:hover{box-shadow:0 3px 14px rgba(58,134,255,.3);transform:translateY(-1px);}
+.settings-btn.secondary{background:rgba(255,255,255,.06);border:1px solid var(--border);}
+.settings-btn.secondary:hover{background:rgba(255,255,255,.1);}
+.settings-toggle{
+  position:relative;width:36px;height:20px;background:rgba(255,255,255,.1);
+  border-radius:10px;cursor:pointer;transition:background .2s;border:none;flex-shrink:0;
+}
+.settings-toggle.on{background:var(--g);}
+.settings-toggle::after{
+  content:'';position:absolute;top:2px;left:2px;width:16px;height:16px;
+  border-radius:50%;background:#fff;transition:transform .2s;
+}
+.settings-toggle.on::after{transform:translateX(16px);}
+
+/* ── DJ Soundboard ──────────────────────────────────────────────────── */
+.dj-soundboard{
+  background:rgba(255,255,255,.025);border:1px solid var(--border);
+  border-radius:10px;padding:12px;
+}
+.dj-section-title{
+  font-size:10px;text-transform:uppercase;letter-spacing:1.5px;color:var(--sub);
+  font-weight:700;margin-bottom:10px;display:flex;align-items:center;gap:6px;
+}
+.dj-pads{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;}
+.dj-pad{
+  aspect-ratio:1;border:1px solid var(--border);border-radius:10px;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:4px;cursor:pointer;transition:all .15s;
+  background:rgba(255,255,255,.03);position:relative;overflow:hidden;
+}
+.dj-pad:hover{background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.2);transform:scale(1.03);}
+.dj-pad:active{transform:scale(.95);background:rgba(255,0,110,.15);border-color:var(--p);}
+.dj-pad.playing{
+  border-color:var(--p);background:rgba(255,0,110,.12);
+  box-shadow:0 0 16px var(--glow-p);animation:djPulse .5s ease;
+}
+@keyframes djPulse{0%{box-shadow:0 0 0 0 var(--glow-p);}100%{box-shadow:0 0 16px var(--glow-p);}}
+.dj-pad-icon{font-size:22px;}
+.dj-pad-label{font-size:9px;color:var(--sub);font-weight:700;letter-spacing:.5px;text-transform:uppercase;}
+.dj-vol-row{display:flex;align-items:center;gap:8px;margin-top:10px;}
+.dj-vol-row label{font-size:10px;color:var(--sub);white-space:nowrap;font-weight:600;}
+.dj-vol-row input[type=range]{flex:1;height:3px;-webkit-appearance:none;appearance:none;background:rgba(255,255,255,.1);border-radius:4px;outline:none;cursor:pointer;}
+.dj-vol-row input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;height:14px;border-radius:50%;background:var(--p);box-shadow:0 0 6px var(--glow-p);cursor:pointer;}
+
+/* ── Topbar Settings Btn ──────────────────────────────────────────── */
+.topbar-settings{
+  width:32px;height:32px;border:1px solid var(--border);border-radius:8px;
+  background:rgba(255,255,255,.04);color:var(--sub);
+  display:flex;align-items:center;justify-content:center;cursor:pointer;
+  transition:all .2s;flex-shrink:0;margin-left:6px;
+}
+.topbar-settings:hover{background:rgba(255,255,255,.1);color:#fff;border-color:rgba(255,255,255,.2);}
+.topbar-settings svg{width:16px;height:16px;}
+
 /* ── Mobile ──────────────────────────────────────────────────────────── */
 @media(max-width:900px){
   html,body{overflow:auto;-webkit-overflow-scrolling:touch;touch-action:manipulation;}
@@ -929,6 +1024,7 @@ select.inp{cursor:pointer;}
   .ia-panel{display:none;}
   .bares-panel{display:none;}
   .yt-panel{display:none;}
+  .settings-panel{display:none!important;}
   #tp-display{font-size:2.4rem;}
   .topbar{padding:0 10px;}
   .brand{font-size:15px;}
@@ -980,6 +1076,9 @@ select.inp{cursor:pointer;}
       </button>
     </div>
     <div id="datetime">--</div>
+    <button class="topbar-settings" onclick="setMode('settings')" title="Configuracion y perfil">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+    </button>
     <div class="byflow-bar" style="cursor:pointer;" onclick="openLegalModal()">Powered by <span>IArtLabs</span></div>
   </div>
 
@@ -1349,6 +1448,57 @@ select.inp{cursor:pointer;}
             <div style="font-size:10px;color:var(--sub);margin-top:6px;">Tiempo entre canciones: <input type="number" id="bares-promo-time" min="5" max="30" value="10" style="width:40px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:4px;color:#fff;text-align:center;font-size:10px;padding:2px;"> seg</div>
           </div>
 
+          <!-- DJ Soundboard -->
+          <div class="bares-section dj-soundboard">
+            <div class="dj-section-title">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px;opacity:.5;"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="3"/><line x1="12" y1="2" x2="12" y2="5"/></svg>
+              DJ Soundboard — Efectos en Vivo
+            </div>
+            <div class="dj-pads">
+              <div class="dj-pad" onclick="djPlay('airhorn')" data-sfx="airhorn">
+                <div class="dj-pad-icon">📯</div>
+                <div class="dj-pad-label">Airhorn</div>
+              </div>
+              <div class="dj-pad" onclick="djPlay('applause')" data-sfx="applause">
+                <div class="dj-pad-icon">👏</div>
+                <div class="dj-pad-label">Aplausos</div>
+              </div>
+              <div class="dj-pad" onclick="djPlay('drumroll')" data-sfx="drumroll">
+                <div class="dj-pad-icon">🥁</div>
+                <div class="dj-pad-label">Redoble</div>
+              </div>
+              <div class="dj-pad" onclick="djPlay('record_scratch')" data-sfx="record_scratch">
+                <div class="dj-pad-icon">💿</div>
+                <div class="dj-pad-label">Scratch</div>
+              </div>
+              <div class="dj-pad" onclick="djPlay('crowd_cheer')" data-sfx="crowd_cheer">
+                <div class="dj-pad-icon">🎉</div>
+                <div class="dj-pad-label">Ovacion</div>
+              </div>
+              <div class="dj-pad" onclick="djPlay('bell')" data-sfx="bell">
+                <div class="dj-pad-icon">🔔</div>
+                <div class="dj-pad-label">Campana</div>
+              </div>
+              <div class="dj-pad" onclick="djPlay('siren')" data-sfx="siren">
+                <div class="dj-pad-icon">🚨</div>
+                <div class="dj-pad-label">Sirena</div>
+              </div>
+              <div class="dj-pad" onclick="djPlay('bass_drop')" data-sfx="bass_drop">
+                <div class="dj-pad-icon">💥</div>
+                <div class="dj-pad-label">Bass Drop</div>
+              </div>
+              <div class="dj-pad" onclick="djPlay('woosh')" data-sfx="woosh">
+                <div class="dj-pad-icon">💨</div>
+                <div class="dj-pad-label">Woosh</div>
+              </div>
+            </div>
+            <div class="dj-vol-row">
+              <label>🔊 Vol. SFX</label>
+              <input type="range" id="dj-sfx-vol" min="0" max="100" value="70" oninput="djSetVolume(this.value)">
+              <span style="font-size:10px;color:var(--sub);min-width:28px;text-align:right;" id="dj-vol-label">70%</span>
+            </div>
+          </div>
+
           <!-- Configuración del bar -->
           <div class="bares-section">
             <div class="bares-section-title">
@@ -1364,6 +1514,113 @@ select.inp{cursor:pointer;}
         </div>
       </div>
 
+    </div>
+
+    <!-- ═══ SETTINGS PANEL ═══ -->
+    <div class="settings-panel" id="settings-panel">
+      <div class="settings-header">
+        <div class="settings-title">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px;height:16px;"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+          Configuracion
+        </div>
+        <div style="font-size:10px;color:var(--sub);margin-top:3px;">Perfil, preferencias y opciones del sistema</div>
+      </div>
+      <div class="settings-body">
+
+        <!-- Perfil de Usuario -->
+        <div class="settings-section">
+          <div class="settings-section-title">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            Perfil de Usuario
+          </div>
+          <input class="settings-inp" id="set-user-name" placeholder="Tu nombre o apodo..." maxlength="30">
+          <input class="settings-inp" id="set-user-email" placeholder="Email (opcional)" type="email">
+          <div class="settings-row">
+            <span class="settings-label">Rol</span>
+            <select class="settings-inp" id="set-user-role" style="width:auto;margin-bottom:0;">
+              <option value="dj">DJ / Operador</option>
+              <option value="bar_owner">Dueno del bar</option>
+              <option value="cantante">Cantante</option>
+            </select>
+          </div>
+          <button class="settings-btn" onclick="saveUserProfile()" style="margin-top:6px;">Guardar Perfil</button>
+        </div>
+
+        <!-- Apariencia -->
+        <div class="settings-section">
+          <div class="settings-section-title">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 2a10 10 0 0 1 0 20 7 7 0 0 1 0-20"/></svg>
+            Apariencia
+          </div>
+          <div class="settings-row">
+            <span class="settings-label">Modo oscuro</span>
+            <button class="settings-toggle on" id="set-dark-toggle" onclick="toggleDarkMode(this)"></button>
+          </div>
+          <div class="settings-row">
+            <span class="settings-label">Tamano de letras</span>
+            <select class="settings-inp" id="set-font-size" style="width:auto;margin-bottom:0;" onchange="setTpFontSize(this.value)">
+              <option value="3rem">Pequeno</option>
+              <option value="5rem" selected>Normal</option>
+              <option value="7rem">Grande</option>
+              <option value="9rem">Extra Grande</option>
+            </select>
+          </div>
+          <div class="settings-row">
+            <span class="settings-label">Visualizador audio</span>
+            <button class="settings-toggle on" id="set-viz-toggle" onclick="toggleVisualizer(this)"></button>
+          </div>
+        </div>
+
+        <!-- Audio -->
+        <div class="settings-section">
+          <div class="settings-section-title">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>
+            Audio y Karaoke
+          </div>
+          <div class="settings-row">
+            <span class="settings-label">Jingle entre canciones</span>
+            <button class="settings-toggle on" id="set-jingle-toggle" onclick="toggleJingle(this)"></button>
+          </div>
+          <div class="settings-row">
+            <span class="settings-label">Promos automaticas</span>
+            <button class="settings-toggle on" id="set-promo-toggle" onclick="toggleAutoPromo(this)"></button>
+          </div>
+          <div class="settings-row">
+            <span class="settings-label">Auto-avanzar cola</span>
+            <button class="settings-toggle on" id="set-autoqueue-toggle" onclick="toggleAutoQueue(this)"></button>
+          </div>
+        </div>
+
+        <!-- API Keys -->
+        <div class="settings-section">
+          <div class="settings-section-title">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.78 7.78 5.5 5.5 0 0 1 7.78-7.78zM15.5 7.5l3 3L22 7l-3-3z"/></svg>
+            Claves API
+          </div>
+          <div style="font-size:10px;color:var(--sub);margin-bottom:8px;">Configura tus claves para desbloquear servicios</div>
+          <div class="settings-row">
+            <span class="settings-label">YouTube API</span>
+            <span class="settings-value" id="set-yt-status">No configurada</span>
+          </div>
+          <div class="settings-row">
+            <span class="settings-label">Jamendo Client ID</span>
+            <span class="settings-value" id="set-jm-status">No configurada</span>
+          </div>
+          <div class="settings-row">
+            <span class="settings-label">Licencia PRO</span>
+            <span class="settings-value" id="set-lic-status">Inactiva</span>
+          </div>
+        </div>
+
+        <!-- Acerca de -->
+        <div class="settings-section" style="text-align:center;padding:16px;">
+          <div style="font-size:16px;font-weight:900;background:linear-gradient(135deg,#ff006e,#8338ec,#3a86ff);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">ByFlow</div>
+          <div style="font-size:10px;color:var(--sub);margin-top:2px;">Vive Cantando</div>
+          <div style="font-size:9px;color:rgba(255,255,255,.2);margin-top:6px;">v3.0 &middot; powered by IArtLabs</div>
+          <div style="font-size:9px;color:rgba(255,255,255,.15);margin-top:4px;">CERO descargas &middot; Solo streaming</div>
+        </div>
+
+      </div>
     </div>
 
   </div><!-- /main -->
@@ -1721,41 +1978,50 @@ async function agregarCancion() {
 
 // ── Mode Switch ───────────────────────────────────────────────────────────
 function setMode(mode) {
+  currentMode = mode;
   document.querySelectorAll('.mode-btn').forEach(b => b.classList.toggle('active', b.dataset.mode === mode));
+
   const sidebar    = document.querySelector('.sidebar');
   const rightPanel = document.querySelector('.right-panel');
   const iaPanel    = document.getElementById('ia-panel');
   const ytPanel    = document.getElementById('yt-panel');
-  // Reset all panels
-  if (sidebar)    sidebar.style.display    = '';
-  if (rightPanel) rightPanel.style.display = '';
-  if (iaPanel)    { iaPanel.classList.remove('active'); iaPanel.style.display = ''; }
-  if (ytPanel)    { ytPanel.classList.remove('active'); ytPanel.style.display = ''; }
   const baresPanel = document.getElementById('bares-panel');
-  if (baresPanel) { baresPanel.classList.remove('active'); baresPanel.style.display = ''; }
+  const settingsPanel = document.getElementById('settings-panel');
 
-  if (mode === 'remote') {
+  // 1. Ocultar TODO primero
+  if (sidebar)      sidebar.style.display      = 'none';
+  if (rightPanel)   rightPanel.style.display   = 'none';
+  if (iaPanel)      { iaPanel.classList.remove('active');    iaPanel.style.display    = 'none'; }
+  if (ytPanel)      { ytPanel.classList.remove('active');    ytPanel.style.display    = 'none'; }
+  if (baresPanel)   { baresPanel.classList.remove('active'); baresPanel.style.display = 'none'; }
+  if (settingsPanel){ settingsPanel.classList.remove('active'); settingsPanel.style.display = 'none'; }
+
+  // 2. Mostrar lo que corresponde al modo
+  if (mode === 'karaoke' || mode === 'remote') {
     if (sidebar)    sidebar.style.display    = 'flex';
     if (rightPanel) rightPanel.style.display = 'flex';
   } else if (mode === 'ia') {
     if (!isPremium('ollama_ai')) {
       showToast('Modo IA requiere licencia PRO');
-      setMode('bares'); return;
+      setMode('karaoke'); return;
     }
     if (sidebar)    sidebar.style.display    = 'flex';
-    if (iaPanel)    { iaPanel.classList.add('active'); iaPanel.style.setProperty('display','flex','important'); }
+    if (iaPanel)    { iaPanel.classList.add('active'); iaPanel.style.display = 'flex'; }
     checkOllamaStatus();
   } else if (mode === 'youtube') {
     if (!isPremium('music_streaming')) {
       showToast('Musica Streaming requiere licencia PRO');
-      setMode('bares'); return;
+      setMode('karaoke'); return;
     }
     if (sidebar)    sidebar.style.display    = 'flex';
-    if (ytPanel)    { ytPanel.classList.add('active'); ytPanel.style.setProperty('display','flex','important'); }
+    if (ytPanel)    { ytPanel.classList.add('active'); ytPanel.style.display = 'flex'; }
   } else if (mode === 'bares') {
     if (sidebar)    sidebar.style.display    = 'flex';
-    if (baresPanel) { baresPanel.classList.add('active'); baresPanel.style.setProperty('display','flex','important'); }
+    if (baresPanel) { baresPanel.classList.add('active'); baresPanel.style.display = 'flex'; }
     baresInit();
+  } else if (mode === 'settings') {
+    if (sidebar)        sidebar.style.display        = 'flex';
+    if (settingsPanel)  { settingsPanel.classList.add('active'); settingsPanel.style.display = 'flex'; }
   }
 }
 
@@ -2975,6 +3241,294 @@ function getPromoTime() {
   return saved ? parseInt(saved) || 10 : 10;
 }
 
+// ── Settings Panel ────────────────────────────────────────────────────────
+function saveUserProfile() {
+  const name = document.getElementById('set-user-name').value.trim();
+  const email = document.getElementById('set-user-email').value.trim();
+  const role = document.getElementById('set-user-role').value;
+  localStorage.setItem('byflow_user', JSON.stringify({ name, email, role }));
+  showToast('Perfil guardado: ' + (name || 'Usuario'));
+}
+
+function loadUserProfile() {
+  try {
+    const u = JSON.parse(localStorage.getItem('byflow_user') || '{}');
+    if (u.name) document.getElementById('set-user-name').value = u.name;
+    if (u.email) document.getElementById('set-user-email').value = u.email;
+    if (u.role) document.getElementById('set-user-role').value = u.role;
+  } catch {}
+}
+
+function toggleDarkMode(btn) {
+  // Currently always dark — placeholder for future light theme
+  btn.classList.toggle('on');
+  showToast(btn.classList.contains('on') ? 'Modo oscuro activado' : 'Modo claro (proximamente)');
+}
+
+function setTpFontSize(size) {
+  const tp = document.getElementById('tp-display');
+  if (tp) tp.style.fontSize = size;
+  localStorage.setItem('byflow_tp_fontsize', size);
+}
+
+function toggleVisualizer(btn) {
+  btn.classList.toggle('on');
+  const canvas = document.getElementById('main-viz');
+  if (canvas) canvas.style.display = btn.classList.contains('on') ? '' : 'none';
+  localStorage.setItem('byflow_viz_on', btn.classList.contains('on') ? '1' : '0');
+}
+
+function toggleJingle(btn) {
+  btn.classList.toggle('on');
+  localStorage.setItem('byflow_jingle_on', btn.classList.contains('on') ? '1' : '0');
+}
+
+function toggleAutoPromo(btn) {
+  btn.classList.toggle('on');
+  localStorage.setItem('byflow_autopromo', btn.classList.contains('on') ? '1' : '0');
+}
+
+function toggleAutoQueue(btn) {
+  btn.classList.toggle('on');
+  localStorage.setItem('byflow_autoqueue', btn.classList.contains('on') ? '1' : '0');
+}
+
+function loadSettingsState() {
+  loadUserProfile();
+  // Font size
+  const fs = localStorage.getItem('byflow_tp_fontsize');
+  if (fs) {
+    const sel = document.getElementById('set-font-size');
+    if (sel) sel.value = fs;
+    setTpFontSize(fs);
+  }
+  // Visualizer
+  if (localStorage.getItem('byflow_viz_on') === '0') {
+    const btn = document.getElementById('set-viz-toggle');
+    if (btn) btn.classList.remove('on');
+    const canvas = document.getElementById('main-viz');
+    if (canvas) canvas.style.display = 'none';
+  }
+  // API status
+  const ytKey = localStorage.getItem('yt_api_key');
+  const ytSt = document.getElementById('set-yt-status');
+  if (ytSt) ytSt.textContent = ytKey ? 'Configurada' : 'No configurada';
+  if (ytSt && ytKey) ytSt.style.color = 'var(--g)';
+
+  const jmKey = localStorage.getItem('jm_client_id');
+  const jmSt = document.getElementById('set-jm-status');
+  if (jmSt) jmSt.textContent = jmKey ? 'Configurada' : 'No configurada';
+  if (jmSt && jmKey) jmSt.style.color = 'var(--g)';
+
+  const licSt = document.getElementById('set-lic-status');
+  if (licSt) {
+    licSt.textContent = licenseState.activated ? 'PRO Activa' : 'Inactiva';
+    if (licenseState.activated) licSt.style.color = 'var(--g)';
+  }
+}
+
+// ── DJ Soundboard (Web Audio API SFX Generator) ──────────────────────────
+let djAudioCtx = null;
+let djSfxVolume = 0.7;
+
+function djGetCtx() {
+  if (!djAudioCtx) djAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  return djAudioCtx;
+}
+
+function djSetVolume(val) {
+  djSfxVolume = val / 100;
+  const lbl = document.getElementById('dj-vol-label');
+  if (lbl) lbl.textContent = val + '%';
+  localStorage.setItem('byflow_dj_vol', val);
+}
+
+function djPlay(sfxName) {
+  const pad = document.querySelector(`.dj-pad[data-sfx="${sfxName}"]`);
+  if (pad) {
+    pad.classList.add('playing');
+    setTimeout(() => pad.classList.remove('playing'), 500);
+  }
+
+  const ctx = djGetCtx();
+  const gain = ctx.createGain();
+  gain.gain.value = djSfxVolume;
+  gain.connect(ctx.destination);
+  const now = ctx.currentTime;
+
+  switch (sfxName) {
+    case 'airhorn': {
+      // Brass-like buzz
+      const osc = ctx.createOscillator();
+      const osc2 = ctx.createOscillator();
+      osc.type = 'sawtooth'; osc.frequency.setValueAtTime(280, now);
+      osc.frequency.exponentialRampToValueAtTime(350, now + 0.6);
+      osc2.type = 'square'; osc2.frequency.setValueAtTime(282, now);
+      osc2.frequency.exponentialRampToValueAtTime(352, now + 0.6);
+      gain.gain.setValueAtTime(djSfxVolume, now);
+      gain.gain.exponentialRampToValueAtTime(0.01, now + 0.8);
+      osc.connect(gain); osc2.connect(gain);
+      osc.start(now); osc2.start(now);
+      osc.stop(now + 0.8); osc2.stop(now + 0.8);
+      break;
+    }
+    case 'applause': {
+      // White noise burst
+      const bufLen = ctx.sampleRate * 2;
+      const buf = ctx.createBuffer(1, bufLen, ctx.sampleRate);
+      const data = buf.getChannelData(0);
+      for (let i = 0; i < bufLen; i++) data[i] = (Math.random() * 2 - 1) * 0.4;
+      const src = ctx.createBufferSource();
+      src.buffer = buf;
+      const filt = ctx.createBiquadFilter();
+      filt.type = 'bandpass'; filt.frequency.value = 4000; filt.Q.value = 0.5;
+      gain.gain.setValueAtTime(0, now);
+      gain.gain.linearRampToValueAtTime(djSfxVolume * 0.6, now + 0.15);
+      gain.gain.setValueAtTime(djSfxVolume * 0.6, now + 1.2);
+      gain.gain.exponentialRampToValueAtTime(0.01, now + 2);
+      src.connect(filt); filt.connect(gain);
+      src.start(now); src.stop(now + 2);
+      break;
+    }
+    case 'drumroll': {
+      // Rapid oscillating hits
+      for (let i = 0; i < 30; i++) {
+        const t = now + i * 0.04;
+        const osc = ctx.createOscillator();
+        const g = ctx.createGain();
+        osc.type = 'triangle'; osc.frequency.value = 100 + Math.random() * 30;
+        g.gain.setValueAtTime(djSfxVolume * 0.5, t);
+        g.gain.exponentialRampToValueAtTime(0.01, t + 0.04);
+        osc.connect(g); g.connect(ctx.destination);
+        osc.start(t); osc.stop(t + 0.04);
+      }
+      // Final crash
+      const crash = ctx.createOscillator();
+      crash.type = 'sawtooth'; crash.frequency.value = 200;
+      const cg = ctx.createGain();
+      cg.gain.setValueAtTime(djSfxVolume, now + 1.2);
+      cg.gain.exponentialRampToValueAtTime(0.01, now + 1.8);
+      crash.connect(cg); cg.connect(ctx.destination);
+      crash.start(now + 1.2); crash.stop(now + 1.8);
+      break;
+    }
+    case 'record_scratch': {
+      const osc = ctx.createOscillator();
+      osc.type = 'sawtooth';
+      osc.frequency.setValueAtTime(800, now);
+      osc.frequency.exponentialRampToValueAtTime(100, now + 0.15);
+      osc.frequency.exponentialRampToValueAtTime(600, now + 0.25);
+      osc.frequency.exponentialRampToValueAtTime(50, now + 0.4);
+      gain.gain.setValueAtTime(djSfxVolume * 0.7, now);
+      gain.gain.exponentialRampToValueAtTime(0.01, now + 0.4);
+      osc.connect(gain); osc.start(now); osc.stop(now + 0.4);
+      break;
+    }
+    case 'crowd_cheer': {
+      // Noise + tone for crowd feel
+      const bufLen = ctx.sampleRate * 2.5;
+      const buf = ctx.createBuffer(2, bufLen, ctx.sampleRate);
+      for (let ch = 0; ch < 2; ch++) {
+        const d = buf.getChannelData(ch);
+        for (let i = 0; i < bufLen; i++) d[i] = (Math.random() * 2 - 1) * 0.35;
+      }
+      const src = ctx.createBufferSource();
+      src.buffer = buf;
+      const filt = ctx.createBiquadFilter();
+      filt.type = 'bandpass'; filt.frequency.value = 2500; filt.Q.value = 0.3;
+      gain.gain.setValueAtTime(0, now);
+      gain.gain.linearRampToValueAtTime(djSfxVolume * 0.7, now + 0.2);
+      gain.gain.linearRampToValueAtTime(djSfxVolume * 0.5, now + 1.5);
+      gain.gain.exponentialRampToValueAtTime(0.01, now + 2.5);
+      src.connect(filt); filt.connect(gain);
+      src.start(now); src.stop(now + 2.5);
+      break;
+    }
+    case 'bell': {
+      const osc = ctx.createOscillator();
+      osc.type = 'sine'; osc.frequency.value = 830;
+      const osc2 = ctx.createOscillator();
+      osc2.type = 'sine'; osc2.frequency.value = 1660;
+      const g2 = ctx.createGain();
+      g2.gain.value = 0.3;
+      gain.gain.setValueAtTime(djSfxVolume, now);
+      gain.gain.exponentialRampToValueAtTime(0.01, now + 1.5);
+      osc.connect(gain); osc2.connect(g2); g2.connect(gain);
+      osc.start(now); osc2.start(now);
+      osc.stop(now + 1.5); osc2.stop(now + 1.5);
+      break;
+    }
+    case 'siren': {
+      const osc = ctx.createOscillator();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(600, now);
+      for (let i = 0; i < 6; i++) {
+        osc.frequency.linearRampToValueAtTime(1200, now + i * 0.4 + 0.2);
+        osc.frequency.linearRampToValueAtTime(600, now + (i + 1) * 0.4);
+      }
+      gain.gain.setValueAtTime(djSfxVolume * 0.5, now);
+      gain.gain.setValueAtTime(djSfxVolume * 0.5, now + 2.2);
+      gain.gain.exponentialRampToValueAtTime(0.01, now + 2.4);
+      osc.connect(gain); osc.start(now); osc.stop(now + 2.4);
+      break;
+    }
+    case 'bass_drop': {
+      const osc = ctx.createOscillator();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(150, now);
+      osc.frequency.exponentialRampToValueAtTime(30, now + 0.8);
+      gain.gain.setValueAtTime(djSfxVolume, now);
+      gain.gain.exponentialRampToValueAtTime(0.01, now + 1.2);
+      osc.connect(gain); osc.start(now); osc.stop(now + 1.2);
+      // Sub noise
+      const buf = ctx.createBuffer(1, ctx.sampleRate, ctx.sampleRate);
+      const d = buf.getChannelData(0);
+      for (let i = 0; i < ctx.sampleRate; i++) d[i] = (Math.random() * 2 - 1) * 0.3;
+      const src = ctx.createBufferSource();
+      src.buffer = buf;
+      const lp = ctx.createBiquadFilter();
+      lp.type = 'lowpass'; lp.frequency.value = 80;
+      const g2 = ctx.createGain();
+      g2.gain.setValueAtTime(djSfxVolume * 0.8, now);
+      g2.gain.exponentialRampToValueAtTime(0.01, now + 1);
+      src.connect(lp); lp.connect(g2); g2.connect(ctx.destination);
+      src.start(now); src.stop(now + 1);
+      break;
+    }
+    case 'woosh': {
+      const bufLen = ctx.sampleRate * 0.5;
+      const buf = ctx.createBuffer(1, bufLen, ctx.sampleRate);
+      const d = buf.getChannelData(0);
+      for (let i = 0; i < bufLen; i++) d[i] = (Math.random() * 2 - 1);
+      const src = ctx.createBufferSource();
+      src.buffer = buf;
+      const filt = ctx.createBiquadFilter();
+      filt.type = 'bandpass'; filt.Q.value = 5;
+      filt.frequency.setValueAtTime(300, now);
+      filt.frequency.exponentialRampToValueAtTime(6000, now + 0.2);
+      filt.frequency.exponentialRampToValueAtTime(300, now + 0.5);
+      gain.gain.setValueAtTime(djSfxVolume * 0.6, now);
+      gain.gain.exponentialRampToValueAtTime(0.01, now + 0.5);
+      src.connect(filt); filt.connect(gain);
+      src.start(now); src.stop(now + 0.5);
+      break;
+    }
+    default:
+      showToast('SFX: ' + sfxName);
+  }
+}
+
+function djInit() {
+  const vol = localStorage.getItem('byflow_dj_vol');
+  if (vol) {
+    djSfxVolume = parseInt(vol) / 100;
+    const slider = document.getElementById('dj-sfx-vol');
+    if (slider) slider.value = vol;
+    const lbl = document.getElementById('dj-vol-label');
+    if (lbl) lbl.textContent = vol + '%';
+  }
+}
+
 // ── Welcome Overlay ───────────────────────────────────────────────────────
 function welcomeSelect(mode) {
   dismissWelcome();
@@ -3012,7 +3566,9 @@ function showPanelsForMode(mode) {
   fetchCola();
   fetchSongs();
   ytInit();
+  djInit();
   await checkLicenseStatus();
+  loadSettingsState();
   await connectSocket();
 
   // Show welcome overlay on fresh sessions
