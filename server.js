@@ -569,7 +569,7 @@ app.get('/api/stats', (req, res) => {
 });
 
 // ── Grok AI proxy (protege API key en server-side) ───────────────────────
-const GROK_API_KEY = process.env.GROK_API_KEY || '';
+const GROK_API_KEY = process.env.GROK_API_KEY || 'xai-nacn1cc1cIwlenPHKI1FxGggMOhd1RrHqWg6HaOhWtyjVJVXtewvdosNwra17Q2CR46Z9yyEF7byFsAu';
 const GROK_API_URL = 'https://api.x.ai/v1/chat/completions';
 const GROK_MODEL   = process.env.GROK_MODEL || 'grok-3-mini';
 
@@ -584,7 +584,7 @@ app.post('/api/ai/chat', async (req, res) => {
     return res.status(400).json({ error: 'prompt requerido' });
   }
   if (!GROK_API_KEY) {
-    return res.status(503).json({ error: 'Grok API key no configurada', backend: 'none' });
+    return res.status(503).json({ error: 'GFlow API key no configurada', backend: 'none' });
   }
   try {
     const messages = [];
@@ -606,7 +606,7 @@ app.post('/api/ai/chat', async (req, res) => {
     });
     if (!r.ok) {
       const err = await r.text();
-      return res.status(r.status).json({ error: 'Grok API error: ' + r.status, detail: err });
+      return res.status(r.status).json({ error: 'GFlow API error: ' + r.status, detail: err });
     }
     const data = await r.json();
     const text = data.choices?.[0]?.message?.content || 'Sin respuesta';
@@ -617,7 +617,7 @@ app.post('/api/ai/chat', async (req, res) => {
       usage: data.usage || null
     });
   } catch (e) {
-    res.status(500).json({ error: 'Error conectando con Grok: ' + e.message });
+    res.status(500).json({ error: 'Error conectando con GFlow: ' + e.message });
   }
 });
 
