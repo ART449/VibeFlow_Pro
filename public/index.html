@@ -5139,7 +5139,7 @@ function dismissWelcome() {
     ov.style.transition = 'opacity .4s';
     setTimeout(() => ov.classList.add('hidden'), 400);
   }
-  sessionStorage.setItem('vfp_welcomed', '1');
+  window._byflowWelcomed = true; // Solo en memoria — se resetea con F5
   // Show sidebar for karaoke mode
   showPanelsForMode(currentMode || 'karaoke');
 }
@@ -5169,27 +5169,11 @@ function showPanelsForMode(mode) {
   loadSettingsState();
   await connectSocket();
 
-  // Show welcome overlay — SECURITY: solo skip si hay licencia activa
-  // sessionStorage se resetea al cerrar pestaña, pero si hay licencia validada
-  // por el server, se puede saltar el welcome y restaurar el ultimo modo
-  const hasLicense = licenseState.activated;
-  const lastMode = localStorage.getItem('byflow_last_mode');
-  if (hasLicense && sessionStorage.getItem('vfp_welcomed')) {
-    // Licencia activa + ya vio welcome en esta sesion → directo al ultimo modo
-    document.getElementById('welcome-overlay').classList.add('hidden');
-    const restoreMode = lastMode || 'karaoke';
-    showPanelsForMode(restoreMode);
-    setMode(restoreMode);
-  } else if (sessionStorage.getItem('vfp_welcomed')) {
-    // Sin licencia pero ya vio welcome → mostrar app en modo free (karaoke)
-    document.getElementById('welcome-overlay').classList.add('hidden');
-    showPanelsForMode('karaoke');
-    setMode('karaoke');
-  } else {
-    // Primera visita en esta sesion → mostrar welcome
-    document.querySelector('.sidebar').classList.add('panel-hidden');
-    document.querySelector('.right-panel').classList.add('panel-hidden');
-  }
+  // SECURITY: SIEMPRE mostrar welcome en cada carga de página.
+  // La variable _byflowWelcomed solo vive en memoria (window),
+  // se resetea con F5/refresh. No hay forma de saltarse el welcome.
+  document.querySelector('.sidebar').classList.add('panel-hidden');
+  document.querySelector('.right-panel').classList.add('panel-hidden');
 })();
 </script>
 </body>
