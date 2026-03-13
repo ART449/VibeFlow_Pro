@@ -1,22 +1,14 @@
 {
   "permissions": {
     "allow": [
-      "Bash(python -m venv python/venv)",
-      "mcp__Claude_Preview__preview_start",
-      "Bash(netstat -ano)",
-      "Bash(findstr :8080)",
-      "Bash(Get-Process -Id 8144)",
-      "Bash(Select-String 8080)",
-      "Bash(powershell -Command \"Get-Process -Id 8144 -ErrorAction SilentlyContinue | Select-Object Name,Id; netstat -ano | findstr '':8080''\")",
-      "Bash(wc -l C:/BYFLOW/VibeFlow_Pro/VibeFlow_Pro/public/index.html grep -n \"route\\\\|app.get\\\\|app.post\\\\|/api/\" C:/BYFLOW/VibeFlow_Pro/VibeFlow_Pro/server.js)",
-      "Bash(powershell -Command \"Get-Process -Name node -ErrorAction SilentlyContinue | Where-Object {$_Id -ne 35976} | Stop-Process -Force; Start-Sleep 1; Write-Host ''Killed old node''\")",
       "Bash(PORT=3000 node server.js)",
-      "Bash(powershell -Command \"netstat -ano | findstr '':3000''\")",
-      "Bash(powershell -Command \"Stop-Process -Id 35976 -Force -ErrorAction SilentlyContinue; Start-Sleep 2; Write-Host done\")",
-      "Bash(curl -s http://localhost:3000/api/youtube/search?q=test)",
-      "Bash(curl -s http://localhost:3000/api/youtube/search?q=despacito)",
+      "Bash(npm start)",
+      "Bash(npm install*)",
+      "Bash(curl -s http://localhost:3000/*)",
+      "Bash(git --version)",
       "Bash(gh auth:*)",
-      "Bash(git --version)"
+      "Bash(netstat -ano)",
+      "Bash(VIBEFLOW_URL=* ROOM_ID=* node grok-client.js)"
     ]
   }
 }
