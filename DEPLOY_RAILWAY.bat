@@ -8,7 +8,7 @@ echo  =============================================
 echo.
 echo  Esto sube tu app a GitHub para que Railway
 echo  la despliegue automaticamente en:
-echo  https://byflow.up.railway.app
+echo  https://byflowapp.up.railway.app
 echo.
 echo  =============================================
 echo.
@@ -55,7 +55,7 @@ if %ERRORLEVEL% EQU 0 (
   echo   LISTO! Codigo subido exitosamente
   echo.
   echo   GitHub:  github.com/ART449/VibeFlow_Pro
-  echo   Deploy:  byflow.up.railway.app
+  echo   Deploy:  byflowapp.up.railway.app
   echo.
   echo   Railway detectara el push automaticamente
   echo   y desplegara en 1-2 minutos.

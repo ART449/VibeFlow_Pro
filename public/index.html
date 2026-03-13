@@ -947,6 +947,14 @@ select.inp{cursor:pointer;}
       <div class="scrollable" id="lista-cola">
         <div class="empty-state"><span>🎤</span><p>Cola vacía</p></div>
       </div>
+      <!-- Mesas Pendientes (auto-populated from cola) -->
+      <div class="pending-section" id="pending-section" style="display:none;">
+        <div class="pending-title">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:12px;height:12px;opacity:.5;"><path d="M3 7h18M3 7l2 13h14l2-13M3 7l1-3h16l1 3"/></svg>
+          Mesas Pendientes <span class="pending-count" id="pending-count">0</span>
+        </div>
+        <div id="pending-list"></div>
+      </div>
       <div class="mesas-toggle" onclick="toggleMesasPanel()">
         <span class="k-section-title" style="padding:0;">Mesas</span>
         <span class="mesas-toggle-icon" id="mesas-toggle-icon">&#x25BC;</span>
@@ -1232,6 +1240,21 @@ select.inp{cursor:pointer;}
             <div id="bares-orders-list">
               <div style="text-align:center;padding:18px;opacity:.3;font-size:12px;">Sin órdenes activas</div>
             </div>
+          </div>
+
+          <!-- Promociones del bar -->
+          <div class="bares-section">
+            <div class="bares-section-title">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+              Promociones y Anuncios
+            </div>
+            <div style="font-size:10px;color:var(--sub);margin-bottom:6px;">Estos mensajes aparecen entre canciones. Uno por linea.</div>
+            <textarea class="bar-order-inp" id="bares-promos-text" placeholder="Escribe tus promos (una por linea)..." style="height:100px;resize:vertical;margin-bottom:6px;font-size:11px;line-height:1.5;"></textarea>
+            <div style="display:flex;gap:6px;">
+              <button class="bar-add-btn" style="flex:1;border-radius:6px;font-size:11px;padding:7px;" onclick="saveBarPromosFromEditor()">Guardar Promos</button>
+              <button class="bar-add-btn" style="flex:none;border-radius:6px;font-size:11px;padding:7px;background:rgba(255,255,255,.08);" onclick="testPromo()">Probar</button>
+            </div>
+            <div style="font-size:10px;color:var(--sub);margin-top:6px;">Tiempo entre canciones: <input type="number" id="bares-promo-time" min="5" max="30" value="10" style="width:40px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:4px;color:#fff;text-align:center;font-size:10px;padding:2px;"> seg</div>
           </div>
 
           <!-- Configuración del bar -->
@@ -1735,6 +1758,7 @@ function baresShowContent(key) {
   if (nameConf) nameConf.value = barName;
   if (mesConf)  mesConf.value  = numMesas;
   baresState.numMesas = numMesas;
+  loadPromosEditor();
   // Init mesas si vacías
   if (baresState.mesas.length !== numMesas) {
     baresState.mesas = Array.from({length: numMesas}, (_,i) => ({
@@ -2341,6 +2365,7 @@ const _origRenderCola = renderCola;
 renderCola = function(cola) {
   _origRenderCola(cola);
   updateNowSinging(cola);
+  renderPendingMesas();
   // Attach drag handlers
   const items = document.querySelectorAll('#lista-cola .queue-item');
   const data  = cola || colaCache;
@@ -2520,7 +2545,7 @@ function showPromoBanner(nextSinger) {
   if (!promos.length) return;
 
   promoState.active = true;
-  promoState.countdown = 10;
+  promoState.countdown = getPromoTime();
   promoState.currentPromoIdx = (promoState.currentPromoIdx + 1) % promos.length;
 
   // Set promo content
@@ -2614,6 +2639,70 @@ siguienteCantante = async function() {
     showPromoBanner(nextSinger);
   }
 };
+
+// ── Pending Mesas (grouped from cola) ─────────────────────────────────────
+function renderPendingMesas() {
+  const waiting = colaCache.filter(c => c.estado === 'esperando' && c.mesa);
+  const section = document.getElementById('pending-section');
+  const list = document.getElementById('pending-list');
+  const count = document.getElementById('pending-count');
+  if (!section || !list) return;
+
+  if (!waiting.length) {
+    section.style.display = 'none';
+    return;
+  }
+  section.style.display = '';
+  count.textContent = waiting.length;
+
+  // Group by mesa
+  const byMesa = {};
+  waiting.forEach(c => {
+    if (!byMesa[c.mesa]) byMesa[c.mesa] = [];
+    byMesa[c.mesa].push(c);
+  });
+
+  let html = '';
+  Object.keys(byMesa).sort((a,b) => Number(a)-Number(b)).forEach(mesa => {
+    byMesa[mesa].forEach(c => {
+      html += '<div class="pending-item">' +
+        '<span class="pi-mesa">M' + escHtml(mesa) + '</span>' +
+        '<span class="pi-song">' + escHtml(c.cantante) + (c.cancion ? ' — ' + escHtml(c.cancion) : '') + '</span>' +
+      '</div>';
+    });
+  });
+  list.innerHTML = html;
+}
+
+// ── Promo Editor (Bares panel) ────────────────────────────────────────────
+function loadPromosEditor() {
+  const ta = document.getElementById('bares-promos-text');
+  const timeInp = document.getElementById('bares-promo-time');
+  if (ta) ta.value = getBarPromos().join('\n');
+  const savedTime = localStorage.getItem('bar_promo_time');
+  if (timeInp && savedTime) timeInp.value = savedTime;
+}
+
+function saveBarPromosFromEditor() {
+  const ta = document.getElementById('bares-promos-text');
+  const timeInp = document.getElementById('bares-promo-time');
+  if (!ta) return;
+  const promos = ta.value.split('\n').map(l => l.trim()).filter(l => l.length > 0);
+  saveBarPromos(promos);
+  if (timeInp) localStorage.setItem('bar_promo_time', timeInp.value);
+  showToast('✅ ' + promos.length + ' promos guardadas');
+}
+
+function testPromo() {
+  const promos = getBarPromos();
+  if (!promos.length) { showToast('Agrega al menos una promo'); return; }
+  showPromoBanner({ cantante: 'Demo', cancion: 'Cancion de prueba' });
+}
+
+function getPromoTime() {
+  const saved = localStorage.getItem('bar_promo_time');
+  return saved ? parseInt(saved) || 10 : 10;
+}
 
 // ── Init ──────────────────────────────────────────────────────────────────
 (async function init() {
