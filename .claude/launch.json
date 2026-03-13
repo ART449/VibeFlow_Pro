@@ -5,8 +5,7 @@
       "name": "VibeFlow Pro",
       "runtimeExecutable": "node",
       "runtimeArgs": ["server.js"],
-      "port": 3000,
-      "env": {"PORT": "3000"}
+      "port": 8080
     }
   ]
 }

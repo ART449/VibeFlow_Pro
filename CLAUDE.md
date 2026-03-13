@@ -1,140 +1,86 @@
-# CLAUDE.md — VibeFlow Pro
+# ByFlow — Contexto para Claude Code
 
-## Project Overview
+## El Creador
+- **Nombre:** Arturo Torres
+- **Alias:** ArT - AtR ("Art en el arte de rimarte")
+- **Perfil:** Rimador experto en verso, prosa y lirica tecnica. Mezcla la crudeza de la calle con la precision de la tecnologia (hacking, algoritmos, IA).
+- **Filosofia:** "El sistema parpadea, pero el codigo no miente"
+- **Estilo lirico:** Tecnico-sentimental. Metricas de octosilabos para versos, rimas consonantes pareadas (AABB) para estribillos. Terminologia de software con metaforas de vida y superacion.
+- **Tematicas base:**
+  - Tecnologia & Trap: terminos como 404, glitch, matrix, hacking, data, binary
+  - Desamor & Realidad: idealizacion, manipulacion, decepcion
+  - Redencion & Familia: guia paterna, lucha contra vicios
 
-VibeFlow Pro is a real-time karaoke, recording studio, and promotional overlay system built on Node.js. It uses Socket.IO for live display control and integrates with Grok AI for screen analysis and event detection. Designed for restaurants, bars, and entertainment venues.
+## Proyecto
+- **Nombre:** ByFlow — "Vive Cantando con ByFlow"
+- **Empresa:** IArtLabs (powered by)
+- **Version:** v3.1
+- **Produccion:** https://byflowapp.up.railway.app
+- **Repo:** https://github.com/ART449/VibeFlow_Pro
+- **Stack:** Node.js + Express + Socket.IO (server.js) | HTML/CSS/JS SPA (public/index.html)
+- **Concepto:** Karaoke inteligente y teleprompter para raperos/cantantes. Cero contaminacion visual. El software es un "Director Vocal" que escucha y guia.
 
-**Status:** Core backend and display frontend implemented. Grok client ready for local deployment.
+## Archivos clave
+- `server.js` — Backend completo (API, licencias, Socket.IO)
+- `public/index.html` — TODO el frontend (SPA ~2800 lineas)
+- `ESTADO_PROYECTO.md` — Estado actual y pendientes
+- `IDEAS_PARA_LANZAR.md` — Ideas que requieren investigacion
 
-## Architecture
+## Al iniciar sesion
+1. Leer ESTADO_PROYECTO.md para saber donde quedamos
+2. Preguntar al usuario que quiere priorizar hoy
+3. Verificar si hay algo roto en produccion antes de agregar features
 
-```
-┌───────────────────────────────────────────────────┐
-│              CLIENTS / USERS                      │
-│  (Phones, tablets, microphones, karaoke controls) │
-└───────────────────────┬───────────────────────────┘
-                        ▼
-┌───────────────────────────────────────────────────┐
-│           server.js  (Express + Socket.IO)        │
-│                                                   │
-│  ┌─────────────┐ ┌──────────────┐ ┌───────────┐  │
-│  │  Karaoke    │ │   Studio     │ │  Promo    │  │
-│  │  Engine     │ │   Recorder   │ │  Overlay  │  │
-│  └─────────────┘ └──────────────┘ └───────────┘  │
-│                                                   │
-│  POST /api/grok/analyze  ← Grok AI detection     │
-└───────────────────────┬───────────────────────────┘
-                        ▼
-┌───────────────────────────────────────────────────┐
-│       TV / Projector displays (display.html)      │
-│  Connected via Socket.IO for real-time control    │
-└───────────────────────────────────────────────────┘
-                        ▲
-┌───────────────────────┴───────────────────────────┐
-│  grok-client.js  (local PC)                       │
-│  Screen capture → OCR → classify → POST to server │
-└───────────────────────────────────────────────────┘
-```
+## Reglas del proyecto
+- **CERO descargas de musica** — Solo streaming embebido (YouTube/SoundCloud/Jamendo)
+- **Branding:** ByFlow (NO VibeFlow, NO Vibe Flow)
+- **Lema:** "Vive Cantando con ByFlow"
+- **Creditos:** powered by IArtLabs
+- **Idioma UI:** Español
+- **Deploy:** git push a GitHub → Railway auto-deploy
 
-## Repository Structure
+## Politica de propiedad intelectual (OBLIGATORIA)
+- **TODA letra generada por ByFlow** (ya sea por IA o por el generador offline) lleva firma obligatoria de ArT-AtR
+- **Copropiedad 50/50** — La propiedad intelectual de cualquier letra generada queda: 50% ArT-AtR (Arturo Torres) / 50% ByFlow (IArtLabs)
+- **Esto es por regla y norma, sin excepcion**
+- La firma incluye: autor (ArT-AtR), herramienta (ByFlow), y aviso de copropiedad 50/50
+- Implementado en: `offerLoadLyrics()`, `generateOfflineLyrics()`, constante `BYFLOW_SIGNATURE`
 
-```
-VibeFlow_Pro/
-├── .claude/
-│   ├── launch.json            # Debug/launch config (Node.js, port 3000)
-│   └── settings.local.json    # Claude Code permission allowlists
-├── public/
-│   ├── display.html           # TV/projector display UI (Socket.IO client)
-│   └── videos/                # Promo video assets (MP4)
-├── .gitattributes             # LF normalization
-├── CLAUDE.md                  # This file
-├── grok-client.js             # Local screen analysis client (runs on venue PC)
-├── package.json               # Dependencies and scripts
-└── server.js                  # Main backend — Express + Socket.IO
-```
+## Letras originales de ArT-AtR (referencia)
+- `data/letras_art_atr.txt` — **CATALOGO MAESTRO** con 41 canciones de 4 fuentes (OneNote, Google Photos, archivo local, Suno). 11 letras transcritas completas + 30 canciones Suno catalogadas.
+- **INTEGRADO EN LA APP:** Las 11 letras completas estan hardcodeadas en `index.html` (array `_artLetras`) y son cargables al teleprompter desde el Estudio de Letras > "Mis Letras"
+- **Catalogo Suno** tambien integrado en la app (array `_sunoTracks`, 30 tracks) accesible desde Estudio de Letras > "Suno"
+- `C:\Users\art44\Desktop\perro.txt` — Rap de desamor y traicion (~21 lineas). Estilo crudo, callejero.
+- `C:\Users\art44\Desktop\verciones antiguas byflow\byfl\actualizar v7\Es un rimador experto en verso pros.txt` — Archivo maestro: identidad ArT-AtR, cancion "Let it flow" (ES+EN), cancion melancolica con SFX (Intro/Verso/Coro/Puente/Outro), script Python compositor
+- `C:\Users\art44\OneDrive\galgo\letras galgo.jpg` — Imagen con letras del proyecto Galgo
+- **Suno.com perfil ART-ATR** (suno.com/me) — ~100+ tracks, 10 paginas. Proyectos: TEC-PATL (serie nahua), Codigo (tech-lirica), ByFlow Trinity. Canciones clave: SENTIDO PERDIDO, LA BACHA, El Alma (Tributo a Mama), ITZTLI, EL TABLERO DE JUDAS.
 
-## Tech Stack
+## Estudio de Letras (ecosistema completo)
+El Estudio de Letras tiene 3 pestanyas:
+1. **Generar** — Engine offline v2 (192 frases, 65+ rimas, Fisher-Yates shuffle)
+2. **Mis Letras** — 11 letras originales de ArT-AtR con busqueda, preview y carga al teleprompter
+3. **Suno** — Catalogo de 30 canciones del perfil ART-ATR con genero, tema y plays
+- Todas las letras generadas llevan firma obligatoria `BYFLOW_SIGNATURE` (50/50)
 
-- **Runtime:** Node.js
-- **Framework:** Express 4.x
-- **Real-time:** Socket.IO 4.x
-- **Entry point:** `server.js`
-- **Port:** 3000 (via `PORT` env var)
-- **Deployment:** Railway (`byflowapp.up.railway.app`)
+## Features portados del proyecto Python v7.3
+- **Filtro de contenido** — 35+ palabras prohibidas (ES+EN), validacion server+client side
+- **Estadisticas de uso** — GET /api/stats, panel visual en Settings con top songs/singers y chart 7 dias
+- **LRCLIB proxy** — GET /api/lrclib/search, evita CORS issues
+- **Design system por modo** — Gradientes dinamicos: bares=naranja, ia=morado, youtube=rojo, karaoke=rosa
+- **Tracking de eventos** — Persistencia en data/stats.json, auto-debounce
 
-## Development
+## Politica anti-pirateria
+- No existe endpoint de descarga de audio
+- No se usa yt-dlp, ytdl, ni ningun downloader
+- YouTube solo via iframe embed
+- SoundCloud solo via widget embed
+- Jamendo streaming via su API (musica CC libre)
 
-### Running the Server
+## Git/Deploy
+- Push directo a main con --force (proyecto personal, no team)
+- Token GitHub en el historial del chat (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)
+- Secretos (.license_secret, .admin_secret, licenses.json) en .gitignore
 
-```bash
-npm start
-# or
-PORT=3000 node server.js
-```
-
-### Running the Grok Client (local venue PC)
-
-```bash
-# Install extra local dependencies first
-npm install screenshot-desktop tesseract.js axios
-
-VIBEFLOW_URL=https://byflowapp.up.railway.app ROOM_ID=sala1 node grok-client.js
-```
-
-### API Endpoints
-
-| Method | Path                       | Description                              |
-|--------|----------------------------|------------------------------------------|
-| POST   | `/api/grok/analyze`        | Receive Grok AI screen analysis events   |
-| POST   | `/api/karaoke/song-end`    | Trigger karaoke→promo transition         |
-| POST   | `/api/studio/take-break`   | Trigger studio break overlay             |
-| GET    | `/api/youtube/search?q=..` | YouTube search (placeholder)             |
-| GET    | `/api/rooms/status`        | List all room states                     |
-| POST   | `/api/admin/force-promo`   | Manually push a promo to a room          |
-| GET    | `/api/health`              | Health check                             |
-
-### WebSocket Events
-
-| Event (server → display)  | Purpose                                   |
-|---------------------------|-------------------------------------------|
-| `sequence`                | Multi-step content sequence (karaoke end)  |
-| `force-overlay`           | Admin-triggered promo                      |
-| `cancel-overlay`          | Cancel active promo (user selected song)   |
-| `studio-overlay`          | Studio tip/promo (skippable)               |
-| `idle-screensaver`        | Looping promo for empty rooms              |
-| `capture-moment`          | Viral moment toast notification            |
-| `load-song`              | Load next karaoke song                     |
-| `recording-started`       | Clear overlays, studio is live             |
-
-### Environment Variables
-
-| Variable        | Default                  | Description                   |
-|-----------------|--------------------------|-------------------------------|
-| `PORT`          | `3000`                   | Server listen port            |
-| `VIBEFLOW_URL`  | `http://localhost:3000`  | Backend URL (grok-client)     |
-| `ROOM_ID`       | `sala1`                  | Room ID (grok-client)         |
-| `SCAN_INTERVAL` | `2000`                   | Screen scan interval ms       |
-| `LANG`          | `spa`                    | OCR language                  |
-
-### Display UI
-
-Open in the TV/projector browser:
-```
-http://localhost:3000/display.html?room=sala1
-```
-
-## Git Workflow
-
-- **Default branch:** `main`
-- **Feature branches:** `claude/<description>-<id>`
-- Line endings normalized to LF (`.gitattributes`)
-
-## Conventions for AI Assistants
-
-1. **Read before editing.** Always read a file before modifying it.
-2. **Minimal changes.** Only change what is directly requested.
-3. **No secrets in code.** Use environment variables for API keys and credentials.
-4. **Commit often with clear messages.** Describe *why*, not just *what*.
-5. **Run the server to verify.** Start with `PORT=3000 node server.js` and test with curl.
-6. **Respect existing patterns.** Match code style already in the codebase.
-7. **Keep dependencies lean.** Don't add packages unless truly necessary.
+## Proyectos paralelos (otras ubicaciones)
+- Stem Engine: desarrollo en ChatGPT, archivos en mnt/data
+- Backend Python v7.3: C:\Users\art44\OneDrive\Documentos\GitHub\byflow\

@@ -1,24 +1,20 @@
 {
-  "name": "vibeflow_pro",
+  "name": "vibeflow-pro",
   "version": "1.0.0",
-  "description": "Karaoke + Studio + Promotional overlay system with real-time AI detection",
+  "description": "VibeFlow Pro - Teleprompter & Karaoke System",
+  "license": "SEE LICENSE IN LICENSE",
+  "private": true,
   "main": "server.js",
   "scripts": {
-    "start": "node server.js",
-    "grok-client": "node grok-client.js"
+    "start": "node server.js"
   },
-  "keywords": [
-    "karaoke",
-    "studio",
-    "signage",
-    "socket.io"
-  ],
-  "author": "",
-  "license": "ISC",
+  "engines": {
+    "node": ">=18.0.0"
+  },
   "dependencies": {
-    "cors": "^2.8.5",
     "express": "^4.18.2",
-    "node-fetch": "^2.7.0",
-    "socket.io": "^4.7.4"
+    "socket.io": "^4.7.4",
+    "cors": "^2.8.5",
+    "qrcode": "^1.5.3"
   }
 }
