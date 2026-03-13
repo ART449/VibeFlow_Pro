@@ -145,17 +145,17 @@ select.inp{cursor:pointer;}
 #tp-display{
   font-size:4.5rem;line-height:1.6;text-align:center;max-width:1100px;
   font-weight:300;letter-spacing:.01em;position:relative;
-  padding-top:30vh;padding-bottom:40vh;
+  padding-top:10vh;padding-bottom:30vh;
 }
 /* ── Teleprompter Lines ──────────────────────────────────────────────── */
 .tp-line{
-  display:block;margin-bottom:12px;position:relative;
-  transition:opacity .3s, transform .3s;
-  opacity:.12;
+  display:block;margin-bottom:14px;position:relative;
+  transition:opacity .4s ease, transform .3s ease;
+  opacity:.25;
 }
-.tp-line.tp-line-active{opacity:1;transform:scale(1.02);}
-.tp-line.tp-line-next{opacity:.35;}
-.tp-line.tp-line-done{opacity:.2;}
+.tp-line.tp-line-active{opacity:1;transform:scale(1.01);}
+.tp-line.tp-line-next{opacity:.45;}
+.tp-line.tp-line-done{opacity:.18;}
 .tp-line-break{display:block;height:24px;}
 
 /* ── Teleprompter Words ──────────────────────────────────────────────── */
@@ -2021,6 +2021,7 @@ function setLyrics(text) {
 function buildLRCDisplay(lrcLines, el) {
   tpState.lines = [];
   tpState.words = [];
+  _wordToLine = {};
   let globalIdx = 0;
 
   let html = '';
@@ -2031,6 +2032,7 @@ function buildLRCDisplay(lrcLines, el) {
     const wordsHtml = lineWords.map(w => {
       lineObj.words.push({ text: w, globalIdx });
       tpState.words.push(w);
+      _wordToLine[globalIdx] = lineObj.lineIdx;
       const h = '<span id="tw-' + globalIdx + '" class="tp-word" onclick="highlightWord(' + globalIdx + ')">' + escHtml(w) + '</span>';
       globalIdx++;
       return h;
@@ -2047,6 +2049,7 @@ function buildLRCDisplay(lrcLines, el) {
 function buildPlainDisplay(text, el) {
   tpState.lines = [];
   tpState.words = [];
+  _wordToLine = {};
   let globalIdx = 0;
 
   // Split by line breaks, keep structure
@@ -2064,6 +2067,7 @@ function buildPlainDisplay(text, el) {
     const wordsHtml = lineWords.map(w => {
       lineObj.words.push({ text: w, globalIdx });
       tpState.words.push(w);
+      _wordToLine[globalIdx] = lineObj.lineIdx;
       const h = '<span id="tw-' + globalIdx + '" class="tp-word" onclick="highlightWord(' + globalIdx + ')">' + escHtml(w) + '</span>';
       globalIdx++;
       return h;
@@ -2075,6 +2079,9 @@ function buildPlainDisplay(text, el) {
 
   el.innerHTML = html;
 }
+
+// ── Precomputed word→line lookup (built during display build) ─────────────
+let _wordToLine = {}; // globalIdx → lineIndex
 
 // ── Highlight a word + update line states ─────────────────────────────────
 function highlightWord(idx) {
@@ -2088,27 +2095,18 @@ function highlightWord(idx) {
   const next = document.getElementById('tw-' + idx);
   if (next) {
     next.classList.add('tp-active');
-    // Smooth scroll the word into view within the tp-area
-    const area = document.getElementById('tp-area');
-    if (area && next) {
-      const wordRect = next.getBoundingClientRect();
-      const areaRect = area.getBoundingClientRect();
-      const wordCenter = wordRect.top + wordRect.height / 2;
-      const areaCenter = areaRect.top + areaRect.height / 2;
-      const offset = wordCenter - areaCenter;
-      if (Math.abs(offset) > 60) {
-        area.scrollBy({ top: offset, behavior: 'smooth' });
-      }
-    }
+    // Scroll: use the LINE element for smoother scrolling
+    const lineIdx = _wordToLine[idx];
+    const lineEl = (lineIdx !== undefined) ? document.getElementById('tl-' + lineIdx) : null;
+    const scrollTarget = lineEl || next;
+    scrollTarget.scrollIntoView({ behavior: 'smooth', block: 'center' });
   }
 
   tpState.currentIdx = idx;
 
-  // Find which line this word belongs to and update line highlights
-  const newLine = tpState.lines.findIndex(l =>
-    l.words.some(w => w.globalIdx === idx)
-  );
-  if (newLine !== tpState.currentLine) {
+  // Update line highlights using precomputed lookup
+  const newLine = _wordToLine[idx];
+  if (newLine !== undefined && newLine !== tpState.currentLine) {
     updateLineHighlights(newLine);
     tpState.currentLine = newLine;
   }
@@ -2209,23 +2207,28 @@ function startAutoScroll() {
 }
 
 function startManualScroll() {
-  // Smart pacing: longer words = slightly longer display
+  // Single stable interval — NO recursive setTimeout, NO multiple timer chains
   const baseInterval = Math.max(100, 500 / tpState.speed);
+  let skipTicks = 0; // used for line-boundary pauses
+
+  // Precompute line-start indices for O(1) lookup
+  const lineStartSet = new Set();
+  tpState.lines.forEach(l => {
+    if (l.words.length > 0) lineStartSet.add(l.words[0].globalIdx);
+  });
+
   tpState.intervalId = setInterval(() => {
+    // If pausing at a line boundary, count down skip ticks
+    if (skipTicks > 0) { skipTicks--; return; }
+
     if (tpState.currentIdx >= tpState.words.length - 1) { stopAutoScroll(); return; }
+
     const nextIdx = tpState.currentIdx + 1;
-    const nextWord = tpState.words[nextIdx] || '';
-    // Add a small pause at line boundaries
-    const isLineStart = tpState.lines.some(l =>
-      l.words.length > 0 && l.words[0].globalIdx === nextIdx
-    );
     highlightWord(nextIdx);
-    // If crossing to a new line, add brief pause
-    if (isLineStart && nextIdx > 0) {
-      clearInterval(tpState.intervalId);
-      setTimeout(() => {
-        if (tpState.autoScrolling) startManualScroll();
-      }, baseInterval * 1.5);
+
+    // If we just entered a new line, pause for ~1.5 ticks
+    if (nextIdx > 0 && lineStartSet.has(nextIdx)) {
+      skipTicks = 2;
     }
   }, baseInterval);
 }
