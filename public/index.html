@@ -3068,86 +3068,300 @@ function closeLyricStudio() {
   document.getElementById('lyric-studio-overlay').style.display = 'none';
 }
 
-const _lsVocab = {
-  amor:       { nouns: ['corazon','pasion','beso','mirada','alma','fuego','piel','noche','luna','cielo','sueno','suspiro','abrazo','destino','latido'],
-                verbs: ['amar','sentir','brillar','arder','sonar','vivir','tocar','besar','latir','encender'],
-                adj:   ['eterno','profundo','hermoso','infinito','ardiente','sincero','dulce','intenso'] },
-  desamor:    { nouns: ['traicion','sombra','silencio','vacio','recuerdo','herida','mentira','mascara','espejo','ceniza','cicatriz','fantasma','veneno','cadena'],
-                verbs: ['romper','caer','olvidar','sangrar','fingir','huir','destruir','callar','mentir','borrar'],
-                adj:   ['roto','frio','oscuro','vacio','falso','amargo','cruel','invisible','perdido'] },
-  superacion: { nouns: ['meta','fuerza','valor','camino','luz','verdad','triunfo','fe','cumbre','horizonte','batalla','corona','sudor','victoria'],
-                verbs: ['luchar','avanzar','crecer','brillar','conquistar','romper','superar','construir','levantar','alcanzar'],
-                adj:   ['fuerte','invencible','firme','libre','imparable','valiente','grande','inmortal'] },
-  calle:      { nouns: ['calle','barrio','esquina','asfalto','noche','humo','reloj','cemento','ritmo','flow','verso','rima','micro','bloque'],
-                verbs: ['rapear','fluir','escupir','caminar','quemar','soltar','pisar','mover','rodar','girar'],
-                adj:   ['real','crudo','duro','callejero','nocturno','salvaje','urbano','directo'] },
-  tech:       { nouns: ['codigo','matrix','sistema','data','glitch','pantalla','algoritmo','red','virus','server','buffer','pixel','frecuencia','serial'],
-                verbs: ['hackear','compilar','ejecutar','debuggear','encriptar','conectar','procesar','streamear','cargar','reiniciar'],
-                adj:   ['digital','binario','encriptado','virtual','cuantico','automatico','cibernetico','sintetico'] },
-  redencion:  { nouns: ['padre','madre','sangre','raiz','legado','enseñanza','sacrificio','oracion','camino','hogar','mano','lagrima','ejemplo','promesa'],
-                verbs: ['agradecer','recordar','honrar','perdonar','regresar','aprender','proteger','cuidar','rezar','sanar'],
-                adj:   ['sagrado','humilde','sincero','noble','agradecido','sabio','fiel','bendito'] },
-  fiesta:     { nouns: ['fiesta','baile','ritmo','noche','musica','copa','luz','pista','gente','ambiente','energia','movimiento','DJ','bass'],
-                verbs: ['bailar','gozar','vibrar','celebrar','brindar','mover','disfrutar','encender','prender','gritar'],
-                adj:   ['loco','salvaje','tropical','electrico','caliente','vivo','brutal','legendario'] },
-  melanc:     { nouns: ['lluvia','ventana','silencio','sombra','recuerdo','reloj','humo','espejo','otoño','bruma','eco','gris','nostalgia','ausencia'],
-                verbs: ['llorar','esperar','recordar','suspirar','vagar','perder','caer','desvanecerse','extrañar','marchitar'],
-                adj:   ['triste','gris','lejano','solitario','apagado','fragil','melancolico','distante'] }
+// ── Lyric Engine v2: frases completas con metaforas, no solo palabras sueltas ──
+// Cada tema tiene FRASES ENTERAS pre-escritas con {slots} para variacion.
+// El motor NUNCA repite una frase en la misma cancion.
+
+const _lsLines = {
+  amor: [
+    'Tu mirada enciende lo que el tiempo apago',
+    'Soy adicto a tu voz, no encuentro la salida',
+    'Me tiembla el pecho cuando dices mi nombre',
+    'Tus labios son el fuego que me quema despacio',
+    'Cada noche sin ti es un desierto infinito',
+    'Me pierdo entre tus ojos como estrella fugaz',
+    'Eres la melodia que mi alma necesita',
+    'Contigo el mundo calla y solo suena tu risa',
+    'Tu piel es mi refugio en medio de la tormenta',
+    'El destino nos junto, no fue casualidad',
+    'Latimos al compas como un solo instrumento',
+    'Quisiera ser el aire que respiras cada dia',
+    'Me vuelvo loco cuando siento tu calor',
+    'Tu nombre es la cancion que no dejo de cantar',
+    'Sin ti no hay partitura, solo ruido y soledad',
+    'Prometo amarte hasta que el sol se niegue a salir',
+    'Tu amor es la frecuencia que sintonizo en mi',
+    'Cuando te fuiste el cielo se quedo sin color',
+    'Me enredo en tus palabras como hiedra en la pared',
+    'Eres el verso libre que le faltaba a mi estrofa',
+    'Tu corazon y el mio hablan el mismo idioma',
+    'Somos dos notas graves en una misma cancion',
+    'Te busco en cada acorde, en cada amanecer',
+    'Mi mundo gira solo cuando tu estas presente',
+  ],
+  desamor: [
+    'Me dejaste el alma en visto como un mensaje mas',
+    'Fingiste tanto amor que hasta tu sombra mintio',
+    'Tu silencio me rompe mas que cualquier palabra',
+    'Me usaste de escalon pa subir a donde querias',
+    'Cada cicatriz que dejaste cuenta tu historia',
+    'Me prometiste cielo y me enterraste en el suelo',
+    'Tus besos eran veneno disfrazado de miel',
+    'Fui tu plan B mientras buscabas algo mejor',
+    'Me arrancaste el corazon y lo dejaste tirado',
+    'La mascara se cayo y vi quien eras de verdad',
+    'Confundi tu interes con algo que era real',
+    'Me engañaste mirándome a los ojos sin temblar',
+    'Tus te quiero caducaron antes que la madrugada',
+    'Ahora tu recuerdo es solo ceniza que piso',
+    'Me curaste la inocencia, ya no creo en nadie',
+    'Fui el unico que amaba en esta relacion fantasma',
+    'Tu amor era un virus que se comio mi sistema',
+    'Me borraste como archivo que ya no necesitas',
+    'La traicion vino de adentro, no tuve que buscarla',
+    'Eres la herida que no cierra y no quiero curar',
+    'Prefiero este vacio a seguir creyendo en tu farsa',
+    'Me dejaste hablando solo mientras tu ya te ibas',
+    'El espejo se rompio pero no fui yo quien cayo',
+    'Cada noche reescribo el final que me inventaste',
+  ],
+  superacion: [
+    'Me levanto cada vez que el mundo me derriba',
+    'El dolor fue mi maestro y ahora yo doy clases',
+    'No naci con corona pero la estoy forjando',
+    'Cada golpe en la cara me hizo mas despierto',
+    'Vine desde el fondo y ahora miro desde arriba',
+    'Mi hambre no se sacia con migajas de nadie',
+    'Transforme mis heridas en la tinta de mis versos',
+    'El que dijo imposible no me conocia a mi',
+    'Soy la prueba viviente de que el barrio si levanta',
+    'Donde otros ven fracaso yo veo el primer paso',
+    'La vida me pego duro pero no me tiro al piso',
+    'Construyo mi camino con las piedras que me tiran',
+    'El fuego que me quema es el mismo que me alumbra',
+    'Mi meta no es el dinero, es que mi madre sonria',
+    'Cada dia es una guerra y yo no pierdo batallas',
+    'Me dijeron que no podia, ahora no pueden pararme',
+    'Mi sudor riega el camino que mis hijos van a pisar',
+    'Soy la version mejorada de todo lo que perdi',
+    'No pido permiso pa brillar, ya me lo gane',
+    'El exito sabe mejor cuando vienes de la nada',
+    'Mi historia no la escribe nadie mas que estas manos',
+    'Convierto la presion en diamantes, eso hago',
+    'La cumbre esta cerca y mis piernas no se rinden',
+    'Soy el algoritmo que se reescribe cada noche',
+  ],
+  calle: [
+    'Las esquinas tienen ojos y las paredes memoria',
+    'Mi flow es cemento armado, no lo quiebra nadie',
+    'El barrio me enseno mas que cualquier universidad',
+    'Escupo versos reales, aqui no caben mentiras',
+    'La noche huele a humo y a historias sin contar',
+    'Cada rima es una bala que disparo al silencio',
+    'El asfalto es mi estudio, el micro mi confesion',
+    'Camino entre sombras pero mi verso alumbra',
+    'El ritmo de la calle corre por estas venas',
+    'No rapeo pa famosos, rapeo pa los que sienten',
+    'Mi bloque es mi trinchera, la rima es mi bandera',
+    'El reloj no para y yo tampoco, sigo fluyendo',
+    'Cada verso que suelto deja marca en el cemento',
+    'No busco la corona, busco que el barrio me escuche',
+    'El humo sube lento como mis palabras al cielo',
+    'Soy hijo del asfalto y nieto de la resistencia',
+    'Mi flow no es de laboratorio, es callejero y crudo',
+    'Las calles me criaron cuando la casa no alcanzaba',
+    'Escupo fuego y hielo segun lo pida la noche',
+    'El beat es la calle y yo soy el que la camina',
+    'Mis rimas son nocturnas como el lobo solitario',
+    'No me hice en un estudio, me hice en la vida real',
+    'Cada barra que suelto es un pedazo de mi historia',
+    'El micro tiembla cuando le pongo verdad encima',
+  ],
+  tech: [
+    'Mi mente es un server que nunca entra en reposo',
+    'Hackeo la realidad, la reescribo en mi version',
+    'El sistema parpadea pero el codigo no miente',
+    'Soy un glitch en la matrix que nadie puede parchear',
+    'Mi flow es encriptado, no lo descifras facil',
+    'Cada verso es un commit que no se puede borrar',
+    'Debuggeo mis demonios linea por linea despacio',
+    'La pantalla brilla a las tres, sigo compilando suenos',
+    'Mi data no se vende, mi frecuencia es privada',
+    'Error 404: la persona que fui ya no existe',
+    'Proceso emociones como un buffer desbordado',
+    'Mi algoritmo convierte el dolor en melodia',
+    'Ejecuto mi destino en modo administrador',
+    'La red se cae pero mi verso sigue en pie',
+    'Soy binario: cero miedo, uno de los que resisten',
+    'Cada pixel de mi historia tiene un color diferente',
+    'Mi virus favorito es la verdad, infecta todo',
+    'El firewall no frena lo que sale del corazon',
+    'Streameando realidad desde un cuarto sin ventanas',
+    'Mi serial es unico, no existen copias de mi',
+    'Cargo mis memorias como archivos comprimidos',
+    'El ping de la nostalgia tiene latencia infinita',
+    'Reinicio cada manana con un parche de esperanza',
+    'Mi codigo fuente esta escrito con sangre y con tinta',
+  ],
+  redencion: [
+    'Papa, cada arruga tuya es un mapa de sacrificio',
+    'Aprendi mas de tus silencios que de mil discursos',
+    'La sangre de mi sangre me enseno a no rendirme',
+    'Mama, tus oraciones fueron el firewall de mi vida',
+    'Perdono porque cargar rencor pesa mas que el mundo',
+    'Mis raices son profundas, por eso no me tumba el viento',
+    'El legado no es dinero, es lo que enseñas con ejemplo',
+    'Regreso a casa humilde porque ahi esta mi verdad',
+    'Tus manos trabajadas son mi mayor inspiracion',
+    'Prometo honrar tu nombre con cada paso que doy',
+    'La calle me enseno vicios, tu me ensenaste el camino',
+    'Cada lagrima que ahorraste yo la convierto en verso',
+    'El hogar no es un lugar, es donde estan los tuyos',
+    'Agradezco cada golpe porque me hizo quien soy hoy',
+    'Tu sacrificio silencioso grita mas que mis canciones',
+    'Perdone al que me fallo porque yo tambien he fallado',
+    'Mi oracion es este verso, mi templo es este micro',
+    'Las promesas que te hice las cumplo una por una',
+    'Tu ejemplo es la brujula que me guia en lo oscuro',
+    'La redencion no es borrar el pasado, es superarlo',
+    'Cargo tu legado como armadura contra todo',
+    'De la sativa al verso, del remordimiento al perdon',
+    'Hoy canto para sanar lo que ayer rompi callando',
+    'Mi sangre es tu sangre y en cada gota hay fe',
+  ],
+  fiesta: [
+    'Que nadie pare el ritmo, esta noche es pa gozar',
+    'El DJ sube el bajo y la pista se vuelve loca',
+    'Levanta esa copa que la vida es una sola',
+    'Hoy brindo por los que estan y por los que ya no estan',
+    'El beat se mete en el cuerpo y no pide permiso',
+    'Esta noche no hay manana, solo musica y calor',
+    'La energia de esta gente puede encender mil ciudades',
+    'Que suba el volumen, que baje la preocupacion',
+    'Cada paso en la pista es una letra que escribo',
+    'El bass retumba fuerte como el latido de un barrio',
+    'No pares de moverte que el ritmo no perdona',
+    'Esta noche somos libres, manana Dios dira',
+    'Prendo la fiesta como quien enciende una hoguera',
+    'El ambiente esta brutal, lo sientes en la piel',
+    'Gozar es la medicina que no receta el doctor',
+    'La noche es joven y nosotros somos eternos',
+    'Vibra el piso, vibra el alma, vibra todo el lugar',
+    'Un trago mas por cada sueno que aun sigue de pie',
+    'El ritmo tropical se mete en cada hueso',
+    'No necesito fama, solo el micro y esta gente',
+    'La pista de baile es el unico lugar sin problemas',
+    'Celebro estar vivo con cada paso que doy',
+    'El DJ lo sabe: una buena noche no tiene fin',
+    'Brindo por los locos que convierten la noche en arte',
+  ],
+  melanc: [
+    'La lluvia en la ventana cuenta historias que callamos',
+    'Soy un eco de lo que fui, rebotando entre paredes',
+    'El silencio pesa mas cuando sabes lo que perdiste',
+    'Tu ausencia es una silla vacia en mi mesa de siempre',
+    'Me quedo viendo el reloj como si fuera a traerte',
+    'La nostalgia es un perfume que no puedo quitarme',
+    'El otoño y yo tenemos algo en comun: dejamos ir',
+    'Camino entre la bruma buscando algo que ya no existe',
+    'Cada recuerdo tuyo es un cristal que se me clava',
+    'El espejo me devuelve alguien que ya no reconozco',
+    'Las noches grises saben a cafe frio y a tu nombre',
+    'Mi sombra es la unica que no me ha abandonado aun',
+    'Suspiro y el humo dibuja tu silueta en el aire',
+    'El gris de este cielo combina con mi estado de animo',
+    'Extraño cosas que ni siquiera llegaron a pasar',
+    'La melancolía es mi companera mas fiel y mas cruel',
+    'Me marchito en silencio como flor sin primavera',
+    'Cada cancion triste suena como si la hubiera escrito yo',
+    'El vacio no duele, lo que duele es recordar lo lleno',
+    'Soy un reloj parado en la hora que te fuiste',
+    'La ventana esta cerrada pero el frio entra igual',
+    'Guardo tus palabras en un frasco que ya no abro',
+    'El eco de tu risa es lo unico que me queda',
+    'Aprendi que la soledad tambien tiene su melodia',
+  ]
 };
 
-const _lsRhymes = {
-  'on':   ['corazon','pasion','cancion','razon','ilusion','conexion','traicion','redencion','accion','mision'],
-  'ar':   ['amar','soñar','cantar','bailar','caminar','luchar','volar','encontrar','brillar','hackear'],
-  'ir':   ['sentir','vivir','salir','seguir','partir','reir','cumplir','morir','escribir','existir'],
-  'er':   ['querer','tener','hacer','creer','correr','ver','nacer','caer','crecer','vencer'],
-  'ento': ['pensamiento','sentimiento','sufrimiento','momento','aliento','movimiento','argumento','instrumento','experimento','fundamento'],
-  'ado':  ['pasado','lado','pecado','legado','resultado','cuidado','olvidado','quemado','encriptado','blindado'],
-  'ia':   ['dia','alegria','melodia','energia','poesia','agonia','fantasia','armonia','filosofia','tecnologia'],
-  'oso':  ['hermoso','poderoso','doloroso','asombroso','peligroso','glorioso','misterioso','furioso','luminoso','exitoso'],
-  'ente': ['diferente','presente','valiente','consciente','corriente','caliente','ardiente','urgente','permanente','potente'],
-  'ura':  ['locura','aventura','criatura','estructura','armadura','altura','amargura','ternura','ruptura','escritura'],
-  'ble':  ['imposible','invisible','increible','invencible','terrible','sensible','imparable','vulnerable','indestructible','irresistible']
-};
+// Rhyme pairs database: each entry is [wordA, wordB] that rhyme
+const _lsRhymePairs = [
+  ['corazon','cancion'],['pasion','ilusion'],['razon','traicion'],['dolor','amor'],['calor','color'],
+  ['vida','herida'],['salida','perdida'],['querida','partida'],['caida','medida'],['escondida','seguida'],
+  ['noche','derroche'],['coche','reproche'],['broche','medianoche'],
+  ['cielo','suelo'],['vuelo','anhelo'],['hielo','consuelo'],['desvelo','modelo'],['duelo','abuelo'],
+  ['alma','calma'],['palma','salma'],
+  ['fuego','juego'],['ciego','ruego'],['sosiego','luego'],
+  ['camino','destino'],['divino','vecino'],['asesino','vino'],['peregrino','latino'],
+  ['momento','sentimiento'],['pensamiento','aliento'],['sufrimiento','movimiento'],['instrumento','argumento'],
+  ['historia','memoria'],['gloria','victoria'],['escoria','noria'],
+  ['verdad','soledad'],['libertad','realidad'],['oscuridad','ciudad'],['eternidad','mitad'],
+  ['locura','aventura'],['altura','escritura'],['armadura','amargura'],['ternura','ruptura'],
+  ['silencio','ausencia'],['presencia','paciencia'],['conciencia','frecuencia'],['sentencia','violencia'],
+  ['pantalla','batalla'],['muralla','medalla'],['calla','falla'],
+  ['sistema','problema'],['esquema','poema'],['tema','dilema'],
+  ['codigo','prodigo'],['melodico','metodico'],
+  ['mundo','profundo'],['segundo','rotundo'],['fecundo','vagabundo'],
+  ['gente','diferente'],['presente','valiente'],['caliente','ardiente'],['consciente','corriente'],
+  ['pecho','derecho'],['techo','hecho'],['provecho','estrecho'],
+  ['ojos','rojos'],['despojos','enojos'],
+  ['manos','hermanos'],['humanos','lejanos'],['tempranos','arcanos'],
+  ['sangre','hambre'],
+  ['nada','madrugada'],['mirada','callada'],['espada','jugada'],['pasada','quemada'],
+  ['piso','aviso'],['riso','compromiso'],['preciso','paraiso'],
+];
 
-function _lsFindRhyme(word) {
-  const w = word.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
-  for (const [suffix, rhymes] of Object.entries(_lsRhymes)) {
-    if (w.endsWith(suffix)) {
-      const pool = rhymes.filter(r => r !== word);
-      return pool[Math.floor(Math.random() * pool.length)] || rhymes[0];
-    }
+function _lsPick(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
+
+// Shuffle array in place (Fisher-Yates)
+function _lsShuffle(arr) {
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
   }
-  // Fallback: match last 2 chars
-  const last2 = w.slice(-2);
-  for (const [suffix, rhymes] of Object.entries(_lsRhymes)) {
-    if (suffix.endsWith(last2) || last2.endsWith(suffix.slice(-1))) {
-      return rhymes[Math.floor(Math.random() * rhymes.length)];
-    }
-  }
-  return _lsRhymes['on'][Math.floor(Math.random() * _lsRhymes['on'].length)];
+  return arr;
 }
 
-function _lsPickRandom(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
+// Pick a rhyme pair, returns [lineA, lineB] from the theme's line pool
+// that end with words from the pair, OR injects the rhyme word at the end
+function _lsPickRhymingPair(themeLines, usedSet) {
+  const pair = _lsPick(_lsRhymePairs);
+  const [rA, rB] = Math.random() > 0.5 ? pair : [pair[1], pair[0]];
 
-function _lsBuildLine(vocab, endWord) {
-  // Build a ~6-10 word line ending with the given word
-  const patterns = [
-    () => _lsPickRandom(vocab.adj) + ' ' + _lsPickRandom(vocab.nouns) + ' que no para de ' + _lsPickRandom(vocab.verbs),
-    () => 'yo ' + _lsPickRandom(vocab.verbs) + ' como ' + _lsPickRandom(vocab.nouns) + ' en el ' + _lsPickRandom(vocab.nouns),
-    () => _lsPickRandom(vocab.nouns) + ' ' + _lsPickRandom(vocab.adj) + ', ' + _lsPickRandom(vocab.verbs) + ' sin ' + _lsPickRandom(vocab.nouns),
-    () => 'entre ' + _lsPickRandom(vocab.nouns) + ' y ' + _lsPickRandom(vocab.nouns) + ' ' + _lsPickRandom(vocab.verbs) + ' mi ' + _lsPickRandom(vocab.nouns),
-    () => 'cada ' + _lsPickRandom(vocab.nouns) + ' ' + _lsPickRandom(vocab.adj) + ' es un ' + _lsPickRandom(vocab.nouns),
-    () => 'no me ' + _lsPickRandom(vocab.verbs) + ' el ' + _lsPickRandom(vocab.nouns) + ' ' + _lsPickRandom(vocab.adj),
-    () => _lsPickRandom(vocab.verbs) + ' ' + _lsPickRandom(vocab.adj) + ' por el ' + _lsPickRandom(vocab.nouns) + ' del ' + _lsPickRandom(vocab.nouns),
-  ];
-  let line = _lsPickRandom(patterns)();
-  // Replace last word with the rhyme target
-  if (endWord) {
-    const parts = line.split(' ');
-    parts[parts.length - 1] = endWord;
-    line = parts.join(' ');
+  // Try to find lines that naturally end with these rhyme words
+  let lineA = null, lineB = null;
+  for (const l of themeLines) {
+    if (usedSet.has(l)) continue;
+    const last = l.split(' ').pop().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+    if (!lineA && last === rA) lineA = l;
+    else if (!lineB && last === rB) lineB = l;
+    if (lineA && lineB) break;
   }
-  return line;
+
+  // If we couldn't find natural matches, pick unused lines and swap their last word
+  if (!lineA) {
+    const pool = themeLines.filter(l => !usedSet.has(l));
+    if (pool.length) {
+      lineA = pool[Math.floor(Math.random() * pool.length)];
+      const words = lineA.split(' ');
+      words[words.length - 1] = rA;
+      lineA = words.join(' ');
+    }
+  }
+  if (!lineB) {
+    const pool = themeLines.filter(l => !usedSet.has(l) && l !== lineA);
+    if (pool.length) {
+      lineB = pool[Math.floor(Math.random() * pool.length)];
+      const words = lineB.split(' ');
+      words[words.length - 1] = rB;
+      lineB = words.join(' ');
+    }
+  }
+
+  // Absolute fallback: just pick two random unused lines
+  if (!lineA) lineA = _lsPick(themeLines.filter(l => !usedSet.has(l))) || _lsPick(themeLines);
+  if (!lineB) lineB = _lsPick(themeLines.filter(l => !usedSet.has(l) && l !== lineA)) || _lsPick(themeLines);
+
+  return [lineA, lineB];
 }
 
 function generateOfflineLyrics() {
@@ -3158,24 +3372,26 @@ function generateOfflineLyrics() {
   const custom    = document.getElementById('ls-custom').value.trim();
   const output    = document.getElementById('ls-output');
 
-  const vocab = _lsVocab[theme] || _lsVocab.amor;
-  const lines = [];
-  const stanzaLabels = { 'verse-chorus': true, 'aabb': false, 'abab': false, 'free': false };
-  const hasChorus = stanzaLabels[structure];
+  // Get shuffled theme lines — never same order twice
+  const themePool = _lsShuffle([...(_lsLines[theme] || _lsLines.amor)]);
+  // Cross-pollinate: mix in a few lines from related themes for variety
+  const related = { amor:'melanc', desamor:'calle', superacion:'redencion', calle:'tech',
+                    tech:'superacion', redencion:'amor', fiesta:'calle', melanc:'desamor' };
+  const extraPool = _lsShuffle([...(_lsLines[related[theme]] || [])]).slice(0, 4);
+  const allLines = _lsShuffle([...themePool, ...extraPool]);
 
-  // Generate a chorus if structure calls for it
+  const usedLines = new Set();
+  const lines = [];
+  const hasChorus = (structure === 'verse-chorus');
+
+  // Build chorus (reusable)
   let chorus = [];
   if (hasChorus) {
-    const w1 = _lsPickRandom(vocab.nouns);
-    const r1 = _lsFindRhyme(w1);
-    const w2 = _lsPickRandom(vocab.nouns);
-    const r2 = _lsFindRhyme(w2);
-    chorus = [
-      _lsBuildLine(vocab, w1),
-      _lsBuildLine(vocab, r1),
-      _lsBuildLine(vocab, w2),
-      _lsBuildLine(vocab, r2)
-    ];
+    const [c1, c2] = _lsPickRhymingPair(allLines, usedLines);
+    usedLines.add(c1); usedLines.add(c2);
+    const [c3, c4] = _lsPickRhymingPair(allLines, usedLines);
+    usedLines.add(c3); usedLines.add(c4);
+    chorus = [c1, c2, c3, c4];
   }
 
   for (let s = 0; s < stanzas; s++) {
@@ -3186,15 +3402,12 @@ function generateOfflineLyrics() {
       chorus.forEach(l => lines.push(l));
     } else {
       lines.push(hasChorus ? '[VERSO ' + (Math.ceil((s+1)/2)) + ']' : '[ESTROFA ' + (s+1) + ']');
-      const linesPerStanza = 4;
-      for (let i = 0; i < linesPerStanza; i += 2) {
-        const w = _lsPickRandom(vocab.nouns);
-        const r = (structure === 'abab') ?
-          null : // ABAB delays rhyme
-          _lsFindRhyme(w);
-        lines.push(_lsBuildLine(vocab, w));
-        lines.push(_lsBuildLine(vocab, r || _lsFindRhyme(w)));
-      }
+      // 4 lines per stanza, in rhyming pairs
+      const [a1, a2] = _lsPickRhymingPair(allLines, usedLines);
+      usedLines.add(a1); usedLines.add(a2);
+      const [b1, b2] = _lsPickRhymingPair(allLines, usedLines);
+      usedLines.add(b1); usedLines.add(b2);
+      lines.push(a1); lines.push(a2); lines.push(b1); lines.push(b2);
     }
     lines.push('');
   }
