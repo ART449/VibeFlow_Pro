@@ -1,12 +1,24 @@
 # ByFlow — Contexto para Claude Code
 
+## El Creador
+- **Nombre:** Arturo Torres
+- **Alias:** ArT - AtR ("Art en el arte de rimarte")
+- **Perfil:** Rimador experto en verso, prosa y lirica tecnica. Mezcla la crudeza de la calle con la precision de la tecnologia (hacking, algoritmos, IA).
+- **Filosofia:** "El sistema parpadea, pero el codigo no miente"
+- **Estilo lirico:** Tecnico-sentimental. Metricas de octosilabos para versos, rimas consonantes pareadas (AABB) para estribillos. Terminologia de software con metaforas de vida y superacion.
+- **Tematicas base:**
+  - Tecnologia & Trap: terminos como 404, glitch, matrix, hacking, data, binary
+  - Desamor & Realidad: idealizacion, manipulacion, decepcion
+  - Redencion & Familia: guia paterna, lucha contra vicios
+
 ## Proyecto
 - **Nombre:** ByFlow — "Vive Cantando con ByFlow"
 - **Empresa:** IArtLabs (powered by)
-- **Version:** v3.0
+- **Version:** v3.1
 - **Produccion:** https://byflowapp.up.railway.app
 - **Repo:** https://github.com/ART449/VibeFlow_Pro
 - **Stack:** Node.js + Express + Socket.IO (server.js) | HTML/CSS/JS SPA (public/index.html)
+- **Concepto:** Karaoke inteligente y teleprompter para raperos/cantantes. Cero contaminacion visual. El software es un "Director Vocal" que escucha y guia.
 
 ## Archivos clave
 - `server.js` — Backend completo (API, licencias, Socket.IO)

@@ -1366,10 +1366,11 @@ select.inp{cursor:pointer;}
         </div>
       </div>
       <div class="ia-chips" id="ia-chips">
-        <span class="ia-chip" onclick="iaQuick('Genera una letra de reggaeton tropical')">🎵 Genera letra</span>
-        <span class="ia-chip" onclick="iaQuick('Sugiere 5 canciones populares para karaoke')">🎤 Sugerir canciones</span>
-        <span class="ia-chip" onclick="iaQuick('Dame una letra romántica en español para teleprompter')">💖 Letra romántica</span>
-        <span class="ia-chip" onclick="iaQuick('¿Qué es BYFLOW?')">⚡ Sobre BYFLOW</span>
+        <span class="ia-chip" onclick="iaQuick('Genera una letra de rap consciente estilo ArT-AtR sobre tecnologia y superacion, con rimas AABB')">🎤 Rap ArT-AtR</span>
+        <span class="ia-chip" onclick="iaQuick('Genera una letra de reggaeton con metaforas de hacking y desamor')">💔 Trap & Desamor</span>
+        <span class="ia-chip" onclick="iaQuick('Genera una balada de redencion y familia, estilo sentimental con terminologia de software')">🙏 Redencion</span>
+        <span class="ia-chip" onclick="iaQuick('Sugiere 5 canciones populares para karaoke')">🎵 Sugerir canciones</span>
+        <span class="ia-chip" onclick="openLyricStudio()">✍️ Estudio de Letras</span>
       </div>
       <div class="ia-input-row">
         <input class="ia-input" id="ia-input" placeholder="Pregúntame algo..."
@@ -1748,6 +1749,69 @@ select.inp{cursor:pointer;}
     </div>
     <div id="lyrics-results" style="padding:12px;max-height:400px;overflow-y:auto;">
       <div style="text-align:center;padding:30px;opacity:.3;font-size:12px;">Escribe el titulo y artista para buscar letras</div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ LYRIC STUDIO (Offline Generator) ═══ -->
+<div class="catalog-overlay" id="lyric-studio-overlay" onclick="if(event.target===this)closeLyricStudio()">
+  <div class="catalog-modal" style="position:relative;max-width:620px;">
+    <button class="catalog-close" onclick="closeLyricStudio()">&times;</button>
+    <div class="catalog-top">
+      <h3 style="background:linear-gradient(135deg,var(--p),var(--a));-webkit-background-clip:text;-webkit-text-fill-color:transparent;">
+        ✍️ Estudio de Letras — ArT-AtR Engine
+      </h3>
+      <div style="font-size:10px;color:var(--sub);margin-bottom:12px;">Genera letras offline con rimas en español. Sin IA, funciona siempre.</div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px;">
+        <div>
+          <label style="font-size:10px;color:var(--sub);display:block;margin-bottom:3px;">Tema</label>
+          <select id="ls-theme" class="catalog-search" style="padding:7px 10px;">
+            <option value="amor">❤️ Amor y Romance</option>
+            <option value="desamor">💔 Desamor y Realidad</option>
+            <option value="superacion">🚀 Superacion Personal</option>
+            <option value="calle">🏙️ Calle y Urbano</option>
+            <option value="tech">💻 Tecnologia y Trap</option>
+            <option value="redencion">🙏 Redencion y Familia</option>
+            <option value="fiesta">🎉 Fiesta y Celebracion</option>
+            <option value="melanc">🌧️ Melancolia</option>
+          </select>
+        </div>
+        <div>
+          <label style="font-size:10px;color:var(--sub);display:block;margin-bottom:3px;">Estilo</label>
+          <select id="ls-style" class="catalog-search" style="padding:7px 10px;">
+            <option value="rap">🎤 Rap Consciente</option>
+            <option value="trap">🔥 Trap Latino</option>
+            <option value="reggaeton">💃 Reggaeton</option>
+            <option value="balada">💖 Balada</option>
+            <option value="rock">🎸 Rock</option>
+            <option value="pop">🎵 Pop</option>
+          </select>
+        </div>
+        <div>
+          <label style="font-size:10px;color:var(--sub);display:block;margin-bottom:3px;">Estructura</label>
+          <select id="ls-structure" class="catalog-search" style="padding:7px 10px;">
+            <option value="verse-chorus">Verso — Coro — Verso</option>
+            <option value="aabb">AABB (Pareada)</option>
+            <option value="abab">ABAB (Alterna)</option>
+            <option value="free">Libre / Freestyle</option>
+          </select>
+        </div>
+        <div>
+          <label style="font-size:10px;color:var(--sub);display:block;margin-bottom:3px;">Estrofas: <span id="ls-stanza-val">3</span></label>
+          <input type="range" id="ls-stanzas" min="2" max="6" value="3" style="width:100%;accent-color:var(--p);"
+                 oninput="document.getElementById('ls-stanza-val').textContent=this.value">
+        </div>
+      </div>
+
+      <input class="catalog-search" id="ls-custom" placeholder="Prompt extra: ej. 'metaforas del mar', 'dedicada a mi padre'..." style="width:100%;margin-bottom:8px;">
+
+      <button class="tp-search-lyrics-btn" onclick="generateOfflineLyrics()" style="margin-top:4px;width:100%;justify-content:center;background:linear-gradient(135deg,var(--p),var(--a));">
+        ✨ Generar Letra
+      </button>
+    </div>
+    <div id="ls-output" style="padding:14px;max-height:420px;overflow-y:auto;">
+      <div style="text-align:center;padding:30px;opacity:.3;font-size:12px;">Configura el tema y estilo, luego genera tu letra</div>
     </div>
   </div>
 </div>
@@ -2901,7 +2965,7 @@ async function iaQuery(prompt) {
     return;
   }
 
-  const systemPrompt = 'Eres el asistente de ByFlow, la app de karaoke y teleprompter profesional de IArtLabs. Lema: Vive Cantando con ByFlow. Ayudas con: generar letras de canciones, sugerir canciones para karaoke, dar info sobre artistas, y apoyar al DJ/animador. Responde siempre en español, de forma concisa y util. Si generas letras, hazlas con estructura de estrofas y coros.';
+  const systemPrompt = 'Eres el motor lirico de ByFlow, creado por ArT - AtR (Arturo Torres) de IArtLabs. Lema: "Vive Cantando con ByFlow". Tu estilo es tecnico-sentimental. Utiliza metricas de octosilabos para los versos y rimas consonantes pareadas (AABB) para los estribillos. Integra terminologia de software musical y desarrollo (latency, buffer, 404, glitch, matrix) con metaforas de vida y superacion. Evita cliches; busca la rima asonante inteligente cuando el tema sea oscuro. Responde siempre en español. Si generas letras, hazlas con estructura clara de estrofas y coros. Tematicas fuertes: tecnologia/trap, desamor/realidad, redencion/familia.';
 
   try {
     let full = '';
@@ -2971,11 +3035,191 @@ function offerLoadLyrics(bubbleEl, text) {
 function getFallbackResponse(prompt) {
   const p = prompt.toLowerCase();
   if (p.includes('byflow')) return 'ByFlow es la plataforma de karaoke y teleprompter profesional de IArtLabs. Vive Cantando con ByFlow — diseñada para bares, eventos y shows en vivo. 🎤⚡';
-  if (p.includes('letra') || p.includes('genera') || p.includes('canción')) {
-    return 'Activa Ollama para generar letras con IA.\n\nMientras tanto, puedes:\n• Escribir la letra en el panel "Agregar Canción"\n• Pegarla directamente desde una fuente\n\nComando: ollama run llama3.2';
+  if (p.includes('letra') || p.includes('genera') || p.includes('canción') || p.includes('cancion')) {
+    return 'IA offline, pero puedes generar letras ahora mismo:\n\n✍️ Usa el Estudio de Letras (boton arriba) — genera rimas offline sin necesidad de IA\n\n📝 O escribe la letra manualmente en "Agregar Cancion"\n\n🔌 Para IA completa: ollama run llama3.2';
   }
   if (p.includes('suger') || p.includes('karaoke')) return 'Canciones populares para karaoke:\n\n🎵 Bohemian Rhapsody — Queen\n🎵 Don\'t Stop Believin\' — Journey\n🎵 Livin\' on a Prayer — Bon Jovi\n🎵 Sweet Caroline — Neil Diamond\n🎵 Despacito — Luis Fonsi\n🎵 La Bamba — Ritchie Valens\n🎵 Bésame Mucho — Consuelo Velázquez';
   return 'Ollama está offline. Para usar la IA:\n1. Instala Ollama desde ollama.com\n2. Ejecuta: ollama run llama3.2\n3. Recarga esta sección\n\nSin IA puedo ayudarte con sugerencias predefinidas y gestión de la cola.';
+}
+
+// ── Lyric Studio — Offline Generator ──────────────────────────────────────
+function openLyricStudio() {
+  document.getElementById('lyric-studio-overlay').style.display = 'flex';
+}
+function closeLyricStudio() {
+  document.getElementById('lyric-studio-overlay').style.display = 'none';
+}
+
+const _lsVocab = {
+  amor:       { nouns: ['corazon','pasion','beso','mirada','alma','fuego','piel','noche','luna','cielo','sueno','suspiro','abrazo','destino','latido'],
+                verbs: ['amar','sentir','brillar','arder','sonar','vivir','tocar','besar','latir','encender'],
+                adj:   ['eterno','profundo','hermoso','infinito','ardiente','sincero','dulce','intenso'] },
+  desamor:    { nouns: ['traicion','sombra','silencio','vacio','recuerdo','herida','mentira','mascara','espejo','ceniza','cicatriz','fantasma','veneno','cadena'],
+                verbs: ['romper','caer','olvidar','sangrar','fingir','huir','destruir','callar','mentir','borrar'],
+                adj:   ['roto','frio','oscuro','vacio','falso','amargo','cruel','invisible','perdido'] },
+  superacion: { nouns: ['meta','fuerza','valor','camino','luz','verdad','triunfo','fe','cumbre','horizonte','batalla','corona','sudor','victoria'],
+                verbs: ['luchar','avanzar','crecer','brillar','conquistar','romper','superar','construir','levantar','alcanzar'],
+                adj:   ['fuerte','invencible','firme','libre','imparable','valiente','grande','inmortal'] },
+  calle:      { nouns: ['calle','barrio','esquina','asfalto','noche','humo','reloj','cemento','ritmo','flow','verso','rima','micro','bloque'],
+                verbs: ['rapear','fluir','escupir','caminar','quemar','soltar','pisar','mover','rodar','girar'],
+                adj:   ['real','crudo','duro','callejero','nocturno','salvaje','urbano','directo'] },
+  tech:       { nouns: ['codigo','matrix','sistema','data','glitch','pantalla','algoritmo','red','virus','server','buffer','pixel','frecuencia','serial'],
+                verbs: ['hackear','compilar','ejecutar','debuggear','encriptar','conectar','procesar','streamear','cargar','reiniciar'],
+                adj:   ['digital','binario','encriptado','virtual','cuantico','automatico','cibernetico','sintetico'] },
+  redencion:  { nouns: ['padre','madre','sangre','raiz','legado','enseñanza','sacrificio','oracion','camino','hogar','mano','lagrima','ejemplo','promesa'],
+                verbs: ['agradecer','recordar','honrar','perdonar','regresar','aprender','proteger','cuidar','rezar','sanar'],
+                adj:   ['sagrado','humilde','sincero','noble','agradecido','sabio','fiel','bendito'] },
+  fiesta:     { nouns: ['fiesta','baile','ritmo','noche','musica','copa','luz','pista','gente','ambiente','energia','movimiento','DJ','bass'],
+                verbs: ['bailar','gozar','vibrar','celebrar','brindar','mover','disfrutar','encender','prender','gritar'],
+                adj:   ['loco','salvaje','tropical','electrico','caliente','vivo','brutal','legendario'] },
+  melanc:     { nouns: ['lluvia','ventana','silencio','sombra','recuerdo','reloj','humo','espejo','otoño','bruma','eco','gris','nostalgia','ausencia'],
+                verbs: ['llorar','esperar','recordar','suspirar','vagar','perder','caer','desvanecerse','extrañar','marchitar'],
+                adj:   ['triste','gris','lejano','solitario','apagado','fragil','melancolico','distante'] }
+};
+
+const _lsRhymes = {
+  'on':   ['corazon','pasion','cancion','razon','ilusion','conexion','traicion','redencion','accion','mision'],
+  'ar':   ['amar','soñar','cantar','bailar','caminar','luchar','volar','encontrar','brillar','hackear'],
+  'ir':   ['sentir','vivir','salir','seguir','partir','reir','cumplir','morir','escribir','existir'],
+  'er':   ['querer','tener','hacer','creer','correr','ver','nacer','caer','crecer','vencer'],
+  'ento': ['pensamiento','sentimiento','sufrimiento','momento','aliento','movimiento','argumento','instrumento','experimento','fundamento'],
+  'ado':  ['pasado','lado','pecado','legado','resultado','cuidado','olvidado','quemado','encriptado','blindado'],
+  'ia':   ['dia','alegria','melodia','energia','poesia','agonia','fantasia','armonia','filosofia','tecnologia'],
+  'oso':  ['hermoso','poderoso','doloroso','asombroso','peligroso','glorioso','misterioso','furioso','luminoso','exitoso'],
+  'ente': ['diferente','presente','valiente','consciente','corriente','caliente','ardiente','urgente','permanente','potente'],
+  'ura':  ['locura','aventura','criatura','estructura','armadura','altura','amargura','ternura','ruptura','escritura'],
+  'ble':  ['imposible','invisible','increible','invencible','terrible','sensible','imparable','vulnerable','indestructible','irresistible']
+};
+
+function _lsFindRhyme(word) {
+  const w = word.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+  for (const [suffix, rhymes] of Object.entries(_lsRhymes)) {
+    if (w.endsWith(suffix)) {
+      const pool = rhymes.filter(r => r !== word);
+      return pool[Math.floor(Math.random() * pool.length)] || rhymes[0];
+    }
+  }
+  // Fallback: match last 2 chars
+  const last2 = w.slice(-2);
+  for (const [suffix, rhymes] of Object.entries(_lsRhymes)) {
+    if (suffix.endsWith(last2) || last2.endsWith(suffix.slice(-1))) {
+      return rhymes[Math.floor(Math.random() * rhymes.length)];
+    }
+  }
+  return _lsRhymes['on'][Math.floor(Math.random() * _lsRhymes['on'].length)];
+}
+
+function _lsPickRandom(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
+
+function _lsBuildLine(vocab, endWord) {
+  // Build a ~6-10 word line ending with the given word
+  const patterns = [
+    () => _lsPickRandom(vocab.adj) + ' ' + _lsPickRandom(vocab.nouns) + ' que no para de ' + _lsPickRandom(vocab.verbs),
+    () => 'yo ' + _lsPickRandom(vocab.verbs) + ' como ' + _lsPickRandom(vocab.nouns) + ' en el ' + _lsPickRandom(vocab.nouns),
+    () => _lsPickRandom(vocab.nouns) + ' ' + _lsPickRandom(vocab.adj) + ', ' + _lsPickRandom(vocab.verbs) + ' sin ' + _lsPickRandom(vocab.nouns),
+    () => 'entre ' + _lsPickRandom(vocab.nouns) + ' y ' + _lsPickRandom(vocab.nouns) + ' ' + _lsPickRandom(vocab.verbs) + ' mi ' + _lsPickRandom(vocab.nouns),
+    () => 'cada ' + _lsPickRandom(vocab.nouns) + ' ' + _lsPickRandom(vocab.adj) + ' es un ' + _lsPickRandom(vocab.nouns),
+    () => 'no me ' + _lsPickRandom(vocab.verbs) + ' el ' + _lsPickRandom(vocab.nouns) + ' ' + _lsPickRandom(vocab.adj),
+    () => _lsPickRandom(vocab.verbs) + ' ' + _lsPickRandom(vocab.adj) + ' por el ' + _lsPickRandom(vocab.nouns) + ' del ' + _lsPickRandom(vocab.nouns),
+  ];
+  let line = _lsPickRandom(patterns)();
+  // Replace last word with the rhyme target
+  if (endWord) {
+    const parts = line.split(' ');
+    parts[parts.length - 1] = endWord;
+    line = parts.join(' ');
+  }
+  return line;
+}
+
+function generateOfflineLyrics() {
+  const theme     = document.getElementById('ls-theme').value;
+  const style     = document.getElementById('ls-style').value;
+  const structure = document.getElementById('ls-structure').value;
+  const stanzas   = parseInt(document.getElementById('ls-stanzas').value);
+  const custom    = document.getElementById('ls-custom').value.trim();
+  const output    = document.getElementById('ls-output');
+
+  const vocab = _lsVocab[theme] || _lsVocab.amor;
+  const lines = [];
+  const stanzaLabels = { 'verse-chorus': true, 'aabb': false, 'abab': false, 'free': false };
+  const hasChorus = stanzaLabels[structure];
+
+  // Generate a chorus if structure calls for it
+  let chorus = [];
+  if (hasChorus) {
+    const w1 = _lsPickRandom(vocab.nouns);
+    const r1 = _lsFindRhyme(w1);
+    const w2 = _lsPickRandom(vocab.nouns);
+    const r2 = _lsFindRhyme(w2);
+    chorus = [
+      _lsBuildLine(vocab, w1),
+      _lsBuildLine(vocab, r1),
+      _lsBuildLine(vocab, w2),
+      _lsBuildLine(vocab, r2)
+    ];
+  }
+
+  for (let s = 0; s < stanzas; s++) {
+    const isChorus = hasChorus && s > 0 && (s % 2 === 0);
+
+    if (isChorus) {
+      lines.push('[CORO]');
+      chorus.forEach(l => lines.push(l));
+    } else {
+      lines.push(hasChorus ? '[VERSO ' + (Math.ceil((s+1)/2)) + ']' : '[ESTROFA ' + (s+1) + ']');
+      const linesPerStanza = 4;
+      for (let i = 0; i < linesPerStanza; i += 2) {
+        const w = _lsPickRandom(vocab.nouns);
+        const r = (structure === 'abab') ?
+          null : // ABAB delays rhyme
+          _lsFindRhyme(w);
+        lines.push(_lsBuildLine(vocab, w));
+        lines.push(_lsBuildLine(vocab, r || _lsFindRhyme(w)));
+      }
+    }
+    lines.push('');
+  }
+
+  // Add final chorus
+  if (hasChorus && chorus.length) {
+    lines.push('[CORO FINAL]');
+    chorus.forEach(l => lines.push(l));
+  }
+
+  const fullText = lines.join('\n').trim();
+
+  // Display
+  const styleEmoji = { rap:'🎤', trap:'🔥', reggaeton:'💃', balada:'💖', rock:'🎸', pop:'🎵' };
+  const themeEmoji = { amor:'❤️', desamor:'💔', superacion:'🚀', calle:'🏙️', tech:'💻', redencion:'🙏', fiesta:'🎉', melanc:'🌧️' };
+
+  output.innerHTML = '<div style="margin-bottom:12px;">' +
+    '<span style="font-size:11px;background:var(--p);color:#fff;padding:2px 8px;border-radius:4px;margin-right:5px;">' + (themeEmoji[theme]||'') + ' ' + theme + '</span>' +
+    '<span style="font-size:11px;background:var(--a);color:#fff;padding:2px 8px;border-radius:4px;margin-right:5px;">' + (styleEmoji[style]||'') + ' ' + style + '</span>' +
+    '<span style="font-size:11px;background:rgba(255,255,255,.1);color:var(--sub);padding:2px 8px;border-radius:4px;">' + structure + '</span>' +
+    '</div>' +
+    '<pre style="white-space:pre-wrap;font-family:inherit;font-size:13px;line-height:1.8;color:var(--t);margin:0;">' + escHtml(fullText) + '</pre>' +
+    '<div style="display:flex;gap:8px;margin-top:14px;">' +
+      '<button onclick="lsLoadToTeleprompter()" style="flex:1;padding:8px;background:var(--g);border:none;border-radius:8px;color:#fff;font-size:12px;font-weight:700;cursor:pointer;">📝 Cargar en Teleprompter</button>' +
+      '<button onclick="lsCopyLyrics()" style="flex:1;padding:8px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.15);border-radius:8px;color:var(--t);font-size:12px;font-weight:700;cursor:pointer;">📋 Copiar</button>' +
+      '<button onclick="generateOfflineLyrics()" style="padding:8px 14px;background:var(--p);border:none;border-radius:8px;color:#fff;font-size:12px;font-weight:700;cursor:pointer;">🔄</button>' +
+    '</div>';
+}
+
+function lsLoadToTeleprompter() {
+  const pre = document.querySelector('#ls-output pre');
+  if (!pre) return;
+  const text = pre.textContent;
+  setLyrics(text);
+  if (socket) socket.emit('tp_lyrics', { lyrics: text });
+  showToast('✅ Letra cargada en teleprompter');
+  closeLyricStudio();
+}
+
+function lsCopyLyrics() {
+  const pre = document.querySelector('#ls-output pre');
+  if (!pre) return;
+  navigator.clipboard.writeText(pre.textContent).then(() => showToast('📋 Letra copiada'));
 }
 
 // ── YouTube ───────────────────────────────────────────────────────────────
