@@ -1,5 +1,5 @@
 // ═══════════════════════════════════════════════════════════════════════════
-// VIBEFLOW PRO v2.0 - Server (Node.js + Express + Socket.IO)
+// BYFLOW — Vive Cantando (powered by IArtLabs) - Server (Node.js + Express + Socket.IO)
 // Persistencia JSON + CRUD completo + Error handling
 // ═══════════════════════════════════════════════════════════════════════════
 
@@ -537,7 +537,7 @@ server.listen(PORT, HOST, () => {
   const activeLic = getActiveLicense();
   console.log('');
   console.log('  =============================================');
-  console.log('   VIBEFLOW PRO v2.0 - SERVIDOR ACTIVO');
+  console.log('   BYFLOW — Vive Cantando — SERVIDOR ACTIVO');
   console.log('  =============================================');
   console.log(`   Local:    http://localhost:${PORT}`);
   console.log(`   Red LAN:  http://${ip}:${PORT}`);

@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-<title>VibeFlow Pro — BYFLOW</title>
+<title>ByFlow — Vive Cantando</title>
 <style>
 /* ── Reset & Variables ───────────────────────────────────────────────── */
 *{margin:0;padding:0;box-sizing:border-box;}
@@ -954,8 +954,8 @@ select.inp{cursor:pointer;}
   <!-- ═══ TOPBAR ═══ -->
   <div class="topbar">
     <div class="brand-wrap">
-      <div class="brand">VibeFlow Pro</div>
-      <div class="brand-sub">by IArtLabs</div>
+      <div class="brand">ByFlow</div>
+      <div class="brand-sub">Vive Cantando</div>
     </div>
     <div class="mode-switch">
       <button class="mode-btn active" data-mode="karaoke" onclick="setMode('karaoke')" title="Pantalla principal del teleprompter con letras y controles de karaoke">
@@ -1335,9 +1335,9 @@ select.inp{cursor:pointer;}
 
 <!-- ═══ WELCOME OVERLAY ═══ -->
 <div class="welcome-overlay" id="welcome-overlay">
-  <div class="welcome-brand">IARTLABS</div>
-  <div class="welcome-logo">VibeFlow Pro</div>
-  <div class="welcome-sub">Plataforma profesional de karaoke y entretenimiento en vivo</div>
+  <div class="welcome-brand">powered by IArtLabs</div>
+  <div class="welcome-logo">ByFlow</div>
+  <div class="welcome-sub">Vive Cantando 🎤</div>
 
   <div class="welcome-cards">
     <div class="welcome-card" onclick="welcomeSelect('karaoke')">
@@ -1413,12 +1413,12 @@ select.inp{cursor:pointer;}
 <div class="legal-overlay" id="legal-overlay" onclick="if(event.target===this)closeLegalModal()">
   <div class="legal-modal">
     <button class="legal-close" onclick="closeLegalModal()">&times;</button>
-    <div class="legal-logo">VibeFlow Pro</div>
-    <div class="legal-brand-sub">BY IARTLABS</div>
+    <div class="legal-logo">ByFlow</div>
+    <div class="legal-brand-sub">POWERED BY IARTLABS</div>
 
     <div class="legal-section">
       <h5>Acerca de</h5>
-      <p>VibeFlow Pro es una plataforma profesional de karaoke, teleprompter y gestion de entretenimiento en vivo desarrollada por IArtLabs.</p>
+      <p>ByFlow es una plataforma profesional de karaoke, teleprompter y gestion de entretenimiento en vivo desarrollada por IArtLabs. Vive Cantando con ByFlow.</p>
     </div>
     <div class="legal-divider"></div>
 
@@ -1443,7 +1443,7 @@ select.inp{cursor:pointer;}
 
     <div class="legal-section">
       <h5>Licencia y Propiedad Intelectual</h5>
-      <p>VibeFlow Pro es software propietario de IArtLabs. Todos los derechos reservados. Queda prohibida su reproduccion, distribucion o modificacion sin autorizacion escrita. El uso de este software requiere una licencia PRO valida para funciones premium.</p>
+      <p>ByFlow es software propietario de IArtLabs. Todos los derechos reservados. Queda prohibida su reproduccion, distribucion o modificacion sin autorizacion escrita. El uso de este software requiere una licencia PRO valida para funciones premium.</p>
     </div>
     <div class="legal-divider"></div>
 
@@ -1463,7 +1463,7 @@ select.inp{cursor:pointer;}
 
 <script>
 // ═══════════════════════════════════════════════════════════════════════════
-// VIBEFLOW PRO — Frontend  (BYFLOW)
+// BYFLOW — Vive Cantando (powered by IArtLabs)
 // ═══════════════════════════════════════════════════════════════════════════
 
 const SOCKET_URL = location.origin;
@@ -2061,7 +2061,7 @@ async function iaQuery(prompt) {
     return;
   }
 
-  const systemPrompt = 'Eres el asistente de VibeFlow Pro, una app de karaoke y teleprompter profesional creada por IArtLabs. Ayudas con: generar letras de canciones, sugerir canciones para karaoke, dar info sobre artistas, y apoyar al DJ/animador. Responde siempre en español, de forma concisa y util. Si generas letras, hazlas con estructura de estrofas y coros.';
+  const systemPrompt = 'Eres el asistente de ByFlow, la app de karaoke y teleprompter profesional de IArtLabs. Lema: Vive Cantando con ByFlow. Ayudas con: generar letras de canciones, sugerir canciones para karaoke, dar info sobre artistas, y apoyar al DJ/animador. Responde siempre en español, de forma concisa y util. Si generas letras, hazlas con estructura de estrofas y coros.';
 
   try {
     let full = '';
@@ -2130,7 +2130,7 @@ function offerLoadLyrics(bubbleEl, text) {
 
 function getFallbackResponse(prompt) {
   const p = prompt.toLowerCase();
-  if (p.includes('byflow')) return 'IArtLabs es una marca de tecnología para entretenimiento en vivo. VibeFlow Pro es su app insignia de karaoke y teleprompter profesional, diseñada para bares, eventos y shows en vivo. 🎤⚡';
+  if (p.includes('byflow')) return 'ByFlow es la plataforma de karaoke y teleprompter profesional de IArtLabs. Vive Cantando con ByFlow — diseñada para bares, eventos y shows en vivo. 🎤⚡';
   if (p.includes('letra') || p.includes('genera') || p.includes('canción')) {
     return 'Activa Ollama para generar letras con IA.\n\nMientras tanto, puedes:\n• Escribir la letra en el panel "Agregar Canción"\n• Pegarla directamente desde una fuente\n\nComando: ollama run llama3.2';
   }
