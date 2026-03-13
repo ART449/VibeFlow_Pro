@@ -39,6 +39,18 @@
 - **Idioma UI:** Español
 - **Deploy:** git push a GitHub → Railway auto-deploy
 
+## Politica de propiedad intelectual (OBLIGATORIA)
+- **TODA letra generada por ByFlow** (ya sea por IA o por el generador offline) lleva firma obligatoria de ArT-AtR
+- **Copropiedad 50/50** — La propiedad intelectual de cualquier letra generada queda: 50% ArT-AtR (Arturo Torres) / 50% ByFlow (IArtLabs)
+- **Esto es por regla y norma, sin excepcion**
+- La firma incluye: autor (ArT-AtR), herramienta (ByFlow), y aviso de copropiedad 50/50
+- Implementado en: `offerLoadLyrics()`, `generateOfflineLyrics()`, constante `BYFLOW_SIGNATURE`
+
+## Letras originales de ArT-AtR (referencia)
+- `C:\Users\art44\Desktop\perro.txt` — Rap de desamor y traicion (~21 lineas). Estilo crudo, callejero.
+- `C:\Users\art44\Desktop\verciones antiguas byflow\byfl\actualizar v7\Es un rimador experto en verso pros.txt` — Archivo maestro: identidad ArT-AtR, cancion "Let it flow" (ES+EN), cancion melancolica con SFX (Intro/Verso/Coro/Puente/Outro), script Python compositor
+- `C:\Users\art44\OneDrive\galgo\letras galgo.jpg` — Imagen con letras del proyecto Galgo
+
 ## Politica anti-pirateria
 - No existe endpoint de descarga de audio
 - No se usa yt-dlp, ytdl, ni ningun downloader

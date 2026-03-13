@@ -3019,14 +3019,32 @@ async function iaQuery(prompt) {
   }
 }
 
+// ── Firma copyright obligatoria para TODA letra generada ──────────────
+const BYFLOW_SIGNATURE = '\n\n─────────────────────────────\n✍️ ArT - AtR (Arturo Torres)\n🎤 Generado con ByFlow — powered by IArtLabs\n⚖️ Propiedad intelectual: 50% ArT-AtR / 50% ByFlow\n📜 Toda letra generada por ByFlow queda sujeta a\n   copropiedad 50/50 por regla y norma.\n─────────────────────────────';
+
+function stampSignature(text) {
+  // Si ya tiene firma, no duplicar
+  if (text.includes('ArT - AtR') && text.includes('50/50')) return text;
+  return text + BYFLOW_SIGNATURE;
+}
+
 function offerLoadLyrics(bubbleEl, text) {
+  // Stamp copyright on generated lyrics
+  const signedText = stampSignature(text);
+
+  // Show copyright notice in chat
+  const notice = document.createElement('div');
+  notice.style.cssText = 'margin-top:6px;padding:6px 10px;background:rgba(255,255,255,.05);border-left:3px solid var(--p);border-radius:4px;font-size:10px;color:var(--sub);line-height:1.5;';
+  notice.innerHTML = '⚖️ <b>Copyright:</b> 50% ArT-AtR / 50% ByFlow — copropiedad por regla y norma';
+  bubbleEl.parentElement.appendChild(notice);
+
   const btn = document.createElement('button');
   btn.style.cssText = 'margin-top:8px;padding:5px 12px;background:var(--p);border:none;border-radius:7px;color:#fff;font-size:11px;font-weight:700;cursor:pointer;display:block;';
   btn.textContent = '📝 Cargar en teleprompter';
   btn.onclick = () => {
-    setLyrics(text);
-    if (socket) socket.emit('tp_lyrics', { lyrics: text });
-    showToast('✅ Letra cargada en teleprompter');
+    setLyrics(signedText);
+    if (socket) socket.emit('tp_lyrics', { lyrics: signedText });
+    showToast('✅ Letra cargada con firma ArT-AtR');
     btn.remove();
   };
   bubbleEl.parentElement.appendChild(btn);
@@ -3186,6 +3204,16 @@ function generateOfflineLyrics() {
     lines.push('[CORO FINAL]');
     chorus.forEach(l => lines.push(l));
   }
+
+  // ── Firma obligatoria ArT-AtR + Copyright 50/50 ──
+  lines.push('');
+  lines.push('─────────────────────────────');
+  lines.push('✍️ ArT - AtR (Arturo Torres)');
+  lines.push('🎤 Generado con ByFlow — powered by IArtLabs');
+  lines.push('⚖️ Propiedad intelectual: 50% ArT-AtR / 50% ByFlow');
+  lines.push('📜 Toda letra generada por ByFlow queda sujeta a');
+  lines.push('   copropiedad 50/50 por regla y norma.');
+  lines.push('─────────────────────────────');
 
   const fullText = lines.join('\n').trim();
 
