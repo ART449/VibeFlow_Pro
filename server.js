@@ -10,6 +10,7 @@ const cors     = require('cors');
 const path     = require('path');
 const os       = require('os');
 const fs       = require('fs');
+const crypto   = require('crypto');
 const { exec } = require('child_process');
 
 // ── Utilidades ──────────────────────────────────────────────────────────────
@@ -60,6 +61,76 @@ function debouncedSave(filename, data, ms = 1000) {
   _debounceTimers[filename] = setTimeout(() => saveJSON(filename, data), ms);
 }
 
+// ── Sistema de Licencias ────────────────────────────────────────────────────
+function loadSecret(filename, bytes) {
+  const fp = path.join(DATA_DIR, filename);
+  try {
+    if (fs.existsSync(fp)) return fs.readFileSync(fp, 'utf8').trim();
+  } catch {}
+  const secret = crypto.randomBytes(bytes).toString('hex');
+  fs.writeFileSync(fp, secret, 'utf8');
+  return secret;
+}
+
+const LICENSE_SECRET = loadSecret('.license_secret', 32);
+const ADMIN_SECRET  = loadSecret('.admin_secret', 16);
+
+function getDeviceFingerprint() {
+  const hostname = os.hostname();
+  const ifaces = os.networkInterfaces();
+  let mac = 'unknown';
+  for (const list of Object.values(ifaces)) {
+    for (const iface of list) {
+      if (!iface.internal && iface.mac && iface.mac !== '00:00:00:00:00:00') {
+        mac = iface.mac; break;
+      }
+    }
+    if (mac !== 'unknown') break;
+  }
+  return crypto.createHash('sha256').update(hostname + '|' + mac).digest('hex').slice(0, 16);
+}
+
+function generateLicenseKey() {
+  const payload = crypto.randomBytes(8).toString('hex').toUpperCase(); // 16 chars
+  const sig = crypto.createHmac('sha256', LICENSE_SECRET)
+    .update(payload).digest('hex').slice(0, 4).toUpperCase();          // 4 chars
+  const raw = payload + sig; // 20 chars
+  return `VFP-${raw.slice(0,5)}-${raw.slice(5,10)}-${raw.slice(10,15)}-${raw.slice(15,20)}`;
+}
+
+function validateKeySignature(key) {
+  const clean = key.toUpperCase().replace(/[^A-Z0-9]/g, '');
+  if (clean.length !== 23 || !key.startsWith('VFP-')) return false;
+  const raw = clean.slice(3); // remove VFP prefix -> 20 chars
+  const payload = raw.slice(0, 16);
+  const sig = raw.slice(16, 20);
+  const expected = crypto.createHmac('sha256', LICENSE_SECRET)
+    .update(payload).digest('hex').slice(0, 4).toUpperCase();
+  return sig === expected;
+}
+
+function getActiveLicense() {
+  const fp = getDeviceFingerprint();
+  const licenses = (state.license && state.license.licenses) || [];
+  return licenses.find(l => l.activated && l.deviceFingerprint === fp) || null;
+}
+
+function isFeatureLicensed(feature) {
+  const lic = getActiveLicense();
+  return lic && lic.features.includes(feature);
+}
+
+// Rate limiter simple para activaciones
+const _rateLimits = {};
+function checkRateLimit(ip, maxAttempts = 5, windowMs = 60000) {
+  const now = Date.now();
+  if (!_rateLimits[ip]) _rateLimits[ip] = [];
+  _rateLimits[ip] = _rateLimits[ip].filter(t => now - t < windowMs);
+  if (_rateLimits[ip].length >= maxAttempts) return false;
+  _rateLimits[ip].push(now);
+  return true;
+}
+
 // ── App Setup ───────────────────────────────────────────────────────────────
 const PORT = process.env.PORT || 8080;
 const HOST = '0.0.0.0';
@@ -86,7 +157,8 @@ const state = {
   canciones:    loadJSON('canciones.json', []),
   teleprompter: loadJSON('teleprompter.json', {
     lyrics: '', currentWord: -1, scrollSpeed: 1, isPlaying: false
-  })
+  }),
+  license:      loadJSON('licenses.json', { licenses: [] })
 };
 
 // ── API REST ────────────────────────────────────────────────────────────────
@@ -280,8 +352,11 @@ app.get('/api/audio/list', (req, res) => {
   } catch { res.json([]); }
 });
 
-// Audio processor (calls Python)
+// Audio processor (calls Python) — Requiere licencia PRO
 app.post('/api/audio/process', (req, res) => {
+  if (!isFeatureLicensed('youtube_download')) {
+    return res.status(403).json({ error: 'Función PRO — Requiere licencia activa' });
+  }
   const { url, mode } = req.body;
   if (!url) return res.status(400).json({ error: 'URL requerida' });
   const pythonCmd = process.platform === 'win32'
@@ -295,6 +370,86 @@ app.post('/api/audio/process', (req, res) => {
     try { res.json(JSON.parse(stdout)); }
     catch { res.json({ output: stdout.trim() }); }
   });
+});
+
+// ── Licencias ────────────────────────────────────────────────────────────────
+app.get('/api/license/status', (req, res) => {
+  const lic = getActiveLicense();
+  if (!lic) return res.json({ activated: false, features: [] });
+  res.json({
+    activated: true,
+    features: lic.features,
+    owner: lic.owner || '',
+    keyFragment: lic.key.slice(-9)
+  });
+});
+
+app.post('/api/license/activate', (req, res) => {
+  const ip = req.ip || req.connection.remoteAddress;
+  if (!checkRateLimit(ip)) {
+    return res.status(429).json({ error: 'Demasiados intentos. Espera 1 minuto.' });
+  }
+  const key = (req.body.key || '').trim().toUpperCase();
+  if (!validateKeySignature(key)) {
+    return res.status(403).json({ error: 'Clave de licencia inválida' });
+  }
+  const entry = state.license.licenses.find(l => l.key === key);
+  if (!entry) {
+    return res.status(404).json({ error: 'Licencia no encontrada en el sistema' });
+  }
+  const fp = getDeviceFingerprint();
+  if (entry.activated && entry.deviceFingerprint && entry.deviceFingerprint !== fp) {
+    return res.status(409).json({ error: 'Esta licencia ya está activada en otro dispositivo' });
+  }
+  entry.activated = true;
+  entry.activatedAt = new Date().toISOString();
+  entry.deviceFingerprint = fp;
+  saveJSON('licenses.json', state.license);
+  res.json({
+    success: true,
+    features: entry.features,
+    owner: entry.owner || '',
+    keyFragment: key.slice(-9)
+  });
+});
+
+app.post('/api/license/deactivate', (req, res) => {
+  const fp = getDeviceFingerprint();
+  const entry = state.license.licenses.find(l => l.activated && l.deviceFingerprint === fp);
+  if (!entry) return res.status(404).json({ error: 'No hay licencia activa en este dispositivo' });
+  entry.activated = false;
+  entry.deviceFingerprint = null;
+  entry.activatedAt = null;
+  saveJSON('licenses.json', state.license);
+  res.json({ success: true });
+});
+
+app.post('/api/license/admin/generate', (req, res) => {
+  const adminKey = req.headers['x-admin-key'];
+  if (adminKey !== ADMIN_SECRET) {
+    return res.status(401).json({ error: 'Admin key inválida' });
+  }
+  const owner = (req.body.owner || '').trim() || 'Sin asignar';
+  const features = Array.isArray(req.body.features) ? req.body.features : ['bares', 'youtube_download', 'ollama_ai'];
+  const key = generateLicenseKey();
+  const entry = {
+    key, owner, features,
+    created: new Date().toISOString(),
+    activated: false,
+    activatedAt: null,
+    deviceFingerprint: null
+  };
+  state.license.licenses.push(entry);
+  saveJSON('licenses.json', state.license);
+  res.json({ key, owner, features });
+});
+
+app.get('/api/license/admin/list', (req, res) => {
+  const adminKey = req.headers['x-admin-key'];
+  if (adminKey !== ADMIN_SECRET) {
+    return res.status(401).json({ error: 'Admin key inválida' });
+  }
+  res.json(state.license.licenses);
 });
 
 // Health
@@ -379,6 +534,7 @@ process.on('unhandledRejection', (reason) => {
 // ── Arranque ────────────────────────────────────────────────────────────────
 server.listen(PORT, HOST, () => {
   const ip = getLocalIp();
+  const activeLic = getActiveLicense();
   console.log('');
   console.log('  =============================================');
   console.log('   VIBEFLOW PRO v2.0 - SERVIDOR ACTIVO');
@@ -386,6 +542,10 @@ server.listen(PORT, HOST, () => {
   console.log(`   Local:    http://localhost:${PORT}`);
   console.log(`   Red LAN:  http://${ip}:${PORT}`);
   console.log(`   Canciones: ${state.canciones.length} | Cola: ${state.cola.length}`);
+  console.log(`   Licencia:  ${activeLic ? 'PRO activa (' + activeLic.owner + ')' : 'FREE'}`);
+  console.log('  ---------------------------------------------');
+  console.log(`   ADMIN KEY: ${ADMIN_SECRET}`);
+  console.log('   (Guarda esta clave para generar licencias)');
   console.log('  =============================================');
   console.log('');
 });

@@ -723,6 +723,107 @@ select.inp{cursor:pointer;}
 .queue-item.dragging{opacity:.4;border-style:dashed;}
 .queue-item.drag-over{border-color:var(--p);background:rgba(255,0,110,.08);}
 
+/* ── Collapsible Mesas Toggle ──────────────────────────────────────── */
+.mesas-toggle{
+  display:flex;align-items:center;justify-content:space-between;
+  cursor:pointer;padding:8px 12px 4px;user-select:none;
+}
+.mesas-toggle:hover .mesas-toggle-icon{color:var(--p);}
+.mesas-toggle-icon{
+  font-size:14px;color:var(--sub);transition:transform .3s,color .2s;
+}
+.mesas-toggle-icon.collapsed{transform:rotate(-90deg);}
+.tables-grid.collapsed{display:none;}
+
+/* ── Promo Banner (between songs) ──────────────────────────────────── */
+.promo-banner{
+  display:none;position:absolute;inset:0;z-index:20;
+  background:radial-gradient(ellipse at center,rgba(7,7,13,.97),rgba(7,7,13,.99));
+  flex-direction:column;align-items:center;justify-content:center;gap:16px;
+  animation:promoFadeIn .6s ease;
+}
+.promo-banner.active{display:flex;}
+@keyframes promoFadeIn{from{opacity:0;transform:scale(.95);}to{opacity:1;transform:scale(1);}}
+.promo-title{
+  font-size:1.6rem;font-weight:900;text-align:center;
+  background:linear-gradient(135deg,#f59e0b,#ef4444,#ff006e);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+  animation:promoGlow 2s ease-in-out infinite alternate;
+}
+@keyframes promoGlow{from{filter:brightness(1);}to{filter:brightness(1.3);}}
+.promo-text{
+  font-size:1.1rem;color:rgba(255,255,255,.7);text-align:center;max-width:600px;line-height:1.6;
+}
+.promo-next{
+  margin-top:8px;font-size:.9rem;color:var(--sub);
+  display:flex;align-items:center;gap:8px;
+}
+.promo-next .next-name{color:var(--p);font-weight:800;}
+.promo-countdown{
+  font-size:2rem;font-weight:900;color:var(--p);
+  font-variant-numeric:tabular-nums;
+  text-shadow:0 0 20px var(--glow-p);
+}
+.promo-skip{
+  margin-top:8px;padding:8px 20px;border:1px solid rgba(255,255,255,.15);
+  border-radius:8px;background:rgba(255,255,255,.05);color:var(--sub);
+  font-size:11px;font-weight:700;cursor:pointer;transition:all .2s;
+}
+.promo-skip:hover{border-color:var(--p);color:#fff;background:rgba(255,0,110,.1);}
+
+/* ── Pending Songs Queue (sidebar) ─────────────────────────────────── */
+.pending-section{border-top:1px solid var(--border);padding:6px 0;}
+.pending-title{
+  font-size:10px;text-transform:uppercase;letter-spacing:1.5px;
+  color:var(--sub);padding:4px 12px;font-weight:700;
+  display:flex;align-items:center;gap:6px;
+}
+.pending-title .pending-count{
+  background:var(--p);color:#fff;font-size:9px;
+  padding:1px 6px;border-radius:10px;font-weight:800;
+}
+.pending-item{
+  padding:6px 11px;display:flex;align-items:center;gap:8px;
+  font-size:11px;opacity:.6;border-bottom:1px solid rgba(255,255,255,.03);
+}
+.pending-item .pi-mesa{
+  background:rgba(131,56,236,.2);color:var(--s);
+  padding:2px 6px;border-radius:4px;font-weight:800;font-size:10px;
+}
+.pending-item .pi-song{flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+
+/* ── Legal Modal ───────────────────────────────────────────────────── */
+.legal-overlay{
+  display:none;position:fixed;inset:0;z-index:9999;
+  background:rgba(0,0,0,.85);backdrop-filter:blur(10px);
+  align-items:center;justify-content:center;
+}
+.legal-overlay.open{display:flex;}
+.legal-modal{
+  background:var(--card);border:1px solid var(--border);border-radius:16px;
+  max-width:500px;width:92%;max-height:80vh;overflow-y:auto;
+  padding:28px;position:relative;
+  box-shadow:0 20px 60px rgba(0,0,0,.5);
+}
+.legal-close{
+  position:absolute;top:12px;right:12px;background:rgba(255,255,255,.06);
+  border:none;color:var(--sub);width:28px;height:28px;border-radius:50%;
+  font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;
+}
+.legal-close:hover{background:rgba(255,60,60,.2);color:#ff6b6b;}
+.legal-logo{
+  font-size:22px;font-weight:900;margin-bottom:4px;
+  background:linear-gradient(135deg,#ff006e,#8338ec,#3a86ff);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+}
+.legal-brand-sub{font-size:10px;color:var(--sub);letter-spacing:2px;margin-bottom:18px;}
+.legal-section{margin-bottom:16px;}
+.legal-section h5{font-size:11px;color:var(--p);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;}
+.legal-section p,.legal-section a{font-size:12px;color:rgba(255,255,255,.6);line-height:1.7;}
+.legal-section a{color:var(--a);text-decoration:none;}
+.legal-section a:hover{text-decoration:underline;}
+.legal-divider{height:1px;background:var(--border);margin:14px 0;}
+
 /* ── Song catalog button in sidebar ─────────────────────────────────── */
 .btn-catalog{
   width:100%;padding:8px;margin-top:6px;
@@ -792,32 +893,32 @@ select.inp{cursor:pointer;}
   <div class="topbar">
     <div class="brand-wrap">
       <div class="brand">VibeFlow Pro</div>
-      <div class="brand-sub">by Arturo</div>
+      <div class="brand-sub">by IArtLabs</div>
     </div>
     <div class="mode-switch">
-      <button class="mode-btn active" data-mode="karaoke" onclick="setMode('karaoke')">
+      <button class="mode-btn active" data-mode="karaoke" onclick="setMode('karaoke')" title="Pantalla principal del teleprompter con letras y controles de karaoke">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
         Karaoke
       </button>
-      <button class="mode-btn" data-mode="remote" onclick="setMode('remote')">
+      <button class="mode-btn" data-mode="remote" onclick="setMode('remote')" title="Muestra el codigo QR para que otros dispositivos se conecten y controlen remotamente">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="5" y="2" width="14" height="20" rx="2"/><circle cx="12" cy="17" r="1"/><line x1="9" y1="6" x2="15" y2="6"/><line x1="9" y1="10" x2="15" y2="10"/></svg>
         Remoto
       </button>
-      <button class="mode-btn ia-btn" data-mode="ia" onclick="setMode('ia')">
+      <button class="mode-btn ia-btn" data-mode="ia" onclick="setMode('ia')" title="Asistente IA para generar letras, sugerir canciones y mas (requiere Ollama)">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 2a9 9 0 0 1 9 9c0 4.56-2.87 8.5-7 9.7V22h-4v-1.3C5.87 19.5 3 15.56 3 11a9 9 0 0 1 9-9z"/><circle cx="9" cy="11" r="1" fill="currentColor"/><circle cx="15" cy="11" r="1" fill="currentColor"/></svg>
         IA
       </button>
-      <button class="mode-btn yt-btn" data-mode="youtube" onclick="setMode('youtube')" style="color:#ff4444;">
+      <button class="mode-btn yt-btn" data-mode="youtube" onclick="setMode('youtube')" style="color:#ff4444;" title="Busca y descarga musica de YouTube para usar como pista de karaoke">
         <svg viewBox="0 0 24 24" fill="currentColor"><path d="M23.495 6.205a3.007 3.007 0 0 0-2.088-2.088c-1.87-.501-9.396-.501-9.396-.501s-7.507-.01-9.396.501A3.007 3.007 0 0 0 .527 6.205a31.247 31.247 0 0 0-.522 5.805 31.247 31.247 0 0 0 .522 5.783 3.007 3.007 0 0 0 2.088 2.088c1.868.502 9.396.502 9.396.502s7.506 0 9.396-.502a3.007 3.007 0 0 0 2.088-2.088 31.247 31.247 0 0 0 .5-5.783 31.247 31.247 0 0 0-.5-5.805zM9.609 15.601V8.408l6.264 3.602z"/></svg>
         YouTube
       </button>
-      <button class="mode-btn bares-btn" data-mode="bares" onclick="setMode('bares')">
+      <button class="mode-btn bares-btn" data-mode="bares" onclick="setMode('bares')" title="Gestion de mesas, ordenes y configuracion para bares y establecimientos">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M3 7h18M3 7l2 13h14l2-13M3 7l1-3h16l1 3"/><line x1="10" y1="12" x2="10" y2="17"/><line x1="14" y1="12" x2="14" y2="17"/></svg>
         Bares
       </button>
     </div>
     <div id="datetime">--</div>
-    <div class="byflow-bar">Powered by <span>Arturo</span> &amp; <span>Claude</span></div>
+    <div class="byflow-bar" style="cursor:pointer;" onclick="openLegalModal()">Powered by <span>IArtLabs</span></div>
   </div>
 
   <div class="main">
@@ -825,26 +926,31 @@ select.inp{cursor:pointer;}
     <!-- ═══ SIDEBAR: Cola + Mesas ═══ -->
     <div class="sidebar">
       <div class="sidebar-head">
-        <h3>Cola de Cantantes</h3>
+        <h3 title="Agrega cantantes a la cola para organizar el orden del karaoke">Cola de Cantantes</h3>
         <div class="input-row">
-          <input type="text" class="inp" id="input-cantante" placeholder="Nombre..."
+          <input type="text" class="inp" id="input-cantante" placeholder="Nombre del cantante..."
+                 title="Escribe el nombre de quien va a cantar"
                  onkeypress="if(event.key==='Enter')document.getElementById('input-cancion').focus()">
         </div>
         <div class="input-row">
-          <input type="text" class="inp" id="input-cancion" placeholder="Canción..."
+          <input type="text" class="inp" id="input-cancion" placeholder="Nombre de la cancion..."
+                 title="Escribe la cancion que va a interpretar"
                  onkeypress="if(event.key==='Enter')agregarCola()">
-          <select class="inp" id="input-mesa" style="width:70px;flex:none;"><option value="">Mesa</option></select>
-          <button class="btn-add" onclick="agregarCola()" title="Agregar">+</button>
+          <select class="inp" id="input-mesa" style="width:70px;flex:none;" title="Mesa donde esta sentado el cantante"><option value="">Mesa</option></select>
+          <button class="btn-add" onclick="agregarCola()" title="Agregar cantante a la cola">+</button>
         </div>
-        <button class="btn-catalog" onclick="openCatalog()">
+        <button class="btn-catalog" onclick="openCatalog()" title="Abrir el catalogo de canciones guardadas para cargar una letra al teleprompter">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
-          Catálogo de Canciones
+          Catalogo de Canciones
         </button>
       </div>
       <div class="scrollable" id="lista-cola">
         <div class="empty-state"><span>🎤</span><p>Cola vacía</p></div>
       </div>
-      <div class="k-section-title">Mesas</div>
+      <div class="mesas-toggle" onclick="toggleMesasPanel()">
+        <span class="k-section-title" style="padding:0;">Mesas</span>
+        <span class="mesas-toggle-icon" id="mesas-toggle-icon">&#x25BC;</span>
+      </div>
       <div class="tables-grid" id="grid-mesas"></div>
     </div>
 
@@ -858,23 +964,44 @@ select.inp{cursor:pointer;}
           <div class="ns-name" id="ns-name">—</div>
           <div class="ns-song" id="ns-song">—</div>
         </div>
-        <button class="ns-next-btn" onclick="siguienteCantante()">Siguiente ▶</button>
+        <button class="ns-next-btn" onclick="siguienteCantante()" title="Terminar con el cantante actual y pasar al siguiente en la cola">Siguiente &#x25B6;</button>
+      </div>
+
+      <!-- Promo Banner (between songs) -->
+      <div class="promo-banner" id="promo-banner">
+        <div class="promo-countdown" id="promo-countdown"></div>
+        <div class="promo-title" id="promo-title">Promociones del Establecimiento</div>
+        <div class="promo-text" id="promo-text">Configura tus promociones en el modo Bares</div>
+        <div class="promo-next" id="promo-next-info">
+          <span>Siguiente:</span>
+          <span class="next-name" id="promo-next-name">—</span>
+        </div>
+        <button class="promo-skip" onclick="skipPromo()">Saltar &#x25B6;</button>
       </div>
 
       <canvas class="visualizer-canvas" id="main-viz"></canvas>
       <div class="tp-area">
         <div id="tp-display">
-          <span style="opacity:.25;font-size:1.1rem;">Selecciona una canción o agrega la letra</span>
+          <div id="tp-welcome" style="opacity:.6;font-size:1rem;max-width:600px;text-align:center;line-height:2.2;">
+            <div style="font-size:2.5rem;margin-bottom:12px;opacity:.4;">&#x1F3A4;</div>
+            <div style="font-size:1.3rem;font-weight:800;margin-bottom:16px;background:linear-gradient(135deg,#ff006e,#8338ec);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">Bienvenido a VibeFlow Pro</div>
+            <div style="display:grid;grid-template-columns:auto 1fr;gap:8px 14px;text-align:left;font-size:.85rem;opacity:.5;">
+              <span style="font-weight:800;color:#ff006e;">1.</span><span>Agrega cantantes en la <b>cola</b> (panel izquierdo)</span>
+              <span style="font-weight:800;color:#8338ec;">2.</span><span>Abre el <b>Catalogo de Canciones</b> o escribe la letra</span>
+              <span style="font-weight:800;color:#3a86ff;">3.</span><span>Pulsa <b>Play</b> para iniciar el teleprompter</span>
+              <span style="font-weight:800;color:#00f5a0;">4.</span><span>Usa los <b>modos</b> de arriba para YouTube, IA o Bares</span>
+            </div>
+          </div>
         </div>
       </div>
 
       <!-- Effects -->
       <div class="fx-bar">
-        <div class="fx-group"><label>VOL</label><input type="range" id="sl-vol" min="0" max="100" value="80"></div>
-        <div class="fx-group"><label>REVERB</label><input type="range" id="sl-reverb" min="0" max="100" value="0"></div>
-        <div class="fx-group"><label>ECO</label><input type="range" id="sl-delay" min="0" max="100" value="0"></div>
-        <div class="fx-group"><label>GRAVES</label><input type="range" id="sl-eq-low" min="-12" max="12" value="0"></div>
-        <div class="fx-group"><label>AGUDOS</label><input type="range" id="sl-eq-high" min="-12" max="12" value="0"></div>
+        <div class="fx-group" title="Volumen general del audio"><label>VOL</label><input type="range" id="sl-vol" min="0" max="100" value="80"></div>
+        <div class="fx-group" title="Efecto de reverberacion (simula sala de concierto)"><label>REVERB</label><input type="range" id="sl-reverb" min="0" max="100" value="0"></div>
+        <div class="fx-group" title="Efecto de eco/delay"><label>ECO</label><input type="range" id="sl-delay" min="0" max="100" value="0"></div>
+        <div class="fx-group" title="Ecualizador de frecuencias bajas (bajo/graves)"><label>GRAVES</label><input type="range" id="sl-eq-low" min="-12" max="12" value="0"></div>
+        <div class="fx-group" title="Ecualizador de frecuencias altas (agudos/brillo)"><label>AGUDOS</label><input type="range" id="sl-eq-high" min="-12" max="12" value="0"></div>
       </div>
 
       <!-- Audio Player Bar -->
@@ -898,47 +1025,60 @@ select.inp{cursor:pointer;}
       <!-- Player -->
       <div class="player-bar">
         <div class="player-controls">
-          <!-- Prev -->
-          <button class="ctrl-btn" onclick="tpPrev()" title="Anterior">
-            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 6h2v12H6zm3.5 6l8.5 6V6z"/></svg>
-          </button>
-          <!-- Slower -->
-          <button class="ctrl-btn" onclick="tpSpeedDown()" title="Más lento">
-            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M11 18V6l-8.5 6zm.5-6l8.5 6V6z"/></svg>
-          </button>
-          <span class="speed-display" id="speed-label">1.0x</span>
-          <!-- Play/Pause -->
-          <button class="ctrl-btn play" id="btn-play" onclick="toggleAutoScroll()">
-            <svg id="ico-play" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
-            <svg id="ico-pause" viewBox="0 0 24 24" fill="currentColor" style="display:none"><path d="M6 19h4V5H6zm8-14v14h4V5z"/></svg>
-          </button>
-          <span class="speed-display" id="word-counter">0/0</span>
-          <!-- Faster -->
-          <button class="ctrl-btn" onclick="tpSpeedUp()" title="Más rápido">
-            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M4 18l8.5-6L4 6zm9-12v12l8.5-6z"/></svg>
-          </button>
-          <!-- Next -->
-          <button class="ctrl-btn" onclick="tpNext()" title="Siguiente">
-            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 18l8.5-6L6 6zm8.5 0H17V6h-2.5z"/></svg>
-          </button>
-          <!-- Stop -->
-          <button class="ctrl-btn" onclick="tpReset()" title="Reset">
-            <svg viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="6" width="12" height="12" rx="1"/></svg>
-          </button>
+          <div style="display:flex;flex-direction:column;align-items:center;gap:3px;">
+            <button class="ctrl-btn" onclick="tpPrev()" title="Retroceder una palabra">
+              <svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 6h2v12H6zm3.5 6l8.5 6V6z"/></svg>
+            </button>
+            <span style="font-size:8px;color:rgba(255,255,255,.25);letter-spacing:.5px;">ATRAS</span>
+          </div>
+          <div style="display:flex;flex-direction:column;align-items:center;gap:3px;">
+            <button class="ctrl-btn" onclick="tpSpeedDown()" title="Reducir velocidad del scroll automatico">
+              <svg viewBox="0 0 24 24" fill="currentColor"><path d="M11 18V6l-8.5 6zm.5-6l8.5 6V6z"/></svg>
+            </button>
+            <span style="font-size:8px;color:rgba(255,255,255,.25);letter-spacing:.5px;">LENTO</span>
+          </div>
+          <span class="speed-display" id="speed-label" title="Velocidad actual del teleprompter">1.0x</span>
+          <div style="display:flex;flex-direction:column;align-items:center;gap:3px;">
+            <button class="ctrl-btn play" id="btn-play" onclick="toggleAutoScroll()" title="Iniciar o pausar el scroll automatico de la letra">
+              <svg id="ico-play" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+              <svg id="ico-pause" viewBox="0 0 24 24" fill="currentColor" style="display:none"><path d="M6 19h4V5H6zm8-14v14h4V5z"/></svg>
+            </button>
+            <span style="font-size:8px;color:rgba(255,255,255,.25);letter-spacing:.5px;">PLAY</span>
+          </div>
+          <span class="speed-display" id="word-counter" title="Palabra actual / total de palabras">0/0</span>
+          <div style="display:flex;flex-direction:column;align-items:center;gap:3px;">
+            <button class="ctrl-btn" onclick="tpSpeedUp()" title="Aumentar velocidad del scroll automatico">
+              <svg viewBox="0 0 24 24" fill="currentColor"><path d="M4 18l8.5-6L4 6zm9-12v12l8.5-6z"/></svg>
+            </button>
+            <span style="font-size:8px;color:rgba(255,255,255,.25);letter-spacing:.5px;">RAPIDO</span>
+          </div>
+          <div style="display:flex;flex-direction:column;align-items:center;gap:3px;">
+            <button class="ctrl-btn" onclick="tpNext()" title="Avanzar una palabra">
+              <svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 18l8.5-6L6 6zm8.5 0H17V6h-2.5z"/></svg>
+            </button>
+            <span style="font-size:8px;color:rgba(255,255,255,.25);letter-spacing:.5px;">SIGUIENTE</span>
+          </div>
+          <div style="display:flex;flex-direction:column;align-items:center;gap:3px;">
+            <button class="ctrl-btn" onclick="tpReset()" title="Detener y reiniciar la posicion de la letra">
+              <svg viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="6" width="12" height="12" rx="1"/></svg>
+            </button>
+            <span style="font-size:8px;color:rgba(255,255,255,.25);letter-spacing:.5px;">PARAR</span>
+          </div>
         </div>
       </div>
     </div>
 
     <!-- ═══ RIGHT PANEL: QR + Agregar Canción ═══ -->
     <div class="right-panel">
-      <h4>Control Remoto</h4>
-      <img id="qr-img" alt="QR">
-      <div id="qr-url">Cargando...</div>
+      <h4 title="Escanea este QR desde otro celular para controlar el karaoke remotamente">Control Remoto (QR)</h4>
+      <img id="qr-img" alt="QR" title="Escanea con la camara de tu celular para conectarte">
+      <div id="qr-url" title="URL para acceder desde otro dispositivo en la misma red WiFi">Cargando...</div>
       <div class="divider"></div>
-      <h4>Agregar Canción</h4>
-      <input type="text" class="rp-input" id="new-song-title" placeholder="Título" style="margin-bottom:6px;">
-      <textarea class="rp-input" id="new-song-letra" placeholder="Letra..." style="height:90px;resize:none;"></textarea>
-      <button class="rp-btn" onclick="agregarCancion()">Agregar</button>
+      <h4 title="Guarda canciones con su letra para cargarlas rapidamente desde el Catalogo">Guardar Nueva Cancion</h4>
+      <input type="text" class="rp-input" id="new-song-title" placeholder="Titulo de la cancion..." title="Nombre de la cancion" style="margin-bottom:6px;">
+      <input type="text" class="rp-input" id="new-song-artista" placeholder="Artista (opcional)..." title="Nombre del artista o banda" style="margin-bottom:6px;">
+      <textarea class="rp-input" id="new-song-letra" placeholder="Pega o escribe la letra aqui..." title="Letra completa de la cancion para el teleprompter" style="height:90px;resize:none;"></textarea>
+      <button class="rp-btn" onclick="agregarCancion()" title="Guardar esta cancion en el catalogo para uso futuro">Guardar al Catalogo</button>
     </div>
 
     <!-- ═══ IA PANEL ═══ -->
@@ -948,7 +1088,7 @@ select.inp{cursor:pointer;}
           <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14H9V8h2v8zm4 0h-2V8h2v8z" fill="var(--s)"/></svg>
           Asistente IA
         </div>
-        <div class="ia-subtitle">BYFLOW Intelligence — Powered by Ollama</div>
+        <div class="ia-subtitle">IArtLabs Intelligence — Ollama / Gemini</div>
         <div class="ia-status offline" id="ia-status">
           <div class="ia-status-dot"></div>
           <span id="ia-status-text">Conectando...</span>
@@ -1010,27 +1150,27 @@ select.inp{cursor:pointer;}
     <!-- ═══ BARES PANEL ═══ -->
     <div class="bares-panel" id="bares-panel">
 
-      <!-- OEM Gate (shown when locked) -->
+      <!-- License Gate (shown when locked) -->
       <div class="oem-gate" id="oem-gate">
         <div class="oem-logo">
           <svg viewBox="0 0 24 24"><path d="M3 7h18M3 7l2 13h14l2-13M3 7l1-3h16l1 3M10 12v5M14 12v5"/></svg>
         </div>
-        <div class="oem-title">BYFLOW Bares</div>
-        <div class="oem-sub">Módulo profesional de gestión de bares y establecimientos. Requiere licencia OEM.</div>
+        <div class="oem-title">BYFLOW PRO</div>
+        <div class="oem-sub">Funciones premium: Bares, YouTube Download e IA. Requiere licencia PRO activada online.</div>
         <div class="oem-badge">
           <svg viewBox="0 0 24 24"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z"/></svg>
-          LICENCIA OEM REQUERIDA
+          LICENCIA PRO REQUERIDA
         </div>
         <div class="oem-input-wrap">
           <input class="oem-key-inp" id="oem-key-inp" type="text"
-            placeholder="BFPRO-XXXX-XXXX-XXXX"
-            maxlength="19"
-            oninput="oemFormatKey(this)"
-            onkeypress="if(event.key==='Enter')oemUnlock()">
+            placeholder="VFP-XXXXX-XXXXX-XXXXX-XXXXX"
+            maxlength="24"
+            oninput="licenseFormatKey(this)"
+            onkeypress="if(event.key==='Enter')licenseActivate()">
         </div>
-        <button class="oem-unlock-btn" onclick="oemUnlock()">Activar Licencia</button>
-        <div class="oem-hint">Contacta a <span>licencias@byflow.mx</span> para obtener tu licencia OEM</div>
-        <span class="oem-reset" onclick="oemReset()" title="Resetear licencia">⟳ resetear</span>
+        <button class="oem-unlock-btn" onclick="licenseActivate()">Activar Licencia Online</button>
+        <div class="oem-hint">Contacta a <span>licencias@iartlabs.com</span> para obtener tu licencia PRO</div>
+        <span class="oem-reset" onclick="licenseDeactivate()" title="Desactivar licencia">&#x27F3; desactivar</span>
       </div>
 
       <!-- Bares content (shown when unlocked) -->
@@ -1043,7 +1183,7 @@ select.inp{cursor:pointer;}
           <div class="bares-subtitle" id="bares-bar-name">Establecimiento activo</div>
           <div class="bares-license-tag">
             <svg viewBox="0 0 24 24"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z"/></svg>
-            <span id="bares-license-label">OEM ACTIVA</span>
+            <span id="bares-license-label">PRO ACTIVA</span>
           </div>
         </div>
         <div class="bares-body">
@@ -1103,7 +1243,7 @@ select.inp{cursor:pointer;}
             <input class="bar-order-inp" id="bares-name-inp" placeholder="Nombre del establecimiento..." style="margin-bottom:6px;">
             <input class="bar-order-inp" id="bares-mesas-inp" type="number" min="4" max="40" placeholder="Número de mesas (default 12)" style="margin-bottom:6px;">
             <button class="oem-unlock-btn" style="font-size:11px;padding:9px;" onclick="baresSetupBar()">Aplicar configuración</button>
-            <span class="oem-reset" onclick="oemReset()">🔒 Cerrar sesión / resetear licencia</span>
+            <span class="oem-reset" onclick="licenseDeactivate()">&#x1F512; Desactivar licencia PRO</span>
           </div>
 
         </div>
@@ -1149,6 +1289,56 @@ select.inp{cursor:pointer;}
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="5" y="2" width="14" height="20" rx="2"/><circle cx="12" cy="17" r="1"/></svg>
       <span>Remoto</span>
     </button>
+  </div>
+</div>
+
+<!-- ═══ LEGAL MODAL ═══ -->
+<div class="legal-overlay" id="legal-overlay" onclick="if(event.target===this)closeLegalModal()">
+  <div class="legal-modal">
+    <button class="legal-close" onclick="closeLegalModal()">&times;</button>
+    <div class="legal-logo">VibeFlow Pro</div>
+    <div class="legal-brand-sub">BY IARTLABS</div>
+
+    <div class="legal-section">
+      <h5>Acerca de</h5>
+      <p>VibeFlow Pro es una plataforma profesional de karaoke, teleprompter y gestion de entretenimiento en vivo desarrollada por IArtLabs.</p>
+    </div>
+    <div class="legal-divider"></div>
+
+    <div class="legal-section">
+      <h5>Contacto</h5>
+      <p>
+        Email: <a href="mailto:contacto@iartlabs.com">contacto@iartlabs.com</a><br>
+        Licencias: <a href="mailto:licencias@iartlabs.com">licencias@iartlabs.com</a><br>
+        Soporte: <a href="mailto:soporte@iartlabs.com">soporte@iartlabs.com</a>
+      </p>
+    </div>
+    <div class="legal-divider"></div>
+
+    <div class="legal-section">
+      <h5>Redes Sociales</h5>
+      <p>
+        Web: <a href="https://iartlabs.com" target="_blank">iartlabs.com</a><br>
+        Instagram: <a href="https://instagram.com/iartlabs" target="_blank">@iartlabs</a>
+      </p>
+    </div>
+    <div class="legal-divider"></div>
+
+    <div class="legal-section">
+      <h5>Licencia y Propiedad Intelectual</h5>
+      <p>VibeFlow Pro es software propietario de IArtLabs. Todos los derechos reservados. Queda prohibida su reproduccion, distribucion o modificacion sin autorizacion escrita. El uso de este software requiere una licencia PRO valida para funciones premium.</p>
+    </div>
+    <div class="legal-divider"></div>
+
+    <div class="legal-section">
+      <h5>Aviso Legal</h5>
+      <p>Este software se proporciona "tal cual" sin garantias de ningun tipo. IArtLabs no se hace responsable por danos derivados del uso del software. El usuario es responsable de cumplir con las leyes de derechos de autor aplicables al contenido reproducido.</p>
+    </div>
+
+    <div style="text-align:center;margin-top:16px;font-size:10px;color:var(--sub);">
+      &copy; 2024-2026 IArtLabs. Todos los derechos reservados.<br>
+      Version 1.0.0
+    </div>
   </div>
 </div>
 
@@ -1226,9 +1416,13 @@ function setLyrics(text) {
   tpState.currentIdx = -1;
   const el = document.getElementById('tp-display');
   if (!tpState.words.length) {
-    el.innerHTML = '<span style="opacity:.25;font-size:1.1rem;">Selecciona una canción o agrega la letra</span>';
+    const w = document.getElementById('tp-welcome');
+    if (w) w.style.display = '';
+    else el.innerHTML = '<span style="opacity:.25;font-size:1.1rem;">Selecciona una cancion o agrega la letra</span>';
     return;
   }
+  const welcome = document.getElementById('tp-welcome');
+  if (welcome) welcome.style.display = 'none';
   el.innerHTML = tpState.words.map((w, i) =>
     '<span id="tw-' + i + '" class="tp-word" onclick="highlightWord(' + i + ')">' + escHtml(w) + '</span>'
   ).join(' ');
@@ -1357,16 +1551,19 @@ async function toggleMesa(num) {
 
 // ── Canciones ─────────────────────────────────────────────────────────────
 async function agregarCancion() {
-  const titulo = document.getElementById('new-song-title').value.trim();
-  const letra  = document.getElementById('new-song-letra').value.trim();
-  if (!titulo) return;
+  const titulo  = document.getElementById('new-song-title').value.trim();
+  const letra   = document.getElementById('new-song-letra').value.trim();
+  const artEl   = document.getElementById('new-song-artista');
+  const artista = artEl ? artEl.value.trim() : '';
+  if (!titulo) { showToast('Escribe el titulo de la cancion'); return; }
   try {
-    await fetch('/api/canciones', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({titulo, letra}) });
+    await fetch('/api/canciones', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({titulo, letra, artista}) });
     document.getElementById('new-song-title').value = '';
+    if (artEl) artEl.value = '';
     document.getElementById('new-song-letra').value = '';
     if (letra) { setLyrics(letra); if (socket) socket.emit('tp_lyrics', {lyrics: letra}); }
-    showToast('🎵 Canción agregada: ' + titulo);
-  } catch { showToast('Error al agregar canción'); }
+    showToast('Cancion guardada: ' + titulo);
+  } catch { showToast('Error al guardar cancion'); }
 }
 
 // ── Mode Switch ───────────────────────────────────────────────────────────
@@ -1388,10 +1585,18 @@ function setMode(mode) {
     if (sidebar)    sidebar.style.display    = 'flex';
     if (rightPanel) rightPanel.style.display = 'flex';
   } else if (mode === 'ia') {
+    if (!isPremium('ollama_ai')) {
+      showToast('Modo IA requiere licencia PRO');
+      setMode('bares'); return;
+    }
     if (sidebar)    sidebar.style.display    = 'flex';
     if (iaPanel)    { iaPanel.classList.add('active'); iaPanel.style.setProperty('display','flex','important'); }
     checkOllamaStatus();
   } else if (mode === 'youtube') {
+    if (!isPremium('youtube_download')) {
+      showToast('YouTube Download requiere licencia PRO');
+      setMode('bares'); return;
+    }
     if (sidebar)    sidebar.style.display    = 'flex';
     if (ytPanel)    { ytPanel.classList.add('active'); ytPanel.style.setProperty('display','flex','important'); }
     ytLoadLibrary();
@@ -1402,54 +1607,99 @@ function setMode(mode) {
   }
 }
 
-// ── OEM License / Bares ───────────────────────────────────────────────────
-const OEM_LS_KEY = 'byflow_oem_key';
+// ── License System (Online Activation) ────────────────────────────────────
 const OEM_LS_BAR = 'byflow_bar_name';
 const OEM_LS_NUM = 'byflow_bar_mesas';
 
-// Validación de licencia: formato BFPRO-XXXX-XXXX-XXXX con checksum simple
-function oemValidateKey(key) {
-  if (!key) return false;
-  const clean = key.toUpperCase().replace(/[^A-Z0-9-]/g,'');
-  if (!/^BFPRO-[A-Z0-9]{4}-[A-Z0-9]{4}-[A-Z0-9]{4}$/.test(clean)) return false;
-  // Checksum: suma de char codes de los 3 grupos debe ser divisible por 7
-  const parts = clean.split('-').slice(1);
-  const sum   = parts.join('').split('').reduce((a,c) => a + c.charCodeAt(0), 0);
-  return sum % 7 === 0;
+let licenseState = { activated: false, features: [] };
+
+async function checkLicenseStatus() {
+  try {
+    const r = await fetch('/api/license/status');
+    licenseState = await r.json();
+  } catch {
+    licenseState = { activated: false, features: [] };
+  }
+  updatePremiumUI();
 }
 
-function oemFormatKey(inp) {
+function isPremium(feature) {
+  return licenseState.activated && licenseState.features.includes(feature);
+}
+
+function updatePremiumUI() {
+  // Add PRO badges to mode buttons if not licensed
+  document.querySelectorAll('.mode-btn').forEach(btn => {
+    const mode = btn.dataset.mode;
+    const existing = btn.querySelector('.pro-badge');
+    if (existing) existing.remove();
+    let needsPro = false;
+    if (mode === 'bares'   && !isPremium('bares'))           needsPro = true;
+    if (mode === 'youtube' && !isPremium('youtube_download')) needsPro = true;
+    if (mode === 'ia'      && !isPremium('ollama_ai'))        needsPro = true;
+    if (needsPro) {
+      const badge = document.createElement('span');
+      badge.className = 'pro-badge';
+      badge.textContent = 'PRO';
+      badge.style.cssText = 'font-size:8px;background:linear-gradient(135deg,#f59e0b,#ef4444);padding:1px 5px;border-radius:4px;color:#fff;font-weight:800;margin-left:4px;';
+      btn.appendChild(badge);
+    }
+  });
+}
+
+function licenseFormatKey(inp) {
   let v = inp.value.toUpperCase().replace(/[^A-Z0-9]/g,'');
-  // Prefix BFPRO auto-insert
   const parts = [];
-  if (v.length > 0)  parts.push(v.slice(0,5));
-  if (v.length > 5)  parts.push(v.slice(5,9));
-  if (v.length > 9)  parts.push(v.slice(9,13));
-  if (v.length > 13) parts.push(v.slice(13,17));
+  if (v.length > 0)  parts.push(v.slice(0,3));   // VFP
+  if (v.length > 3)  parts.push(v.slice(3,8));    // 5 chars
+  if (v.length > 8)  parts.push(v.slice(8,13));   // 5 chars
+  if (v.length > 13) parts.push(v.slice(13,18));  // 5 chars
+  if (v.length > 18) parts.push(v.slice(18,23));  // 5 chars
   inp.value = parts.join('-');
 }
 
-function oemUnlock() {
+async function licenseActivate() {
   const inp = document.getElementById('oem-key-inp');
   const key = inp.value.trim().toUpperCase();
-  if (!oemValidateKey(key)) {
+  if (!key || key.length < 20) {
     inp.classList.add('error');
     setTimeout(() => inp.classList.remove('error'), 500);
-    showToast('❌ Licencia inválida — formato: BFPRO-XXXX-XXXX-XXXX');
+    showToast('Formato: VFP-XXXXX-XXXXX-XXXXX-XXXXX');
     return;
   }
-  localStorage.setItem(OEM_LS_KEY, key);
-  showToast('✅ Licencia activada — Bienvenido a BYFLOW Bares');
-  baresShowContent(key);
+  try {
+    const r = await fetch('/api/license/activate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ key })
+    });
+    const data = await r.json();
+    if (!r.ok) {
+      inp.classList.add('error');
+      setTimeout(() => inp.classList.remove('error'), 500);
+      showToast(data.error || 'Error de activacion');
+      return;
+    }
+    licenseState = { activated: true, features: data.features, owner: data.owner, keyFragment: data.keyFragment };
+    updatePremiumUI();
+    showToast('Licencia PRO activada — ' + (data.owner || 'Bienvenido'));
+    baresShowContent(key);
+  } catch (e) {
+    showToast('Error de conexion con el servidor');
+  }
 }
 
-function oemReset() {
-  localStorage.removeItem(OEM_LS_KEY);
+async function licenseDeactivate() {
+  try {
+    await fetch('/api/license/deactivate', { method: 'POST' });
+  } catch {}
+  licenseState = { activated: false, features: [] };
+  updatePremiumUI();
   document.getElementById('oem-gate').style.display    = 'flex';
   document.getElementById('bares-content').style.display = 'none';
   const inp = document.getElementById('oem-key-inp');
   if (inp) inp.value = '';
-  showToast('🔒 Sesión cerrada');
+  showToast('Licencia desactivada');
 }
 
 // Estado de mesas del bar (independiente del karaoke)
@@ -1460,9 +1710,8 @@ let baresState = {
 };
 
 function baresInit() {
-  const saved = localStorage.getItem(OEM_LS_KEY);
-  if (saved && oemValidateKey(saved)) {
-    baresShowContent(saved);
+  if (isPremium('bares')) {
+    baresShowContent();
   } else {
     document.getElementById('oem-gate').style.display    = 'flex';
     document.getElementById('bares-content').style.display = 'none';
@@ -1474,7 +1723,8 @@ function baresShowContent(key) {
   document.getElementById('bares-content').style.display = 'flex';
   // Mostrar fragmento de licencia
   const tag = document.getElementById('bares-license-label');
-  if (tag) tag.textContent = 'OEM · ' + key.slice(-9);
+  const fragment = (licenseState.keyFragment) || (key ? key.slice(-9) : 'PRO');
+  if (tag) tag.textContent = 'PRO \u00B7 ' + fragment;
   // Cargar config guardada
   const barName  = localStorage.getItem(OEM_LS_BAR) || 'Mi Establecimiento';
   const numMesas = parseInt(localStorage.getItem(OEM_LS_NUM) || '12');
@@ -1600,27 +1850,41 @@ async function loadQR() {
   } catch { document.getElementById('qr-url').textContent = location.origin; }
 }
 
-// ── IA — Ollama Integration ───────────────────────────────────────────────
+// ── IA — Ollama + Gemini Integration ──────────────────────────────────────
 const OLLAMA_URL = 'http://localhost:11434';
+const GEMINI_DEFAULT_KEY = 'AIzaSyBxFENSMK52TT-FmGmRWP5v1sSdxMUhkXw';
+let geminiApiKey = localStorage.getItem('gemini_api_key') || GEMINI_DEFAULT_KEY;
 let iaOnline     = false;
+let iaBackend    = 'none'; // 'ollama' | 'gemini' | 'none'
 
 async function checkOllamaStatus() {
   const statusEl   = document.getElementById('ia-status');
   const statusText = document.getElementById('ia-status-text');
+  // Try Ollama first
   try {
     const r = await fetch(OLLAMA_URL + '/api/tags', { signal: AbortSignal.timeout(3000) });
     if (r.ok) {
       const d = await r.json();
       iaOnline = true;
+      iaBackend = 'ollama';
       statusEl.classList.remove('offline');
       const models = (d.models || []).map(m => m.name.split(':')[0]);
-      statusText.textContent = models.length ? 'Online · ' + models[0] : 'Online';
-    } else throw new Error();
-  } catch {
-    iaOnline = false;
-    statusEl.classList.add('offline');
-    statusText.textContent = 'Ollama offline';
+      statusText.textContent = models.length ? 'Ollama · ' + models[0] : 'Ollama Online';
+      return;
+    }
+  } catch {}
+  // Fallback to Gemini if key available
+  if (geminiApiKey) {
+    iaOnline = true;
+    iaBackend = 'gemini';
+    statusEl.classList.remove('offline');
+    statusText.textContent = 'Gemini AI';
+    return;
   }
+  iaOnline = false;
+  iaBackend = 'none';
+  statusEl.classList.add('offline');
+  statusText.textContent = 'IA offline — Configura Ollama o Gemini';
 }
 
 async function getOllamaModels() {
@@ -1669,50 +1933,59 @@ async function iaQuery(prompt) {
   })();
 
   if (!iaOnline) {
-    // Modo offline — respuestas inteligentes sin IA
     await new Promise(r => setTimeout(r, 800));
     bubbleEl.classList.remove('typing');
     const resp = getFallbackResponse(prompt);
     bubbleEl.textContent = resp;
-    // Si la respuesta es una letra, ofrecemos cargarla
     if (prompt.toLowerCase().includes('letra') || prompt.toLowerCase().includes('genera')) {
       offerLoadLyrics(bubbleEl, resp);
     }
     return;
   }
 
-  const models = await getOllamaModels();
-  const model  = models[0] || 'llama3.2';
-
-  const systemPrompt = `Eres el asistente de VibeFlow Pro, una app de karaoke y teleprompter profesional creada por BYFLOW.
-BYFLOW es una marca de tecnología para entretenimiento en vivo.
-Ayudas con: generar letras de canciones, sugerir canciones para karaoke, dar info sobre artistas, y apoyar al DJ/animador.
-Responde siempre en español, de forma concisa y útil. Si generas letras, hazlas con estructura de estrofas y coros.`;
+  const systemPrompt = 'Eres el asistente de VibeFlow Pro, una app de karaoke y teleprompter profesional creada por IArtLabs. Ayudas con: generar letras de canciones, sugerir canciones para karaoke, dar info sobre artistas, y apoyar al DJ/animador. Responde siempre en español, de forma concisa y util. Si generas letras, hazlas con estructura de estrofas y coros.';
 
   try {
-    const r = await fetch(OLLAMA_URL + '/api/generate', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ model, prompt, system: systemPrompt, stream: true })
-    });
-
-    if (!r.ok) throw new Error('HTTP ' + r.status);
-
-    const reader = r.body.getReader();
-    const dec    = new TextDecoder();
-    let full     = '';
-    bubbleEl.classList.remove('typing');
-    bubbleEl.textContent = '';
-
-    while (true) {
-      const { done, value } = await reader.read();
-      if (done) break;
-      const lines = dec.decode(value).split('\n').filter(Boolean);
-      for (const line of lines) {
-        try {
-          const obj = JSON.parse(line);
-          if (obj.response) { full += obj.response; bubbleEl.textContent = full; msgs.scrollTop = msgs.scrollHeight; }
-        } catch {}
+    let full = '';
+    if (iaBackend === 'gemini' && geminiApiKey) {
+      // Gemini API
+      const r = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=' + geminiApiKey, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          system_instruction: { parts: [{ text: systemPrompt }] },
+          contents: [{ parts: [{ text: prompt }] }]
+        })
+      });
+      if (!r.ok) throw new Error('Gemini HTTP ' + r.status);
+      const d = await r.json();
+      full = (d.candidates && d.candidates[0] && d.candidates[0].content && d.candidates[0].content.parts[0].text) || 'Sin respuesta';
+      bubbleEl.classList.remove('typing');
+      bubbleEl.textContent = full;
+    } else {
+      // Ollama streaming
+      const models = await getOllamaModels();
+      const model  = models[0] || 'llama3.2';
+      const r = await fetch(OLLAMA_URL + '/api/generate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ model, prompt, system: systemPrompt, stream: true })
+      });
+      if (!r.ok) throw new Error('HTTP ' + r.status);
+      const reader = r.body.getReader();
+      const dec    = new TextDecoder();
+      bubbleEl.classList.remove('typing');
+      bubbleEl.textContent = '';
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        const lines = dec.decode(value).split('\n').filter(Boolean);
+        for (const line of lines) {
+          try {
+            const obj = JSON.parse(line);
+            if (obj.response) { full += obj.response; bubbleEl.textContent = full; msgs.scrollTop = msgs.scrollHeight; }
+          } catch {}
+        }
       }
     }
     if (full && (prompt.toLowerCase().includes('letra') || prompt.toLowerCase().includes('genera'))) {
@@ -1720,7 +1993,7 @@ Responde siempre en español, de forma concisa y útil. Si generas letras, hazla
     }
   } catch (e) {
     bubbleEl.classList.remove('typing');
-    bubbleEl.textContent = 'Error al conectar con Ollama. Verifica que esté corriendo.';
+    bubbleEl.textContent = 'Error al conectar con IA (' + iaBackend + '). ' + e.message;
   }
 }
 
@@ -1739,7 +2012,7 @@ function offerLoadLyrics(bubbleEl, text) {
 
 function getFallbackResponse(prompt) {
   const p = prompt.toLowerCase();
-  if (p.includes('byflow')) return 'BYFLOW es una marca de tecnología para entretenimiento en vivo. VibeFlow Pro es su app insignia de karaoke y teleprompter profesional, diseñada para bares, eventos y shows en vivo. 🎤⚡';
+  if (p.includes('byflow')) return 'IArtLabs es una marca de tecnología para entretenimiento en vivo. VibeFlow Pro es su app insignia de karaoke y teleprompter profesional, diseñada para bares, eventos y shows en vivo. 🎤⚡';
   if (p.includes('letra') || p.includes('genera') || p.includes('canción')) {
     return 'Activa Ollama para generar letras con IA.\n\nMientras tanto, puedes:\n• Escribir la letra en el panel "Agregar Canción"\n• Pegarla directamente desde una fuente\n\nComando: ollama run llama3.2';
   }
@@ -1748,7 +2021,8 @@ function getFallbackResponse(prompt) {
 }
 
 // ── YouTube ───────────────────────────────────────────────────────────────
-let ytApiKey  = localStorage.getItem('yt_api_key') || '';
+const YT_DEFAULT_KEY = 'AIzaSyAa8sVHiUQgBnZ6je1FRmGGlj7F8GYvPC4';
+let ytApiKey  = localStorage.getItem('yt_api_key') || YT_DEFAULT_KEY;
 let ytResults = [];
 
 function ytInit() {
@@ -2191,8 +2465,155 @@ function mobileSetMode(mode, btn) {
 
 // Close overlays on escape
 document.addEventListener('keydown', (e) => {
-  if (e.key === 'Escape') { closeCatalog(); }
+  if (e.key === 'Escape') { closeCatalog(); closeLegalModal(); }
 }, true);
+
+// ── Legal Modal ───────────────────────────────────────────────────────────
+function openLegalModal() { document.getElementById('legal-overlay').classList.add('open'); }
+function closeLegalModal() { document.getElementById('legal-overlay').classList.remove('open'); }
+
+// ── Collapsible Mesas ─────────────────────────────────────────────────────
+let mesasCollapsed = localStorage.getItem('mesas_collapsed') === 'true';
+
+function toggleMesasPanel() {
+  mesasCollapsed = !mesasCollapsed;
+  localStorage.setItem('mesas_collapsed', mesasCollapsed);
+  applyMesasCollapse();
+}
+
+function applyMesasCollapse() {
+  const grid = document.getElementById('grid-mesas');
+  const icon = document.getElementById('mesas-toggle-icon');
+  if (grid) grid.classList.toggle('collapsed', mesasCollapsed);
+  if (icon) icon.classList.toggle('collapsed', mesasCollapsed);
+}
+
+// ── Promo/Announcement System (between songs) ────────────────────────────
+let promoState = {
+  active: false,
+  timer: null,
+  countdown: 10,
+  promos: [],
+  currentPromoIdx: 0,
+  jingleAudio: null
+};
+
+// Default promos (bar can configure these)
+function getBarPromos() {
+  const saved = localStorage.getItem('bar_promos');
+  if (saved) try { return JSON.parse(saved); } catch {}
+  return [
+    '2x1 en cervezas de 9pm a 11pm',
+    'Viernes de karaoke — canta gratis toda la noche',
+    'Pregunta por nuestros combos y promociones',
+    'Siguenos en redes sociales para ofertas exclusivas'
+  ];
+}
+
+function saveBarPromos(promos) {
+  localStorage.setItem('bar_promos', JSON.stringify(promos));
+}
+
+function showPromoBanner(nextSinger) {
+  const banner = document.getElementById('promo-banner');
+  const promos = getBarPromos();
+  if (!promos.length) return;
+
+  promoState.active = true;
+  promoState.countdown = 10;
+  promoState.currentPromoIdx = (promoState.currentPromoIdx + 1) % promos.length;
+
+  // Set promo content
+  document.getElementById('promo-title').textContent = 'Promocion del Establecimiento';
+  document.getElementById('promo-text').textContent = promos[promoState.currentPromoIdx];
+
+  // Set next singer info
+  if (nextSinger) {
+    document.getElementById('promo-next-name').textContent =
+      nextSinger.cantante + (nextSinger.cancion ? ' — ' + nextSinger.cancion : '');
+    document.getElementById('promo-next-info').style.display = '';
+  } else {
+    document.getElementById('promo-next-info').style.display = 'none';
+  }
+
+  // Play a short jingle sound (Web Audio API beep)
+  playJingle();
+
+  banner.classList.add('active');
+  updatePromoCountdown();
+
+  promoState.timer = setInterval(() => {
+    promoState.countdown--;
+    updatePromoCountdown();
+    if (promoState.countdown <= 0) {
+      skipPromo();
+    }
+  }, 1000);
+}
+
+function updatePromoCountdown() {
+  document.getElementById('promo-countdown').textContent = promoState.countdown;
+}
+
+function skipPromo() {
+  promoState.active = false;
+  clearInterval(promoState.timer);
+  document.getElementById('promo-banner').classList.remove('active');
+  if (promoState.jingleAudio) {
+    promoState.jingleAudio.pause();
+    promoState.jingleAudio = null;
+  }
+  // Auto-advance to next singer
+  if (promoState.pendingNextId) {
+    activarCantante(promoState.pendingNextId);
+    promoState.pendingNextId = null;
+  }
+}
+
+function playJingle() {
+  try {
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    const notes = [523.25, 659.25, 783.99, 1046.50]; // C5, E5, G5, C6
+    notes.forEach((freq, i) => {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = 'sine';
+      osc.frequency.value = freq;
+      gain.gain.setValueAtTime(0.15, ctx.currentTime + i * 0.15);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + i * 0.15 + 0.4);
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start(ctx.currentTime + i * 0.15);
+      osc.stop(ctx.currentTime + i * 0.15 + 0.5);
+    });
+  } catch {}
+}
+
+// Override siguienteCantante to show promo between songs
+const _origSiguiente = siguienteCantante;
+siguienteCantante = async function() {
+  // Find who's next in line
+  const nextIdx = colaCache.findIndex(c => c.estado === 'esperando');
+  const nextSinger = nextIdx >= 0 ? colaCache[nextIdx] : null;
+
+  // First finish current singer
+  const current = colaCache.find(c => c.estado === 'cantando');
+  if (current) {
+    if (socket && socket.connected) {
+      socket.emit('cola_next');
+    } else {
+      await fetch('/api/cola/'+current.id, {method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify({estado:'terminado'})});
+    }
+    await new Promise(r => setTimeout(r, 300));
+    await fetchCola();
+  }
+
+  // Show promo banner if there's someone next
+  if (nextSinger) {
+    promoState.pendingNextId = nextSinger.id;
+    showPromoBanner(nextSinger);
+  }
+};
 
 // ── Init ──────────────────────────────────────────────────────────────────
 (async function init() {
@@ -2200,10 +2621,12 @@ document.addEventListener('keydown', (e) => {
   setInterval(updateClock, 1000);
   initVisualizer();
   renderMesas();
+  applyMesasCollapse();
   loadQR();
   fetchCola();
   fetchSongs();
   ytInit();
+  await checkLicenseStatus();
   await connectSocket();
 })();
 </script>

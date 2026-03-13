@@ -2,6 +2,8 @@
   "name": "vibeflow-pro",
   "version": "1.0.0",
   "description": "VibeFlow Pro - Teleprompter & Karaoke System",
+  "license": "SEE LICENSE IN LICENSE",
+  "private": true,
   "main": "server.js",
   "scripts": {
     "start": "node server.js"
