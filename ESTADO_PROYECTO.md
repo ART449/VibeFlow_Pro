@@ -1,7 +1,7 @@
 # BYFLOW — Estado del Proyecto
 ## "Vive Cantando con ByFlow" — powered by IArtLabs
 
-**Version:** v3.0
+**Version:** v3.1
 **Fecha:** 2026-03-13
 **Produccion:** https://byflowapp.up.railway.app
 **Repo:** https://github.com/ART449/VibeFlow_Pro
@@ -39,6 +39,10 @@ ByFlow es una plataforma todo-en-uno de karaoke y entretenimiento en vivo.
 - [x] Control remoto via QR
 - [x] Seccion legal completa (contacto, licencia, redes IArtLabs)
 - [x] Visualizador de audio
+- [x] Panel de Configuracion (perfil usuario, apariencia, toggles audio, status API keys)
+- [x] Boton de engranaje en topbar para acceso rapido a Settings
+- [x] DJ Soundboard en panel Bares: 9 pads SFX (airhorn, aplausos, redoble, scratch, ovacion, campana, sirena, bass drop, woosh)
+- [x] setMode() reescrito: oculta TODO, muestra solo lo del modo activo
 
 ### Backend (server.js)
 - [x] Express + Socket.IO
@@ -82,11 +86,22 @@ ByFlow es una plataforma todo-en-uno de karaoke y entretenimiento en vivo.
 
 ## OTROS PROYECTOS BYFLOW EN PARALELO
 
-### Stem Engine v0.2 (en desarrollo con ChatGPT)
+### Stem Engine v0.3 (en desarrollo con ChatGPT)
 - Motor de separacion de pistas con Demucs
-- Transcripcion MIDI con Basic Pitch
+- Transcripcion MIDI con Basic Pitch (import lazy)
 - Analisis BPM, tonalidad, acordes
 - Cache por hash, WebSocket progreso
+- **NUEVO v0.3:** Pipeline beatbox → MIDI → arreglo
+  - Deteccion de golpes de beatbox (kick, snare, hihat, clap, tom)
+  - Clasificacion heuristica de percusion
+  - Cuantizacion a rejilla temporal
+  - Exportacion MIDI de bateria
+  - Generacion de preview WAV
+  - Endpoint POST /api/beatbox/jobs/{job_id}/arrange (16/32/64 compases)
+  - Waveform JSON para frontend (picos de audio original, mix, stems)
+  - Health endpoint mas completo
+- **Siguiente:** v0.4 — Grabador beatbox en frontend, editor secuenciador, boton "Convertir a beat"
+- Clasificacion heuristica, no entrenada con voz del usuario todavia
 - Ubicacion: C:\Users\art44\OneDrive\Documentos\GitHub\byflow\
 
 ### Backend Byflow v7.3 (Python/FastAPI)
@@ -109,4 +124,4 @@ ByFlow es una plataforma todo-en-uno de karaoke y entretenimiento en vivo.
 
 ---
 
-*Ultima actualizacion: 2026-03-13 — ByFlow v3.0*
+*Ultima actualizacion: 2026-03-13 — ByFlow v3.1*

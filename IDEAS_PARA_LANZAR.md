@@ -28,11 +28,14 @@ Esfuerzo: ⚡ Rapido (1 sesion) | 🔧 Medio (2-3 sesiones) | 🏗 Grande (1+ se
 - **Consideracion:** El backend v7.3 ya tiene endpoints de sesion-mesa y QR
 - **Esfuerzo:** 🔧 Medio
 
-### 3. Integrar Stem Engine con ByFlow
-- **Que investigar:** Como conectar el motor Python (Demucs) con el frontend
-- **Por que:** Separar pistas = karaoke de cualquier cancion (quitar voz)
-- **Idea:** Boton "Crear version karaoke" que envia audio al Stem Engine
-- **Dependencia:** Stem Engine v0.2 debe estar estable
+### 3. Integrar Stem Engine v0.3 con ByFlow
+- **Que investigar:** Como conectar el motor Python (Demucs + Beatbox pipeline) con el frontend
+- **Por que:** Separar pistas = karaoke + beatbox → pista base de bateria
+- **Idea fase 1:** Boton "Crear version karaoke" que envia audio al Stem Engine
+- **Idea fase 2:** Grabador beatbox en frontend → /api/beatbox/jobs → MIDI + preview WAV
+- **Idea fase 3:** Editor secuenciador de pasos + boton "Convertir a beat"
+- **Ya existe v0.3:** Pipeline beatbox → deteccion golpes → MIDI → arreglo (16/32/64 compases)
+- **Pendiente:** Entrenar clasificador con muestras reales del usuario
 - **Esfuerzo:** 🏗 Grande
 
 ### 4. Musixmatch API para letras sincronizadas
