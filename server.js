@@ -174,6 +174,30 @@ app.post('/api/admin/force-promo', (req, res) => {
   res.json({ forced: true });
 });
 
+// ==========================================
+// OWNER DETECTION — MAINTENANCE MODE
+// ==========================================
+
+app.post('/api/grok/owner-detected', (req, res) => {
+  const { roomId, present } = req.body;
+
+  if (!roomId) {
+    return res.status(400).json({ error: 'roomId is required' });
+  }
+
+  if (present) {
+    io.to(roomId).emit('maintenance-mode', { active: true });
+    updateRoomMode(roomId, 'maintenance');
+    console.log(`[${roomId}] Owner detected → Maintenance mode ON`);
+  } else {
+    io.to(roomId).emit('maintenance-mode', { active: false });
+    updateRoomMode(roomId, 'idle');
+    console.log(`[${roomId}] Owner left → Maintenance mode OFF`);
+  }
+
+  res.json({ maintenanceMode: present });
+});
+
 // Health check
 app.get('/api/health', (req, res) => {
   res.json({

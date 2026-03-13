@@ -62,6 +62,23 @@
     }
     #skip-btn:hover { background: rgba(255,255,255,0.35); }
 
+    /* Maintenance mode panel */
+    #maintenance {
+      position: absolute; top: 0; left: 0;
+      width: 100%; height: 100%;
+      display: none; z-index: 1300;
+      background: rgba(0,0,0,0.95);
+      flex-direction: column; align-items: center; justify-content: center;
+      font-family: 'Courier New', monospace;
+    }
+    #maintenance.active { display: flex; }
+    #maintenance h1 { font-size: 2rem; color: #00f5a0; margin-bottom: 2rem; }
+    #maintenance .status-line { font-size: 1.2rem; margin: 0.3rem 0; opacity: 0.9; }
+    #maintenance .ok { color: #00f5a0; }
+    #maintenance .warn { color: #ffcc00; }
+    #maintenance .err { color: #ff4444; }
+    #maintenance .footer { margin-top: 2rem; opacity: 0.4; font-size: 0.9rem; }
+
     /* Capture moment toast */
     #capture-toast {
       position: absolute; bottom: 3rem; left: 50%;
@@ -101,6 +118,12 @@
   <button id="skip-btn" onclick="skipOverlay()">Saltar ▶</button>
 
   <div id="capture-toast"></div>
+
+  <div id="maintenance">
+    <h1>GFlow — Modo Mantenimiento</h1>
+    <div id="maintenance-report"></div>
+    <p class="footer">Owner detected — auto-activated</p>
+  </div>
 
   <script>
     // ==========================================
@@ -239,6 +262,78 @@
     socket.on('recording-started', () => {
       hideOverlay();
     });
+
+    // ==========================================
+    // MAINTENANCE MODE (owner detection)
+    // ==========================================
+    socket.on('maintenance-mode', (data) => {
+      const panel = document.getElementById('maintenance');
+      if (data.active) {
+        hideOverlay();
+        panel.classList.add('active');
+        runMaintenanceCheck();
+      } else {
+        panel.classList.remove('active');
+      }
+    });
+
+    async function runMaintenanceCheck() {
+      const report = document.getElementById('maintenance-report');
+      report.innerHTML = '<p class="status-line">Running diagnostics...</p>';
+
+      const checks = [];
+
+      // Check health endpoint
+      try {
+        const r = await fetch('/api/health');
+        const d = await r.json();
+        checks.push({ label: 'Server', status: 'ok', detail: `v${d.version || '?'} — uptime ${Math.floor(d.uptime)}s — ${d.rooms} rooms` });
+      } catch {
+        checks.push({ label: 'Server', status: 'err', detail: 'No response' });
+      }
+
+      // Check Socket.IO
+      checks.push({
+        label: 'Socket.IO',
+        status: socket.connected ? 'ok' : 'err',
+        detail: socket.connected ? `Connected (${socket.id})` : 'Disconnected'
+      });
+
+      // Check room
+      checks.push({
+        label: 'Room',
+        status: 'ok',
+        detail: roomId
+      });
+
+      // Check rooms status
+      try {
+        const r = await fetch('/api/rooms/status');
+        const rooms = await r.json();
+        checks.push({ label: 'Active rooms', status: rooms.length > 0 ? 'ok' : 'warn', detail: `${rooms.length} room(s)` });
+      } catch {
+        checks.push({ label: 'Rooms API', status: 'err', detail: 'Failed' });
+      }
+
+      // Check YouTube API
+      try {
+        const r = await fetch('/api/youtube/search?q=test');
+        const d = await r.json();
+        checks.push({
+          label: 'YouTube API',
+          status: d.results && d.results.length > 0 ? 'ok' : 'warn',
+          detail: d.message || `${d.results.length} results`
+        });
+      } catch {
+        checks.push({ label: 'YouTube API', status: 'err', detail: 'Failed' });
+      }
+
+      // Render report
+      report.innerHTML = checks.map(c => {
+        const icon = c.status === 'ok' ? '[OK]' : c.status === 'warn' ? '[WARNING]' : '[ERROR]';
+        return `<p class="status-line ${c.status}">${icon} ${c.label}: ${c.detail}</p>`;
+      }).join('');
+    }
 
     // ==========================================
     // HELPERS

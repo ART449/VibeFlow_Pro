@@ -12,6 +12,8 @@
  *   ROOM_ID       — Room identifier for this display
  *   SCAN_INTERVAL — Milliseconds between scans (default: 2000)
  *   LANG          — OCR language (default: spa)
+ *   OWNER_DEVICE  — Owner's Bluetooth device name for auto-detection
+ *   OWNER_WIFI_MAC — Owner's phone WiFi MAC for presence detection
  */
 
 const axios = require('axios');
@@ -32,11 +34,15 @@ const VIBEFLOW_URL = process.env.VIBEFLOW_URL || 'http://localhost:3000';
 const ROOM_ID = process.env.ROOM_ID || 'sala1';
 const SCAN_INTERVAL = parseInt(process.env.SCAN_INTERVAL, 10) || 2000;
 const LANG = process.env.LANG || 'spa';
+const OWNER_DEVICE = process.env.OWNER_DEVICE || '';
+const OWNER_WIFI_MAC = process.env.OWNER_WIFI_MAC || '';
 
 // Debounce: don't fire the same event twice within this window
 const DEBOUNCE_MS = 3000;
 let lastEvent = '';
 let lastEventTime = 0;
+let ownerPresent = false;
+let ownerCheckInterval = 10000; // Check owner presence every 10s
 
 function classifyFrame(ocrText) {
   const text = (ocrText || '').toUpperCase();
@@ -110,10 +116,77 @@ async function analyzeScreen() {
   }
 }
 
+// ==========================================
+// OWNER PRESENCE DETECTION
+// ==========================================
+
+const { execSync } = require('child_process');
+
+function checkOwnerPresence() {
+  if (!OWNER_DEVICE && !OWNER_WIFI_MAC) return;
+
+  try {
+    let detected = false;
+
+    // Method 1: Bluetooth scan for owner's device
+    if (OWNER_DEVICE) {
+      const btResult = execSync(
+        'bluetoothctl devices Connected 2>/dev/null || echo ""',
+        { encoding: 'utf8', timeout: 5000 }
+      );
+      if (btResult.toUpperCase().includes(OWNER_DEVICE.toUpperCase())) {
+        detected = true;
+      }
+    }
+
+    // Method 2: ARP/WiFi scan for owner's MAC address
+    if (!detected && OWNER_WIFI_MAC) {
+      const arpResult = execSync(
+        'arp -a 2>/dev/null || echo ""',
+        { encoding: 'utf8', timeout: 5000 }
+      );
+      if (arpResult.toUpperCase().includes(OWNER_WIFI_MAC.toUpperCase())) {
+        detected = true;
+      }
+    }
+
+    // State changed: owner arrived or left
+    if (detected && !ownerPresent) {
+      ownerPresent = true;
+      console.log(`[${new Date().toISOString()}] Owner detected → activating maintenance mode`);
+      axios.post(`${VIBEFLOW_URL}/api/grok/owner-detected`, {
+        roomId: ROOM_ID,
+        present: true
+      }).catch(() => {});
+    } else if (!detected && ownerPresent) {
+      ownerPresent = false;
+      console.log(`[${new Date().toISOString()}] Owner left → deactivating maintenance mode`);
+      axios.post(`${VIBEFLOW_URL}/api/grok/owner-detected`, {
+        roomId: ROOM_ID,
+        present: false
+      }).catch(() => {});
+    }
+  } catch {
+    // Silently ignore detection errors
+  }
+}
+
+// ==========================================
+// START
+// ==========================================
+
 console.log(`VibeFlow Grok Client started`);
 console.log(`  Backend:  ${VIBEFLOW_URL}`);
 console.log(`  Room:     ${ROOM_ID}`);
 console.log(`  Interval: ${SCAN_INTERVAL}ms`);
 console.log(`  Language: ${LANG}`);
+if (OWNER_DEVICE || OWNER_WIFI_MAC) {
+  console.log(`  Owner detection: ON (${OWNER_DEVICE || OWNER_WIFI_MAC})`);
+}
 
 setInterval(analyzeScreen, SCAN_INTERVAL);
+
+if (OWNER_DEVICE || OWNER_WIFI_MAC) {
+  setInterval(checkOwnerPresence, ownerCheckInterval);
+  checkOwnerPresence(); // Check immediately on start
+}
