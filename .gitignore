@@ -1,0 +1,8 @@
+node_modules/
+python/venv/
+python/downloads/
+python/separated/
+.env
+*.log
+.DS_Store
+Thumbs.db

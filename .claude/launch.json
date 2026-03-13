@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "VibeFlow Pro",
+      "runtimeExecutable": "node",
+      "runtimeArgs": ["server.js"],
+      "port": 8080
+    }
+  ]
+}
