@@ -792,6 +792,68 @@ select.inp{cursor:pointer;}
 }
 .pending-item .pi-song{flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 
+/* ── Welcome Overlay ──────────────────────────────────────────────── */
+.welcome-overlay{
+  position:fixed;inset:0;z-index:9000;
+  background:radial-gradient(ellipse at 50% 30%,rgba(20,10,40,.98),rgba(7,7,13,.99));
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:20px;animation:welcomeFade .8s ease;
+}
+.welcome-overlay.hidden{display:none;}
+@keyframes welcomeFade{from{opacity:0;}to{opacity:1;}}
+.welcome-logo{
+  font-size:3rem;font-weight:900;letter-spacing:-1px;
+  background:linear-gradient(135deg,#ff006e,#8338ec,#3a86ff);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+  text-align:center;
+}
+.welcome-sub{font-size:1rem;color:var(--sub);text-align:center;margin-top:-8px;}
+.welcome-brand{font-size:.7rem;color:rgba(255,255,255,.2);letter-spacing:3px;text-transform:uppercase;}
+.welcome-cards{
+  display:grid;grid-template-columns:repeat(3,1fr);gap:16px;
+  max-width:700px;width:90%;margin-top:16px;
+}
+.welcome-card{
+  background:rgba(255,255,255,.03);border:1px solid var(--border);
+  border-radius:16px;padding:24px 18px;text-align:center;
+  cursor:pointer;transition:all .25s;display:flex;flex-direction:column;
+  align-items:center;gap:10px;
+}
+.welcome-card:hover{
+  background:rgba(255,255,255,.06);border-color:rgba(255,255,255,.15);
+  transform:translateY(-4px);box-shadow:0 8px 30px rgba(0,0,0,.3);
+}
+.welcome-card .wc-icon{
+  width:56px;height:56px;border-radius:14px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:26px;
+}
+.welcome-card .wc-icon.karaoke{background:linear-gradient(135deg,var(--p),var(--s));}
+.welcome-card .wc-icon.youtube{background:linear-gradient(135deg,#ff4444,#cc0000);}
+.welcome-card .wc-icon.bares{background:linear-gradient(135deg,#f59e0b,#ef4444);}
+.welcome-card .wc-title{font-size:14px;font-weight:800;color:#fff;}
+.welcome-card .wc-desc{font-size:11px;color:var(--sub);line-height:1.5;}
+.welcome-card .wc-tag{
+  font-size:8px;padding:2px 8px;border-radius:10px;font-weight:800;letter-spacing:.5px;
+}
+.welcome-card .wc-tag.free{background:rgba(0,245,160,.1);color:var(--g);border:1px solid rgba(0,245,160,.2);}
+.welcome-card .wc-tag.pro{background:rgba(245,158,11,.1);color:#f59e0b;border:1px solid rgba(245,158,11,.2);}
+.welcome-footer{
+  margin-top:24px;display:flex;flex-direction:column;align-items:center;gap:8px;
+}
+.welcome-skip{
+  padding:8px 24px;border:1px solid rgba(255,255,255,.1);border-radius:8px;
+  background:transparent;color:var(--sub);font-size:11px;cursor:pointer;
+  transition:all .2s;
+}
+.welcome-skip:hover{border-color:var(--p);color:#fff;}
+
+/* ── Hideable Panels ─────────────────────────────────────────────── */
+.sidebar.panel-hidden{width:0;padding:0;overflow:hidden;border:none;opacity:0;transition:all .3s;}
+.right-panel.panel-hidden{width:0;padding:0;overflow:hidden;border:none;opacity:0;transition:all .3s;}
+.sidebar{transition:all .3s;}
+.right-panel{transition:all .3s;}
+
 /* ── Legal Modal ───────────────────────────────────────────────────── */
 .legal-overlay{
   display:none;position:fixed;inset:0;z-index:9999;
@@ -990,15 +1052,9 @@ select.inp{cursor:pointer;}
       <canvas class="visualizer-canvas" id="main-viz"></canvas>
       <div class="tp-area">
         <div id="tp-display">
-          <div id="tp-welcome" style="opacity:.6;font-size:1rem;max-width:600px;text-align:center;line-height:2.2;">
-            <div style="font-size:2.5rem;margin-bottom:12px;opacity:.4;">&#x1F3A4;</div>
-            <div style="font-size:1.3rem;font-weight:800;margin-bottom:16px;background:linear-gradient(135deg,#ff006e,#8338ec);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">Bienvenido a VibeFlow Pro</div>
-            <div style="display:grid;grid-template-columns:auto 1fr;gap:8px 14px;text-align:left;font-size:.85rem;opacity:.5;">
-              <span style="font-weight:800;color:#ff006e;">1.</span><span>Agrega cantantes en la <b>cola</b> (panel izquierdo)</span>
-              <span style="font-weight:800;color:#8338ec;">2.</span><span>Abre el <b>Catalogo de Canciones</b> o escribe la letra</span>
-              <span style="font-weight:800;color:#3a86ff;">3.</span><span>Pulsa <b>Play</b> para iniciar el teleprompter</span>
-              <span style="font-weight:800;color:#00f5a0;">4.</span><span>Usa los <b>modos</b> de arriba para YouTube, IA o Bares</span>
-            </div>
+          <div id="tp-welcome" style="opacity:.5;font-size:1rem;max-width:500px;text-align:center;line-height:2;">
+            <div style="font-size:3rem;margin-bottom:8px;opacity:.3;">&#x1F3A4;</div>
+            <div style="font-size:.9rem;color:var(--sub);">Agrega un cantante en la cola o selecciona una cancion del catalogo para comenzar</div>
           </div>
         </div>
       </div>
@@ -1276,6 +1332,44 @@ select.inp{cursor:pointer;}
 
   </div><!-- /main -->
 </div><!-- /app -->
+
+<!-- ═══ WELCOME OVERLAY ═══ -->
+<div class="welcome-overlay" id="welcome-overlay">
+  <div class="welcome-brand">IARTLABS</div>
+  <div class="welcome-logo">VibeFlow Pro</div>
+  <div class="welcome-sub">Plataforma profesional de karaoke y entretenimiento en vivo</div>
+
+  <div class="welcome-cards">
+    <div class="welcome-card" onclick="welcomeSelect('karaoke')">
+      <div class="wc-icon karaoke">&#x1F3A4;</div>
+      <div class="wc-title">Karaoke</div>
+      <div class="wc-desc">Teleprompter con letras, cola de cantantes y efectos de audio</div>
+      <span class="wc-tag free">GRATIS</span>
+    </div>
+    <div class="welcome-card" onclick="welcomeSelect('youtube')">
+      <div class="wc-icon youtube">&#x25B6;</div>
+      <div class="wc-title">YouTube</div>
+      <div class="wc-desc">Busca y descarga pistas de musica directo de YouTube</div>
+      <span class="wc-tag pro">PRO</span>
+    </div>
+    <div class="welcome-card" onclick="welcomeSelect('bares')">
+      <div class="wc-icon bares">&#x1F37A;</div>
+      <div class="wc-title">Bares</div>
+      <div class="wc-desc">Gestion de mesas, ordenes, promos y control del establecimiento</div>
+      <span class="wc-tag pro">PRO</span>
+    </div>
+  </div>
+
+  <div class="welcome-footer">
+    <div style="display:flex;gap:12px;align-items:center;margin-bottom:4px;">
+      <span style="font-size:10px;color:var(--sub);">Tambien disponible:</span>
+      <span style="font-size:10px;color:var(--a);cursor:pointer;" onclick="welcomeSelect('remote')">&#x1F4F1; Control Remoto</span>
+      <span style="font-size:10px;color:var(--s);cursor:pointer;" onclick="welcomeSelect('ia')">&#x1F916; Asistente IA <small style='color:#f59e0b;'>PRO</small></span>
+    </div>
+    <button class="welcome-skip" onclick="dismissWelcome()">Entrar directo al modo Karaoke</button>
+    <div style="font-size:9px;color:rgba(255,255,255,.15);margin-top:8px;cursor:pointer;" onclick="openLegalModal();dismissWelcome();">&copy; 2024-2026 IArtLabs &middot; Legal &middot; Contacto</div>
+  </div>
+</div>
 
 <!-- ═══ SONG CATALOG MODAL ═══ -->
 <div class="catalog-overlay" id="catalog-overlay" onclick="if(event.target===this)closeCatalog()">
@@ -2498,7 +2592,7 @@ function openLegalModal() { document.getElementById('legal-overlay').classList.a
 function closeLegalModal() { document.getElementById('legal-overlay').classList.remove('open'); }
 
 // ── Collapsible Mesas ─────────────────────────────────────────────────────
-let mesasCollapsed = localStorage.getItem('mesas_collapsed') === 'true';
+let mesasCollapsed = localStorage.getItem('mesas_collapsed') !== 'false'; // collapsed by default
 
 function toggleMesasPanel() {
   mesasCollapsed = !mesasCollapsed;
@@ -2704,6 +2798,32 @@ function getPromoTime() {
   return saved ? parseInt(saved) || 10 : 10;
 }
 
+// ── Welcome Overlay ───────────────────────────────────────────────────────
+function welcomeSelect(mode) {
+  dismissWelcome();
+  setMode(mode);
+}
+
+function dismissWelcome() {
+  const ov = document.getElementById('welcome-overlay');
+  if (ov) {
+    ov.style.opacity = '0';
+    ov.style.transition = 'opacity .4s';
+    setTimeout(() => ov.classList.add('hidden'), 400);
+  }
+  sessionStorage.setItem('vfp_welcomed', '1');
+  // Show sidebar for karaoke mode
+  showPanelsForMode(currentMode || 'karaoke');
+}
+
+function showPanelsForMode(mode) {
+  // Simply remove panel-hidden from both — setMode handles visibility via display
+  document.querySelector('.sidebar').classList.remove('panel-hidden');
+  document.querySelector('.right-panel').classList.remove('panel-hidden');
+}
+
+// No patch needed — showPanelsForMode is called from welcomeSelect/dismissWelcome
+
 // ── Init ──────────────────────────────────────────────────────────────────
 (async function init() {
   updateClock();
@@ -2717,6 +2837,16 @@ function getPromoTime() {
   ytInit();
   await checkLicenseStatus();
   await connectSocket();
+
+  // Show welcome overlay on fresh sessions
+  if (sessionStorage.getItem('vfp_welcomed')) {
+    document.getElementById('welcome-overlay').classList.add('hidden');
+    showPanelsForMode('karaoke');
+  } else {
+    // Hide panels until user picks
+    document.querySelector('.sidebar').classList.add('panel-hidden');
+    document.querySelector('.right-panel').classList.add('panel-hidden');
+  }
 })();
 </script>
 </body>
