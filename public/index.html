@@ -2362,12 +2362,21 @@ function startManualScroll() {
 }
 
 function startLRCPlayback() {
-  // Use timestamps from LRC data
+  // If a music player is active, the bridge (onMusicTimeUpdate) handles LRC sync.
+  // Only use performance.now() fallback when no player is connected.
+  if (_activePlayerType) {
+    // Player bridge is active — it calls onMusicTimeUpdate() directly.
+    // Just start polling to keep the bridge alive.
+    startPlayerSync();
+    console.log('[ByFlow] LRC sync via ' + _activePlayerType + ' player bridge');
+    return;
+  }
+
+  // Fallback: use performance.now() when no player is active (manual LRC mode)
   const now = performance.now();
   if (tpState.pauseOffset > 0) {
     tpState.startTime = now - tpState.pauseOffset;
   } else {
-    // Find start time based on current position
     let startOffset = 0;
     if (tpState.currentLine >= 0 && tpState.lrcData[tpState.currentLine]) {
       startOffset = tpState.lrcData[tpState.currentLine].time * 1000;
@@ -2377,16 +2386,13 @@ function startLRCPlayback() {
 
   tpState.lrcTimerId = setInterval(() => {
     const elapsed = ((performance.now() - tpState.startTime) / 1000) * tpState.speed;
-    // Find the line that should be active
     let activeLine = -1;
     for (let i = tpState.lrcData.length - 1; i >= 0; i--) {
       if (elapsed >= tpState.lrcData[i].time) { activeLine = i; break; }
     }
     if (activeLine >= 0 && activeLine !== tpState.currentLine) {
-      // Highlight first word of new line
       const line = tpState.lines[activeLine];
       if (line && line.words.length > 0) {
-        // Mark all words in the line as done for previous lines
         for (let li = tpState.currentLine + 1; li <= activeLine; li++) {
           const prevLine = tpState.lines[li];
           if (prevLine) {
@@ -2399,9 +2405,7 @@ function startLRCPlayback() {
             });
           }
         }
-        // Now animate words in the current line
         highlightWord(line.words[0].globalIdx);
-        // Progressively highlight remaining words with even spacing
         const lineWordCount = line.words.length;
         if (lineWordCount > 1) {
           const nextLineTime = (activeLine + 1 < tpState.lrcData.length)
@@ -2410,20 +2414,16 @@ function startLRCPlayback() {
           const wordDelay = lineDuration / lineWordCount;
           for (let wi = 1; wi < lineWordCount; wi++) {
             setTimeout(() => {
-              if (tpState.currentLine === activeLine && tpState.autoScrolling) {
-                highlightWord(line.words[wi].globalIdx);
-              }
+              if (tpState.currentLine === activeLine && tpState.autoScrolling) highlightWord(line.words[wi].globalIdx);
             }, wordDelay * wi);
           }
         }
       }
     }
-    // Check end
     if (activeLine >= tpState.lrcData.length - 1) {
-      // Mark last line words done after a delay
       setTimeout(() => stopAutoScroll(), 2000);
     }
-  }, 50); // Check every 50ms for precision
+  }, 50);
 }
 
 function stopAutoScroll() {
@@ -2652,6 +2652,7 @@ async function agregarCancion() {
 // ── Mode Switch ───────────────────────────────────────────────────────────
 function setMode(mode) {
   currentMode = mode;
+  localStorage.setItem('byflow_last_mode', mode); // Persistir modo para restore on refresh
   document.querySelectorAll('.mode-btn').forEach(b => b.classList.toggle('active', b.dataset.mode === mode));
 
   // Mode-based body class for accent colors (v7.1 design system)
@@ -3876,30 +3877,138 @@ function switchMusicSource(source) {
   }
 }
 
+// ── Music-Teleprompter Bridge ──────────────────────────────────────────
+// Unified bridge: all players feed currentTimeSec to the LRC engine
+let _activePlayerType = null; // 'youtube' | 'soundcloud' | 'jamendo' | null
+let _ytPlayer = null;
+let _scWidget = null;
+let _playerSyncInterval = null;
+
+function onMusicTimeUpdate(currentTimeSec) {
+  // Feed real playback time to LRC engine instead of performance.now()
+  if (tpState.isLRC && tpState.lrcData && tpState.autoScrolling) {
+    const elapsed = currentTimeSec * tpState.speed;
+    let activeLine = -1;
+    for (let i = tpState.lrcData.length - 1; i >= 0; i--) {
+      if (elapsed >= tpState.lrcData[i].time) { activeLine = i; break; }
+    }
+    if (activeLine >= 0 && activeLine !== tpState.currentLine) {
+      const line = tpState.lines[activeLine];
+      if (line && line.words.length > 0) {
+        for (let li = tpState.currentLine + 1; li <= activeLine; li++) {
+          const prevLine = tpState.lines[li];
+          if (prevLine) prevLine.words.forEach(w => {
+            const el = document.getElementById('tw-' + w.globalIdx);
+            if (el && !el.classList.contains('tp-done')) { el.classList.remove('tp-active'); el.classList.add('tp-done'); }
+          });
+        }
+        highlightWord(line.words[0].globalIdx);
+        const lineWordCount = line.words.length;
+        if (lineWordCount > 1) {
+          const nextLineTime = (activeLine + 1 < tpState.lrcData.length)
+            ? tpState.lrcData[activeLine + 1].time : tpState.lrcData[activeLine].time + 5;
+          const lineDuration = (nextLineTime - tpState.lrcData[activeLine].time) * 1000 / tpState.speed;
+          const wordDelay = lineDuration / lineWordCount;
+          for (let wi = 1; wi < lineWordCount; wi++) {
+            setTimeout(() => {
+              if (tpState.currentLine === activeLine && tpState.autoScrolling) highlightWord(line.words[wi].globalIdx);
+            }, wordDelay * wi);
+          }
+        }
+      }
+    }
+  }
+}
+
+function startPlayerSync() {
+  stopPlayerSync();
+  _playerSyncInterval = setInterval(() => {
+    if (_activePlayerType === 'youtube' && _ytPlayer && typeof _ytPlayer.getCurrentTime === 'function') {
+      try { onMusicTimeUpdate(_ytPlayer.getCurrentTime()); } catch {}
+    } else if (_activePlayerType === 'soundcloud' && _scWidget) {
+      _scWidget.getPosition(pos => onMusicTimeUpdate(pos / 1000));
+    }
+    // Jamendo uses 'timeupdate' event directly, no polling needed
+  }, 50);
+}
+
+function stopPlayerSync() {
+  if (_playerSyncInterval) { clearInterval(_playerSyncInterval); _playerSyncInterval = null; }
+  _activePlayerType = null;
+}
+
+// Load YouTube IFrame API once
+if (!window.YT) {
+  const ytApiScript = document.createElement('script');
+  ytApiScript.src = 'https://www.youtube.com/iframe_api';
+  document.head.appendChild(ytApiScript);
+}
+window.onYouTubeIframeAPIReady = function() { console.log('[ByFlow] YouTube IFrame API ready'); };
+
 function ytEmbed(videoId, title) {
+  stopPlayerSync();
+  if (_ytPlayer) { try { _ytPlayer.destroy(); } catch {} _ytPlayer = null; }
   const container = document.getElementById('embed-container');
   const player = document.getElementById('music-player-embed');
-  container.innerHTML = `<iframe width="100%" height="200" style="border-radius:8px;border:none;"
-    src="https://www.youtube.com/embed/${videoId}?autoplay=1&rel=0"
-    allow="autoplay; encrypted-media" allowfullscreen></iframe>
+  container.innerHTML = `<div id="yt-api-player"></div>
     <div style="font-size:.75rem;color:var(--sub);margin-top:4px;text-align:center;">${escHtml(title)}</div>`;
   player.style.display = 'block';
+
+  function createPlayer() {
+    _ytPlayer = new YT.Player('yt-api-player', {
+      height: '200', width: '100%',
+      videoId: videoId,
+      playerVars: { autoplay: 1, rel: 0, modestbranding: 1 },
+      events: {
+        onReady: () => { _activePlayerType = 'youtube'; startPlayerSync(); },
+        onStateChange: (e) => {
+          if (e.data === YT.PlayerState.PLAYING) { _activePlayerType = 'youtube'; startPlayerSync(); }
+          else if (e.data === YT.PlayerState.PAUSED || e.data === YT.PlayerState.ENDED) { stopPlayerSync(); }
+        }
+      }
+    });
+  }
+  if (window.YT && YT.Player) createPlayer();
+  else { window.onYouTubeIframeAPIReady = createPlayer; }
   showToast('▶️ ' + title.substring(0, 35));
 }
 
+// Load SoundCloud Widget API once
+if (!window.SC) {
+  const scApiScript = document.createElement('script');
+  scApiScript.src = 'https://w.soundcloud.com/player/api.js';
+  document.head.appendChild(scApiScript);
+}
+
 function scEmbed(trackUrl, title) {
+  stopPlayerSync();
+  _scWidget = null;
   const container = document.getElementById('embed-container');
   const player = document.getElementById('music-player-embed');
   const encoded = encodeURIComponent(trackUrl);
-  container.innerHTML = `<iframe width="100%" height="166" scrolling="no" frameborder="no" allow="autoplay"
+  const iframeId = 'sc-widget-iframe';
+  container.innerHTML = `<iframe id="${iframeId}" width="100%" height="166" scrolling="no" frameborder="no" allow="autoplay"
     style="border-radius:8px;"
     src="https://w.soundcloud.com/player/?url=${encoded}&color=%23ff5500&auto_play=true&hide_related=true&show_comments=false&show_user=true&show_reposts=false&show_teaser=false"></iframe>
     <div style="font-size:.75rem;color:var(--sub);margin-top:4px;text-align:center;">${escHtml(title)}</div>`;
   player.style.display = 'block';
+
+  function initSCWidget() {
+    const iframe = document.getElementById(iframeId);
+    if (!iframe || !window.SC || !SC.Widget) { setTimeout(initSCWidget, 300); return; }
+    _scWidget = SC.Widget(iframe);
+    _scWidget.bind(SC.Widget.Events.PLAY, () => { _activePlayerType = 'soundcloud'; startPlayerSync(); });
+    _scWidget.bind(SC.Widget.Events.PAUSE, () => stopPlayerSync());
+    _scWidget.bind(SC.Widget.Events.FINISH, () => stopPlayerSync());
+  }
+  setTimeout(initSCWidget, 500);
   showToast('▶️ ' + title.substring(0, 35));
 }
 
 function closeEmbed() {
+  stopPlayerSync();
+  if (_ytPlayer) { try { _ytPlayer.destroy(); } catch {} _ytPlayer = null; }
+  _scWidget = null;
   const container = document.getElementById('embed-container');
   const player = document.getElementById('music-player-embed');
   container.innerHTML = '';
@@ -3998,6 +4107,7 @@ function jmSaveKey() {
 }
 
 function jmPlay(audioUrl, title, artist, trackId) {
+  stopPlayerSync();
   if (jmAudio) { jmAudio.pause(); jmAudio = null; }
   const container = document.getElementById('embed-container');
   const player = document.getElementById('music-player-embed');
@@ -4011,7 +4121,136 @@ function jmPlay(audioUrl, title, artist, trackId) {
     </div>
   </div>`;
   player.style.display = 'block';
+
+  // Connect Jamendo audio to teleprompter bridge
+  const audioEl = document.getElementById('jm-audio-player');
+  if (audioEl) {
+    jmAudio = audioEl;
+    _activePlayerType = 'jamendo';
+    audioEl.addEventListener('timeupdate', () => onMusicTimeUpdate(audioEl.currentTime));
+    audioEl.addEventListener('play', () => { _activePlayerType = 'jamendo'; });
+    audioEl.addEventListener('pause', () => { _activePlayerType = null; });
+    audioEl.addEventListener('ended', () => { _activePlayerType = null; });
+    // Also connect to Web Audio API for FX processing
+    connectAudioToFX(audioEl);
+  }
   showToast('▶️ ' + title.substring(0, 35));
+}
+
+// ── Web Audio API — FX Engine (VOL, REVERB, ECO, GRAVES, AGUDOS) ──────
+let audioCtx = null;
+let fxGain = null, fxConvolver = null, fxDelay = null, fxDelayGain = null;
+let fxEqLow = null, fxEqHigh = null;
+let fxSource = null; // MediaElementSourceNode
+let fxConvolverBuffer = null;
+
+function initAudioFX() {
+  if (audioCtx) return;
+  audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+  // Gain (Volume)
+  fxGain = audioCtx.createGain();
+  fxGain.gain.value = 0.8;
+
+  // EQ Low (BiquadFilter lowshelf @ 250Hz)
+  fxEqLow = audioCtx.createBiquadFilter();
+  fxEqLow.type = 'lowshelf';
+  fxEqLow.frequency.value = 250;
+  fxEqLow.gain.value = 0;
+
+  // EQ High (BiquadFilter highshelf @ 4000Hz)
+  fxEqHigh = audioCtx.createBiquadFilter();
+  fxEqHigh.type = 'highshelf';
+  fxEqHigh.frequency.value = 4000;
+  fxEqHigh.gain.value = 0;
+
+  // Delay (Eco)
+  fxDelay = audioCtx.createDelay(2.0);
+  fxDelay.delayTime.value = 0.3;
+  fxDelayGain = audioCtx.createGain();
+  fxDelayGain.gain.value = 0; // off by default
+
+  // Convolver (Reverb) — generate impulse response programmatically
+  const sampleRate = audioCtx.sampleRate;
+  const length = sampleRate * 2; // 2 second reverb
+  const impulse = audioCtx.createBuffer(2, length, sampleRate);
+  for (let ch = 0; ch < 2; ch++) {
+    const data = impulse.getChannelData(ch);
+    for (let i = 0; i < length; i++) {
+      data[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / length, 2.5);
+    }
+  }
+  fxConvolver = audioCtx.createConvolver();
+  fxConvolver.buffer = impulse;
+  const fxReverbGain = audioCtx.createGain();
+  fxReverbGain.gain.value = 0;
+  // Store reverb gain node for slider control
+  window._fxReverbGain = fxReverbGain;
+
+  // Signal chain: source → gain → eqLow → eqHigh → destination
+  //                                    └→ delay → delayGain → destination
+  //                                    └→ convolver → reverbGain → destination
+  fxGain.connect(fxEqLow);
+  fxEqLow.connect(fxEqHigh);
+  fxEqHigh.connect(audioCtx.destination);
+
+  // Delay send
+  fxEqHigh.connect(fxDelay);
+  fxDelay.connect(fxDelayGain);
+  fxDelayGain.connect(fxDelay); // feedback loop
+  fxDelayGain.connect(audioCtx.destination);
+
+  // Reverb send
+  fxEqHigh.connect(fxConvolver);
+  fxConvolver.connect(fxReverbGain);
+  fxReverbGain.connect(audioCtx.destination);
+
+  console.log('[ByFlow] Audio FX engine initialized');
+}
+
+function connectAudioToFX(audioElement) {
+  if (!audioCtx) initAudioFX();
+  // Prevent double-connecting the same element
+  if (fxSource) { try { fxSource.disconnect(); } catch {} }
+  try {
+    fxSource = audioCtx.createMediaElementSource(audioElement);
+    fxSource.connect(fxGain);
+  } catch (e) {
+    // Already connected (can happen with same audio element)
+    console.warn('[ByFlow] Audio FX: ' + e.message);
+  }
+}
+
+// Slider handlers
+function initFXSliders() {
+  const slVol = document.getElementById('sl-vol');
+  const slReverb = document.getElementById('sl-reverb');
+  const slDelay = document.getElementById('sl-delay');
+  const slEqLow = document.getElementById('sl-eq-low');
+  const slEqHigh = document.getElementById('sl-eq-high');
+
+  if (slVol) slVol.addEventListener('input', (e) => {
+    if (!audioCtx) initAudioFX();
+    fxGain.gain.setTargetAtTime(e.target.value / 100, audioCtx.currentTime, 0.02);
+  });
+  if (slReverb) slReverb.addEventListener('input', (e) => {
+    if (!audioCtx) initAudioFX();
+    window._fxReverbGain.gain.setTargetAtTime(e.target.value / 100, audioCtx.currentTime, 0.02);
+  });
+  if (slDelay) slDelay.addEventListener('input', (e) => {
+    if (!audioCtx) initAudioFX();
+    const val = e.target.value / 100;
+    fxDelayGain.gain.setTargetAtTime(val * 0.4, audioCtx.currentTime, 0.02); // max 40% feedback
+    fxDelay.delayTime.setTargetAtTime(0.1 + val * 0.5, audioCtx.currentTime, 0.02); // 100ms-600ms
+  });
+  if (slEqLow) slEqLow.addEventListener('input', (e) => {
+    if (!audioCtx) initAudioFX();
+    fxEqLow.gain.setTargetAtTime(parseFloat(e.target.value), audioCtx.currentTime, 0.02);
+  });
+  if (slEqHigh) slEqHigh.addEventListener('input', (e) => {
+    if (!audioCtx) initAudioFX();
+    fxEqHigh.gain.setTargetAtTime(parseFloat(e.target.value), audioCtx.currentTime, 0.02);
+  });
 }
 
 // ── Visualizer ────────────────────────────────────────────────────────────
@@ -4918,6 +5157,7 @@ function showPanelsForMode(mode) {
   updateClock();
   setInterval(updateClock, 1000);
   initVisualizer();
+  initFXSliders();
   renderMesas();
   applyMesasCollapse();
   loadQR();
@@ -4929,12 +5169,24 @@ function showPanelsForMode(mode) {
   loadSettingsState();
   await connectSocket();
 
-  // Show welcome overlay on fresh sessions
-  if (sessionStorage.getItem('vfp_welcomed')) {
+  // Show welcome overlay — SECURITY: solo skip si hay licencia activa
+  // sessionStorage se resetea al cerrar pestaña, pero si hay licencia validada
+  // por el server, se puede saltar el welcome y restaurar el ultimo modo
+  const hasLicense = licenseState.activated;
+  const lastMode = localStorage.getItem('byflow_last_mode');
+  if (hasLicense && sessionStorage.getItem('vfp_welcomed')) {
+    // Licencia activa + ya vio welcome en esta sesion → directo al ultimo modo
+    document.getElementById('welcome-overlay').classList.add('hidden');
+    const restoreMode = lastMode || 'karaoke';
+    showPanelsForMode(restoreMode);
+    setMode(restoreMode);
+  } else if (sessionStorage.getItem('vfp_welcomed')) {
+    // Sin licencia pero ya vio welcome → mostrar app en modo free (karaoke)
     document.getElementById('welcome-overlay').classList.add('hidden');
     showPanelsForMode('karaoke');
+    setMode('karaoke');
   } else {
-    // Hide panels until user picks
+    // Primera visita en esta sesion → mostrar welcome
     document.querySelector('.sidebar').classList.add('panel-hidden');
     document.querySelector('.right-panel').classList.add('panel-hidden');
   }
