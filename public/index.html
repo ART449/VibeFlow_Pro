@@ -1154,7 +1154,7 @@ select.inp{cursor:pointer;}
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="5" y="2" width="14" height="20" rx="2"/><circle cx="12" cy="17" r="1"/><line x1="9" y1="6" x2="15" y2="6"/><line x1="9" y1="10" x2="15" y2="10"/></svg>
         Remoto
       </button>
-      <button class="mode-btn ia-btn" data-mode="ia" onclick="setMode('ia')" title="Asistente IA para generar letras, sugerir canciones y mas (requiere Ollama)">
+      <button class="mode-btn ia-btn" data-mode="ia" onclick="setMode('ia')" title="Asistente IA (Grok/Ollama) para generar letras, sugerir canciones y mas">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 2a9 9 0 0 1 9 9c0 4.56-2.87 8.5-7 9.7V22h-4v-1.3C5.87 19.5 3 15.56 3 11a9 9 0 0 1 9-9z"/><circle cx="9" cy="11" r="1" fill="currentColor"/><circle cx="15" cy="11" r="1" fill="currentColor"/></svg>
         IA
       </button>
@@ -1363,7 +1363,7 @@ select.inp{cursor:pointer;}
           <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14H9V8h2v8zm4 0h-2V8h2v8z" fill="var(--s)"/></svg>
           Asistente IA
         </div>
-        <div class="ia-subtitle">IArtLabs Intelligence — Ollama / Gemini</div>
+        <div class="ia-subtitle">IArtLabs Intelligence — Grok AI / Ollama</div>
         <div class="ia-status offline" id="ia-status">
           <div class="ia-status-dot"></div>
           <span id="ia-status-text">Conectando...</span>
@@ -2962,17 +2962,31 @@ async function loadQR() {
   } catch { document.getElementById('qr-url').textContent = location.origin; }
 }
 
-// ── IA — Ollama + Gemini Integration ──────────────────────────────────────
+// ── IA — Grok + Ollama Integration ────────────────────────────────────────
 const OLLAMA_URL = 'http://localhost:11434';
-const GEMINI_DEFAULT_KEY = 'AIzaSyBxFENSMK52TT-FmGmRWP5v1sSdxMUhkXw';
-let geminiApiKey = localStorage.getItem('gemini_api_key') || GEMINI_DEFAULT_KEY;
 let iaOnline     = false;
-let iaBackend    = 'none'; // 'ollama' | 'gemini' | 'none'
+let iaBackend    = 'none'; // 'grok' | 'ollama' | 'none'
+let iaGrokModel  = '';
 
 async function checkOllamaStatus() {
   const statusEl   = document.getElementById('ia-status');
   const statusText = document.getElementById('ia-status-text');
-  // Try Ollama first
+  // 1. Try Grok (server-side proxy) first — works anywhere, no local install
+  try {
+    const r = await fetch('/api/ai/status', { signal: AbortSignal.timeout(3000) });
+    if (r.ok) {
+      const d = await r.json();
+      if (d.grok) {
+        iaOnline = true;
+        iaBackend = 'grok';
+        iaGrokModel = d.grokModel || 'grok-3-mini';
+        statusEl.classList.remove('offline');
+        statusText.textContent = 'Grok AI · ' + iaGrokModel;
+        return;
+      }
+    }
+  } catch {}
+  // 2. Fallback to Ollama (local)
   try {
     const r = await fetch(OLLAMA_URL + '/api/tags', { signal: AbortSignal.timeout(3000) });
     if (r.ok) {
@@ -2985,18 +2999,11 @@ async function checkOllamaStatus() {
       return;
     }
   } catch {}
-  // Fallback to Gemini if key available
-  if (geminiApiKey) {
-    iaOnline = true;
-    iaBackend = 'gemini';
-    statusEl.classList.remove('offline');
-    statusText.textContent = 'Gemini AI';
-    return;
-  }
+  // 3. Offline
   iaOnline = false;
   iaBackend = 'none';
   statusEl.classList.add('offline');
-  statusText.textContent = 'IA offline — Configura Ollama o Gemini';
+  statusText.textContent = 'IA offline — Configura Grok u Ollama';
 }
 
 async function getOllamaModels() {
@@ -3059,23 +3066,27 @@ async function iaQuery(prompt) {
 
   try {
     let full = '';
-    if (iaBackend === 'gemini' && geminiApiKey) {
-      // Gemini API
-      const r = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=' + geminiApiKey, {
+    if (iaBackend === 'grok') {
+      // Grok via server proxy — API key segura en backend
+      const token = getLicenseToken();
+      const r = await fetch('/api/ai/chat', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          system_instruction: { parts: [{ text: systemPrompt }] },
-          contents: [{ parts: [{ text: prompt }] }]
-        })
+        headers: {
+          'Content-Type': 'application/json',
+          'X-License-Token': token
+        },
+        body: JSON.stringify({ prompt, system: systemPrompt })
       });
-      if (!r.ok) throw new Error('Gemini HTTP ' + r.status);
+      if (!r.ok) {
+        const err = await r.json().catch(() => ({}));
+        throw new Error(err.error || 'Grok HTTP ' + r.status);
+      }
       const d = await r.json();
-      full = (d.candidates && d.candidates[0] && d.candidates[0].content && d.candidates[0].content.parts[0].text) || 'Sin respuesta';
+      full = d.text || 'Sin respuesta';
       bubbleEl.classList.remove('typing');
       bubbleEl.textContent = full;
-    } else {
-      // Ollama streaming
+    } else if (iaBackend === 'ollama') {
+      // Ollama streaming (local)
       const models = await getOllamaModels();
       const model  = models[0] || 'llama3.2';
       const r = await fetch(OLLAMA_URL + '/api/generate', {
@@ -3147,7 +3158,7 @@ function getFallbackResponse(prompt) {
     return 'IA offline, pero puedes generar letras ahora mismo:\n\n✍️ Usa el Estudio de Letras (boton arriba) — genera rimas offline sin necesidad de IA\n\n📝 O escribe la letra manualmente en "Agregar Cancion"\n\n🔌 Para IA completa: ollama run llama3.2';
   }
   if (p.includes('suger') || p.includes('karaoke')) return 'Canciones populares para karaoke:\n\n🎵 Bohemian Rhapsody — Queen\n🎵 Don\'t Stop Believin\' — Journey\n🎵 Livin\' on a Prayer — Bon Jovi\n🎵 Sweet Caroline — Neil Diamond\n🎵 Despacito — Luis Fonsi\n🎵 La Bamba — Ritchie Valens\n🎵 Bésame Mucho — Consuelo Velázquez';
-  return 'Ollama está offline. Para usar la IA:\n1. Instala Ollama desde ollama.com\n2. Ejecuta: ollama run llama3.2\n3. Recarga esta sección\n\nSin IA puedo ayudarte con sugerencias predefinidas y gestión de la cola.';
+  return 'IA no disponible. Opciones:\n\n☁️ Grok AI (cloud) — Se configura con API key en el servidor\n💻 Ollama (local) — ollama.com → ollama run llama3.2\n\nSin IA puedo ayudarte con sugerencias predefinidas y el Estudio de Letras offline.';
 }
 
 // ── Lyric Studio — Offline Generator ──────────────────────────────────────

@@ -568,6 +568,68 @@ app.get('/api/stats', (req, res) => {
   });
 });
 
+// ── Grok AI proxy (protege API key en server-side) ───────────────────────
+const GROK_API_KEY = process.env.GROK_API_KEY || '';
+const GROK_API_URL = 'https://api.x.ai/v1/chat/completions';
+const GROK_MODEL   = process.env.GROK_MODEL || 'grok-3-mini';
+
+app.post('/api/ai/chat', async (req, res) => {
+  // Check if user has PRO license
+  const token = req.headers['x-license-token'] || '';
+  if (!isFeatureLicensedByToken(token, 'ollama_ai')) {
+    return res.status(403).json({ error: 'Requiere licencia PRO para usar IA' });
+  }
+  const { prompt, system } = req.body;
+  if (!prompt || typeof prompt !== 'string') {
+    return res.status(400).json({ error: 'prompt requerido' });
+  }
+  if (!GROK_API_KEY) {
+    return res.status(503).json({ error: 'Grok API key no configurada', backend: 'none' });
+  }
+  try {
+    const messages = [];
+    if (system) messages.push({ role: 'system', content: system });
+    messages.push({ role: 'user', content: prompt.slice(0, 2000) });
+
+    const r = await fetch(GROK_API_URL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${GROK_API_KEY}`
+      },
+      body: JSON.stringify({
+        model: GROK_MODEL,
+        messages,
+        max_tokens: 1500,
+        temperature: 0.8
+      })
+    });
+    if (!r.ok) {
+      const err = await r.text();
+      return res.status(r.status).json({ error: 'Grok API error: ' + r.status, detail: err });
+    }
+    const data = await r.json();
+    const text = data.choices?.[0]?.message?.content || 'Sin respuesta';
+    res.json({
+      text,
+      backend: 'grok',
+      model: GROK_MODEL,
+      usage: data.usage || null
+    });
+  } catch (e) {
+    res.status(500).json({ error: 'Error conectando con Grok: ' + e.message });
+  }
+});
+
+// Status endpoint para que el frontend sepa qué backends están disponibles
+app.get('/api/ai/status', (req, res) => {
+  res.json({
+    grok: !!GROK_API_KEY,
+    grokModel: GROK_MODEL,
+    ollama: false // Ollama es local, el frontend checa directamente
+  });
+});
+
 // ── LRCLIB proxy (evita CORS issues en algunos navegadores) ──────────────
 app.get('/api/lrclib/search', async (req, res) => {
   const { track_name, artist_name } = req.query;
