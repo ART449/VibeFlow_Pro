@@ -94,7 +94,7 @@ function loadSecret(filename, bytes) {
 }
 
 const LICENSE_SECRET = loadSecret('.license_secret', 32);
-const ADMIN_SECRET  = loadSecret('.admin_secret', 16);
+const ADMIN_SECRET  = process.env.ADMIN_SECRET || loadSecret('.admin_secret', 16);
 
 function getDeviceFingerprint() {
   const hostname = os.hostname();
