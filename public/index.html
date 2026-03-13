@@ -1218,10 +1218,24 @@ select.inp{cursor:pointer;}
           <div class="yt-empty">🎵 Busca canciones en SoundCloud</div>
         </div>
       </div>
+      <!-- Jamendo Section -->
+      <div id="jm-section" style="display:none;margin-top:12px;">
+        <div class="yt-search-row">
+          <input class="yt-search-inp" id="jm-search-inp" placeholder="Buscar en Jamendo (musica libre)..."
+                 onkeypress="if(event.key==='Enter')jmSearch()">
+          <button class="yt-search-btn" onclick="jmSearch()">
+            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
+          </button>
+        </div>
+        <div id="jm-results" class="yt-results">
+          <div class="yt-empty">🎵 Musica libre con licencia Creative Commons</div>
+        </div>
+      </div>
       <!-- Source Tabs -->
-      <div style="display:flex;gap:6px;margin-top:8px;padding:0 8px;">
-        <button class="yt-src-tab active" id="tab-yt" onclick="switchMusicSource('youtube')" style="flex:1;padding:6px;border-radius:6px;border:1px solid var(--border);background:var(--card);color:var(--text);cursor:pointer;font-size:.75rem;">YouTube</button>
-        <button class="yt-src-tab" id="tab-sc" onclick="switchMusicSource('soundcloud')" style="flex:1;padding:6px;border-radius:6px;border:1px solid var(--border);background:transparent;color:var(--sub);cursor:pointer;font-size:.75rem;">SoundCloud</button>
+      <div style="display:flex;gap:4px;margin-top:8px;padding:0 8px;">
+        <button class="yt-src-tab active" id="tab-yt" onclick="switchMusicSource('youtube')" style="flex:1;padding:6px;border-radius:6px;border:1px solid var(--border);background:var(--card);color:var(--text);cursor:pointer;font-size:.7rem;">▶ YouTube</button>
+        <button class="yt-src-tab" id="tab-sc" onclick="switchMusicSource('soundcloud')" style="flex:1;padding:6px;border-radius:6px;border:1px solid var(--border);background:transparent;color:var(--sub);cursor:pointer;font-size:.7rem;">☁ SoundCloud</button>
+        <button class="yt-src-tab" id="tab-jm" onclick="switchMusicSource('jamendo')" style="flex:1;padding:6px;border-radius:6px;border:1px solid var(--border);background:transparent;color:var(--sub);cursor:pointer;font-size:.7rem;">♫ Jamendo</button>
       </div>
       <!-- Embedded Player -->
       <div id="music-player-embed" style="display:none;padding:8px;">
@@ -2243,23 +2257,29 @@ async function ytSearch() {
 
 // ── Reproducción embebida (SIN descargas) ─────────────────────────────────
 let currentMusicSource = 'youtube';
+const JAMENDO_CLIENT_ID = localStorage.getItem('byflow_jamendo_id') || '';
 
 function switchMusicSource(source) {
   currentMusicSource = source;
-  const ytSection = document.querySelector('.yt-search-row')?.parentElement;
   const scSection = document.getElementById('sc-section');
-  const tabYt = document.getElementById('tab-yt');
-  const tabSc = document.getElementById('tab-sc');
+  const jmSection = document.getElementById('jm-section');
+  const tabs = { yt: document.getElementById('tab-yt'), sc: document.getElementById('tab-sc'), jm: document.getElementById('tab-jm') };
+  // Hide all
+  document.querySelectorAll('.yt-panel > .yt-search-row, .yt-panel > .yt-results').forEach(el => el.style.display = 'none');
+  if (scSection) scSection.style.display = 'none';
+  if (jmSection) jmSection.style.display = 'none';
+  // Reset tabs
+  Object.values(tabs).forEach(t => { if(t){ t.style.background='transparent'; t.style.color='var(--sub)'; t.classList.remove('active'); }});
+  // Show selected
   if (source === 'youtube') {
-    document.getElementById('yt-results').parentElement.querySelectorAll('.yt-search-row, .yt-results').forEach(el => el.style.display = '');
-    if (scSection) scSection.style.display = 'none';
-    tabYt.style.background = 'var(--card)'; tabYt.style.color = 'var(--text)'; tabYt.classList.add('active');
-    tabSc.style.background = 'transparent'; tabSc.style.color = 'var(--sub)'; tabSc.classList.remove('active');
-  } else {
-    document.querySelectorAll('.yt-panel > .yt-search-row, .yt-panel > .yt-results').forEach(el => el.style.display = 'none');
+    document.querySelectorAll('.yt-panel > .yt-search-row, .yt-panel > .yt-results').forEach(el => el.style.display = '');
+    tabs.yt.style.background='var(--card)'; tabs.yt.style.color='var(--text)'; tabs.yt.classList.add('active');
+  } else if (source === 'soundcloud') {
     if (scSection) scSection.style.display = 'block';
-    tabSc.style.background = 'var(--card)'; tabSc.style.color = 'var(--text)'; tabSc.classList.add('active');
-    tabYt.style.background = 'transparent'; tabYt.style.color = 'var(--sub)'; tabYt.classList.remove('active');
+    tabs.sc.style.background='var(--card)'; tabs.sc.style.color='var(--text)'; tabs.sc.classList.add('active');
+  } else if (source === 'jamendo') {
+    if (jmSection) jmSection.style.display = 'block';
+    tabs.jm.style.background='var(--card)'; tabs.jm.style.color='var(--text)'; tabs.jm.classList.add('active');
   }
 }
 
@@ -2329,6 +2349,73 @@ function scPlayUrl() {
     return;
   }
   scEmbed(url, url.split('/').pop() || 'SoundCloud');
+}
+
+// ── Jamendo Search (API gratuita — musica libre CC) ───────────────────────
+let jmAudio = null;
+async function jmSearch() {
+  const inp = document.getElementById('jm-search-inp');
+  const query = inp?.value.trim();
+  if (!query) return;
+  const res = document.getElementById('jm-results');
+  const clientId = JAMENDO_CLIENT_ID || localStorage.getItem('byflow_jamendo_id');
+  if (!clientId) {
+    res.innerHTML = `<div style="padding:12px;text-align:center;font-size:.8rem;">
+      <div style="color:var(--sub);margin-bottom:8px;">Necesitas un Client ID gratuito de Jamendo</div>
+      <a href="https://devportal.jamendo.com/" target="_blank" rel="noopener" style="color:#2dd4bf;">Registrate gratis en devportal.jamendo.com ↗</a>
+      <div class="yt-search-row" style="margin-top:10px;">
+        <input class="yt-search-inp" id="jm-client-id" placeholder="Pega tu Client ID aqui..." style="font-size:.75rem;">
+        <button class="yt-search-btn" onclick="jmSaveKey()">✓</button>
+      </div>
+    </div>`;
+    return;
+  }
+  res.innerHTML = '<div class="yt-empty">🔍 Buscando en Jamendo...</div>';
+  try {
+    const r = await fetch(`https://api.jamendo.com/v3.0/tracks/?client_id=${clientId}&format=json&search=${encodeURIComponent(query)}&limit=15&order=relevance`);
+    const data = await r.json();
+    if (!data.results || !data.results.length) {
+      res.innerHTML = '<div class="yt-empty">No se encontraron resultados</div>';
+      return;
+    }
+    res.innerHTML = data.results.map((t, i) => `
+      <div class="yt-card" style="display:flex;align-items:center;gap:8px;padding:8px;border-bottom:1px solid var(--border);">
+        <img src="${escHtml(t.album_image || t.image || '')}" style="width:50px;height:50px;border-radius:6px;object-fit:cover;" loading="lazy" alt="">
+        <div style="flex:1;min-width:0;">
+          <div style="font-size:.8rem;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${escHtml(t.name)}</div>
+          <div style="font-size:.7rem;color:var(--sub);">${escHtml(t.artist_name)} · ${Math.floor(t.duration/60)}:${String(t.duration%60).padStart(2,'0')}</div>
+          <div style="font-size:.6rem;color:#2dd4bf;opacity:.7;">♫ Licencia libre</div>
+        </div>
+        <button onclick="jmPlay('${escHtml(t.audio)}','${escHtml(t.name.replace(/'/g,''))}')"
+          style="padding:6px 12px;border-radius:6px;border:1px solid var(--border);background:var(--accent);color:#fff;cursor:pointer;font-size:.75rem;white-space:nowrap;">
+          ▶ Play
+        </button>
+      </div>`).join('');
+  } catch (e) {
+    res.innerHTML = '<div class="yt-empty">❌ ' + escHtml(e.message) + '</div>';
+  }
+}
+
+function jmSaveKey() {
+  const val = document.getElementById('jm-client-id')?.value.trim();
+  if (!val) return;
+  localStorage.setItem('byflow_jamendo_id', val);
+  showToast('✅ Jamendo Client ID guardado');
+  jmSearch();
+}
+
+function jmPlay(audioUrl, title) {
+  if (jmAudio) { jmAudio.pause(); jmAudio = null; }
+  // Jamendo da URL directa de streaming — lo metemos en el reproductor embebido
+  const container = document.getElementById('embed-container');
+  const player = document.getElementById('music-player-embed');
+  container.innerHTML = `<div style="background:var(--card);border-radius:8px;padding:12px;text-align:center;">
+    <div style="font-size:.8rem;font-weight:600;margin-bottom:8px;">${escHtml(title)}</div>
+    <audio id="jm-audio-player" controls autoplay style="width:100%;border-radius:6px;" src="${escHtml(audioUrl)}"></audio>
+    <div style="font-size:.6rem;color:#2dd4bf;margin-top:4px;">♫ Jamendo — Musica libre con licencia CC</div>
+  </div>`;
+  player.style.display = 'block';
+  showToast('▶️ ' + title.substring(0, 35));
 }
 
 // ── Visualizer ────────────────────────────────────────────────────────────
