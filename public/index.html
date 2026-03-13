@@ -760,6 +760,7 @@ select.inp{cursor:pointer;}
 
 /* ── Mobile ──────────────────────────────────────────────────────────── */
 @media(max-width:900px){
+  html,body{overflow:auto;-webkit-overflow-scrolling:touch;touch-action:manipulation;}
   .sidebar{display:none;}
   .right-panel{display:none;}
   .ia-panel{display:none;}
@@ -771,6 +772,9 @@ select.inp{cursor:pointer;}
   .mode-switch{display:none;}
   .mobile-nav{display:block;}
   .fx-bar{display:none;}
+  .main{overflow:auto;touch-action:manipulation;}
+  .center{overflow:auto;touch-action:manipulation;}
+  .scrollable{-webkit-overflow-scrolling:touch;touch-action:manipulation;}
 }
 @media(max-width:600px){
   .player-bar{padding:10px 16px;}
@@ -788,7 +792,7 @@ select.inp{cursor:pointer;}
   <div class="topbar">
     <div class="brand-wrap">
       <div class="brand">VibeFlow Pro</div>
-      <div class="brand-sub">by BYFLOW</div>
+      <div class="brand-sub">by Arturo</div>
     </div>
     <div class="mode-switch">
       <button class="mode-btn active" data-mode="karaoke" onclick="setMode('karaoke')">
@@ -813,7 +817,7 @@ select.inp{cursor:pointer;}
       </button>
     </div>
     <div id="datetime">--</div>
-    <div class="byflow-bar">Powered by <span>BYFLOW</span></div>
+    <div class="byflow-bar">Powered by <span>Arturo</span> &amp; <span>Claude</span></div>
   </div>
 
   <div class="main">
