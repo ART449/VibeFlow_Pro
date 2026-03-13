@@ -137,8 +137,20 @@ function getActiveLicense() {
   return licenses.find(l => l.activated && l.deviceFingerprint === fp) || null;
 }
 
+// Per-user license lookup by token
+function getLicenseByToken(token) {
+  if (!token) return null;
+  const licenses = (state.license && state.license.licenses) || [];
+  return licenses.find(l => l.activated && l.userToken === token) || null;
+}
+
 function isFeatureLicensed(feature) {
   const lic = getActiveLicense();
+  return lic && lic.features.includes(feature);
+}
+
+function isFeatureLicensedByToken(token, feature) {
+  const lic = getLicenseByToken(token);
   return lic && lic.features.includes(feature);
 }
 
@@ -363,16 +375,23 @@ app.get('/api/youtube/videos', async (req, res) => {
 // Solo se usa YouTube/SoundCloud para reproducción embebida (karaoke).
 // Cualquier intento de descarga es bloqueado por política de ByFlow.
 
-// ── Licencias ────────────────────────────────────────────────────────────────
+// ── Licencias (por usuario con token) ─────────────────────────────────────────
 app.get('/api/license/status', (req, res) => {
-  const lic = getActiveLicense();
-  if (!lic) return res.json({ activated: false, features: [] });
-  res.json({
-    activated: true,
-    features: lic.features,
-    owner: lic.owner || '',
-    keyFragment: lic.key.slice(-9)
-  });
+  // Per-user: client sends token via header or query
+  const token = req.headers['x-license-token'] || req.query.token || '';
+  if (token) {
+    const lic = getLicenseByToken(token);
+    if (lic) {
+      return res.json({
+        activated: true,
+        features: lic.features,
+        owner: lic.owner || '',
+        keyFragment: lic.key.slice(-9)
+      });
+    }
+  }
+  // Fallback: no token or invalid token = no license
+  return res.json({ activated: false, features: [] });
 });
 
 app.post('/api/license/activate', (req, res) => {
@@ -388,28 +407,33 @@ app.post('/api/license/activate', (req, res) => {
   if (!entry) {
     return res.status(404).json({ error: 'Licencia no encontrada en el sistema' });
   }
-  const fp = getDeviceFingerprint();
-  if (entry.activated && entry.deviceFingerprint && entry.deviceFingerprint !== fp) {
-    return res.status(409).json({ error: 'Esta licencia ya está activada en otro dispositivo' });
+  // If already activated by someone else (different userToken exists), reject
+  if (entry.activated && entry.userToken && req.body.token && entry.userToken !== req.body.token) {
+    return res.status(409).json({ error: 'Esta licencia ya está activada por otro usuario' });
   }
+  // Generate unique user token for this activation
+  const userToken = entry.userToken || crypto.randomBytes(24).toString('hex');
   entry.activated = true;
   entry.activatedAt = new Date().toISOString();
-  entry.deviceFingerprint = fp;
+  entry.userToken = userToken;
+  entry.deviceFingerprint = getDeviceFingerprint(); // keep for admin tracking
   saveJSON('licenses.json', state.license);
   res.json({
     success: true,
     features: entry.features,
     owner: entry.owner || '',
-    keyFragment: key.slice(-9)
+    keyFragment: key.slice(-9),
+    token: userToken  // Client saves this in localStorage
   });
 });
 
 app.post('/api/license/deactivate', (req, res) => {
-  const fp = getDeviceFingerprint();
-  const entry = state.license.licenses.find(l => l.activated && l.deviceFingerprint === fp);
-  if (!entry) return res.status(404).json({ error: 'No hay licencia activa en este dispositivo' });
+  const token = req.headers['x-license-token'] || (req.body && req.body.token) || '';
+  if (!token) return res.status(400).json({ error: 'Token requerido' });
+  const entry = getLicenseByToken(token);
+  if (!entry) return res.status(404).json({ error: 'No hay licencia activa con este token' });
   entry.activated = false;
-  entry.deviceFingerprint = null;
+  entry.userToken = null;
   entry.activatedAt = null;
   saveJSON('licenses.json', state.license);
   res.json({ success: true });
@@ -443,36 +467,39 @@ app.get('/api/license/admin/list', (req, res) => {
   res.json(state.license.licenses);
 });
 
-// ── Superusuario: auto-genera y activa licencia con todo ─────────────────
+// ── Superusuario: genera licencia con token personal ──────────────────────
 app.post('/api/license/admin/superuser', (req, res) => {
   const adminKey = req.headers['x-admin-key'];
   if (adminKey !== ADMIN_SECRET && adminKey !== MASTER_ADMIN) {
     return res.status(401).json({ error: 'Admin key invalida' });
   }
-  const fp = getDeviceFingerprint();
+  const ownerName = (req.body.owner || 'SUPERUSER-IARTLABS').trim();
   const allFeatures = ['bares', 'music_streaming', 'ollama_ai', 'stem_engine', 'dj_mode', 'analytics'];
 
-  // Check if superuser already exists for this device
-  let entry = state.license.licenses.find(l => l.owner === 'SUPERUSER-IARTLABS' && l.deviceFingerprint === fp);
+  // Check if superuser already exists for this owner
+  let entry = state.license.licenses.find(l => l.owner === ownerName && l.isSuperuser);
   if (entry) {
-    // Update features in case new ones were added
     entry.features = allFeatures;
     entry.activated = true;
+    if (!entry.userToken) entry.userToken = crypto.randomBytes(24).toString('hex');
     saveJSON('licenses.json', state.license);
     return res.json({
       message: 'Superusuario ya existia, features actualizados',
-      key: entry.key, owner: entry.owner, features: entry.features
+      key: entry.key, owner: entry.owner, features: entry.features,
+      token: entry.userToken
     });
   }
 
-  // Generate and auto-activate
+  // Generate and auto-activate with user token
   const key = generateLicenseKey();
+  const userToken = crypto.randomBytes(24).toString('hex');
   entry = {
-    key, owner: 'SUPERUSER-IARTLABS', features: allFeatures,
+    key, owner: ownerName, features: allFeatures,
     created: new Date().toISOString(),
     activated: true,
     activatedAt: new Date().toISOString(),
-    deviceFingerprint: fp,
+    deviceFingerprint: getDeviceFingerprint(),
+    userToken,
     isSuperuser: true
   };
   state.license.licenses.push(entry);
@@ -480,7 +507,7 @@ app.post('/api/license/admin/superuser', (req, res) => {
   res.json({
     message: 'Superusuario creado y activado',
     key, owner: entry.owner, features: allFeatures,
-    device: fp
+    token: userToken
   });
 });
 

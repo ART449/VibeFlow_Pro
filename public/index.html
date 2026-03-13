@@ -2709,9 +2709,16 @@ const OEM_LS_NUM = 'byflow_bar_mesas';
 
 let licenseState = { activated: false, features: [] };
 
+function getLicenseToken() { return localStorage.getItem('byflow_license_token') || ''; }
+function setLicenseToken(t) { if(t) localStorage.setItem('byflow_license_token', t); }
+function clearLicenseToken() { localStorage.removeItem('byflow_license_token'); }
+
 async function checkLicenseStatus() {
   try {
-    const r = await fetch('/api/license/status');
+    const token = getLicenseToken();
+    const r = await fetch('/api/license/status', {
+      headers: token ? { 'X-License-Token': token } : {}
+    });
     licenseState = await r.json();
   } catch {
     licenseState = { activated: false, features: [] };
@@ -2767,7 +2774,7 @@ async function licenseActivate() {
     const r = await fetch('/api/license/activate', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ key })
+      body: JSON.stringify({ key, token: getLicenseToken() })
     });
     const data = await r.json();
     if (!r.ok) {
@@ -2776,6 +2783,8 @@ async function licenseActivate() {
       showToast(data.error || 'Error de activacion');
       return;
     }
+    // Save user token in localStorage — THIS is what makes it per-user
+    if (data.token) setLicenseToken(data.token);
     licenseState = { activated: true, features: data.features, owner: data.owner, keyFragment: data.keyFragment };
     updatePremiumUI();
     showToast('Licencia PRO activada — ' + (data.owner || 'Bienvenido'));
@@ -2787,8 +2796,14 @@ async function licenseActivate() {
 
 async function licenseDeactivate() {
   try {
-    await fetch('/api/license/deactivate', { method: 'POST' });
+    const token = getLicenseToken();
+    await fetch('/api/license/deactivate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-License-Token': token },
+      body: JSON.stringify({ token })
+    });
   } catch {}
+  clearLicenseToken();
   licenseState = { activated: false, features: [] };
   updatePremiumUI();
   document.getElementById('oem-gate').style.display    = 'flex';
