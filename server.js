@@ -334,43 +334,10 @@ app.get('/api/youtube/videos', async (req, res) => {
   }
 });
 
-// ── Servir archivos de audio descargados ────────────────────────────────────
-app.use('/audio', express.static(path.join(__dirname, 'python', 'downloads')));
-
-app.get('/api/audio/list', (req, res) => {
-  const dir = path.join(__dirname, 'python', 'downloads');
-  try {
-    if (!fs.existsSync(dir)) return res.json([]);
-    const files = fs.readdirSync(dir)
-      .filter(f => /\.(mp3|wav|m4a|ogg)$/i.test(f))
-      .map(f => {
-        const stat = fs.statSync(path.join(dir, f));
-        return { filename: f, url: '/audio/' + encodeURIComponent(f), size: stat.size, mtime: stat.mtimeMs };
-      })
-      .sort((a, b) => b.mtime - a.mtime);
-    res.json(files);
-  } catch { res.json([]); }
-});
-
-// Audio processor (calls Python) — Requiere licencia PRO
-app.post('/api/audio/process', (req, res) => {
-  if (!isFeatureLicensed('youtube_download')) {
-    return res.status(403).json({ error: 'Función PRO — Requiere licencia activa' });
-  }
-  const { url, mode } = req.body;
-  if (!url) return res.status(400).json({ error: 'URL requerida' });
-  const pythonCmd = process.platform === 'win32'
-    ? 'python\\venv\\Scripts\\python.exe'
-    : 'python3';
-  const script = path.join(__dirname, 'python', 'audio_processor.py');
-  exec(`${pythonCmd} "${script}" "${url}" "${mode || 'download'}"`, {
-    timeout: 120000, cwd: __dirname
-  }, (err, stdout, stderr) => {
-    if (err) return res.status(500).json({ error: stderr || err.message });
-    try { res.json(JSON.parse(stdout)); }
-    catch { res.json({ output: stdout.trim() }); }
-  });
-});
+// ── NOTA: Descarga de audio PROHIBIDA ────────────────────────────────────
+// ByFlow NO descarga contenido de YouTube ni ninguna plataforma.
+// Solo se usa YouTube/SoundCloud para reproducción embebida (karaoke).
+// Cualquier intento de descarga es bloqueado por política de ByFlow.
 
 // ── Licencias ────────────────────────────────────────────────────────────────
 app.get('/api/license/status', (req, res) => {
@@ -430,7 +397,7 @@ app.post('/api/license/admin/generate', (req, res) => {
     return res.status(401).json({ error: 'Admin key inválida' });
   }
   const owner = (req.body.owner || '').trim() || 'Sin asignar';
-  const features = Array.isArray(req.body.features) ? req.body.features : ['bares', 'youtube_download', 'ollama_ai'];
+  const features = Array.isArray(req.body.features) ? req.body.features : ['bares', 'music_streaming', 'ollama_ai'];
   const key = generateLicenseKey();
   const entry = {
     key, owner, features,

@@ -970,9 +970,9 @@ select.inp{cursor:pointer;}
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 2a9 9 0 0 1 9 9c0 4.56-2.87 8.5-7 9.7V22h-4v-1.3C5.87 19.5 3 15.56 3 11a9 9 0 0 1 9-9z"/><circle cx="9" cy="11" r="1" fill="currentColor"/><circle cx="15" cy="11" r="1" fill="currentColor"/></svg>
         IA
       </button>
-      <button class="mode-btn yt-btn" data-mode="youtube" onclick="setMode('youtube')" style="color:#ff4444;" title="Busca y descarga musica de YouTube para usar como pista de karaoke">
-        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M23.495 6.205a3.007 3.007 0 0 0-2.088-2.088c-1.87-.501-9.396-.501-9.396-.501s-7.507-.01-9.396.501A3.007 3.007 0 0 0 .527 6.205a31.247 31.247 0 0 0-.522 5.805 31.247 31.247 0 0 0 .522 5.783 3.007 3.007 0 0 0 2.088 2.088c1.868.502 9.396.502 9.396.502s7.506 0 9.396-.502a3.007 3.007 0 0 0 2.088-2.088 31.247 31.247 0 0 0 .5-5.783 31.247 31.247 0 0 0-.5-5.805zM9.609 15.601V8.408l6.264 3.602z"/></svg>
-        YouTube
+      <button class="mode-btn yt-btn" data-mode="youtube" onclick="setMode('youtube')" style="color:#ff4444;" title="Busca musica en YouTube y SoundCloud para karaoke (sin descargas)">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/></svg>
+        Musica
       </button>
       <button class="mode-btn bares-btn" data-mode="bares" onclick="setMode('bares')" title="Gestion de mesas, ordenes y configuracion para bares y establecimientos">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M3 7h18M3 7l2 13h14l2-13M3 7l1-3h16l1 3"/><line x1="10" y1="12" x2="10" y2="17"/><line x1="14" y1="12" x2="14" y2="17"/></svg>
@@ -1205,9 +1205,31 @@ select.inp{cursor:pointer;}
           Ingresa tu API key y<br>busca una canción
         </div>
       </div>
-      <div class="yt-library" id="yt-library" style="display:none;">
-        <div class="yt-lib-title">🎵 Descargados</div>
-        <div id="yt-lib-list"></div>
+      <!-- SoundCloud Search -->
+      <div id="sc-section" style="display:none;margin-top:12px;">
+        <div class="yt-search-row">
+          <input class="yt-search-inp" id="sc-search-inp" placeholder="Buscar en SoundCloud..."
+                 onkeypress="if(event.key==='Enter')scSearch()">
+          <button class="yt-search-btn" onclick="scSearch()">
+            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
+          </button>
+        </div>
+        <div id="sc-results" class="yt-results">
+          <div class="yt-empty">🎵 Busca canciones en SoundCloud</div>
+        </div>
+      </div>
+      <!-- Source Tabs -->
+      <div style="display:flex;gap:6px;margin-top:8px;padding:0 8px;">
+        <button class="yt-src-tab active" id="tab-yt" onclick="switchMusicSource('youtube')" style="flex:1;padding:6px;border-radius:6px;border:1px solid var(--border);background:var(--card);color:var(--text);cursor:pointer;font-size:.75rem;">YouTube</button>
+        <button class="yt-src-tab" id="tab-sc" onclick="switchMusicSource('soundcloud')" style="flex:1;padding:6px;border-radius:6px;border:1px solid var(--border);background:transparent;color:var(--sub);cursor:pointer;font-size:.75rem;">SoundCloud</button>
+      </div>
+      <!-- Embedded Player -->
+      <div id="music-player-embed" style="display:none;padding:8px;">
+        <div id="embed-container"></div>
+        <button onclick="closeEmbed()" style="margin-top:6px;padding:4px 12px;border-radius:4px;border:1px solid var(--border);background:var(--card);color:var(--text);cursor:pointer;font-size:.75rem;">✕ Cerrar reproductor</button>
+      </div>
+      <div style="padding:8px;text-align:center;font-size:.65rem;color:var(--sub);opacity:.6;">
+        ByFlow no descarga musica. Todo se reproduce via streaming respetando derechos de autor.
       </div>
     </div>
 
@@ -1220,7 +1242,7 @@ select.inp{cursor:pointer;}
           <svg viewBox="0 0 24 24"><path d="M3 7h18M3 7l2 13h14l2-13M3 7l1-3h16l1 3M10 12v5M14 12v5"/></svg>
         </div>
         <div class="oem-title">BYFLOW PRO</div>
-        <div class="oem-sub">Funciones premium: Bares, YouTube Download e IA. Requiere licencia PRO activada online.</div>
+        <div class="oem-sub">Funciones premium: Bares, Musica Streaming e IA. Requiere licencia PRO activada online.</div>
         <div class="oem-badge">
           <svg viewBox="0 0 24 24"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z"/></svg>
           LICENCIA PRO REQUERIDA
@@ -1347,9 +1369,9 @@ select.inp{cursor:pointer;}
       <span class="wc-tag free">GRATIS</span>
     </div>
     <div class="welcome-card" onclick="welcomeSelect('youtube')">
-      <div class="wc-icon youtube">&#x25B6;</div>
-      <div class="wc-title">YouTube</div>
-      <div class="wc-desc">Busca y descarga pistas de musica directo de YouTube</div>
+      <div class="wc-icon youtube">&#x1F3B5;</div>
+      <div class="wc-title">Musica</div>
+      <div class="wc-desc">Busca y reproduce musica de YouTube y SoundCloud para karaoke</div>
       <span class="wc-tag pro">PRO</span>
     </div>
     <div class="welcome-card" onclick="welcomeSelect('bares')">
@@ -1710,13 +1732,12 @@ function setMode(mode) {
     if (iaPanel)    { iaPanel.classList.add('active'); iaPanel.style.setProperty('display','flex','important'); }
     checkOllamaStatus();
   } else if (mode === 'youtube') {
-    if (!isPremium('youtube_download')) {
-      showToast('YouTube Download requiere licencia PRO');
+    if (!isPremium('music_streaming')) {
+      showToast('Musica Streaming requiere licencia PRO');
       setMode('bares'); return;
     }
     if (sidebar)    sidebar.style.display    = 'flex';
     if (ytPanel)    { ytPanel.classList.add('active'); ytPanel.style.setProperty('display','flex','important'); }
-    ytLoadLibrary();
   } else if (mode === 'bares') {
     if (sidebar)    sidebar.style.display    = 'flex';
     if (baresPanel) { baresPanel.classList.add('active'); baresPanel.style.setProperty('display','flex','important'); }
@@ -1752,7 +1773,7 @@ function updatePremiumUI() {
     if (existing) existing.remove();
     let needsPro = false;
     if (mode === 'bares'   && !isPremium('bares'))           needsPro = true;
-    if (mode === 'youtube' && !isPremium('youtube_download')) needsPro = true;
+    if (mode === 'youtube' && !isPremium('music_streaming')) needsPro = true;
     if (mode === 'ia'      && !isPremium('ollama_ai'))        needsPro = true;
     if (needsPro) {
       const badge = document.createElement('span');
@@ -2150,7 +2171,6 @@ function ytInit() {
     if (inp) inp.value = ytApiKey;
     if (st)  { st.textContent = '✅ API key guardada'; st.className = 'yt-key-status ok'; }
   }
-  ytLoadLibrary();
 }
 
 function ytSaveKey() {
@@ -2207,11 +2227,11 @@ async function ytSearch() {
           <div class="yt-meta">${dur ? '<span class="yt-dur">'+escHtml(dur)+'</span>' : ''}</div>
         </div>
         <div class="yt-actions">
-          <button class="yt-btn yt-btn-dl" id="ytdl-${idx}"
-            onclick="ytDownload('${id}','${escHtml(title.replace(/'/g,''))}',${idx})"
-            title="Descargar audio">
-            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg>
-            MP3
+          <button class="yt-btn yt-btn-dl" id="ytplay-${idx}"
+            onclick="ytEmbed('${id}','${escHtml(title.replace(/'/g,''))}')"
+            title="Reproducir">
+            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+            Play
           </button>
         </div>
       </div>`;
@@ -2221,63 +2241,94 @@ async function ytSearch() {
   }
 }
 
-async function ytDownload(videoId, title, idx) {
-  const btn = document.getElementById('ytdl-' + idx);
-  if (!btn || btn.classList.contains('loading')) return;
-  btn.classList.add('loading');
-  btn.innerHTML = '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 4V1L8 5l4 4V6c3.31 0 6 2.69 6 6 0 1.01-.25 1.97-.7 2.8l1.46 1.46A7.93 7.93 0 0 0 20 12c0-4.42-3.58-8-8-8zm0 14c-3.31 0-6-2.69-6-6 0-1.01.25-1.97.7-2.8L5.24 7.74A7.93 7.93 0 0 0 4 12c0 4.42 3.58 8 8 8v3l4-4-4-4v3z"/></svg> Descargando...';
-  showToast('⬇️ Descargando: ' + title.substring(0, 30) + '...');
-  try {
-    const url = 'https://www.youtube.com/watch?v=' + videoId;
-    const r   = await fetch('/api/audio/process', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ url, mode: 'download' })
-    });
-    const d = await r.json();
-    if (d.status === 'ok') {
-      btn.classList.remove('loading');
-      btn.classList.add('yt-btn-done');
-      btn.innerHTML = '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg> Listo';
-      showToast('✅ Descargado: ' + (d.filename || title));
-      ytLoadLibrary();
-    } else {
-      btn.classList.remove('loading');
-      btn.innerHTML = '❌ Error';
-      showToast('❌ Error al descargar');
-      console.error(d.error);
-    }
-  } catch (e) {
-    btn.classList.remove('loading');
-    btn.innerHTML = '❌ Error';
-    showToast('❌ ' + e.message);
+// ── Reproducción embebida (SIN descargas) ─────────────────────────────────
+let currentMusicSource = 'youtube';
+
+function switchMusicSource(source) {
+  currentMusicSource = source;
+  const ytSection = document.querySelector('.yt-search-row')?.parentElement;
+  const scSection = document.getElementById('sc-section');
+  const tabYt = document.getElementById('tab-yt');
+  const tabSc = document.getElementById('tab-sc');
+  if (source === 'youtube') {
+    document.getElementById('yt-results').parentElement.querySelectorAll('.yt-search-row, .yt-results').forEach(el => el.style.display = '');
+    if (scSection) scSection.style.display = 'none';
+    tabYt.style.background = 'var(--card)'; tabYt.style.color = 'var(--text)'; tabYt.classList.add('active');
+    tabSc.style.background = 'transparent'; tabSc.style.color = 'var(--sub)'; tabSc.classList.remove('active');
+  } else {
+    document.querySelectorAll('.yt-panel > .yt-search-row, .yt-panel > .yt-results').forEach(el => el.style.display = 'none');
+    if (scSection) scSection.style.display = 'block';
+    tabSc.style.background = 'var(--card)'; tabSc.style.color = 'var(--text)'; tabSc.classList.add('active');
+    tabYt.style.background = 'transparent'; tabYt.style.color = 'var(--sub)'; tabYt.classList.remove('active');
   }
 }
 
-async function ytLoadLibrary() {
-  try {
-    const r    = await fetch('/api/audio/list');
-    const list = await r.json();
-    const lib  = document.getElementById('yt-library');
-    const ul   = document.getElementById('yt-lib-list');
-    if (!list.length) { if (lib) lib.style.display = 'none'; return; }
-    if (lib) lib.style.display = 'block';
-    ul.innerHTML = list.map(f => `
-      <div class="yt-lib-item">
-        <div class="yt-lib-name" title="${escHtml(f.filename)}">${escHtml(f.filename.replace(/\.[^.]+$/, ''))}</div>
-        <button class="yt-lib-play" onclick="ytPlayFile('${escHtml(f.url)}','${escHtml(f.filename)}')" title="Reproducir">
-          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
-        </button>
-      </div>`).join('');
-  } catch {}
+function ytEmbed(videoId, title) {
+  const container = document.getElementById('embed-container');
+  const player = document.getElementById('music-player-embed');
+  container.innerHTML = `<iframe width="100%" height="200" style="border-radius:8px;border:none;"
+    src="https://www.youtube.com/embed/${videoId}?autoplay=1&rel=0"
+    allow="autoplay; encrypted-media" allowfullscreen></iframe>
+    <div style="font-size:.75rem;color:var(--sub);margin-top:4px;text-align:center;">${escHtml(title)}</div>`;
+  player.style.display = 'block';
+  showToast('▶️ ' + title.substring(0, 35));
 }
 
-let ytAudio = null;
-function ytPlayFile(url, filename) {
-  if (ytAudio) { ytAudio.pause(); ytAudio = null; }
-  ytAudio = new Audio(url);
-  ytAudio.play().catch(e => showToast('❌ ' + e.message));
-  showToast('▶️ ' + filename.replace(/\.[^.]+$/, '').substring(0, 40));
+function scEmbed(trackUrl, title) {
+  const container = document.getElementById('embed-container');
+  const player = document.getElementById('music-player-embed');
+  const encoded = encodeURIComponent(trackUrl);
+  container.innerHTML = `<iframe width="100%" height="166" scrolling="no" frameborder="no" allow="autoplay"
+    style="border-radius:8px;"
+    src="https://w.soundcloud.com/player/?url=${encoded}&color=%23ff5500&auto_play=true&hide_related=true&show_comments=false&show_user=true&show_reposts=false&show_teaser=false"></iframe>
+    <div style="font-size:.75rem;color:var(--sub);margin-top:4px;text-align:center;">${escHtml(title)}</div>`;
+  player.style.display = 'block';
+  showToast('▶️ ' + title.substring(0, 35));
+}
+
+function closeEmbed() {
+  const container = document.getElementById('embed-container');
+  const player = document.getElementById('music-player-embed');
+  container.innerHTML = '';
+  player.style.display = 'none';
+}
+
+// ── SoundCloud Search (via widget oEmbed — gratis, sin API key) ───────────
+async function scSearch() {
+  const inp = document.getElementById('sc-search-inp');
+  const query = inp?.value.trim();
+  if (!query) return;
+  const res = document.getElementById('sc-results');
+  res.innerHTML = '<div class="yt-empty">🔍 Buscando en SoundCloud...</div>';
+  try {
+    // SoundCloud no tiene API pública de búsqueda gratuita,
+    // usamos redirect a la búsqueda web de SoundCloud
+    const searchUrl = `https://soundcloud.com/search/sounds?q=${encodeURIComponent(query)}`;
+    res.innerHTML = `<div style="padding:12px;text-align:center;">
+      <a href="${searchUrl}" target="_blank" rel="noopener" style="color:#ff5500;text-decoration:none;font-size:.85rem;">
+        🔍 Buscar "${escHtml(query)}" en SoundCloud ↗
+      </a>
+      <div style="margin-top:10px;font-size:.75rem;color:var(--sub);">
+        Copia la URL de la cancion y pegala aqui:
+      </div>
+      <div class="yt-search-row" style="margin-top:8px;">
+        <input class="yt-search-inp" id="sc-url-inp" placeholder="https://soundcloud.com/artista/cancion" style="font-size:.75rem;">
+        <button class="yt-search-btn" onclick="scPlayUrl()">▶</button>
+      </div>
+    </div>`;
+  } catch (e) {
+    res.innerHTML = '<div class="yt-empty">❌ ' + escHtml(e.message) + '</div>';
+  }
+}
+
+function scPlayUrl() {
+  const inp = document.getElementById('sc-url-inp');
+  const url = inp?.value.trim();
+  if (!url || !url.includes('soundcloud.com')) {
+    showToast('Pega una URL valida de SoundCloud');
+    return;
+  }
+  scEmbed(url, url.split('/').pop() || 'SoundCloud');
 }
 
 // ── Visualizer ────────────────────────────────────────────────────────────
@@ -2520,9 +2571,6 @@ function fmtTime(s) {
   const sec = Math.floor(s % 60);
   return m + ':' + String(sec).padStart(2, '0');
 }
-
-// Override ytPlayFile to use audio bar
-ytPlayFile = function(url, filename) { abPlay(url, filename); };
 
 // ── Drag & Drop Reorder ───────────────────────────────────────────────
 let dragSrcId = null;
