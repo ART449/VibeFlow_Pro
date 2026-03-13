@@ -2206,11 +2206,42 @@ function ytParseDuration(iso) {
   return `${min}:${String(s).padStart(2,'0')}`;
 }
 
+// ── Cache de búsquedas YouTube (ahorra cuota API) ─────────────────────────
+const YT_CACHE_PREFIX = 'ytcache_';
+const YT_CACHE_TTL = 1000 * 60 * 60 * 4; // 4 horas
+
+function ytCacheGet(query) {
+  try {
+    const raw = localStorage.getItem(YT_CACHE_PREFIX + query.toLowerCase().trim());
+    if (!raw) return null;
+    const cached = JSON.parse(raw);
+    if (Date.now() - cached.ts > YT_CACHE_TTL) { localStorage.removeItem(YT_CACHE_PREFIX + query.toLowerCase().trim()); return null; }
+    return cached.data;
+  } catch { return null; }
+}
+
+function ytCacheSet(query, data) {
+  try {
+    // Limpiar cache viejo si hay mas de 50 entries
+    const keys = Object.keys(localStorage).filter(k => k.startsWith(YT_CACHE_PREFIX));
+    if (keys.length > 50) keys.slice(0, 20).forEach(k => localStorage.removeItem(k));
+    localStorage.setItem(YT_CACHE_PREFIX + query.toLowerCase().trim(), JSON.stringify({ ts: Date.now(), data }));
+  } catch {}
+}
+
 async function ytSearch() {
   const q   = document.getElementById('yt-search-inp').value.trim();
   const res = document.getElementById('yt-results');
   if (!q)       { showToast('⚠️ Escribe algo para buscar'); return; }
   if (!ytApiKey){ showToast('⚠️ Guarda tu API key primero'); return; }
+
+  // Checar cache primero — si ya buscamos esto, no gastar cuota
+  const cached = ytCacheGet(q);
+  if (cached) {
+    ytRenderResults(cached.items, cached.durs, res);
+    showToast('⚡ Resultados en cache');
+    return;
+  }
 
   res.innerHTML = '<div class="yt-empty">🔍 Buscando...</div>';
   try {
@@ -2226,33 +2257,41 @@ async function ytSearch() {
     const durs   = {};
     if (detD.items) detD.items.forEach(v => { durs[v.id] = ytParseDuration(v.contentDetails.duration); });
 
+    // Guardar en cache
+    ytCacheSet(q, { items: d.items, durs });
+
     ytResults = d.items;
-    res.innerHTML = d.items.map((item, idx) => {
-      const id      = item.id.videoId;
-      const title   = item.snippet.title;
-      const channel = item.snippet.channelTitle;
-      const thumb   = item.snippet.thumbnails.medium?.url || item.snippet.thumbnails.default?.url || '';
-      const dur     = durs[id] || '';
-      return `<div class="yt-card" id="ytcard-${idx}">
-        <img class="yt-thumb" src="${escHtml(thumb)}" loading="lazy" alt="">
-        <div class="yt-info">
-          <div class="yt-song-title">${escHtml(title)}</div>
-          <div class="yt-channel">${escHtml(channel)}</div>
-          <div class="yt-meta">${dur ? '<span class="yt-dur">'+escHtml(dur)+'</span>' : ''}</div>
-        </div>
-        <div class="yt-actions">
-          <button class="yt-btn yt-btn-dl" id="ytplay-${idx}"
-            onclick="ytEmbed('${id}','${escHtml(title.replace(/'/g,''))}')"
-            title="Reproducir">
-            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
-            Play
-          </button>
-        </div>
-      </div>`;
-    }).join('');
+    ytRenderResults(d.items, durs, res);
   } catch (e) {
     res.innerHTML = '<div class="yt-empty">❌ Error: ' + escHtml(e.message) + '</div>';
   }
+}
+
+function ytRenderResults(items, durs, res) {
+  ytResults = items;
+  res.innerHTML = items.map((item, idx) => {
+    const id      = item.id.videoId;
+    const title   = item.snippet.title;
+    const channel = item.snippet.channelTitle;
+    const thumb   = item.snippet.thumbnails.medium?.url || item.snippet.thumbnails.default?.url || '';
+    const dur     = durs[id] || '';
+    return `<div class="yt-card" id="ytcard-${idx}">
+      <img class="yt-thumb" src="${escHtml(thumb)}" loading="lazy" alt="">
+      <div class="yt-info">
+        <div class="yt-song-title">${escHtml(title)}</div>
+        <div class="yt-channel">${escHtml(channel)}</div>
+        <div class="yt-meta">${dur ? '<span class="yt-dur">'+escHtml(dur)+'</span>' : ''}</div>
+      </div>
+      <div class="yt-actions">
+        <button class="yt-btn yt-btn-dl" id="ytplay-${idx}"
+          onclick="ytEmbed('${id}','${escHtml(title.replace(/'/g,''))}')"
+          title="Reproducir">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+          Play
+        </button>
+      </div>
+    </div>`;
+  }).join('');
 }
 
 // ── Reproducción embebida (SIN descargas) ─────────────────────────────────
