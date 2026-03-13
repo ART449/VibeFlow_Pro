@@ -39,17 +39,18 @@ app.get('/api/cola', (req, res) => {
 });
 
 app.post('/api/cola', (req, res) => {
-  const { nombre, cancion, mesa } = req.body;
-  if (!nombre || !cancion) {
-    return res.status(400).json({ error: 'nombre and cancion are required' });
+  const { cantante, nombre, cancion, mesa } = req.body;
+  const singerName = cantante || nombre;
+  if (!singerName || !cancion) {
+    return res.status(400).json({ error: 'cantante and cancion are required' });
   }
   const item = {
     id: colaId++,
-    nombre,
+    cantante: singerName,
     cancion,
     mesa: mesa || null,
     estado: 'esperando',
-    timestamp: new Date().toISOString()
+    timestamp: Date.now()
   };
   cola.push(item);
   io.emit('cola_update', cola);
@@ -373,10 +374,29 @@ app.get('/api/health', (req, res) => {
     status: 'ok',
     version: '2.0.0',
     uptime: process.uptime(),
+    ip: req.socket.localAddress,
+    port: String(PORT),
     rooms: rooms.size,
     songs: canciones.length,
     queue: cola.length,
     timestamp: new Date().toISOString()
+  });
+});
+
+// Stats
+app.get('/api/stats', (req, res) => {
+  const last7 = {};
+  for (let i = 6; i >= 0; i--) {
+    const d = new Date(); d.setDate(d.getDate() - i);
+    last7[d.toISOString().split('T')[0]] = 0;
+  }
+  res.json({
+    totalSongs: canciones.length,
+    totalSingers: cola.length,
+    topSongs: [],
+    topSingers: [],
+    last7,
+    totalDays: 0
   });
 });
 

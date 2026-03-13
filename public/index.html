@@ -3,1546 +3,1191 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ByFlow Pro — Karaoke &amp; Studio</title>
+  <title>ByFlow — Vive Cantando</title>
   <script src="/socket.io/socket.io.js"></script>
   <style>
     :root {
-      --pink: #ff006e; --purple: #8338ec; --blue: #3a86ff;
-      --green: #00f5a0; --dark: #0a0a0a; --card: #151515;
-      --card-hover: #1e1e1e; --border: #2a2a2a; --text: #fff;
-      --text-dim: #999; --radius: 12px; --transition: 0.3s ease;
+      --bg: #07070d; --card: #0e0e18; --card2: #14142a;
+      --p: #ff006e; --s: #8338ec; --a: #3a86ff; --g: #00f5a0;
+      --border: #1a1a2e; --text: #fff; --dim: #888;
+      --glass: rgba(14,14,24,0.85); --radius: 12px;
     }
-    * { margin: 0; padding: 0; box-sizing: border-box; }
+    * { margin:0; padding:0; box-sizing:border-box; }
     body {
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-      background: var(--dark); color: var(--text);
+      background: var(--bg); color: var(--text);
       overflow-x: hidden; min-height: 100vh;
     }
-    /* ========== NAV ========== */
-    nav {
-      position: fixed; top: 0; left: 0; width: 100%; z-index: 100;
-      background: rgba(10,10,10,0.92); backdrop-filter: blur(20px);
-      border-bottom: 1px solid var(--border); padding: 0 1.5rem;
-      display: flex; align-items: center; height: 56px;
+
+    /* ===== TOPBAR ===== */
+    .topbar {
+      position: fixed; top:0; left:0; width:100%; height:54px; z-index:100;
+      background: var(--glass); backdrop-filter: blur(24px);
+      border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; padding: 0 1rem; gap: 0.75rem;
     }
-    .nav-brand {
-      font-weight: 800; font-size: 1.2rem;
-      background: linear-gradient(135deg, var(--pink), var(--purple), var(--blue));
+    .brand {
+      font-weight: 900; font-size: 1.15rem;
+      background: linear-gradient(135deg, var(--p), var(--s), var(--a));
       -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-      margin-right: 2rem; white-space: nowrap;
+      white-space: nowrap;
     }
-    .nav-tabs { display: flex; gap: 0.25rem; overflow-x: auto; flex: 1; }
-    .nav-tab {
-      padding: 0.5rem 1rem; border-radius: 8px; cursor: pointer;
-      font-size: 0.85rem; color: var(--text-dim); white-space: nowrap;
-      transition: var(--transition); border: none; background: none;
+    .mode-btns { display: flex; gap: 4px; flex: 1; overflow-x: auto; }
+    .mode-btn {
+      padding: 6px 14px; border-radius: 8px; border: 1px solid transparent;
+      background: none; color: var(--dim); cursor: pointer;
+      font-size: 0.82rem; white-space: nowrap; transition: 0.25s;
     }
-    .nav-tab:hover { color: var(--text); background: rgba(255,255,255,0.05); }
-    .nav-tab.active {
-      color: var(--text); background: rgba(255,255,255,0.1);
-      border-bottom: 2px solid var(--pink);
+    .mode-btn:hover { color: var(--text); background: rgba(255,255,255,0.04); }
+    .mode-btn.active { color: var(--text); background: rgba(255,255,255,0.08); border-color: var(--p); }
+    .topbar-right { display: flex; align-items: center; gap: 0.6rem; margin-left: auto; }
+    .status-dot { width:8px; height:8px; border-radius:50%; background: var(--g); animation: pulse 2s infinite; }
+    .datetime { font-size: 0.78rem; color: var(--dim); white-space: nowrap; }
+    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
+
+    /* ===== LAYOUT ===== */
+    .app { display: flex; margin-top: 54px; height: calc(100vh - 54px); }
+
+    /* LEFT SIDEBAR */
+    .sidebar {
+      width: 256px; min-width: 256px; background: var(--card);
+      border-right: 1px solid var(--border);
+      display: flex; flex-direction: column; overflow-y: auto;
+      padding: 0.75rem;
     }
-    .nav-right { display: flex; gap: 0.5rem; align-items: center; margin-left: auto; }
-    .nav-status {
-      width: 8px; height: 8px; border-radius: 50%; background: var(--green);
-      animation: pulse 2s infinite;
+    .sidebar h3 {
+      font-size: 0.78rem; text-transform: uppercase; color: var(--dim);
+      letter-spacing: 0.05em; margin: 0.75rem 0 0.4rem;
     }
-    @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.4; } }
-    /* ========== MAIN LAYOUT ========== */
-    main { margin-top: 56px; padding: 1.5rem; min-height: calc(100vh - 56px); }
-    .section { display: none; }
-    .section.active { display: block; }
-    /* ========== CARDS ========== */
+
+    /* CENTER */
+    .center {
+      flex: 1; overflow-y: auto; padding: 1.25rem;
+      display: flex; flex-direction: column; gap: 1rem;
+    }
+
+    /* RIGHT PANEL */
+    .right-panel {
+      width: 215px; min-width: 215px; background: var(--card);
+      border-left: 1px solid var(--border);
+      padding: 0.75rem; overflow-y: auto;
+    }
+    .right-panel h3 { font-size: 0.78rem; text-transform: uppercase; color: var(--dim); letter-spacing: 0.05em; margin-bottom: 0.5rem; }
+
+    /* ===== COMMON ===== */
     .card {
-      background: var(--card); border: 1px solid var(--border);
-      border-radius: var(--radius); padding: 1.5rem; margin-bottom: 1rem;
-      transition: var(--transition);
+      background: var(--card2); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 1rem;
     }
-    .card:hover { border-color: rgba(255,255,255,0.1); }
-    .card h3 { font-size: 1rem; margin-bottom: 0.75rem; color: var(--text-dim); }
-    /* ========== BUTTONS ========== */
     .btn {
-      padding: 0.6rem 1.2rem; border-radius: 8px; cursor: pointer;
-      font-size: 0.9rem; font-weight: 600; border: none;
-      transition: var(--transition); display: inline-flex;
-      align-items: center; gap: 0.4rem;
+      padding: 6px 14px; border-radius: 8px; cursor: pointer;
+      font-size: 0.85rem; font-weight: 600; border: none;
+      transition: 0.25s; display: inline-flex; align-items: center; gap: 4px;
     }
-    .btn-primary {
-      background: linear-gradient(135deg, var(--pink), var(--purple));
-      color: #fff;
-    }
-    .btn-primary:hover { opacity: 0.9; transform: translateY(-1px); }
-    .btn-secondary { background: rgba(255,255,255,0.1); color: var(--text); }
-    .btn-secondary:hover { background: rgba(255,255,255,0.15); }
-    .btn-success { background: var(--green); color: #000; }
-    .btn-danger { background: #ff4444; color: #fff; }
-    .btn-sm { padding: 0.4rem 0.8rem; font-size: 0.8rem; }
-    /* ========== INPUTS ========== */
+    .btn-p { background: linear-gradient(135deg, var(--p), var(--s)); color: #fff; }
+    .btn-p:hover { opacity: 0.9; }
+    .btn-s { background: rgba(255,255,255,0.08); color: var(--text); }
+    .btn-s:hover { background: rgba(255,255,255,0.12); }
+    .btn-g { background: var(--g); color: #000; }
+    .btn-d { background: #ff4444; color: #fff; }
+    .btn-sm { padding: 4px 10px; font-size: 0.8rem; }
     input, textarea, select {
-      background: rgba(255,255,255,0.05); border: 1px solid var(--border);
-      border-radius: 8px; padding: 0.7rem 1rem; color: var(--text);
-      font-size: 0.9rem; width: 100%; outline: none;
-      transition: var(--transition);
+      background: rgba(255,255,255,0.04); border: 1px solid var(--border);
+      border-radius: 8px; padding: 8px 12px; color: var(--text);
+      font-size: 0.88rem; width: 100%; outline: none; transition: 0.25s;
     }
-    input:focus, textarea:focus, select:focus { border-color: var(--purple); }
-    textarea { resize: vertical; min-height: 100px; font-family: monospace; }
-    /* ========== GRID ========== */
-    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
-    .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem; }
-    @media (max-width: 900px) { .grid-2, .grid-3 { grid-template-columns: 1fr; } }
-    /* ========== QUEUE LIST ========== */
-    .queue-item {
-      display: flex; align-items: center; justify-content: space-between;
-      padding: 0.8rem 1rem; border-radius: 8px; margin-bottom: 0.5rem;
-      background: rgba(255,255,255,0.03); border: 1px solid var(--border);
-      transition: var(--transition);
+    input:focus, textarea:focus { border-color: var(--s); }
+    textarea { resize: vertical; min-height: 80px; font-family: monospace; }
+
+    /* ===== QUEUE ===== */
+    .q-item {
+      display: flex; align-items: center; padding: 8px 10px;
+      border-radius: 8px; margin-bottom: 4px; gap: 8px;
+      background: rgba(255,255,255,0.02); border: 1px solid var(--border);
+      transition: 0.25s; font-size: 0.85rem;
     }
-    .queue-item:hover { background: rgba(255,255,255,0.06); }
-    .queue-item.singing {
-      border-color: var(--green);
-      background: rgba(0,245,160,0.05);
+    .q-item:hover { background: rgba(255,255,255,0.05); }
+    .q-item.singing { border-color: var(--g); background: rgba(0,245,160,0.05); }
+    .q-item .info { flex: 1; }
+    .q-item .name { font-weight: 600; font-size: 0.85rem; }
+    .q-item .song { font-size: 0.78rem; color: var(--dim); }
+    .q-item .acts { display: flex; gap: 3px; }
+
+    /* ===== MESAS GRID (sidebar) ===== */
+    .mesas-mini {
+      display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px;
     }
-    .queue-item .info { flex: 1; }
-    .queue-item .name { font-weight: 600; }
-    .queue-item .song { font-size: 0.85rem; color: var(--text-dim); }
-    .queue-item .actions { display: flex; gap: 0.3rem; }
-    /* ========== TELEPROMPTER ========== */
+    .mesa-m {
+      aspect-ratio: 1; display: flex; align-items: center; justify-content: center;
+      border-radius: 6px; cursor: pointer; font-weight: 700; font-size: 0.8rem;
+      transition: 0.25s; border: 1px solid transparent;
+    }
+    .mesa-m.libre { background: rgba(0,245,160,0.08); color: var(--g); border-color: rgba(0,245,160,0.2); }
+    .mesa-m.ocupada { background: rgba(255,0,110,0.08); color: var(--p); border-color: rgba(255,0,110,0.2); }
+    .mesa-m.vip { background: rgba(131,56,236,0.1); color: var(--s); border-color: rgba(131,56,236,0.2); }
+
+    /* ===== NOW SINGING BANNER ===== */
+    .now-singing {
+      background: linear-gradient(135deg, rgba(255,0,110,0.15), rgba(131,56,236,0.15));
+      border: 1px solid rgba(255,0,110,0.2); border-radius: var(--radius);
+      padding: 0.75rem 1rem; display: flex; align-items: center; gap: 0.75rem;
+    }
+    .now-singing .singer-name { font-weight: 700; font-size: 1.1rem; }
+    .now-singing .singer-song { color: var(--dim); font-size: 0.9rem; }
+
+    /* ===== TELEPROMPTER ===== */
     #tp-display {
-      font-size: 2.5rem; line-height: 1.8; text-align: center;
-      padding: 2rem; min-height: 400px;
-      background: rgba(0,0,0,0.5); border-radius: var(--radius);
-      overflow-y: auto; max-height: 60vh;
+      font-size: 2.8rem; line-height: 1.9; text-align: center;
+      padding: 2rem 1.5rem; min-height: 350px;
+      background: rgba(0,0,0,0.6); border-radius: var(--radius);
+      overflow-y: auto; max-height: 55vh;
       font-weight: 300; letter-spacing: 0.02em;
+      position: relative;
     }
     #tp-display .word {
       display: inline; cursor: pointer; padding: 0 2px;
-      transition: color 0.2s, text-shadow 0.2s;
-      color: rgba(255,255,255,0.35);
+      transition: color 0.15s, text-shadow 0.15s;
+      color: rgba(255,255,255,0.3);
     }
     #tp-display .word.active {
-      color: #fff; text-shadow: 0 0 20px var(--green), 0 0 40px var(--green);
+      color: #fff; text-shadow: 0 0 20px var(--g), 0 0 50px var(--g);
       font-weight: 600;
     }
-    #tp-display .word.past { color: rgba(255,255,255,0.55); }
-    #tp-display .lrc-line { display: block; margin: 0.5rem 0; }
-    .tp-controls {
-      display: flex; align-items: center; gap: 1rem;
-      padding: 1rem; flex-wrap: wrap;
+    #tp-display .word.past { color: rgba(255,255,255,0.5); }
+    #tp-display .lrc-line { display: block; margin: 0.4rem 0; }
+    @keyframes wordPop {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.08); }
+      100% { transform: scale(1); }
     }
-    .speed-display {
-      font-size: 1.1rem; font-weight: 700; color: var(--green);
-      min-width: 60px; text-align: center;
+    .tp-bar {
+      display: flex; align-items: center; gap: 0.75rem;
+      padding: 0.5rem 0; flex-wrap: wrap;
     }
+    .speed-val { font-size: 1rem; font-weight: 700; color: var(--g); min-width: 50px; text-align: center; }
     input[type="range"] {
       -webkit-appearance: none; background: var(--border);
-      height: 4px; border-radius: 2px; width: 150px; padding: 0; border: none;
+      height: 4px; border-radius: 2px; padding: 0; border: none;
     }
     input[type="range"]::-webkit-slider-thumb {
-      -webkit-appearance: none; width: 16px; height: 16px;
-      border-radius: 50%; background: var(--green); cursor: pointer;
+      -webkit-appearance: none; width: 14px; height: 14px;
+      border-radius: 50%; background: var(--g); cursor: pointer;
     }
-    /* ========== TWIN PLAYER ========== */
-    .twin-player {
-      display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;
-      margin-bottom: 1rem;
+    .tp-progress {
+      width: 100%; height: 3px; background: var(--border); border-radius: 2px; overflow: hidden;
     }
-    .player-slot {
+    .tp-progress .fill { height: 100%; background: var(--g); transition: width 0.2s; width: 0%; }
+
+    /* ===== EFFECTS BAR ===== */
+    .fx-bar {
+      display: flex; gap: 0.75rem; flex-wrap: wrap; align-items: center;
+    }
+    .fx-knob {
+      display: flex; flex-direction: column; align-items: center; gap: 2px; min-width: 70px;
+    }
+    .fx-knob label { font-size: 0.7rem; color: var(--dim); }
+    .fx-knob input[type="range"] { width: 70px; }
+    .fx-knob .v { font-size: 0.75rem; color: var(--g); font-weight: 600; }
+
+    /* ===== TWIN PLAYER ===== */
+    .twin {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;
+    }
+    .p-slot {
       background: var(--card); border: 1px solid var(--border);
-      border-radius: var(--radius); padding: 1rem; position: relative;
-      min-height: 200px;
+      border-radius: var(--radius); padding: 0.75rem; position: relative;
+      min-height: 180px;
     }
-    .player-slot.active-player { border-color: var(--green); }
-    .player-slot .player-label {
-      position: absolute; top: 0.5rem; left: 0.5rem;
-      font-size: 0.7rem; padding: 0.2rem 0.5rem;
-      background: rgba(255,255,255,0.1); border-radius: 4px;
+    .p-slot.active-p { border-color: var(--g); }
+    .p-slot .p-label {
+      position: absolute; top: 6px; left: 8px; font-size: 0.68rem;
+      padding: 2px 6px; background: rgba(255,255,255,0.08); border-radius: 4px;
     }
-    .player-slot iframe { width: 100%; height: 180px; border: none; border-radius: 8px; }
-    .crossfade-slider { text-align: center; padding: 0.5rem; }
-    /* ========== AUDIO ENGINE ========== */
-    .audio-engine { display: flex; flex-wrap: wrap; gap: 1rem; }
-    .audio-knob {
-      display: flex; flex-direction: column; align-items: center; gap: 0.3rem;
-      min-width: 80px;
+    .p-slot iframe { width: 100%; height: 160px; border: none; border-radius: 8px; }
+
+    /* ===== SLIDE PANELS ===== */
+    .slide-panel {
+      position: fixed; top: 54px; right: -400px; width: 380px;
+      height: calc(100vh - 54px); z-index: 90;
+      background: var(--glass); backdrop-filter: blur(30px);
+      border-left: 1px solid var(--border);
+      transition: right 0.35s cubic-bezier(0.16,1,0.3,1);
+      overflow-y: auto; padding: 1.25rem;
     }
-    .audio-knob label { font-size: 0.75rem; color: var(--text-dim); }
-    .audio-knob input[type="range"] { width: 80px; }
-    .audio-knob .value { font-size: 0.8rem; color: var(--green); font-weight: 600; }
-    /* ========== SEARCH ========== */
-    .search-bar {
-      display: flex; gap: 0.5rem; margin-bottom: 1rem;
+    .slide-panel.open { right: 0; }
+    .slide-panel h2 {
+      font-size: 1.1rem; margin-bottom: 1rem;
+      display: flex; align-items: center; justify-content: space-between;
     }
-    .search-bar input { flex: 1; }
-    .search-results {
-      max-height: 400px; overflow-y: auto;
+    .slide-panel .close-btn {
+      background: none; border: none; color: var(--dim);
+      font-size: 1.5rem; cursor: pointer; line-height: 1;
     }
-    .search-result {
-      display: flex; gap: 1rem; padding: 0.8rem; border-radius: 8px;
-      cursor: pointer; transition: var(--transition); align-items: center;
+    .slide-panel .close-btn:hover { color: var(--text); }
+    .overlay-bg {
+      position: fixed; top:0; left:0; width:100%; height:100%;
+      background: rgba(0,0,0,0.5); z-index: 85; display: none;
     }
-    .search-result:hover { background: rgba(255,255,255,0.05); }
-    .search-result img {
-      width: 120px; height: 68px; object-fit: cover; border-radius: 6px;
+    .overlay-bg.show { display: block; }
+
+    /* ===== CHAT ===== */
+    .chat-msgs {
+      display: flex; flex-direction: column; gap: 0.6rem;
+      max-height: 400px; overflow-y: auto; padding: 0.5rem 0;
     }
-    .search-result .meta { flex: 1; }
-    .search-result .title { font-weight: 600; font-size: 0.9rem; }
-    .search-result .channel { font-size: 0.8rem; color: var(--text-dim); }
-    /* ========== GFLOW CHAT ========== */
-    .chat-container {
-      display: flex; flex-direction: column; height: calc(100vh - 200px);
-      max-height: 600px;
-    }
-    .chat-messages {
-      flex: 1; overflow-y: auto; padding: 1rem; display: flex;
-      flex-direction: column; gap: 0.75rem;
-    }
-    .chat-msg {
-      max-width: 85%; padding: 0.8rem 1rem; border-radius: 12px;
-      font-size: 0.9rem; line-height: 1.5;
-    }
-    .chat-msg.user {
-      align-self: flex-end;
-      background: linear-gradient(135deg, var(--purple), var(--pink));
-    }
-    .chat-msg.ai {
-      align-self: flex-start;
-      background: rgba(255,255,255,0.08);
-    }
-    .chat-input-area { display: flex; gap: 0.5rem; padding: 0.5rem 0; }
-    .chat-input-area input { flex: 1; }
-    .chat-chips { display: flex; gap: 0.4rem; flex-wrap: wrap; margin-bottom: 0.5rem; }
+    .chat-m { max-width: 85%; padding: 0.7rem 1rem; border-radius: 12px; font-size: 0.88rem; line-height: 1.5; }
+    .chat-m.user { align-self: flex-end; background: linear-gradient(135deg, var(--s), var(--p)); }
+    .chat-m.ai { align-self: flex-start; background: rgba(255,255,255,0.06); }
+    .chips { display: flex; gap: 4px; flex-wrap: wrap; margin-bottom: 0.5rem; }
     .chip {
-      padding: 0.3rem 0.7rem; border-radius: 20px; font-size: 0.8rem;
-      background: rgba(255,255,255,0.08); color: var(--text-dim);
-      cursor: pointer; border: 1px solid var(--border); transition: var(--transition);
+      padding: 4px 10px; border-radius: 16px; font-size: 0.78rem;
+      background: rgba(255,255,255,0.06); color: var(--dim);
+      cursor: pointer; border: 1px solid var(--border); transition: 0.25s;
     }
-    .chip:hover { background: rgba(255,255,255,0.12); color: var(--text); }
-    /* ========== BARES ========== */
-    .mesas-grid {
-      display: grid; grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
-      gap: 0.5rem;
+    .chip:hover { background: rgba(255,255,255,0.1); color: var(--text); }
+
+    /* ===== SEARCH ===== */
+    .search-r {
+      display: flex; gap: 0.75rem; padding: 0.6rem; border-radius: 8px;
+      cursor: pointer; transition: 0.25s; align-items: center;
     }
-    .mesa {
+    .search-r:hover { background: rgba(255,255,255,0.04); }
+    .search-r img { width: 100px; height: 56px; object-fit: cover; border-radius: 6px; }
+    .search-r .meta { flex: 1; }
+    .search-r .title { font-weight: 600; font-size: 0.85rem; }
+    .search-r .ch { font-size: 0.78rem; color: var(--dim); }
+
+    /* ===== BARES PANEL ===== */
+    .mesas-full {
+      display: grid; grid-template-columns: repeat(auto-fill, minmax(70px, 1fr)); gap: 6px;
+    }
+    .mesa-f {
       aspect-ratio: 1; display: flex; flex-direction: column;
       align-items: center; justify-content: center;
-      border-radius: var(--radius); cursor: pointer;
-      transition: var(--transition); font-weight: 600;
-      border: 2px solid transparent;
+      border-radius: 8px; cursor: pointer; font-weight: 700;
+      transition: 0.25s; border: 2px solid transparent;
     }
-    .mesa.libre { background: rgba(0,245,160,0.1); border-color: var(--green); color: var(--green); }
-    .mesa.ocupada { background: rgba(255,0,110,0.1); border-color: var(--pink); color: var(--pink); }
-    .mesa.vip { background: rgba(131,56,236,0.15); border-color: var(--purple); color: var(--purple); }
-    .mesa .mesa-num { font-size: 1.2rem; }
-    .mesa .mesa-status { font-size: 0.65rem; text-transform: uppercase; }
-    .stats-bar {
-      display: flex; gap: 1rem; flex-wrap: wrap; margin-bottom: 1rem;
+    .mesa-f.libre { background: rgba(0,245,160,0.08); border-color: var(--g); color: var(--g); }
+    .mesa-f.ocupada { background: rgba(255,0,110,0.08); border-color: var(--p); color: var(--p); }
+    .mesa-f.vip { background: rgba(131,56,236,0.1); border-color: var(--s); color: var(--s); }
+    .mesa-f .num { font-size: 1.1rem; }
+    .mesa-f .st { font-size: 0.6rem; text-transform: uppercase; }
+    .bar-stats { display: flex; gap: 0.75rem; flex-wrap: wrap; margin-bottom: 0.75rem; }
+    .b-stat { padding: 0.6rem 1rem; border-radius: 8px; background: rgba(255,255,255,0.03); border: 1px solid var(--border); text-align: center; }
+    .b-stat .n { font-size: 1.3rem; font-weight: 700; }
+    .b-stat .l { font-size: 0.7rem; color: var(--dim); }
+
+    /* ===== SOUNDBOARD ===== */
+    .sb { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+    .sb-btn {
+      padding: 0.8rem; border-radius: 8px; border: 1px solid var(--border);
+      background: rgba(255,255,255,0.02); cursor: pointer; text-align: center;
+      transition: 0.25s; font-size: 0.8rem; color: var(--text);
     }
-    .stat {
-      padding: 0.8rem 1.2rem; border-radius: 8px;
-      background: rgba(255,255,255,0.03); border: 1px solid var(--border);
-      text-align: center; min-width: 100px;
+    .sb-btn:hover { background: rgba(255,255,255,0.06); transform: scale(1.03); }
+    .sb-btn:active { transform: scale(0.95); }
+    .sb-btn .e { font-size: 1.3rem; display: block; margin-bottom: 2px; }
+
+    /* ===== STUDIO ===== */
+    .vu {
+      width: 100%; height: 20px; background: var(--border);
+      border-radius: 10px; overflow: hidden;
     }
-    .stat .num { font-size: 1.5rem; font-weight: 700; }
-    .stat .label { font-size: 0.75rem; color: var(--text-dim); }
-    /* ========== SOUNDBOARD ========== */
-    .soundboard {
-      display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5rem;
+    .vu .lv { height: 100%; background: linear-gradient(90deg, var(--g), #ffcc00, var(--p)); transition: width 0.1s; width: 0%; }
+    .rec-ind { display: inline-flex; align-items: center; gap: 6px; font-size: 0.85rem; color: #ff4444; }
+    .rec-ind .dot { width: 8px; height: 8px; border-radius: 50%; background: #ff4444; animation: pulse 1s infinite; }
+
+    /* ===== SETTINGS ===== */
+    .s-group { margin-bottom: 1.25rem; }
+    .s-group h4 { margin-bottom: 0.4rem; color: var(--dim); font-size: 0.85rem; }
+
+    /* ===== LICENSE ===== */
+    .lic-banner {
+      padding: 0.75rem; border-radius: var(--radius); text-align: center;
+      background: linear-gradient(135deg, rgba(131,56,236,0.15), rgba(255,0,110,0.15));
+      border: 1px solid rgba(131,56,236,0.2); margin-bottom: 0.75rem;
+      font-size: 0.88rem;
     }
-    .sound-btn {
-      padding: 1.2rem; border-radius: var(--radius); border: 1px solid var(--border);
-      background: rgba(255,255,255,0.03); cursor: pointer; text-align: center;
-      transition: var(--transition); font-size: 0.85rem; color: var(--text);
+
+    /* ===== PROMO GLOW ===== */
+    @keyframes promoGlow {
+      0%,100% { box-shadow: 0 0 10px rgba(255,0,110,0.2); }
+      50% { box-shadow: 0 0 25px rgba(255,0,110,0.4); }
     }
-    .sound-btn:hover { background: rgba(255,255,255,0.08); transform: scale(1.02); }
-    .sound-btn:active { transform: scale(0.95); }
-    .sound-btn .emoji { font-size: 1.5rem; display: block; margin-bottom: 0.3rem; }
-    /* ========== SETTINGS ========== */
-    .setting-group { margin-bottom: 1.5rem; }
-    .setting-group h4 { margin-bottom: 0.5rem; color: var(--text-dim); }
-    .setting-row {
-      display: flex; align-items: center; justify-content: space-between;
-      padding: 0.7rem 0; border-bottom: 1px solid var(--border);
+
+    /* ===== FULLSCREEN TP ===== */
+    .tp-fullscreen {
+      position: fixed; top:0; left:0; width:100%; height:100%; z-index: 200;
+      background: #000; display: none; flex-direction: column;
+      align-items: center; justify-content: center;
     }
-    .toggle {
-      width: 44px; height: 24px; border-radius: 12px;
-      background: var(--border); cursor: pointer; position: relative;
-      transition: var(--transition);
+    .tp-fullscreen.show { display: flex; }
+    .tp-fullscreen .tp-fs-content {
+      font-size: 4rem; line-height: 2; text-align: center;
+      padding: 2rem; max-height: 80vh; overflow-y: auto; width: 90%;
     }
-    .toggle.on { background: var(--green); }
-    .toggle::after {
-      content: ''; width: 20px; height: 20px; border-radius: 50%;
-      background: #fff; position: absolute; top: 2px; left: 2px;
-      transition: var(--transition);
+    .tp-fullscreen .tp-fs-bar {
+      position: absolute; bottom: 2rem; display: flex; gap: 1rem; align-items: center;
     }
-    .toggle.on::after { left: 22px; }
-    /* ========== GUIDE ========== */
-    .guide-section { margin-bottom: 2rem; }
-    .guide-section h2 {
-      font-size: 1.3rem; margin-bottom: 0.5rem;
-      padding-bottom: 0.5rem; border-bottom: 1px solid var(--border);
+
+    /* ===== MOBILE ===== */
+    .mobile-nav {
+      display: none; position: fixed; bottom: 0; left: 0; width: 100%;
+      background: var(--glass); backdrop-filter: blur(20px);
+      border-top: 1px solid var(--border); z-index: 100;
+      padding: 6px 0; justify-content: space-around;
     }
-    .guide-section p { color: var(--text-dim); line-height: 1.6; margin-bottom: 0.5rem; }
-    .guide-section code {
-      background: rgba(255,255,255,0.08); padding: 0.2rem 0.5rem;
-      border-radius: 4px; font-size: 0.85rem;
+    .mobile-nav button {
+      background: none; border: none; color: var(--dim);
+      font-size: 0.7rem; cursor: pointer; display: flex;
+      flex-direction: column; align-items: center; gap: 2px; padding: 4px;
     }
-    .guide-section .feature-grid {
-      display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-      gap: 0.75rem; margin-top: 0.75rem;
+    .mobile-nav button.active { color: var(--p); }
+    .mobile-nav button .ico { font-size: 1.2rem; }
+
+    @media (max-width: 900px) {
+      .sidebar, .right-panel { display: none; }
+      .topbar .mode-btns { display: none; }
+      .mobile-nav { display: flex; }
+      .app { margin-bottom: 60px; }
+      #tp-display { font-size: 1.8rem; }
+      .twin { grid-template-columns: 1fr; }
     }
-    .feature-card {
-      padding: 1rem; border-radius: 8px; background: rgba(255,255,255,0.03);
-      border: 1px solid var(--border);
-    }
-    .feature-card .icon { font-size: 1.5rem; margin-bottom: 0.5rem; }
-    .feature-card h4 { font-size: 0.9rem; margin-bottom: 0.3rem; }
-    .feature-card p { font-size: 0.8rem; }
-    /* ========== STUDIO ========== */
-    .vu-meter {
-      width: 100%; height: 24px; background: var(--border);
-      border-radius: 12px; overflow: hidden; position: relative;
-    }
-    .vu-meter .level {
-      height: 100%; background: linear-gradient(90deg, var(--green), #ffcc00, var(--pink));
-      transition: width 0.1s; width: 0%;
-    }
-    .recording-indicator {
-      display: inline-flex; align-items: center; gap: 0.5rem;
-      font-size: 0.9rem; color: #ff4444;
-    }
-    .recording-indicator .dot {
-      width: 10px; height: 10px; border-radius: 50%; background: #ff4444;
-      animation: pulse 1s infinite;
-    }
-    /* ========== LICENSE ========== */
-    .license-banner {
-      padding: 1rem; border-radius: var(--radius); text-align: center;
-      background: linear-gradient(135deg, rgba(131,56,236,0.2), rgba(255,0,110,0.2));
-      border: 1px solid rgba(131,56,236,0.3); margin-bottom: 1rem;
-    }
-    /* ========== MOBILE NAV ========== */
-    .mobile-menu-btn {
-      display: none; background: none; border: none;
-      color: var(--text); font-size: 1.5rem; cursor: pointer;
-    }
-    @media (max-width: 600px) {
-      .nav-tabs { display: none; }
-      .nav-tabs.open { display: flex; flex-direction: column; position: absolute;
-        top: 56px; left: 0; width: 100%; background: rgba(10,10,10,0.98);
-        padding: 1rem; gap: 0.5rem; z-index: 99;
-      }
-      .mobile-menu-btn { display: block; }
-      main { padding: 1rem; }
-      .twin-player { grid-template-columns: 1fr; }
-      #tp-display { font-size: 1.5rem; }
-    }
-    /* ========== SCROLLBAR ========== */
-    ::-webkit-scrollbar { width: 6px; }
+
+    /* ===== SCROLLBAR ===== */
+    ::-webkit-scrollbar { width: 5px; }
     ::-webkit-scrollbar-track { background: transparent; }
     ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
-    ::-webkit-scrollbar-thumb:hover { background: #444; }
   </style>
 </head>
 <body>
-  <!-- ========== NAVIGATION ========== -->
-  <nav>
-    <span class="nav-brand">ByFlow Pro</span>
-    <button class="mobile-menu-btn" onclick="document.querySelector('.nav-tabs').classList.toggle('open')">&#9776;</button>
-    <div class="nav-tabs">
-      <button class="nav-tab active" data-section="karaoke">Karaoke</button>
-      <button class="nav-tab" data-section="studio">Studio</button>
-      <button class="nav-tab" data-section="musica">Musica</button>
-      <button class="nav-tab" data-section="ia">GFlow IA</button>
-      <button class="nav-tab" data-section="bares">Bares</button>
-      <button class="nav-tab" data-section="guide">Guia</button>
-      <button class="nav-tab" data-section="settings">Settings</button>
+  <!-- TOPBAR -->
+  <div class="topbar">
+    <span class="brand">ByFlow</span>
+    <div class="mode-btns">
+      <button class="mode-btn active" data-mode="karaoke">Karaoke</button>
+      <button class="mode-btn" data-mode="studio">Studio</button>
+      <button class="mode-btn" data-mode="musica">Musica</button>
+      <button class="mode-btn" onclick="togglePanel('ia-panel')">GFlow IA</button>
+      <button class="mode-btn" onclick="togglePanel('yt-panel')">YouTube</button>
+      <button class="mode-btn" onclick="togglePanel('bares-panel')">Bares</button>
+      <button class="mode-btn" onclick="togglePanel('settings-panel')">Settings</button>
     </div>
-    <div class="nav-right">
-      <div class="nav-status" id="connection-status" title="Conectado"></div>
+    <div class="topbar-right">
+      <div class="status-dot" id="conn-dot" title="Conectado"></div>
+      <span class="datetime" id="datetime"></span>
     </div>
-  </nav>
+  </div>
 
-  <main>
-    <!-- ========== KARAOKE ========== -->
-    <div class="section active" id="sec-karaoke">
-      <div class="grid-2">
-        <div>
-          <div class="card">
-            <h3>Cola de Cantantes</h3>
-            <div id="queue-list"></div>
-            <div style="display:flex;gap:0.5rem;margin-top:0.75rem">
-              <input id="singer-name" placeholder="Nombre">
-              <input id="singer-song" placeholder="Cancion">
-              <input id="singer-mesa" placeholder="Mesa" style="width:60px">
-              <button class="btn btn-primary btn-sm" onclick="addSinger()">+</button>
-            </div>
-          </div>
-          <div class="card">
-            <h3>Buscar Letras</h3>
-            <div class="search-bar">
-              <input id="lyrics-search" placeholder="Artista - Cancion" onkeydown="if(event.key==='Enter')searchLyrics()">
-              <button class="btn btn-secondary btn-sm" onclick="searchLyrics()">Buscar</button>
-            </div>
-            <div id="lyrics-results"></div>
+  <div class="overlay-bg" id="overlay-bg" onclick="closeAllPanels()"></div>
+
+  <div class="app">
+    <!-- LEFT SIDEBAR -->
+    <div class="sidebar">
+      <h3>Cola de Cantantes</h3>
+      <div id="queue-list" style="margin-bottom:0.5rem"></div>
+      <div style="display:flex;gap:4px;margin-bottom:4px">
+        <input id="s-name" placeholder="Nombre" style="font-size:0.8rem;padding:6px">
+        <input id="s-song" placeholder="Cancion" style="font-size:0.8rem;padding:6px">
+      </div>
+      <div style="display:flex;gap:4px">
+        <input id="s-mesa" placeholder="Mesa" style="width:50px;font-size:0.8rem;padding:6px">
+        <button class="btn btn-p btn-sm" onclick="addSinger()" style="flex:1">+ Agregar</button>
+      </div>
+
+      <h3>Mesas</h3>
+      <div class="mesas-mini" id="mesas-mini"></div>
+
+      <h3 style="margin-top:0.75rem">Catalogo</h3>
+      <button class="btn btn-s btn-sm" onclick="togglePanel('yt-panel')" style="width:100%">Buscar Musica</button>
+    </div>
+
+    <!-- CENTER -->
+    <div class="center">
+      <!-- KARAOKE MODE -->
+      <div class="mode-view active" id="view-karaoke">
+        <div class="now-singing" id="now-singing" style="display:none">
+          <span style="font-size:1.5rem">&#127908;</span>
+          <div>
+            <div class="singer-name" id="ns-name">--</div>
+            <div class="singer-song" id="ns-song">--</div>
           </div>
         </div>
-        <div>
-          <div class="card">
-            <h3>Teleprompter</h3>
-            <div class="tp-controls">
-              <button class="btn btn-success btn-sm" onclick="tpPlay()" id="tp-play-btn">&#9654; Play</button>
-              <button class="btn btn-secondary btn-sm" onclick="tpPause()">&#10074;&#10074; Pause</button>
-              <button class="btn btn-secondary btn-sm" onclick="tpReset()">&#8635; Reset</button>
-              <span class="speed-display" id="speed-val">1.0x</span>
-              <input type="range" min="0.2" max="5" step="0.1" value="1" id="speed-slider" oninput="setSpeed(this.value)">
-              <button class="btn btn-secondary btn-sm" onclick="toggleFullscreenTP()">&#x26F6; Full</button>
+
+        <div class="tp-bar">
+          <button class="btn btn-g btn-sm" onclick="tpPlay()" id="tp-play-btn">&#9654; Play</button>
+          <button class="btn btn-s btn-sm" onclick="tpPause()">&#10074;&#10074;</button>
+          <button class="btn btn-s btn-sm" onclick="tpReset()">&#8635;</button>
+          <span class="speed-val" id="speed-val">1.0x</span>
+          <input type="range" min="0.2" max="5" step="0.1" value="1" id="speed-slider" style="width:120px" oninput="setSpeed(this.value)">
+          <button class="btn btn-s btn-sm" onclick="toggleFullTP()">&#x26F6;</button>
+          <button class="btn btn-s btn-sm" onclick="togglePanel('lyrics-panel')">&#9835; Letras</button>
+        </div>
+
+        <div class="tp-progress"><div class="fill" id="tp-progress-fill"></div></div>
+
+        <div id="tp-display">
+          <span style="color:var(--dim)">Carga letras para comenzar...</span>
+        </div>
+
+        <div class="card" style="margin-top:0.75rem">
+          <h3 style="font-size:0.8rem;color:var(--dim);margin-bottom:0.5rem">Efectos de Audio</h3>
+          <div class="fx-bar">
+            <div class="fx-knob"><label>Volumen</label><input type="range" min="0" max="100" value="80" oninput="updFx('vol',this.value)"><span class="v" id="fx-vol">80</span></div>
+            <div class="fx-knob"><label>Reverb</label><input type="range" min="0" max="100" value="20" oninput="updFx('rev',this.value)"><span class="v" id="fx-rev">20</span></div>
+            <div class="fx-knob"><label>Echo</label><input type="range" min="0" max="100" value="0" oninput="updFx('echo',this.value)"><span class="v" id="fx-echo">0</span></div>
+            <div class="fx-knob"><label>Bass</label><input type="range" min="-12" max="12" value="0" oninput="updFx('bass',this.value)"><span class="v" id="fx-bass">0</span></div>
+            <div class="fx-knob"><label>Treble</label><input type="range" min="-12" max="12" value="0" oninput="updFx('treble',this.value)"><span class="v" id="fx-treble">0</span></div>
+            <div class="fx-knob"><label>Pitch</label><input type="range" min="-6" max="6" value="0" oninput="updFx('pitch',this.value)"><span class="v" id="fx-pitch">0</span></div>
+          </div>
+        </div>
+
+        <!-- Twin Player -->
+        <div class="card" style="margin-top:0.75rem">
+          <h3 style="font-size:0.8rem;color:var(--dim);margin-bottom:0.5rem">Reproductor Gemelos</h3>
+          <div class="twin">
+            <div class="p-slot active-p" id="pa">
+              <span class="p-label">A</span>
+              <div id="pa-c" style="padding-top:1.5rem;text-align:center;color:var(--dim)">Sin reproduccion</div>
             </div>
-            <div id="tp-display">
-              <span style="color:var(--text-dim)">Carga letras o escribe directamente...</span>
+            <div class="p-slot" id="pb">
+              <span class="p-label">B</span>
+              <div id="pb-c" style="padding-top:1.5rem;text-align:center;color:var(--dim)">Sin reproduccion</div>
             </div>
-            <textarea id="tp-input" placeholder="Pega letras aqui (texto plano o formato LRC [00:00.00] ...)
-Ejemplo LRC:
-[00:05.00] Linea uno de la cancion
-[00:10.50] Linea dos de la cancion" rows="4" style="margin-top:0.75rem"></textarea>
-            <button class="btn btn-primary btn-sm" style="margin-top:0.5rem" onclick="loadLyrics()">Cargar Letras</button>
+          </div>
+          <div style="text-align:center;padding:0.4rem 0">
+            <span style="font-size:0.75rem;color:var(--dim)">A &#8596; B</span>
+            <input type="range" min="0" max="100" value="0" style="width:100%" oninput="doCrossfade(this.value)">
+          </div>
+          <div style="display:flex;gap:4px;justify-content:center">
+            <button class="btn btn-s btn-sm" onclick="swapPlayers()">&#8646; Swap</button>
+            <button class="btn btn-s btn-sm" onclick="syncPlayers()">Sync</button>
           </div>
         </div>
       </div>
-    </div>
 
-    <!-- ========== STUDIO ========== -->
-    <div class="section" id="sec-studio">
-      <div class="grid-2">
-        <div>
-          <div class="card">
-            <h3>Grabacion</h3>
-            <div style="display:flex;align-items:center;gap:1rem;margin-bottom:1rem">
-              <button class="btn btn-danger" id="rec-btn" onclick="toggleRecording()">&#9679; REC</button>
-              <span class="recording-indicator" id="rec-indicator" style="display:none">
-                <span class="dot"></span> Grabando...
-              </span>
-              <span id="rec-timer" style="font-family:monospace;font-size:1.2rem">00:00</span>
-            </div>
-            <div class="vu-meter"><div class="level" id="vu-level"></div></div>
-            <div style="margin-top:1rem">
-              <h3>Takes</h3>
-              <div id="takes-list"><p style="color:var(--text-dim)">No hay takes todavia</p></div>
-            </div>
+      <!-- STUDIO MODE -->
+      <div class="mode-view" id="view-studio">
+        <div class="card">
+          <h3 style="font-size:0.9rem;margin-bottom:0.75rem">Grabacion</h3>
+          <div style="display:flex;align-items:center;gap:1rem;margin-bottom:0.75rem">
+            <button class="btn btn-d" id="rec-btn" onclick="toggleRec()">&#9679; REC</button>
+            <span class="rec-ind" id="rec-ind" style="display:none"><span class="dot"></span>Grabando...</span>
+            <span id="rec-timer" style="font-family:monospace;font-size:1.1rem">00:00</span>
+          </div>
+          <div class="vu"><div class="lv" id="vu-lv"></div></div>
+          <h3 style="font-size:0.8rem;color:var(--dim);margin-top:1rem;margin-bottom:0.5rem">Takes</h3>
+          <div id="takes-list"><p style="color:var(--dim);font-size:0.85rem">Sin takes</p></div>
+        </div>
+        <div class="card" style="margin-top:0.75rem">
+          <h3 style="font-size:0.9rem;margin-bottom:0.5rem">Motor de Audio</h3>
+          <div class="fx-bar">
+            <div class="fx-knob"><label>Volumen</label><input type="range" min="0" max="100" value="80"><span class="v">80</span></div>
+            <div class="fx-knob"><label>Reverb</label><input type="range" min="0" max="100" value="20"><span class="v">20</span></div>
+            <div class="fx-knob"><label>Echo</label><input type="range" min="0" max="100" value="0"><span class="v">0</span></div>
+            <div class="fx-knob"><label>Bass</label><input type="range" min="-12" max="12" value="0"><span class="v">0</span></div>
+            <div class="fx-knob"><label>Treble</label><input type="range" min="-12" max="12" value="0"><span class="v">0</span></div>
+            <div class="fx-knob"><label>Pitch</label><input type="range" min="-6" max="6" value="0"><span class="v">0</span></div>
           </div>
         </div>
-        <div>
-          <div class="card">
-            <h3>Motor de Audio</h3>
-            <div class="audio-engine">
-              <div class="audio-knob">
-                <label>Volumen</label>
-                <input type="range" min="0" max="100" value="80" id="knob-volume" oninput="updateKnob('volume',this.value)">
-                <span class="value" id="val-volume">80</span>
-              </div>
-              <div class="audio-knob">
-                <label>Reverb</label>
-                <input type="range" min="0" max="100" value="20" id="knob-reverb" oninput="updateKnob('reverb',this.value)">
-                <span class="value" id="val-reverb">20</span>
-              </div>
-              <div class="audio-knob">
-                <label>Echo</label>
-                <input type="range" min="0" max="100" value="0" id="knob-echo" oninput="updateKnob('echo',this.value)">
-                <span class="value" id="val-echo">0</span>
-              </div>
-              <div class="audio-knob">
-                <label>Bass</label>
-                <input type="range" min="-12" max="12" value="0" id="knob-bass" oninput="updateKnob('bass',this.value)">
-                <span class="value" id="val-bass">0</span>
-              </div>
-              <div class="audio-knob">
-                <label>Treble</label>
-                <input type="range" min="-12" max="12" value="0" id="knob-treble" oninput="updateKnob('treble',this.value)">
-                <span class="value" id="val-treble">0</span>
-              </div>
-              <div class="audio-knob">
-                <label>Pitch</label>
-                <input type="range" min="-6" max="6" value="0" id="knob-pitch" oninput="updateKnob('pitch',this.value)">
-                <span class="value" id="val-pitch">0</span>
-              </div>
-            </div>
-          </div>
-          <div class="card">
-            <h3>Teleprompter Studio</h3>
-            <div id="studio-tp" style="font-size:1.3rem;line-height:1.8;max-height:250px;overflow-y:auto;color:var(--text-dim)">
-              Carga letras desde la seccion Karaoke
-            </div>
-          </div>
+        <div class="card" style="margin-top:0.75rem">
+          <h3 style="font-size:0.9rem;margin-bottom:0.5rem">Teleprompter (Studio)</h3>
+          <div id="studio-tp" style="font-size:1.2rem;line-height:1.7;max-height:200px;overflow-y:auto;color:var(--dim)">Carga letras desde Karaoke</div>
         </div>
       </div>
-    </div>
 
-    <!-- ========== MUSICA ========== -->
-    <div class="section" id="sec-musica">
-      <div class="grid-2">
-        <div>
-          <div class="card">
-            <h3>Reproductor Gemelos</h3>
-            <div class="twin-player">
-              <div class="player-slot active-player" id="player-a">
-                <span class="player-label">Player A</span>
-                <div id="player-a-content" style="padding-top:1.5rem">
-                  <p style="color:var(--text-dim);text-align:center">Sin reproduccion</p>
-                </div>
-              </div>
-              <div class="player-slot" id="player-b">
-                <span class="player-label">Player B</span>
-                <div id="player-b-content" style="padding-top:1.5rem">
-                  <p style="color:var(--text-dim);text-align:center">Sin reproduccion</p>
-                </div>
-              </div>
-            </div>
-            <div class="crossfade-slider">
-              <label style="font-size:0.8rem;color:var(--text-dim)">Crossfade A &#8596; B</label>
-              <input type="range" min="0" max="100" value="0" id="crossfade" style="width:100%" oninput="doCrossfade(this.value)">
-            </div>
+      <!-- MUSICA MODE -->
+      <div class="mode-view" id="view-musica">
+        <div class="card">
+          <h3 style="font-size:0.9rem;margin-bottom:0.75rem">Buscar Musica</h3>
+          <div style="display:flex;gap:0.5rem;margin-bottom:0.75rem">
+            <input id="yt-search" placeholder="Buscar en YouTube..." onkeydown="if(event.key==='Enter')searchYT()">
+            <button class="btn btn-p btn-sm" onclick="searchYT()">Buscar</button>
           </div>
-          <div class="card">
-            <h3>Controles</h3>
-            <div style="display:flex;gap:0.5rem;flex-wrap:wrap">
-              <button class="btn btn-secondary btn-sm" onclick="swapPlayers()">&#8646; Swap</button>
-              <button class="btn btn-secondary btn-sm" onclick="syncPlayers()">&#x1F517; Sync</button>
-              <button class="btn btn-secondary btn-sm" onclick="fadeToB()">Fade &#8594; B</button>
-              <button class="btn btn-secondary btn-sm" onclick="fadeToA()">&#8592; Fade A</button>
-            </div>
+          <div id="yt-results" style="max-height:350px;overflow-y:auto"></div>
+        </div>
+        <div class="card" style="margin-top:0.75rem">
+          <h3 style="font-size:0.9rem;margin-bottom:0.5rem">Importar Directo</h3>
+          <div style="display:flex;gap:0.5rem">
+            <input id="direct-url" placeholder="URL YouTube, SoundCloud, Jamendo...">
+            <select id="imp-target" style="width:auto"><option value="a">A</option><option value="b">B</option></select>
+            <button class="btn btn-g btn-sm" onclick="importDirect()">Cargar</button>
           </div>
         </div>
-        <div>
-          <div class="card">
-            <h3>Buscar Musica</h3>
-            <div class="search-bar">
-              <input id="yt-search" placeholder="Buscar en YouTube..." onkeydown="if(event.key==='Enter')searchYT()">
-              <button class="btn btn-primary btn-sm" onclick="searchYT()">Buscar</button>
-            </div>
-            <div class="search-results" id="yt-results"></div>
-          </div>
-          <div class="card">
-            <h3>Importar</h3>
-            <div class="search-bar">
-              <input id="direct-url" placeholder="URL de YouTube, SoundCloud, Jamendo...">
-              <button class="btn btn-success btn-sm" onclick="importDirect()">Cargar</button>
-            </div>
-            <div style="display:flex;gap:0.5rem;margin-top:0.5rem">
-              <select id="import-player" style="width:auto">
-                <option value="a">Player A</option>
-                <option value="b">Player B</option>
-              </select>
-            </div>
+        <div class="card" style="margin-top:0.75rem">
+          <h3 style="font-size:0.9rem;margin-bottom:0.5rem">Reproductor Gemelos</h3>
+          <div class="twin">
+            <div class="p-slot active-p" id="pa2"><span class="p-label">A</span><div id="pa2-c" style="padding-top:1.5rem;text-align:center;color:var(--dim)">Vacio</div></div>
+            <div class="p-slot" id="pb2"><span class="p-label">B</span><div id="pb2-c" style="padding-top:1.5rem;text-align:center;color:var(--dim)">Vacio</div></div>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- ========== GFLOW IA ========== -->
-    <div class="section" id="sec-ia">
-      <div class="card" style="max-width:800px;margin:0 auto">
-        <h3>GFlow — DJ IA por IArtLabs</h3>
-        <div class="chat-chips">
-          <span class="chip" onclick="aiQuick('Recomiendame un set para calentar la pista')">Set para calentar</span>
-          <span class="chip" onclick="aiQuick('Dame 5 canciones de reggaeton para hora pico')">Reggaeton pico</span>
-          <span class="chip" onclick="aiQuick('Que cancion va despues de una balada?')">Transicion balada</span>
-          <span class="chip" onclick="aiQuick('Diagnostico del sistema')">Diagnostico</span>
-          <span class="chip" onclick="aiQuick('Arma un set de cumbia de 30 minutos')">Set cumbia</span>
-        </div>
-        <div class="chat-container">
-          <div class="chat-messages" id="chat-messages">
-            <div class="chat-msg ai">Soy GFlow, tu DJ IA. Preguntame lo que necesites — recomendaciones, sets, diagnosticos, o lo que se te ocurra. Powered by IArtLabs.</div>
-          </div>
-          <div class="chat-input-area">
-            <select id="ai-mode" style="width:auto">
-              <option value="dj">DJ Mode</option>
-              <option value="owner">Owner Mode</option>
-              <option value="maintenance">Mantenimiento</option>
-            </select>
-            <input id="ai-input" placeholder="Escribe tu mensaje..." onkeydown="if(event.key==='Enter')sendAI()">
-            <button class="btn btn-primary btn-sm" onclick="sendAI()">Enviar</button>
-          </div>
-        </div>
+    <!-- RIGHT PANEL -->
+    <div class="right-panel">
+      <h3>QR Remoto</h3>
+      <div id="qr-display" style="text-align:center;margin-bottom:1rem">
+        <button class="btn btn-s btn-sm" onclick="genQR()">Generar QR</button>
       </div>
-    </div>
 
-    <!-- ========== BARES ========== -->
-    <div class="section" id="sec-bares">
-      <div class="license-banner" id="bares-license">
-        Modulo Premium — <button class="btn btn-primary btn-sm" onclick="switchTo('settings')">Activar Licencia</button>
-      </div>
-      <div class="stats-bar" id="bar-stats"></div>
-      <div class="grid-2">
-        <div>
-          <div class="card">
-            <h3 id="bar-name-display">Mi Bar</h3>
-            <div class="mesas-grid" id="mesas-grid"></div>
-          </div>
-          <div class="card">
-            <h3>Ordenes Recientes</h3>
-            <div id="orders-list"><p style="color:var(--text-dim)">Sin ordenes</p></div>
-          </div>
-        </div>
-        <div>
-          <div class="card">
-            <h3>Promos entre Canciones</h3>
-            <textarea id="promo-text" placeholder="Mensaje promocional..." rows="2"></textarea>
-            <button class="btn btn-primary btn-sm" style="margin-top:0.5rem" onclick="schedulePromo()">Programar Promo</button>
-            <div id="scheduled-promos" style="margin-top:0.75rem"></div>
-          </div>
-          <div class="card">
-            <h3>Soundboard DJ</h3>
-            <div class="soundboard" id="soundboard"></div>
-          </div>
-        </div>
-      </div>
-    </div>
+      <h3>Guardar Cancion</h3>
+      <input id="save-title" placeholder="Titulo" style="font-size:0.8rem;padding:6px;margin-bottom:4px">
+      <input id="save-artist" placeholder="Artista" style="font-size:0.8rem;padding:6px;margin-bottom:4px">
+      <button class="btn btn-p btn-sm" onclick="saveSong()" style="width:100%">Guardar</button>
 
-    <!-- ========== GUIDE ========== -->
-    <div class="section" id="sec-guide">
-      <div class="guide-section">
-        <h2>ByFlow Pro — Guia de Uso</h2>
-        <p>Plataforma profesional de karaoke, teleprompter y gestion de entretenimiento en vivo. Creado por <strong>ArT-AtR / Arturo Torres</strong> para <strong>IArtLabs</strong>.</p>
-      </div>
-      <div class="guide-section">
-        <h2>Caracteristicas</h2>
-        <div class="feature-grid">
-          <div class="feature-card">
-            <div class="icon">&#127908;</div>
-            <h4>Karaoke</h4>
-            <p>Cola de cantantes, teleprompter con LRC sincronizado, scoring.</p>
-          </div>
-          <div class="feature-card">
-            <div class="icon">&#127911;</div>
-            <h4>Studio</h4>
-            <p>Grabacion de takes, motor de audio con reverb/echo/bass/treble/pitch.</p>
-          </div>
-          <div class="feature-card">
-            <div class="icon">&#127925;</div>
-            <h4>Reproductor Gemelos</h4>
-            <p>Dos reproductores sincronizados con crossfade y swap para mezclas en vivo.</p>
-          </div>
-          <div class="feature-card">
-            <div class="icon">&#129302;</div>
-            <h4>GFlow IA</h4>
-            <p>DJ inteligente powered by Grok xAI. Recomendaciones, sets y diagnosticos.</p>
-          </div>
-          <div class="feature-card">
-            <div class="icon">&#127867;</div>
-            <h4>Bares</h4>
-            <p>Gestion de mesas, ordenes, VIP, promos y soundboard. (Premium)</p>
-          </div>
-          <div class="feature-card">
-            <div class="icon">&#128250;</div>
-            <h4>Display</h4>
-            <p>Pantalla para TV/proyector con overlays de promos y transiciones.</p>
-          </div>
-          <div class="feature-card">
-            <div class="icon">&#128241;</div>
-            <h4>Control QR</h4>
-            <p>Escanea el QR y controla desde tu celular.</p>
-          </div>
-          <div class="feature-card">
-            <div class="icon">&#128274;</div>
-            <h4>Licencias</h4>
-            <p>Sistema Premium con features gateadas: bares, streaming, IA local.</p>
-          </div>
-        </div>
-      </div>
-      <div class="guide-section">
-        <h2>Atajos</h2>
-        <p><code>Espacio</code> — Play/Pause teleprompter</p>
-        <p><code>Flechas &#8593;&#8595;</code> — Ajustar velocidad del teleprompter</p>
-        <p><code>R</code> — Iniciar/detener grabacion (Studio)</p>
-        <p><code>F</code> — Fullscreen teleprompter</p>
-        <p><code>1-7</code> — Cambiar de seccion rapido</p>
-      </div>
-      <div class="guide-section">
-        <h2>Formato LRC</h2>
-        <p>El teleprompter soporta letras sincronizadas en formato LRC:</p>
-        <p><code>[00:05.00] Primera linea de la cancion</code></p>
-        <p><code>[00:10.50] Segunda linea va aqui</code></p>
-        <p>Puedes buscar letras automaticamente desde LRCLib (Creative Commons).</p>
-      </div>
-      <div class="guide-section">
-        <h2>Creditos</h2>
-        <p><strong>ByFlow Pro v2.0.0</strong></p>
-        <p>Creado por Arturo Torres (ArT-AtR)</p>
-        <p>Copyright &copy; 2024-2026 IArtLabs. Todos los derechos reservados.</p>
-        <p>contacto@iartlabs.com | licencias@iartlabs.com | soporte@iartlabs.com</p>
-      </div>
+      <h3 style="margin-top:1rem">Sistema</h3>
+      <div id="sys-status" style="font-size:0.78rem"></div>
     </div>
+  </div>
 
-    <!-- ========== SETTINGS ========== -->
-    <div class="section" id="sec-settings">
-      <div class="grid-2">
-        <div>
-          <div class="card">
-            <h3>Licencia Premium</h3>
-            <div id="license-status" style="margin-bottom:0.75rem">
-              <span style="color:var(--text-dim)">No activada</span>
-            </div>
-            <div class="search-bar">
-              <input id="license-key" placeholder="VFP-XXXXX-XXXXX-XXXXX-XXXXX">
-              <button class="btn btn-success btn-sm" onclick="activateLicense()">Activar</button>
-            </div>
-            <button class="btn btn-danger btn-sm" style="margin-top:0.5rem" onclick="deactivateLicense()">Desactivar</button>
-          </div>
-          <div class="card">
-            <h3>API Keys</h3>
-            <div class="setting-group">
-              <h4>Grok xAI API</h4>
-              <input id="setting-grok-key" type="password" placeholder="xai-...">
-              <p style="font-size:0.75rem;color:var(--text-dim);margin-top:0.3rem">Para GFlow IA. Obten tu key en console.x.ai</p>
-            </div>
-            <div class="setting-group">
-              <h4>YouTube Data API</h4>
-              <input id="setting-yt-key" type="password" placeholder="AIza...">
-            </div>
-            <button class="btn btn-primary btn-sm" onclick="saveApiKeys()">Guardar Keys</button>
-          </div>
-        </div>
-        <div>
-          <div class="card">
-            <h3>Bares / Venue</h3>
-            <div class="setting-group">
-              <h4>Nombre del bar</h4>
-              <input id="setting-bar-name" placeholder="Mi Bar Karaoke" value="">
-            </div>
-            <div class="setting-group">
-              <h4>Numero de mesas</h4>
-              <input id="setting-bar-mesas" type="number" min="1" max="100" value="12">
-            </div>
-            <button class="btn btn-primary btn-sm" onclick="saveBarSettings()">Guardar</button>
-          </div>
-          <div class="card">
-            <h3>QR Control Remoto</h3>
-            <div id="qr-display" style="text-align:center">
-              <button class="btn btn-secondary" onclick="generateQR()">Generar QR</button>
-            </div>
-          </div>
-          <div class="card">
-            <h3>Estado del Sistema</h3>
-            <div id="system-status"><p style="color:var(--text-dim)">Cargando...</p></div>
-          </div>
-        </div>
+  <!-- SLIDE PANELS -->
+
+  <!-- IA PANEL -->
+  <div class="slide-panel" id="ia-panel">
+    <h2>GFlow IA <button class="close-btn" onclick="closePanel('ia-panel')">&times;</button></h2>
+    <div class="chips">
+      <span class="chip" onclick="aiQ('Recomiendame un set para calentar')">Set calentar</span>
+      <span class="chip" onclick="aiQ('5 canciones reggaeton hora pico')">Reggaeton</span>
+      <span class="chip" onclick="aiQ('Diagnostico del sistema')">Diagnostico</span>
+      <span class="chip" onclick="aiQ('Arma set cumbia 30 min')">Set cumbia</span>
+    </div>
+    <div class="chat-msgs" id="chat-msgs">
+      <div class="chat-m ai">Soy GFlow, tu DJ IA. Powered by IArtLabs / ArT-AtR.</div>
+    </div>
+    <div style="display:flex;gap:4px;margin-top:0.5rem">
+      <select id="ai-mode" style="width:auto;font-size:0.8rem"><option value="dj">DJ</option><option value="owner">Owner</option><option value="maintenance">Maint</option></select>
+      <input id="ai-input" placeholder="Escribe..." onkeydown="if(event.key==='Enter')sendAI()" style="font-size:0.85rem">
+      <button class="btn btn-p btn-sm" onclick="sendAI()">&#9654;</button>
+    </div>
+  </div>
+
+  <!-- YOUTUBE PANEL -->
+  <div class="slide-panel" id="yt-panel">
+    <h2>YouTube / Musica <button class="close-btn" onclick="closePanel('yt-panel')">&times;</button></h2>
+    <div style="display:flex;gap:4px;margin-bottom:0.75rem">
+      <input id="yt-search2" placeholder="Buscar..." onkeydown="if(event.key==='Enter')searchYT2()">
+      <button class="btn btn-p btn-sm" onclick="searchYT2()">Go</button>
+    </div>
+    <div id="yt-results2" style="max-height:500px;overflow-y:auto"></div>
+  </div>
+
+  <!-- LYRICS PANEL -->
+  <div class="slide-panel" id="lyrics-panel">
+    <h2>Letras <button class="close-btn" onclick="closePanel('lyrics-panel')">&times;</button></h2>
+    <div style="display:flex;gap:4px;margin-bottom:0.75rem">
+      <input id="lyr-search" placeholder="Artista - Cancion" onkeydown="if(event.key==='Enter')searchLyrics()">
+      <button class="btn btn-p btn-sm" onclick="searchLyrics()">Buscar</button>
+    </div>
+    <div id="lyr-results" style="max-height:300px;overflow-y:auto;margin-bottom:0.75rem"></div>
+    <textarea id="tp-input" placeholder="Pega letras (texto plano o formato LRC [00:00.00] ...)" rows="5"></textarea>
+    <button class="btn btn-g btn-sm" style="width:100%;margin-top:0.5rem" onclick="loadLyrics()">Cargar al Teleprompter</button>
+  </div>
+
+  <!-- BARES PANEL -->
+  <div class="slide-panel" id="bares-panel">
+    <h2>Bares <button class="close-btn" onclick="closePanel('bares-panel')">&times;</button></h2>
+    <div class="lic-banner" id="bares-lic">Modulo Premium — <button class="btn btn-p btn-sm" onclick="closePanel('bares-panel');togglePanel('settings-panel')">Activar</button></div>
+    <div class="bar-stats" id="bar-stats2"></div>
+    <h3 style="font-size:0.8rem;color:var(--dim);margin-bottom:0.5rem" id="bar-name2">Mesas</h3>
+    <div class="mesas-full" id="mesas-full"></div>
+    <h3 style="font-size:0.8rem;color:var(--dim);margin:0.75rem 0 0.5rem">Soundboard DJ</h3>
+    <div class="sb" id="soundboard"></div>
+    <h3 style="font-size:0.8rem;color:var(--dim);margin:0.75rem 0 0.5rem">Promos</h3>
+    <textarea id="promo-text" placeholder="Mensaje promo..." rows="2" style="font-size:0.8rem"></textarea>
+    <button class="btn btn-p btn-sm" style="width:100%;margin-top:4px" onclick="schedulePromo()">Programar</button>
+    <div id="sched-promos"></div>
+  </div>
+
+  <!-- SETTINGS PANEL -->
+  <div class="slide-panel" id="settings-panel">
+    <h2>Settings <button class="close-btn" onclick="closePanel('settings-panel')">&times;</button></h2>
+    <div class="s-group">
+      <h4>Licencia Premium</h4>
+      <div id="lic-status" style="margin-bottom:0.5rem;font-size:0.85rem;color:var(--dim)">No activada</div>
+      <div style="display:flex;gap:4px">
+        <input id="lic-key" placeholder="VFP-XXXXX-XXXXX-XXXXX-XXXXX" style="font-size:0.82rem">
+        <button class="btn btn-g btn-sm" onclick="activateLic()">Activar</button>
+      </div>
+      <button class="btn btn-d btn-sm" style="margin-top:4px" onclick="deactivateLic()">Desactivar</button>
+    </div>
+    <div class="s-group">
+      <h4>API Keys</h4>
+      <input id="set-grok" type="password" placeholder="Grok xAI key (xai-...)" style="font-size:0.82rem;margin-bottom:4px">
+      <input id="set-yt" type="password" placeholder="YouTube API key" style="font-size:0.82rem;margin-bottom:4px">
+      <button class="btn btn-p btn-sm" onclick="saveKeys()">Guardar</button>
+    </div>
+    <div class="s-group">
+      <h4>Bar / Venue</h4>
+      <input id="set-bar-name" placeholder="Nombre del bar" style="font-size:0.82rem;margin-bottom:4px">
+      <input id="set-bar-mesas" type="number" min="1" max="100" value="12" style="font-size:0.82rem;width:80px;margin-bottom:4px">
+      <button class="btn btn-p btn-sm" onclick="saveBar()">Guardar</button>
+    </div>
+    <div class="s-group">
+      <h4>Apariencia</h4>
+      <div style="display:flex;align-items:center;justify-content:space-between;font-size:0.85rem">
+        <span>Visualizador</span>
+        <div id="viz-toggle" class="viz-tog" onclick="this.classList.toggle('on')" style="width:40px;height:22px;border-radius:11px;background:var(--border);cursor:pointer;position:relative;transition:0.25s"><div style="width:18px;height:18px;border-radius:50%;background:#fff;position:absolute;top:2px;left:2px;transition:0.25s"></div></div>
       </div>
     </div>
-  </main>
+    <div class="s-group">
+      <h4>Creditos</h4>
+      <p style="font-size:0.8rem;color:var(--dim);line-height:1.5">ByFlow Pro v2.0.0<br>Creado por ArT-AtR / Arturo Torres<br>&copy; 2024-2026 IArtLabs<br>contacto@iartlabs.com<br>licencias@iartlabs.com</p>
+    </div>
+  </div>
+
+  <!-- FULLSCREEN TP -->
+  <div class="tp-fullscreen" id="tp-fs">
+    <div class="tp-fs-content" id="tp-fs-content"></div>
+    <div class="tp-fs-bar">
+      <button class="btn btn-s" onclick="closeFullTP()">ESC</button>
+      <span class="speed-val" id="fs-speed">1.0x</span>
+      <input type="range" min="0.2" max="5" step="0.1" value="1" style="width:150px" oninput="setSpeed(this.value)">
+    </div>
+  </div>
+
+  <!-- MOBILE NAV -->
+  <div class="mobile-nav">
+    <button class="active" onclick="switchMode('karaoke')"><span class="ico">&#127908;</span>Karaoke</button>
+    <button onclick="switchMode('studio')"><span class="ico">&#127911;</span>Studio</button>
+    <button onclick="switchMode('musica')"><span class="ico">&#127925;</span>Musica</button>
+    <button onclick="togglePanel('ia-panel')"><span class="ico">&#129302;</span>GFlow</button>
+    <button onclick="togglePanel('bares-panel')"><span class="ico">&#127867;</span>Bares</button>
+    <button onclick="togglePanel('settings-panel')"><span class="ico">&#9881;</span>Config</button>
+  </div>
 
   <script>
     // ==========================================
-    // SOCKET.IO CONNECTION
+    // STATE
     // ==========================================
     const socket = io();
-    let currentSection = 'karaoke';
-    let colaData = [];
-    let mesasData = {};
-    let tpData = { lyrics: '', currentWord: 0, isPlaying: false, speed: 1.0 };
-    let isRecording = false;
-    let recStartTime = null;
-    let recTimerInterval = null;
-    let takes = [];
-    let tpInterval = null;
-    let tpWords = [];
-    let tpCurrentIdx = 0;
-    let tpIsPlaying = false;
-    let lrcLines = [];
-    let lrcMode = false;
-    let licenseToken = localStorage.getItem('byflow_license_token') || '';
+    let cola = [], mesasData = {}, tpState = {};
+    let tpWords = [], tpCurrentIdx = 0, tpIsPlaying = false;
+    let lrcLines = [], lrcMode = false, tpInterval = null;
+    let isRec = false, recStart = null, recTimer = null, takes = [];
+    let licToken = localStorage.getItem('byflow_license_token') || '';
     let audioCtx = null;
+    let currentMode = 'karaoke';
 
     // ==========================================
-    // NAVIGATION
+    // CLOCK
     // ==========================================
-    document.querySelectorAll('.nav-tab').forEach(tab => {
-      tab.addEventListener('click', () => switchTo(tab.dataset.section));
+    function updClock() {
+      const d = new Date();
+      document.getElementById('datetime').textContent =
+        d.toLocaleDateString('es-MX', {weekday:'short',day:'numeric',month:'short'}) + ' ' +
+        d.toLocaleTimeString('es-MX', {hour:'2-digit',minute:'2-digit'});
+    }
+    updClock(); setInterval(updClock, 30000);
+
+    // ==========================================
+    // MODE SWITCHING
+    // ==========================================
+    document.querySelectorAll('.mode-btn[data-mode]').forEach(b => {
+      b.addEventListener('click', () => switchMode(b.dataset.mode));
     });
 
-    function switchTo(section) {
-      currentSection = section;
-      document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
-      document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
-      const tab = document.querySelector(`.nav-tab[data-section="${section}"]`);
-      if (tab) tab.classList.add('active');
-      document.getElementById(`sec-${section}`).classList.add('active');
-      document.querySelector('.nav-tabs').classList.remove('open');
+    function switchMode(mode) {
+      currentMode = mode;
+      document.querySelectorAll('.mode-btn[data-mode]').forEach(b => b.classList.remove('active'));
+      const btn = document.querySelector(`.mode-btn[data-mode="${mode}"]`);
+      if (btn) btn.classList.add('active');
+      document.querySelectorAll('.mode-view').forEach(v => v.classList.remove('active'));
+      document.getElementById(`view-${mode}`).classList.add('active');
+      document.querySelectorAll('.mobile-nav button').forEach(b => b.classList.remove('active'));
+      localStorage.setItem('byflow_last_mode', mode);
     }
 
-    // Keyboard shortcuts
-    document.addEventListener('keydown', (e) => {
-      if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.tagName === 'SELECT') return;
-      if (e.key >= '1' && e.key <= '7') {
-        const sections = ['karaoke','studio','musica','ia','bares','guide','settings'];
-        switchTo(sections[parseInt(e.key) - 1]);
+    // ==========================================
+    // PANELS
+    // ==========================================
+    function togglePanel(id) {
+      const panel = document.getElementById(id);
+      const bg = document.getElementById('overlay-bg');
+      if (panel.classList.contains('open')) {
+        panel.classList.remove('open'); bg.classList.remove('show');
+      } else {
+        closeAllPanels();
+        panel.classList.add('open'); bg.classList.add('show');
       }
-      if (e.key === ' ') { e.preventDefault(); tpIsPlaying ? tpPause() : tpPlay(); }
-      if (e.key === 'ArrowUp') { e.preventDefault(); setSpeed(Math.min(5, parseFloat(document.getElementById('speed-slider').value) + 0.1)); }
-      if (e.key === 'ArrowDown') { e.preventDefault(); setSpeed(Math.max(0.2, parseFloat(document.getElementById('speed-slider').value) - 0.1)); }
-      if (e.key === 'f' || e.key === 'F') { toggleFullscreenTP(); }
-      if (e.key === 'r' || e.key === 'R') { if (currentSection === 'studio') toggleRecording(); }
+    }
+    function closePanel(id) {
+      document.getElementById(id).classList.remove('open');
+      document.getElementById('overlay-bg').classList.remove('show');
+    }
+    function closeAllPanels() {
+      document.querySelectorAll('.slide-panel').forEach(p => p.classList.remove('open'));
+      document.getElementById('overlay-bg').classList.remove('show');
+    }
+
+    // ==========================================
+    // SOCKET
+    // ==========================================
+    socket.on('connect', () => { document.getElementById('conn-dot').style.background='var(--g)'; });
+    socket.on('disconnect', () => { document.getElementById('conn-dot').style.background='#ff4444'; });
+
+    socket.on('init', d => {
+      cola = d.cola || []; mesasData = d.mesas || {}; tpState = d.tp || {};
+      renderQ(); renderMesas();
+      if (tpState.lyrics) { document.getElementById('tp-input').value = tpState.lyrics; loadLyrics(); }
+    });
+    socket.on('cola_update', d => { cola = d; renderQ(); });
+    socket.on('mesas_update', d => { mesasData = d; renderMesas(); });
+    socket.on('tp_update', d => { tpState = d; highlightWord(d.currentWord); });
+    socket.on('tp_speed_update', s => { document.getElementById('speed-slider').value=s; document.getElementById('speed-val').textContent=s.toFixed(1)+'x'; });
+    socket.on('singer_changed', d => {
+      document.getElementById('now-singing').style.display='flex';
+      document.getElementById('ns-name').textContent = d.cantante || d.nombre || '?';
+      document.getElementById('ns-song').textContent = d.cancion || '';
+      // Auto-search lyrics
+      if (d.cancion) {
+        document.getElementById('lyr-search').value = d.cancion;
+        searchLyrics();
+      }
     });
 
     // ==========================================
-    // SOCKET EVENTS
+    // COLA
     // ==========================================
-    socket.on('connect', () => {
-      document.getElementById('connection-status').style.background = 'var(--green)';
-      document.getElementById('connection-status').title = 'Conectado';
-    });
-
-    socket.on('disconnect', () => {
-      document.getElementById('connection-status').style.background = '#ff4444';
-      document.getElementById('connection-status').title = 'Desconectado';
-    });
-
-    socket.on('init', (data) => {
-      colaData = data.cola || [];
-      mesasData = data.mesas || {};
-      tpData = data.tp || tpData;
-      renderQueue();
-      renderMesas();
-      if (tpData.lyrics) {
-        document.getElementById('tp-input').value = tpData.lyrics;
-        loadLyrics();
-      }
-    });
-
-    socket.on('cola_update', (data) => {
-      colaData = data;
-      renderQueue();
-    });
-
-    socket.on('mesas_update', (data) => {
-      mesasData = data;
-      renderMesas();
-    });
-
-    socket.on('tp_update', (data) => {
-      tpData = data;
-      if (data.lyrics && !tpWords.length) {
-        document.getElementById('tp-input').value = data.lyrics;
-        loadLyrics();
-      }
-      highlightWord(data.currentWord);
-    });
-
-    socket.on('tp_speed_update', (speed) => {
-      document.getElementById('speed-slider').value = speed;
-      document.getElementById('speed-val').textContent = speed.toFixed(1) + 'x';
-    });
-
-    // ==========================================
-    // COLA DE CANTANTES
-    // ==========================================
-    function renderQueue() {
-      const list = document.getElementById('queue-list');
-      if (!colaData.length) {
-        list.innerHTML = '<p style="color:var(--text-dim);padding:0.5rem">Cola vacia — agrega cantantes</p>';
-        return;
-      }
-      list.innerHTML = colaData.map(c => `
-        <div class="queue-item ${c.estado === 'cantando' ? 'singing' : ''}">
+    function renderQ() {
+      const el = document.getElementById('queue-list');
+      if (!cola.length) { el.innerHTML = '<p style="color:var(--dim);font-size:0.8rem;padding:4px">Cola vacia</p>'; return; }
+      el.innerHTML = cola.map(c => `
+        <div class="q-item ${c.estado==='cantando'?'singing':''}">
           <div class="info">
-            <div class="name">${esc(c.nombre)} ${c.mesa ? '<span style="color:var(--text-dim);font-size:0.8rem">Mesa ' + c.mesa + '</span>' : ''}</div>
-            <div class="song">${esc(c.cancion)} ${c.estado === 'cantando' ? '<span style="color:var(--green)">&#9835; Cantando</span>' : ''}</div>
+            <div class="name">${esc(c.cantante||c.nombre)} ${c.mesa?'<span style="color:var(--dim);font-size:0.7rem">M'+c.mesa+'</span>':''}</div>
+            <div class="song">${esc(c.cancion)} ${c.estado==='cantando'?'<span style="color:var(--g)">&#9835;</span>':''}</div>
           </div>
-          <div class="actions">
-            ${c.estado !== 'cantando' ? `<button class="btn btn-success btn-sm" onclick="activateSinger(${c.id})">&#9654;</button>` : ''}
-            <button class="btn btn-danger btn-sm" onclick="removeSinger(${c.id})">&#10005;</button>
+          <div class="acts">
+            ${c.estado!=='cantando'?`<button class="btn btn-g btn-sm" onclick="actSinger(${c.id})">&#9654;</button>`:''}
+            <button class="btn btn-d btn-sm" onclick="rmSinger(${c.id})">&#10005;</button>
           </div>
-        </div>
-      `).join('');
+        </div>`).join('');
     }
 
     async function addSinger() {
-      const nombre = document.getElementById('singer-name').value.trim();
-      const cancion = document.getElementById('singer-song').value.trim();
-      const mesa = document.getElementById('singer-mesa').value.trim();
-      if (!nombre || !cancion) return;
-      await fetch('/api/cola', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ nombre, cancion, mesa: mesa || null })
-      });
-      document.getElementById('singer-name').value = '';
-      document.getElementById('singer-song').value = '';
-      document.getElementById('singer-mesa').value = '';
+      const n = document.getElementById('s-name').value.trim();
+      const s = document.getElementById('s-song').value.trim();
+      const m = document.getElementById('s-mesa').value.trim();
+      if (!n||!s) return;
+      await fetch('/api/cola', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({cantante:n,cancion:s,mesa:m||null}) });
+      document.getElementById('s-name').value=''; document.getElementById('s-song').value=''; document.getElementById('s-mesa').value='';
     }
+    async function actSinger(id) { await fetch(`/api/cola/${id}`, {method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify({estado:'cantando'})}); }
+    async function rmSinger(id) { await fetch(`/api/cola/${id}`, {method:'DELETE'}); }
 
-    async function activateSinger(id) {
-      await fetch(`/api/cola/${id}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ estado: 'cantando' })
-      });
+    // ==========================================
+    // MESAS
+    // ==========================================
+    function renderMesas() {
+      const count = parseInt(localStorage.getItem('byflow_bar_mesas')||'12');
+      // Mini (sidebar)
+      const mini = document.getElementById('mesas-mini');
+      mini.innerHTML = '';
+      for (let i=1; i<=count; i++) {
+        const st = mesasData[i]||'libre';
+        mini.innerHTML += `<div class="mesa-m ${st}" onclick="togMesa(${i})">${i}</div>`;
+      }
+      // Full (bares panel)
+      const full = document.getElementById('mesas-full');
+      full.innerHTML = '';
+      for (let i=1; i<=count; i++) {
+        const st = mesasData[i]||'libre';
+        full.innerHTML += `<div class="mesa-f ${st}" onclick="togMesa(${i})"><span class="num">${i}</span><span class="st">${st}</span></div>`;
+      }
+      updBarStats();
     }
+    async function togMesa(n) { await fetch(`/api/mesas/${n}`, {method:'PATCH'}); }
 
-    async function removeSinger(id) {
-      await fetch(`/api/cola/${id}`, { method: 'DELETE' });
+    function updBarStats() {
+      const count = parseInt(localStorage.getItem('byflow_bar_mesas')||'12');
+      const vals = Object.values(mesasData);
+      const libre = count - vals.filter(v=>v!=='libre').length;
+      const ocup = vals.filter(v=>v==='ocupada').length;
+      const vip = vals.filter(v=>v==='vip').length;
+      document.getElementById('bar-stats2').innerHTML = `
+        <div class="b-stat"><div class="n" style="color:var(--g)">${libre}</div><div class="l">Libres</div></div>
+        <div class="b-stat"><div class="n" style="color:var(--p)">${ocup}</div><div class="l">Ocup</div></div>
+        <div class="b-stat"><div class="n" style="color:var(--s)">${vip}</div><div class="l">VIP</div></div>`;
     }
 
     // ==========================================
-    // TELEPROMPTER ENGINE (LRC + Plain Text)
+    // TELEPROMPTER
     // ==========================================
     function parseLRC(text) {
-      const lines = text.split('\n').filter(l => l.trim());
+      const lines = text.split('\n').filter(l=>l.trim());
       const parsed = [];
-      const lrcRegex = /^\[(\d{2}):(\d{2})\.(\d{2,3})\]\s*(.*)$/;
-
       for (const line of lines) {
-        const m = line.match(lrcRegex);
+        const m = line.match(/^\[(\d{2}):(\d{2})\.(\d{2,3})\]\s*(.*)$/);
         if (m) {
-          const ms = parseInt(m[1]) * 60000 + parseInt(m[2]) * 1000 + parseInt(m[3].padEnd(3, '0'));
-          parsed.push({ time: ms, text: m[4] });
+          const ms = parseInt(m[1])*60000 + parseInt(m[2])*1000 + parseInt(m[3].padEnd(3,'0'));
+          parsed.push({time:ms, text:m[4]});
         }
       }
-      return parsed.sort((a, b) => a.time - b.time);
+      return parsed.sort((a,b)=>a.time-b.time);
     }
 
     function loadLyrics() {
       const text = document.getElementById('tp-input').value.trim();
       if (!text) return;
-
       const display = document.getElementById('tp-display');
-      const parsedLRC = parseLRC(text);
+      const parsed = parseLRC(text);
 
-      if (parsedLRC.length > 0) {
-        // LRC mode
-        lrcMode = true;
-        lrcLines = parsedLRC;
-        tpWords = [];
-        display.innerHTML = parsedLRC.map((line, i) =>
-          `<span class="lrc-line" data-idx="${i}">${esc(line.text) || '...'}</span>`
-        ).join('');
+      if (parsed.length > 0) {
+        lrcMode = true; lrcLines = parsed; tpWords = [];
+        display.innerHTML = parsed.map((l,i) => `<span class="lrc-line" data-idx="${i}">${esc(l.text)||'...'}</span>`).join('');
       } else {
-        // Plain text mode - word by word
-        lrcMode = false;
-        lrcLines = [];
+        lrcMode = false; lrcLines = [];
         const words = text.split(/\s+/);
         tpWords = words;
-        display.innerHTML = words.map((w, i) =>
-          `<span class="word" data-idx="${i}" onclick="jumpToWord(${i})">${esc(w)} </span>`
-        ).join('');
+        display.innerHTML = words.map((w,i) => `<span class="word" data-idx="${i}" onclick="jumpTo(${i})">${esc(w)} </span>`).join('');
       }
-
-      tpCurrentIdx = 0;
-      highlightWord(0);
+      tpCurrentIdx = 0; highlightWord(0);
       socket.emit('tp_lyrics', text);
-
-      // Also update studio TP
       document.getElementById('studio-tp').innerHTML = display.innerHTML;
+      document.getElementById('tp-fs-content').innerHTML = display.innerHTML;
+      closePanel('lyrics-panel');
     }
 
     function highlightWord(idx) {
       tpCurrentIdx = idx;
       const display = document.getElementById('tp-display');
+      const total = lrcMode ? lrcLines.length : tpWords.length;
+      document.getElementById('tp-progress-fill').style.width = total ? ((idx/total)*100)+'%' : '0%';
 
       if (lrcMode) {
-        display.querySelectorAll('.lrc-line').forEach((el, i) => {
-          el.classList.remove('active', 'past');
-          el.style.color = '';
-          el.style.textShadow = '';
-          if (i < idx) {
-            el.classList.add('past');
-            el.style.color = 'rgba(255,255,255,0.55)';
-          } else if (i === idx) {
+        display.querySelectorAll('.lrc-line').forEach((el,i) => {
+          el.classList.remove('active','past');
+          el.style.color = ''; el.style.textShadow = ''; el.style.fontWeight = '';
+          if (i<idx) { el.classList.add('past'); el.style.color='rgba(255,255,255,0.5)'; }
+          else if (i===idx) {
             el.classList.add('active');
-            el.style.color = '#fff';
-            el.style.textShadow = '0 0 20px var(--green), 0 0 40px var(--green)';
-            el.style.fontWeight = '600';
-            el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-          } else {
-            el.style.color = 'rgba(255,255,255,0.35)';
-          }
+            el.style.color='#fff'; el.style.textShadow='0 0 20px var(--g),0 0 50px var(--g)';
+            el.style.fontWeight='600'; el.scrollIntoView({behavior:'smooth',block:'center'});
+          } else { el.style.color='rgba(255,255,255,0.3)'; }
         });
       } else {
-        display.querySelectorAll('.word').forEach((el, i) => {
-          el.classList.remove('active', 'past');
-          if (i < idx) el.classList.add('past');
-          else if (i === idx) {
-            el.classList.add('active');
-            el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-          }
+        display.querySelectorAll('.word').forEach((el,i) => {
+          el.classList.remove('active','past');
+          if (i<idx) el.classList.add('past');
+          else if (i===idx) { el.classList.add('active'); el.scrollIntoView({behavior:'smooth',block:'center'}); }
         });
       }
-
       socket.emit('tp_scroll', idx);
     }
 
-    function jumpToWord(idx) {
-      highlightWord(idx);
-    }
+    function jumpTo(idx) { highlightWord(idx); }
 
-    let lrcStartTime = 0;
+    let lrcStart = 0;
     function tpPlay() {
       tpIsPlaying = true;
       document.getElementById('tp-play-btn').textContent = '▶ Playing';
       const speed = parseFloat(document.getElementById('speed-slider').value);
 
-      if (lrcMode && lrcLines.length > 0) {
-        lrcStartTime = Date.now() - (lrcLines[tpCurrentIdx]?.time || 0) / speed;
+      if (lrcMode && lrcLines.length) {
+        lrcStart = Date.now() - (lrcLines[tpCurrentIdx]?.time||0)/speed;
         clearInterval(tpInterval);
         tpInterval = setInterval(() => {
-          const elapsed = (Date.now() - lrcStartTime) * speed;
-          let newIdx = tpCurrentIdx;
-          for (let i = tpCurrentIdx; i < lrcLines.length; i++) {
-            if (lrcLines[i].time <= elapsed) newIdx = i;
-            else break;
-          }
-          if (newIdx !== tpCurrentIdx) highlightWord(newIdx);
-          if (newIdx >= lrcLines.length - 1) tpPause();
+          const elapsed = (Date.now()-lrcStart)*speed;
+          let ni = tpCurrentIdx;
+          for (let i=tpCurrentIdx; i<lrcLines.length; i++) { if (lrcLines[i].time<=elapsed) ni=i; else break; }
+          if (ni!==tpCurrentIdx) highlightWord(ni);
+          if (ni>=lrcLines.length-1) tpPause();
         }, 50);
       } else {
         clearInterval(tpInterval);
-        const wpm = 200 * speed;
-        const msPerWord = 60000 / wpm;
+        const ms = 60000/(200*speed);
         tpInterval = setInterval(() => {
-          if (tpCurrentIdx < tpWords.length - 1) {
-            highlightWord(tpCurrentIdx + 1);
-          } else {
-            tpPause();
-          }
-        }, msPerWord);
+          if (tpCurrentIdx<tpWords.length-1) highlightWord(tpCurrentIdx+1);
+          else tpPause();
+        }, ms);
       }
     }
-
-    function tpPause() {
-      tpIsPlaying = false;
-      clearInterval(tpInterval);
-      document.getElementById('tp-play-btn').textContent = '▶ Play';
-    }
-
-    function tpReset() {
-      tpPause();
-      highlightWord(0);
-    }
-
-    function setSpeed(val) {
-      val = parseFloat(val).toFixed(1);
-      document.getElementById('speed-slider').value = val;
-      document.getElementById('speed-val').textContent = val + 'x';
-      socket.emit('tp_speed', parseFloat(val));
+    function tpPause() { tpIsPlaying=false; clearInterval(tpInterval); document.getElementById('tp-play-btn').textContent='▶ Play'; }
+    function tpReset() { tpPause(); highlightWord(0); }
+    function setSpeed(v) {
+      v = parseFloat(v).toFixed(1);
+      document.getElementById('speed-slider').value=v;
+      document.getElementById('speed-val').textContent=v+'x';
+      document.getElementById('fs-speed').textContent=v+'x';
+      socket.emit('tp_speed', parseFloat(v));
       if (tpIsPlaying) { tpPause(); tpPlay(); }
     }
-
-    function toggleFullscreenTP() {
-      const el = document.getElementById('tp-display');
-      if (document.fullscreenElement) document.exitFullscreen();
-      else el.requestFullscreen();
-    }
+    function toggleFullTP() { document.getElementById('tp-fs').classList.add('show'); document.getElementById('tp-fs-content').innerHTML=document.getElementById('tp-display').innerHTML; }
+    function closeFullTP() { document.getElementById('tp-fs').classList.remove('show'); }
+    document.addEventListener('keydown', e => {
+      if (e.key==='Escape') closeFullTP();
+    });
 
     // ==========================================
     // LYRICS SEARCH (LRCLib)
     // ==========================================
     async function searchLyrics() {
-      const q = document.getElementById('lyrics-search').value.trim();
+      const q = document.getElementById('lyr-search').value.trim();
       if (!q) return;
-      const results = document.getElementById('lyrics-results');
-      results.innerHTML = '<p style="color:var(--text-dim)">Buscando...</p>';
-
+      const el = document.getElementById('lyr-results');
+      el.innerHTML = '<p style="color:var(--dim);font-size:0.85rem">Buscando...</p>';
       try {
-        const parts = q.split('-').map(s => s.trim());
+        const parts = q.split('-').map(s=>s.trim());
         let url = `https://lrclib.net/api/search?q=${encodeURIComponent(q)}`;
-        if (parts.length >= 2) {
-          url = `https://lrclib.net/api/search?artist_name=${encodeURIComponent(parts[0])}&track_name=${encodeURIComponent(parts[1])}`;
-        }
-
+        if (parts.length>=2) url = `https://lrclib.net/api/search?artist_name=${encodeURIComponent(parts[0])}&track_name=${encodeURIComponent(parts[1])}`;
         const res = await fetch(url);
         const data = await res.json();
-
-        if (!data.length) {
-          results.innerHTML = '<p style="color:var(--text-dim)">No se encontraron resultados</p>';
-          return;
-        }
-
-        results.innerHTML = data.slice(0, 8).map((r, i) => `
-          <div class="search-result" onclick="loadLRCResult(${i})">
-            <div class="meta">
-              <div class="title">${esc(r.trackName)}</div>
-              <div class="channel">${esc(r.artistName)} ${r.syncedLyrics ? '&#9835; LRC' : '&#9113; Texto'}</div>
-            </div>
-          </div>
-        `).join('');
-
-        window._lrcResults = data.slice(0, 8);
-      } catch (err) {
-        results.innerHTML = `<p style="color:#ff4444">Error: ${err.message}</p>`;
-      }
+        if (!data.length) { el.innerHTML='<p style="color:var(--dim);font-size:0.85rem">Sin resultados</p>'; return; }
+        window._lrc = data.slice(0,8);
+        el.innerHTML = data.slice(0,8).map((r,i)=>`
+          <div class="search-r" onclick="loadLRC(${i})">
+            <div class="meta"><div class="title">${esc(r.trackName)}</div><div class="ch">${esc(r.artistName)} ${r.syncedLyrics?'&#9835; LRC':'Texto'}</div></div>
+          </div>`).join('');
+      } catch(err) { el.innerHTML=`<p style="color:#ff4444;font-size:0.85rem">${err.message}</p>`; }
     }
-
-    function loadLRCResult(idx) {
-      const r = window._lrcResults[idx];
-      if (!r) return;
-      const lyrics = r.syncedLyrics || r.plainLyrics || '';
-      document.getElementById('tp-input').value = lyrics;
+    function loadLRC(i) {
+      const r = window._lrc[i]; if (!r) return;
+      document.getElementById('tp-input').value = r.syncedLyrics||r.plainLyrics||'';
       loadLyrics();
-      document.getElementById('lyrics-results').innerHTML = `<p style="color:var(--green)">Cargado: ${esc(r.trackName)} - ${esc(r.artistName)}</p>`;
     }
 
     // ==========================================
-    // STUDIO RECORDING
+    // RECORDING
     // ==========================================
-    function toggleRecording() {
-      if (!isRecording) startRecording();
-      else stopRecording();
-    }
-
-    async function startRecording() {
+    function toggleRec() { isRec ? stopRec() : startRec(); }
+    async function startRec() {
       try {
-        if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-        const source = audioCtx.createMediaStreamSource(stream);
-        const analyser = audioCtx.createAnalyser();
-        analyser.fftSize = 256;
-        source.connect(analyser);
-
-        window._mediaRecorder = new MediaRecorder(stream);
-        window._recordedChunks = [];
-        window._mediaRecorder.ondataavailable = (e) => { if (e.data.size > 0) window._recordedChunks.push(e.data); };
-        window._mediaRecorder.onstop = () => {
-          const blob = new Blob(window._recordedChunks, { type: 'audio/webm' });
-          const url = URL.createObjectURL(blob);
-          takes.push({ id: takes.length + 1, url, duration: ((Date.now() - recStartTime) / 1000).toFixed(1), timestamp: new Date().toISOString() });
-          renderTakes();
-          stream.getTracks().forEach(t => t.stop());
+        if (!audioCtx) audioCtx = new (window.AudioContext||window.webkitAudioContext)();
+        const stream = await navigator.mediaDevices.getUserMedia({audio:true});
+        const src = audioCtx.createMediaStreamSource(stream);
+        const ana = audioCtx.createAnalyser(); ana.fftSize=256; src.connect(ana);
+        window._mr = new MediaRecorder(stream); window._rc = [];
+        window._mr.ondataavailable = e => { if(e.data.size>0) window._rc.push(e.data); };
+        window._mr.onstop = () => {
+          const blob = new Blob(window._rc,{type:'audio/webm'});
+          takes.push({id:takes.length+1, url:URL.createObjectURL(blob), dur:((Date.now()-recStart)/1000).toFixed(1)});
+          renderTakes(); stream.getTracks().forEach(t=>t.stop());
         };
-        window._mediaRecorder.start();
-
-        isRecording = true;
-        recStartTime = Date.now();
-        document.getElementById('rec-btn').textContent = '⏹ STOP';
-        document.getElementById('rec-btn').style.background = '#ff4444';
-        document.getElementById('rec-indicator').style.display = 'inline-flex';
-
-        recTimerInterval = setInterval(() => {
-          const secs = Math.floor((Date.now() - recStartTime) / 1000);
-          const m = String(Math.floor(secs / 60)).padStart(2, '0');
-          const s = String(secs % 60).padStart(2, '0');
-          document.getElementById('rec-timer').textContent = `${m}:${s}`;
-        }, 1000);
-
-        // VU meter
-        const dataArray = new Uint8Array(analyser.frequencyBinCount);
-        function updateVU() {
-          if (!isRecording) return;
-          analyser.getByteFrequencyData(dataArray);
-          const avg = dataArray.reduce((a, b) => a + b) / dataArray.length;
-          document.getElementById('vu-level').style.width = (avg / 255 * 100) + '%';
-          requestAnimationFrame(updateVU);
-        }
-        updateVU();
-
-        socket.emit('studio-start-recording', 'sala1');
-      } catch (err) {
-        alert('Error accediendo al microfono: ' + err.message);
-      }
+        window._mr.start();
+        isRec=true; recStart=Date.now();
+        document.getElementById('rec-btn').textContent='⏹ STOP';
+        document.getElementById('rec-ind').style.display='inline-flex';
+        recTimer = setInterval(() => {
+          const s=Math.floor((Date.now()-recStart)/1000);
+          document.getElementById('rec-timer').textContent=String(Math.floor(s/60)).padStart(2,'0')+':'+String(s%60).padStart(2,'0');
+        },1000);
+        const da = new Uint8Array(ana.frequencyBinCount);
+        (function vu(){if(!isRec)return; ana.getByteFrequencyData(da); document.getElementById('vu-lv').style.width=(da.reduce((a,b)=>a+b)/da.length/255*100)+'%'; requestAnimationFrame(vu);})();
+        socket.emit('studio-start-recording','sala1');
+      } catch(err) { alert('Mic error: '+err.message); }
     }
-
-    function stopRecording() {
-      if (window._mediaRecorder && window._mediaRecorder.state !== 'inactive') {
-        window._mediaRecorder.stop();
-      }
-      isRecording = false;
-      clearInterval(recTimerInterval);
-      document.getElementById('rec-btn').textContent = '⏺ REC';
-      document.getElementById('rec-btn').style.background = '';
-      document.getElementById('rec-indicator').style.display = 'none';
-      document.getElementById('vu-level').style.width = '0%';
+    function stopRec() {
+      if(window._mr&&window._mr.state!=='inactive') window._mr.stop();
+      isRec=false; clearInterval(recTimer);
+      document.getElementById('rec-btn').textContent='⏺ REC';
+      document.getElementById('rec-ind').style.display='none';
+      document.getElementById('vu-lv').style.width='0%';
     }
-
     function renderTakes() {
-      const list = document.getElementById('takes-list');
-      list.innerHTML = takes.map(t => `
-        <div class="queue-item">
-          <div class="info">
-            <div class="name">Take ${t.id}</div>
-            <div class="song">${t.duration}s</div>
-          </div>
-          <div class="actions">
-            <button class="btn btn-secondary btn-sm" onclick="playTake('${t.url}')">&#9654;</button>
-            <a href="${t.url}" download="take_${t.id}.webm" class="btn btn-secondary btn-sm">&#8595;</a>
-          </div>
-        </div>
-      `).join('');
+      document.getElementById('takes-list').innerHTML = takes.map(t=>`
+        <div class="q-item"><div class="info"><div class="name">Take ${t.id}</div><div class="song">${t.dur}s</div></div>
+        <div class="acts"><button class="btn btn-s btn-sm" onclick="new Audio('${t.url}').play()">&#9654;</button>
+        <a href="${t.url}" download="take_${t.id}.webm" class="btn btn-s btn-sm">&#8595;</a></div></div>`).join('');
     }
-
-    function playTake(url) {
-      const a = new Audio(url);
-      a.play();
-    }
-
-    // Audio engine knobs
-    function updateKnob(name, val) {
-      document.getElementById(`val-${name}`).textContent = val;
-    }
+    function updFx(n,v) { document.getElementById('fx-'+n).textContent=v; }
 
     // ==========================================
-    // TWIN PLAYER (REPRODUCTOR GEMELOS)
+    // TWIN PLAYER
     // ==========================================
-    let playerAVideoId = null;
-    let playerBVideoId = null;
-    let activePlayer = 'a';
-
-    function loadToPlayer(videoId, title, target) {
-      const slot = target || activePlayer;
-      const contentEl = document.getElementById(`player-${slot}-content`);
-      contentEl.innerHTML = `<iframe src="https://www.youtube.com/embed/${videoId}?autoplay=1&enablejsapi=1" allow="autoplay; encrypted-media" allowfullscreen></iframe>
-        <p style="font-size:0.8rem;margin-top:0.5rem;color:var(--text-dim)">${esc(title)}</p>`;
-
-      if (slot === 'a') playerAVideoId = videoId;
-      else playerBVideoId = videoId;
+    let paVid=null, pbVid=null;
+    function loadToPlayer(vid,title,target) {
+      const el = document.getElementById((target==='b'?'pb':'pa')+'-c');
+      const el2 = document.getElementById((target==='b'?'pb2':'pa2')+'-c');
+      const html = `<iframe src="https://www.youtube.com/embed/${vid}?autoplay=1&enablejsapi=1" allow="autoplay;encrypted-media" allowfullscreen></iframe><p style="font-size:0.75rem;margin-top:4px;color:var(--dim)">${esc(title)}</p>`;
+      el.innerHTML = html; if(el2) el2.innerHTML = html;
+      if(target==='b') pbVid=vid; else paVid=vid;
     }
-
     function swapPlayers() {
-      const tmpA = document.getElementById('player-a-content').innerHTML;
-      const tmpB = document.getElementById('player-b-content').innerHTML;
-      document.getElementById('player-a-content').innerHTML = tmpB;
-      document.getElementById('player-b-content').innerHTML = tmpA;
-      const tmpId = playerAVideoId;
-      playerAVideoId = playerBVideoId;
-      playerBVideoId = tmpId;
+      const a=document.getElementById('pa-c').innerHTML, b=document.getElementById('pb-c').innerHTML;
+      document.getElementById('pa-c').innerHTML=b; document.getElementById('pb-c').innerHTML=a;
+      const t=paVid; paVid=pbVid; pbVid=t;
     }
-
     function syncPlayers() {
-      // Visual feedback
-      document.getElementById('player-a').style.borderColor = 'var(--blue)';
-      document.getElementById('player-b').style.borderColor = 'var(--blue)';
-      setTimeout(() => {
-        document.getElementById('player-a').style.borderColor = '';
-        document.getElementById('player-b').style.borderColor = '';
-      }, 2000);
+      ['pa','pb'].forEach(id=>{document.getElementById(id).style.borderColor='var(--a)';setTimeout(()=>document.getElementById(id).style.borderColor='',2000);});
     }
-
-    function doCrossfade(val) {
-      // Visual indication of crossfade position
-      const a = document.getElementById('player-a');
-      const b = document.getElementById('player-b');
-      a.style.opacity = 1 - val / 200;
-      b.style.opacity = 0.5 + val / 200;
+    function doCrossfade(v) {
+      document.getElementById('pa').style.opacity=1-v/200;
+      document.getElementById('pb').style.opacity=0.5+v/200;
     }
-
-    function fadeToB() { document.getElementById('crossfade').value = 100; doCrossfade(100); }
-    function fadeToA() { document.getElementById('crossfade').value = 0; doCrossfade(0); }
 
     // ==========================================
     // YOUTUBE SEARCH
     // ==========================================
-    async function searchYT() {
-      const q = document.getElementById('yt-search').value.trim();
+    async function searchYT() { await _searchYT('yt-search','yt-results'); }
+    async function searchYT2() { await _searchYT('yt-search2','yt-results2'); }
+    async function _searchYT(inputId, resultId) {
+      const q = document.getElementById(inputId).value.trim();
       if (!q) return;
-      const results = document.getElementById('yt-results');
-      results.innerHTML = '<p style="color:var(--text-dim)">Buscando...</p>';
-
+      const el = document.getElementById(resultId);
+      el.innerHTML='<p style="color:var(--dim);font-size:0.85rem">Buscando...</p>';
       try {
         const res = await fetch(`/api/youtube/search?q=${encodeURIComponent(q)}`);
         const data = await res.json();
-
-        if (data.message && !data.results.length) {
-          results.innerHTML = `<p style="color:var(--text-dim)">${esc(data.message)}</p>`;
-          return;
-        }
-        if (!data.results.length) {
-          results.innerHTML = '<p style="color:var(--text-dim)">Sin resultados</p>';
-          return;
-        }
-
-        results.innerHTML = data.results.map(r => `
-          <div class="search-result" onclick="loadToPlayer('${r.videoId}', '${esc(r.title).replace(/'/g,"\\'")}', document.getElementById('import-player').value)">
-            <img src="${r.thumbnail}" alt="">
-            <div class="meta">
-              <div class="title">${esc(r.title)}</div>
-              <div class="channel">${esc(r.channel)}</div>
-            </div>
-            <button class="btn btn-sm btn-primary">+</button>
-          </div>
-        `).join('');
-      } catch (err) {
-        results.innerHTML = `<p style="color:#ff4444">Error: ${err.message}</p>`;
-      }
+        if (!data.results?.length) { el.innerHTML=`<p style="color:var(--dim);font-size:0.85rem">${data.message||'Sin resultados'}</p>`; return; }
+        el.innerHTML = data.results.map(r=>`
+          <div class="search-r" onclick="loadToPlayer('${r.videoId}','${esc(r.title).replace(/'/g,"\\'")}','a')">
+            ${r.thumbnail?`<img src="${r.thumbnail}">`:''}
+            <div class="meta"><div class="title">${esc(r.title)}</div><div class="ch">${esc(r.channel)}</div></div>
+          </div>`).join('');
+      } catch(err) { el.innerHTML=`<p style="color:#ff4444;font-size:0.85rem">${err.message}</p>`; }
     }
-
     function importDirect() {
       const url = document.getElementById('direct-url').value.trim();
       if (!url) return;
-      const target = document.getElementById('import-player').value;
-      const ytMatch = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&\s]+)/);
-      if (ytMatch) {
-        loadToPlayer(ytMatch[1], 'Imported', target);
-        document.getElementById('direct-url').value = '';
-      } else {
-        // Generic embed
-        const contentEl = document.getElementById(`player-${target}-content`);
-        contentEl.innerHTML = `<iframe src="${esc(url)}" style="width:100%;height:180px;border:none;border-radius:8px" allow="autoplay"></iframe>`;
-      }
+      const target = document.getElementById('imp-target').value;
+      const m = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&\s]+)/);
+      if (m) { loadToPlayer(m[1],'Imported',target); document.getElementById('direct-url').value=''; }
     }
 
     // ==========================================
-    // GFLOW IA CHAT
+    // GFLOW IA
     // ==========================================
     async function sendAI() {
-      const input = document.getElementById('ai-input');
-      const msg = input.value.trim();
-      if (!msg) return;
-      input.value = '';
-
-      const mode = document.getElementById('ai-mode').value;
-      addChatMsg(msg, 'user');
-
-      const indicator = addChatMsg('Pensando...', 'ai');
-
+      const inp = document.getElementById('ai-input');
+      const msg = inp.value.trim(); if(!msg) return; inp.value='';
+      addChat(msg,'user');
+      const ind = addChat('Pensando...','ai');
       try {
-        const res = await fetch('/api/ai/chat', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'X-License-Token': licenseToken
-          },
-          body: JSON.stringify({ message: msg, mode })
-        });
+        const res = await fetch('/api/ai/chat', {method:'POST',headers:{'Content-Type':'application/json','X-License-Token':licToken}, body:JSON.stringify({message:msg,mode:document.getElementById('ai-mode').value})});
         const data = await res.json();
-        indicator.textContent = data.response;
-        if (data.source === 'fallback') {
-          indicator.style.borderLeft = '3px solid var(--purple)';
-        }
-      } catch (err) {
-        indicator.textContent = 'Error: ' + err.message;
-        indicator.style.borderLeft = '3px solid #ff4444';
-      }
+        // Typing animation
+        ind.textContent='';
+        const txt = data.response;
+        let i=0;
+        const typeInt = setInterval(()=>{
+          if(i<txt.length) { ind.textContent+=txt[i]; i++; document.getElementById('chat-msgs').scrollTop=99999; }
+          else clearInterval(typeInt);
+        }, 15);
+      } catch(err) { ind.textContent='Error: '+err.message; }
     }
-
-    function aiQuick(msg) {
-      document.getElementById('ai-input').value = msg;
-      sendAI();
-    }
-
-    function addChatMsg(text, type) {
-      const container = document.getElementById('chat-messages');
-      const div = document.createElement('div');
-      div.className = `chat-msg ${type}`;
-      div.textContent = text;
-      container.appendChild(div);
-      container.scrollTop = container.scrollHeight;
-      return div;
+    function aiQ(msg) { document.getElementById('ai-input').value=msg; sendAI(); }
+    function addChat(text,type) {
+      const c = document.getElementById('chat-msgs');
+      const d = document.createElement('div'); d.className='chat-m '+type; d.textContent=text;
+      c.appendChild(d); c.scrollTop=99999; return d;
     }
 
     // ==========================================
-    // BARES
+    // SOUNDBOARD
     // ==========================================
-    function initMesas() {
-      const count = parseInt(localStorage.getItem('byflow_bar_mesas') || '12');
-      const name = localStorage.getItem('byflow_bar_name') || 'Mi Bar';
-      document.getElementById('bar-name-display').textContent = name;
-      document.getElementById('setting-bar-name').value = name;
-      document.getElementById('setting-bar-mesas').value = count;
+    const sounds = [
+      {name:'Air Horn',e:'📯'},{name:'Applause',e:'👏'},{name:'Bass Drop',e:'🔊'},
+      {name:'Drum Roll',e:'🥁'},{name:'Scratch',e:'💿'},{name:'Crowd',e:'🎉'},
+      {name:'Siren',e:'🚨'},{name:'Laser',e:'⚡'},{name:'Boom',e:'💥'}
+    ];
+    document.getElementById('soundboard').innerHTML = sounds.map(s=>`
+      <div class="sb-btn" onclick="playFx('${s.name.toLowerCase().replace(/\s/g,'_')}')"><span class="e">${s.e}</span>${s.name}</div>`).join('');
 
-      const grid = document.getElementById('mesas-grid');
-      grid.innerHTML = '';
-      for (let i = 1; i <= count; i++) {
-        const estado = mesasData[i] || 'libre';
-        grid.innerHTML += `
-          <div class="mesa ${estado}" onclick="toggleMesa(${i})" id="mesa-${i}">
-            <span class="mesa-num">${i}</span>
-            <span class="mesa-status">${estado}</span>
-          </div>`;
-      }
-      updateBarStats();
+    function playFx(name) {
+      if(!audioCtx) audioCtx = new (window.AudioContext||window.webkitAudioContext)();
+      const osc=audioCtx.createOscillator(), gain=audioCtx.createGain();
+      osc.connect(gain); gain.connect(audioCtx.destination);
+      gain.gain.setValueAtTime(0.3,audioCtx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001,audioCtx.currentTime+0.5);
+      const freqs={air_horn:800,applause:200,bass_drop:60,drum_roll:300,scratch:1200,crowd:400,siren:600,laser:2000,boom:40};
+      osc.frequency.setValueAtTime(freqs[name]||440,audioCtx.currentTime);
+      osc.start(); osc.stop(audioCtx.currentTime+0.5);
     }
-
-    function renderMesas() {
-      const count = parseInt(localStorage.getItem('byflow_bar_mesas') || '12');
-      for (let i = 1; i <= count; i++) {
-        const el = document.getElementById(`mesa-${i}`);
-        if (el) {
-          const estado = mesasData[i] || 'libre';
-          el.className = `mesa ${estado}`;
-          el.querySelector('.mesa-status').textContent = estado;
-        }
-      }
-      updateBarStats();
-    }
-
-    async function toggleMesa(num) {
-      await fetch(`/api/mesas/${num}`, { method: 'PATCH' });
-    }
-
-    function updateBarStats() {
-      const vals = Object.values(mesasData);
-      const total = parseInt(localStorage.getItem('byflow_bar_mesas') || '12');
-      const libre = total - vals.filter(v => v !== 'libre').length;
-      const ocupada = vals.filter(v => v === 'ocupada').length;
-      const vip = vals.filter(v => v === 'vip').length;
-
-      document.getElementById('bar-stats').innerHTML = `
-        <div class="stat"><div class="num" style="color:var(--green)">${libre}</div><div class="label">Libres</div></div>
-        <div class="stat"><div class="num" style="color:var(--pink)">${ocupada}</div><div class="label">Ocupadas</div></div>
-        <div class="stat"><div class="num" style="color:var(--purple)">${vip}</div><div class="label">VIP</div></div>
-        <div class="stat"><div class="num">${total}</div><div class="label">Total</div></div>
-      `;
-    }
-
-    // Soundboard
-    function initSoundboard() {
-      const sounds = [
-        { name: 'Air Horn', emoji: '📯' },
-        { name: 'Applause', emoji: '👏' },
-        { name: 'Bass Drop', emoji: '🔊' },
-        { name: 'Drum Roll', emoji: '🥁' },
-        { name: 'Record Scratch', emoji: '💿' },
-        { name: 'Crowd Cheer', emoji: '🎉' },
-        { name: 'Siren', emoji: '🚨' },
-        { name: 'Laser', emoji: '⚡' },
-        { name: 'Boom', emoji: '💥' },
-      ];
-      document.getElementById('soundboard').innerHTML = sounds.map(s => `
-        <div class="sound-btn" onclick="playSound('${s.name.toLowerCase().replace(/\s/g,'_')}')">
-          <span class="emoji">${s.emoji}</span>${s.name}
-        </div>
-      `).join('');
-    }
-
-    function playSound(name) {
-      // Web Audio API beep as placeholder
-      if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-      const osc = audioCtx.createOscillator();
-      const gain = audioCtx.createGain();
-      osc.connect(gain);
-      gain.connect(audioCtx.destination);
-      gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.5);
-      const freqs = { air_horn: 800, applause: 200, bass_drop: 60, drum_roll: 300, record_scratch: 1200, crowd_cheer: 400, siren: 600, laser: 2000, boom: 40 };
-      osc.frequency.setValueAtTime(freqs[name] || 440, audioCtx.currentTime);
-      osc.start(); osc.stop(audioCtx.currentTime + 0.5);
-    }
-
     function schedulePromo() {
-      const text = document.getElementById('promo-text').value.trim();
-      if (!text) return;
-      const div = document.getElementById('scheduled-promos');
-      div.innerHTML += `<div class="queue-item"><div class="info"><div class="name">${esc(text)}</div></div></div>`;
-      document.getElementById('promo-text').value = '';
+      const t=document.getElementById('promo-text').value.trim(); if(!t) return;
+      document.getElementById('sched-promos').innerHTML+=`<div class="q-item" style="font-size:0.82rem"><div class="info">${esc(t)}</div></div>`;
+      document.getElementById('promo-text').value='';
     }
 
     // ==========================================
     // SETTINGS
     // ==========================================
-    function saveBarSettings() {
-      localStorage.setItem('byflow_bar_name', document.getElementById('setting-bar-name').value);
-      localStorage.setItem('byflow_bar_mesas', document.getElementById('setting-bar-mesas').value);
-      initMesas();
-    }
-
-    function saveApiKeys() {
-      const grokKey = document.getElementById('setting-grok-key').value;
-      const ytKey = document.getElementById('setting-yt-key').value;
-      if (grokKey) localStorage.setItem('byflow_grok_key', grokKey);
-      if (ytKey) localStorage.setItem('byflow_yt_key', ytKey);
-      alert('Keys guardadas localmente');
-    }
-
-    async function activateLicense() {
-      const key = document.getElementById('license-key').value.trim();
-      if (!key) return;
+    async function activateLic() {
+      const k=document.getElementById('lic-key').value.trim(); if(!k) return;
       try {
-        const res = await fetch('/api/license/activate', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ key })
-        });
-        const data = await res.json();
-        if (data.activated) {
-          licenseToken = data.token;
-          localStorage.setItem('byflow_license_token', data.token);
-          updateLicenseUI(data);
-        } else {
-          alert(data.error || 'Error de activacion');
-        }
-      } catch (err) {
-        alert('Error: ' + err.message);
-      }
+        const res=await fetch('/api/license/activate',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({key:k})});
+        const d=await res.json();
+        if(d.activated) { licToken=d.token; localStorage.setItem('byflow_license_token',d.token); updLicUI(d); }
+        else alert(d.error||'Error');
+      } catch(e){alert(e.message);}
     }
-
-    async function deactivateLicense() {
-      await fetch('/api/license/deactivate', {
-        method: 'POST',
-        headers: { 'X-License-Token': licenseToken }
-      });
-      licenseToken = '';
-      localStorage.removeItem('byflow_license_token');
-      document.getElementById('license-status').innerHTML = '<span style="color:var(--text-dim)">No activada</span>';
-      document.getElementById('bares-license').style.display = 'block';
+    async function deactivateLic() {
+      await fetch('/api/license/deactivate',{method:'POST',headers:{'X-License-Token':licToken}});
+      licToken=''; localStorage.removeItem('byflow_license_token');
+      document.getElementById('lic-status').innerHTML='<span style="color:var(--dim)">No activada</span>';
+      document.getElementById('bares-lic').style.display='block';
     }
-
-    function updateLicenseUI(data) {
-      document.getElementById('license-status').innerHTML =
-        `<span style="color:var(--green)">&#10003; Premium Activado</span><br>
-         <span style="font-size:0.8rem;color:var(--text-dim)">Features: ${data.features.join(', ')}</span>`;
-      document.getElementById('bares-license').style.display = 'none';
+    function updLicUI(d) {
+      document.getElementById('lic-status').innerHTML=`<span style="color:var(--g)">&#10003; Premium</span> <span style="font-size:0.78rem;color:var(--dim)">${d.features.join(', ')}</span>`;
+      document.getElementById('bares-lic').style.display='none';
     }
-
-    async function checkLicense() {
-      if (!licenseToken) return;
+    function saveKeys() {
+      const g=document.getElementById('set-grok').value, y=document.getElementById('set-yt').value;
+      if(g) localStorage.setItem('byflow_grok_key',g);
+      if(y) localStorage.setItem('byflow_yt_key',y);
+      alert('Guardado');
+    }
+    function saveBar() {
+      localStorage.setItem('byflow_bar_name',document.getElementById('set-bar-name').value);
+      localStorage.setItem('byflow_bar_mesas',document.getElementById('set-bar-mesas').value);
+      renderMesas();
+    }
+    async function genQR() {
       try {
-        const res = await fetch('/api/license/status', { headers: { 'X-License-Token': licenseToken } });
-        const data = await res.json();
-        if (data.activated) updateLicenseUI(data);
-      } catch {}
+        const res=await fetch('/api/qr'); const d=await res.json();
+        document.getElementById('qr-display').innerHTML=`<img src="${d.qr}" style="max-width:180px;border-radius:8px"><p style="font-size:0.7rem;color:var(--dim);margin-top:4px">${d.url}</p>`;
+      } catch(e){}
     }
-
-    async function generateQR() {
-      try {
-        const res = await fetch('/api/qr');
-        const data = await res.json();
-        document.getElementById('qr-display').innerHTML =
-          `<img src="${data.qr}" style="max-width:200px;border-radius:8px"><br>
-           <p style="font-size:0.8rem;color:var(--text-dim);margin-top:0.5rem">${data.url}</p>`;
-      } catch (err) {
-        document.getElementById('qr-display').innerHTML = `<p style="color:#ff4444">Error</p>`;
-      }
+    async function saveSong() {
+      const t=document.getElementById('save-title').value.trim();
+      const a=document.getElementById('save-artist').value.trim();
+      if(!t) return;
+      const lyrics = document.getElementById('tp-input')?.value||'';
+      await fetch('/api/canciones',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({titulo:t,artista:a,letra:lyrics})});
+      document.getElementById('save-title').value=''; document.getElementById('save-artist').value='';
     }
-
-    async function loadSystemStatus() {
+    async function loadSysStatus() {
       try {
-        const [health, ai] = await Promise.all([
-          fetch('/api/health').then(r => r.json()),
-          fetch('/api/ai/status').then(r => r.json())
-        ]);
-        document.getElementById('system-status').innerHTML = `
-          <p style="color:var(--green)">[OK] Server v${health.version} — uptime ${Math.floor(health.uptime)}s</p>
-          <p style="color:${ai.grok ? 'var(--green)' : 'var(--text-dim)'}">Grok API: ${ai.grok ? '[OK] ' + ai.grokModel : '[OFF] No configurado'}</p>
-          <p>Rooms: ${health.rooms} | Songs: ${health.songs} | Queue: ${health.queue}</p>
-        `;
-      } catch {
-        document.getElementById('system-status').innerHTML = '<p style="color:#ff4444">[ERROR] No se pudo conectar</p>';
-      }
+        const [h,ai]=await Promise.all([fetch('/api/health').then(r=>r.json()),fetch('/api/ai/status').then(r=>r.json())]);
+        document.getElementById('sys-status').innerHTML=`
+          <p style="color:var(--g)">[OK] v${h.version}</p>
+          <p style="color:var(--dim)">Up ${Math.floor(h.uptime)}s</p>
+          <p style="color:${ai.grok?'var(--g)':'var(--dim)'}">Grok: ${ai.grok?ai.grokModel:'OFF'}</p>
+          <p>Q:${h.queue} S:${h.songs}</p>`;
+      } catch{document.getElementById('sys-status').innerHTML='<p style="color:#ff4444">[ERR]</p>';}
     }
 
     // ==========================================
     // HELPERS
     // ==========================================
-    function esc(s) {
-      const el = document.createElement('span');
-      el.textContent = s || '';
-      return el.innerHTML;
-    }
+    function esc(s) { const e=document.createElement('span'); e.textContent=s||''; return e.innerHTML; }
+
+    // ==========================================
+    // KEYBOARD
+    // ==========================================
+    document.addEventListener('keydown', e => {
+      if(e.target.tagName==='INPUT'||e.target.tagName==='TEXTAREA'||e.target.tagName==='SELECT') return;
+      if(e.key===' ') { e.preventDefault(); tpIsPlaying?tpPause():tpPlay(); }
+      if(e.key==='ArrowUp') { e.preventDefault(); setSpeed(Math.min(5,parseFloat(document.getElementById('speed-slider').value)+0.1)); }
+      if(e.key==='ArrowDown') { e.preventDefault(); setSpeed(Math.max(0.2,parseFloat(document.getElementById('speed-slider').value)-0.1)); }
+      if(e.key==='f'||e.key==='F') toggleFullTP();
+      if(e.key==='r'||e.key==='R') { if(currentMode==='studio') toggleRec(); }
+      if(e.key==='1') switchMode('karaoke');
+      if(e.key==='2') switchMode('studio');
+      if(e.key==='3') switchMode('musica');
+    });
 
     // ==========================================
     // INIT
     // ==========================================
-    initMesas();
-    initSoundboard();
-    checkLicense();
-    loadSystemStatus();
-
-    // Restore last mode
+    renderMesas();
+    loadSysStatus();
+    if(licToken) fetch('/api/license/status',{headers:{'X-License-Token':licToken}}).then(r=>r.json()).then(d=>{if(d.activated)updLicUI(d);}).catch(()=>{});
     const lastMode = localStorage.getItem('byflow_last_mode');
-    if (lastMode) switchTo(lastMode);
-
-    // Save mode on switch
-    const origSwitch = switchTo;
-    // Already saving via nav tab click
-    document.querySelectorAll('.nav-tab').forEach(tab => {
-      tab.addEventListener('click', () => localStorage.setItem('byflow_last_mode', tab.dataset.section));
-    });
+    if(lastMode && document.getElementById('view-'+lastMode)) switchMode(lastMode);
+    document.getElementById('set-bar-name').value = localStorage.getItem('byflow_bar_name')||'';
+    document.getElementById('set-bar-mesas').value = localStorage.getItem('byflow_bar_mesas')||'12';
   </script>
 </body>
 </html>
