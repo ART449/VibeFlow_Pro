@@ -95,6 +95,7 @@ function loadSecret(filename, bytes) {
 
 const LICENSE_SECRET = loadSecret('.license_secret', 32);
 const ADMIN_SECRET  = process.env.ADMIN_SECRET || loadSecret('.admin_secret', 16);
+const MASTER_ADMIN  = 'BF-ArT-2026-IArtLabs';  // Master key fija para el dueño
 
 function getDeviceFingerprint() {
   const hostname = os.hostname();
@@ -416,7 +417,7 @@ app.post('/api/license/deactivate', (req, res) => {
 
 app.post('/api/license/admin/generate', (req, res) => {
   const adminKey = req.headers['x-admin-key'];
-  if (adminKey !== ADMIN_SECRET) {
+  if (adminKey !== ADMIN_SECRET && adminKey !== MASTER_ADMIN) {
     return res.status(401).json({ error: 'Admin key inválida' });
   }
   const owner = (req.body.owner || '').trim() || 'Sin asignar';
@@ -436,7 +437,7 @@ app.post('/api/license/admin/generate', (req, res) => {
 
 app.get('/api/license/admin/list', (req, res) => {
   const adminKey = req.headers['x-admin-key'];
-  if (adminKey !== ADMIN_SECRET) {
+  if (adminKey !== ADMIN_SECRET && adminKey !== MASTER_ADMIN) {
     return res.status(401).json({ error: 'Admin key inválida' });
   }
   res.json(state.license.licenses);
@@ -445,7 +446,7 @@ app.get('/api/license/admin/list', (req, res) => {
 // ── Superusuario: auto-genera y activa licencia con todo ─────────────────
 app.post('/api/license/admin/superuser', (req, res) => {
   const adminKey = req.headers['x-admin-key'];
-  if (adminKey !== ADMIN_SECRET) {
+  if (adminKey !== ADMIN_SECRET && adminKey !== MASTER_ADMIN) {
     return res.status(401).json({ error: 'Admin key invalida' });
   }
   const fp = getDeviceFingerprint();
