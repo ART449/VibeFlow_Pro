@@ -32,6 +32,27 @@ function clampStr(s, max) {
   return typeof s === 'string' ? s.slice(0, max) : '';
 }
 
+// ── Filtro de contenido (anti-groserías para modo Bares) ─────────────────
+const PALABRAS_PROHIBIDAS = [
+  'puta','puto','putos','putas','mierda','coño','joder','hostia',
+  'cabron','cabrón','gilipollas','pendejo','culero','chinga','verga',
+  'polla','culo','marica','maricón','perra','zorra','bastardo',
+  'idiota','imbecil','imbécil','estupido','estúpido',
+  'fuck','shit','bitch','asshole','dick','pussy','cunt','nigger','faggot'
+];
+
+function validarTextoPublico(texto, campo = 'campo', maxLen = 100) {
+  if (typeof texto !== 'string') return { ok: false, error: `${campo} debe ser texto` };
+  const val = texto.trim();
+  if (!val) return { ok: false, error: `${campo} no puede estar vacío` };
+  if (val.length > maxLen) return { ok: false, error: `${campo} máximo ${maxLen} caracteres` };
+  const lower = val.toLowerCase();
+  for (const p of PALABRAS_PROHIBIDAS) {
+    if (lower.includes(p)) return { ok: false, error: `${campo} contiene contenido inapropiado` };
+  }
+  return { ok: true, value: val };
+}
+
 // ── Persistencia JSON ────────────────────────────────────────────────────────
 const DATA_DIR = path.join(__dirname, 'data');
 fs.mkdirSync(DATA_DIR, { recursive: true });
@@ -180,17 +201,19 @@ app.get('/api/qr', async (req, res) => {
 app.get('/api/cola', (req, res) => res.json(state.cola));
 
 app.post('/api/cola', (req, res) => {
-  const cantante = clampStr(req.body.cantante, 100).trim();
+  const vNombre = validarTextoPublico(req.body.cantante, 'Nombre', 100);
+  if (!vNombre.ok) return res.status(400).json({ error: vNombre.error });
   const cancion  = clampStr(req.body.cancion, 200).trim();
   const mesa     = req.body.mesa || null;
-  if (!cantante) return res.status(400).json({ error: 'Nombre requerido' });
   const entry = {
-    id: generateId(), cantante, cancion,
+    id: generateId(), cantante: vNombre.value, cancion,
     mesa, estado: 'esperando', timestamp: Date.now()
   };
   state.cola.push(entry);
   saveJSON('cola.json', state.cola);
   io.emit('cola_update', state.cola);
+  // Track stats
+  trackStat('cola_add', { cantante: vNombre.value, cancion, mesa });
   res.json(entry);
 });
 
@@ -460,6 +483,78 @@ app.post('/api/license/admin/superuser', (req, res) => {
   });
 });
 
+// ── Estadísticas de uso ──────────────────────────────────────────────────────
+const statsFile = 'stats.json';
+const stats = loadJSON(statsFile, {
+  totalSongs: 0, totalSingers: 0,
+  songCounts: {},    // { "titulo - artista": count }
+  singerCounts: {},  // { "nombre": count }
+  dailyCounts: {},   // { "2026-03-13": count }
+  events: []         // últimos 100 eventos
+});
+
+function trackStat(type, data) {
+  const today = new Date().toISOString().slice(0, 10);
+  stats.dailyCounts[today] = (stats.dailyCounts[today] || 0) + 1;
+
+  if (type === 'song_played') {
+    stats.totalSongs++;
+    const key = (data.cancion || 'Sin canción') + (data.artista ? ' - ' + data.artista : '');
+    stats.songCounts[key] = (stats.songCounts[key] || 0) + 1;
+  }
+  if (type === 'cola_add') {
+    stats.totalSingers++;
+    const singer = data.cantante || 'Anónimo';
+    stats.singerCounts[singer] = (stats.singerCounts[singer] || 0) + 1;
+  }
+
+  stats.events.push({ type, data, time: Date.now() });
+  if (stats.events.length > 200) stats.events = stats.events.slice(-100);
+  debouncedSave(statsFile, stats);
+}
+
+app.get('/api/stats', (req, res) => {
+  // Top 10 canciones
+  const topSongs = Object.entries(stats.songCounts)
+    .sort((a, b) => b[1] - a[1]).slice(0, 10)
+    .map(([name, count]) => ({ name, count }));
+
+  // Top 10 cantantes
+  const topSingers = Object.entries(stats.singerCounts)
+    .sort((a, b) => b[1] - a[1]).slice(0, 10)
+    .map(([name, count]) => ({ name, count }));
+
+  // Últimos 7 días
+  const last7 = {};
+  for (let i = 6; i >= 0; i--) {
+    const d = new Date(); d.setDate(d.getDate() - i);
+    const key = d.toISOString().slice(0, 10);
+    last7[key] = stats.dailyCounts[key] || 0;
+  }
+
+  res.json({
+    totalSongs: stats.totalSongs,
+    totalSingers: stats.totalSingers,
+    topSongs, topSingers, last7,
+    totalDays: Object.keys(stats.dailyCounts).length
+  });
+});
+
+// ── LRCLIB proxy (evita CORS issues en algunos navegadores) ──────────────
+app.get('/api/lrclib/search', async (req, res) => {
+  const { track_name, artist_name } = req.query;
+  if (!track_name) return res.status(400).json({ error: 'track_name requerido' });
+  try {
+    const params = new URLSearchParams({ track_name });
+    if (artist_name) params.append('artist_name', artist_name);
+    const r = await fetch(`https://lrclib.net/api/search?${params}`);
+    const d = await r.json();
+    res.json(d);
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
 // Health
 app.get('/api/health', (req, res) => res.json({
   status: 'ok', version: '2.0.0', uptime: process.uptime(),
@@ -504,23 +599,33 @@ io.on('connection', (socket) => {
   });
 
   socket.on('cola_add', (data) => {
+    const vNombre = validarTextoPublico(data.cantante || 'Anonimo', 'Nombre', 100);
+    const cantante = vNombre.ok ? vNombre.value : clampStr(data.cantante || 'Anonimo', 100);
     const entry = {
       id: generateId(),
-      cantante: clampStr(data.cantante || 'Anonimo', 100),
+      cantante,
       cancion: clampStr(data.cancion || '', 200),
       mesa: data.mesa || null,
       estado: 'esperando', timestamp: Date.now()
     };
+    if (!vNombre.ok) {
+      socket.emit('validation_error', { error: vNombre.error });
+      return;
+    }
     state.cola.push(entry);
     saveJSON('cola.json', state.cola);
     io.emit('cola_update', state.cola);
+    trackStat('cola_add', { cantante, cancion: entry.cancion, mesa: entry.mesa });
   });
 
   socket.on('cola_next', () => {
     const current = state.cola.find(c => c.estado === 'cantando');
     if (current) current.estado = 'terminado';
     const next = state.cola.find(c => c.estado === 'esperando');
-    if (next) next.estado = 'cantando';
+    if (next) {
+      next.estado = 'cantando';
+      trackStat('song_played', { cancion: next.cancion, cantante: next.cantante });
+    }
     saveJSON('cola.json', state.cola);
     io.emit('cola_update', state.cola);
     io.emit('singer_changed', next || null);

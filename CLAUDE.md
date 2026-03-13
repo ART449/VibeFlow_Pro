@@ -62,6 +62,13 @@ El Estudio de Letras tiene 3 pestanyas:
 3. **Suno** — Catalogo de 30 canciones del perfil ART-ATR con genero, tema y plays
 - Todas las letras generadas llevan firma obligatoria `BYFLOW_SIGNATURE` (50/50)
 
+## Features portados del proyecto Python v7.3
+- **Filtro de contenido** — 35+ palabras prohibidas (ES+EN), validacion server+client side
+- **Estadisticas de uso** — GET /api/stats, panel visual en Settings con top songs/singers y chart 7 dias
+- **LRCLIB proxy** — GET /api/lrclib/search, evita CORS issues
+- **Design system por modo** — Gradientes dinamicos: bares=naranja, ia=morado, youtube=rojo, karaoke=rosa
+- **Tracking de eventos** — Persistencia en data/stats.json, auto-debounce
+
 ## Politica anti-pirateria
 - No existe endpoint de descarga de audio
 - No se usa yt-dlp, ytdl, ni ningun downloader

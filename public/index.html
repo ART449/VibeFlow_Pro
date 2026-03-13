@@ -63,6 +63,16 @@ input,textarea,select{font-family:inherit;}
 .mode-btn.active svg{opacity:1;}
 .mode-btn.ia-btn.active{background:linear-gradient(135deg,var(--s),var(--a));box-shadow:0 3px 16px var(--glow-s);}
 .mode-btn.bares-btn.active{background:linear-gradient(135deg,#f59e0b,#ef4444);box-shadow:0 3px 16px rgba(245,158,11,.3);}
+
+/* ── Mode-based accent system (inspirado v7.1) ── */
+body.mode-bares .topbar::after{background:linear-gradient(90deg,transparent,#f59e0b,#ef4444,transparent);}
+body.mode-bares .brand{background:linear-gradient(135deg,#f59e0b,#ef4444);-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+body.mode-bares .btn-add{background:linear-gradient(135deg,#f59e0b,#ef4444);box-shadow:0 2px 10px rgba(245,158,11,.25);}
+body.mode-bares .queue-item.singing{border-color:#f59e0b;background:rgba(245,158,11,.07);box-shadow:0 0 12px rgba(245,158,11,.1);}
+body.mode-ia .topbar::after{background:linear-gradient(90deg,transparent,var(--s),var(--a),transparent);}
+body.mode-ia .brand{background:linear-gradient(135deg,var(--s),var(--a));-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+body.mode-youtube .topbar::after{background:linear-gradient(90deg,transparent,#ff4444,#ff006e,transparent);}
+body.mode-youtube .brand{background:linear-gradient(135deg,#ff4444,#ff006e);-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
 #datetime{font-size:10px;color:var(--sub);white-space:nowrap;font-variant-numeric:tabular-nums;}
 
 /* ── Main ────────────────────────────────────────────────────────────── */
@@ -1715,11 +1725,44 @@ select.inp{cursor:pointer;}
           </div>
         </div>
 
+        <!-- Estadísticas de Uso -->
+        <div class="settings-section">
+          <div class="settings-section-title">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 20V10M12 20V4M6 20v-6"/></svg>
+            Estadisticas
+          </div>
+          <div id="stats-panel" style="font-size:11px;">
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px;">
+              <div style="background:rgba(255,0,110,.06);border:1px solid rgba(255,0,110,.15);border-radius:10px;padding:10px;text-align:center;">
+                <div style="font-size:20px;font-weight:900;color:var(--p);" id="stat-total-songs">0</div>
+                <div style="font-size:9px;color:var(--sub);text-transform:uppercase;letter-spacing:1px;">Canciones</div>
+              </div>
+              <div style="background:rgba(131,56,236,.06);border:1px solid rgba(131,56,236,.15);border-radius:10px;padding:10px;text-align:center;">
+                <div style="font-size:20px;font-weight:900;color:var(--s);" id="stat-total-singers">0</div>
+                <div style="font-size:9px;color:var(--sub);text-transform:uppercase;letter-spacing:1px;">Cantantes</div>
+              </div>
+            </div>
+            <div style="margin-bottom:8px;">
+              <div style="font-size:9px;color:var(--sub);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">🏆 Top Canciones</div>
+              <div id="stat-top-songs" style="font-size:10px;color:var(--sub);">Cargando...</div>
+            </div>
+            <div style="margin-bottom:8px;">
+              <div style="font-size:9px;color:var(--sub);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">🎤 Top Cantantes</div>
+              <div id="stat-top-singers" style="font-size:10px;color:var(--sub);">Cargando...</div>
+            </div>
+            <div>
+              <div style="font-size:9px;color:var(--sub);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">📊 Ultimos 7 dias</div>
+              <div id="stat-chart" style="display:flex;align-items:flex-end;gap:3px;height:50px;"></div>
+            </div>
+          </div>
+          <button class="settings-btn" onclick="loadStats()" style="margin-top:8px;">Actualizar Estadisticas</button>
+        </div>
+
         <!-- Acerca de -->
         <div class="settings-section" style="text-align:center;padding:16px;">
           <div style="font-size:16px;font-weight:900;background:linear-gradient(135deg,#ff006e,#8338ec,#3a86ff);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">ByFlow</div>
           <div style="font-size:10px;color:var(--sub);margin-top:2px;">Vive Cantando</div>
-          <div style="font-size:9px;color:rgba(255,255,255,.2);margin-top:6px;">v3.0 &middot; powered by IArtLabs</div>
+          <div style="font-size:9px;color:rgba(255,255,255,.2);margin-top:6px;">v3.1 &middot; powered by IArtLabs</div>
           <div style="font-size:9px;color:rgba(255,255,255,.15);margin-top:4px;">CERO descargas &middot; Solo streaming</div>
         </div>
 
@@ -2542,8 +2585,14 @@ async function agregarCola() {
   const cancion  = document.getElementById('input-cancion').value.trim();
   const mesa     = document.getElementById('input-mesa').value;
   if (!cantante) return;
+  // Filtro de contenido (client-side)
+  if (!textoLimpio(cantante) || !textoLimpio(cancion)) {
+    showToast('⚠️ Contenido inapropiado detectado'); return;
+  }
   try {
-    await fetch('/api/cola', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ cantante, cancion, mesa }) });
+    const r = await fetch('/api/cola', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ cantante, cancion, mesa }) });
+    const data = await r.json();
+    if (!r.ok) { showToast('⚠️ ' + (data.error || 'Error')); return; }
     document.getElementById('input-cantante').value = '';
     document.getElementById('input-cancion').value  = '';
     showToast('✅ Agregado: ' + cantante);
@@ -2605,6 +2654,10 @@ function setMode(mode) {
   currentMode = mode;
   document.querySelectorAll('.mode-btn').forEach(b => b.classList.toggle('active', b.dataset.mode === mode));
 
+  // Mode-based body class for accent colors (v7.1 design system)
+  document.body.className = document.body.className.replace(/mode-\S+/g, '').trim();
+  document.body.classList.add('mode-' + mode);
+
   const sidebar    = document.querySelector('.sidebar');
   const rightPanel = document.querySelector('.right-panel');
   const iaPanel    = document.getElementById('ia-panel');
@@ -2646,6 +2699,7 @@ function setMode(mode) {
   } else if (mode === 'settings') {
     if (sidebar)        sidebar.style.display        = 'flex';
     if (settingsPanel)  { settingsPanel.classList.add('active'); settingsPanel.style.display = 'flex'; }
+    loadStats(); // Cargar estadísticas al abrir settings
   }
 }
 
@@ -4727,6 +4781,69 @@ function djInit() {
 }
 
 // ── Welcome Overlay ───────────────────────────────────────────────────────
+// ── Estadísticas de uso ───────────────────────────────────────────────────
+async function loadStats() {
+  try {
+    const r = await fetch('/api/stats');
+    const d = await r.json();
+    document.getElementById('stat-total-songs').textContent = d.totalSongs || 0;
+    document.getElementById('stat-total-singers').textContent = d.totalSingers || 0;
+
+    // Top canciones
+    const topSongsEl = document.getElementById('stat-top-songs');
+    if (d.topSongs && d.topSongs.length) {
+      topSongsEl.innerHTML = d.topSongs.slice(0, 5).map((s, i) =>
+        '<div style="display:flex;justify-content:space-between;padding:3px 0;border-bottom:1px solid var(--border);">' +
+        '<span style="color:var(--text);">' + (i+1) + '. ' + escHtml(s.name) + '</span>' +
+        '<span style="color:var(--p);font-weight:700;">' + s.count + 'x</span></div>'
+      ).join('');
+    } else {
+      topSongsEl.innerHTML = '<div style="opacity:.3;">Sin datos aun</div>';
+    }
+
+    // Top cantantes
+    const topSingersEl = document.getElementById('stat-top-singers');
+    if (d.topSingers && d.topSingers.length) {
+      topSingersEl.innerHTML = d.topSingers.slice(0, 5).map((s, i) =>
+        '<div style="display:flex;justify-content:space-between;padding:3px 0;border-bottom:1px solid var(--border);">' +
+        '<span style="color:var(--text);">' + (i+1) + '. ' + escHtml(s.name) + '</span>' +
+        '<span style="color:var(--s);font-weight:700;">' + s.count + 'x</span></div>'
+      ).join('');
+    } else {
+      topSingersEl.innerHTML = '<div style="opacity:.3;">Sin datos aun</div>';
+    }
+
+    // Mini chart últimos 7 días
+    const chartEl = document.getElementById('stat-chart');
+    if (d.last7) {
+      const vals = Object.values(d.last7);
+      const max = Math.max(...vals, 1);
+      const days = ['Dom','Lun','Mar','Mie','Jue','Vie','Sab'];
+      chartEl.innerHTML = Object.entries(d.last7).map(([date, count]) => {
+        const h = Math.max(4, (count / max) * 46);
+        const day = days[new Date(date + 'T12:00:00').getDay()];
+        return '<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;">' +
+          '<div style="font-size:8px;color:var(--p);font-weight:700;">' + (count || '') + '</div>' +
+          '<div style="width:100%;height:' + h + 'px;background:linear-gradient(180deg,var(--p),var(--s));border-radius:3px;"></div>' +
+          '<div style="font-size:7px;color:var(--sub);">' + day + '</div></div>';
+      }).join('');
+    }
+  } catch {
+    document.getElementById('stat-top-songs').innerHTML = '<div style="opacity:.3;">Error cargando</div>';
+  }
+}
+
+// ── Filtro de contenido (client-side para feedback inmediato) ─────────────
+const _palabrasProhibidas = ['puta','puto','mierda','coño','pendejo','culero','chinga','verga','idiota','fuck','shit','bitch','asshole'];
+function textoLimpio(texto) {
+  if (!texto) return true;
+  const lower = texto.toLowerCase();
+  return !_palabrasProhibidas.some(p => lower.includes(p));
+}
+
+// Override agregarCola para validar antes de enviar
+const _origAgregarCola = typeof agregarCola === 'function' ? agregarCola : null;
+
 function welcomeSelect(mode) {
   dismissWelcome();
   setMode(mode);

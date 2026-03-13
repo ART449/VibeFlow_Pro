@@ -53,6 +53,10 @@ ByFlow es una plataforma todo-en-uno de karaoke y entretenimiento en vivo.
 - [x] Rate limiting en activacion (5 intentos/min)
 - [x] Endpoint de descarga ELIMINADO (politica ByFlow)
 - [x] Deploy automatico Railway via GitHub push
+- [x] **Filtro de contenido** — 35+ palabras prohibidas (ES+EN) con validacion server-side
+- [x] **Estadisticas de uso** — GET /api/stats (top canciones, top cantantes, chart 7 dias)
+- [x] **LRCLIB proxy** — GET /api/lrclib/search (evita problemas CORS)
+- [x] **Tracking de eventos** — cola_add y song_played con persistencia JSON
 
 ### Infraestructura
 - [x] Railway deployment (auto-deploy desde GitHub main)
@@ -80,7 +84,21 @@ ByFlow es una plataforma todo-en-uno de karaoke y entretenimiento en vivo.
 ### Prioridad BAJA
 - [ ] Animaciones mas fluidas en cambio de modo
 - [ ] Tema claro/oscuro toggle
-- [ ] Estadisticas de uso (canciones mas pedidas, horas pico)
+- [x] ~~Estadisticas de uso (canciones mas pedidas, horas pico)~~ — IMPLEMENTADO v3.1
+
+---
+
+## FEATURES PORTADOS DEL PROYECTO PYTHON v7.3
+
+| Feature | Origen | Estado |
+|---------|--------|--------|
+| Filtro de contenido (35+ palabras ES+EN) | byflow_v73_backend.py | ✅ Implementado |
+| Estadisticas de uso (top songs/singers) | byflow_v73_backend.py | ✅ Implementado |
+| LRCLIB proxy server-side | byflow_v73_backend.py | ✅ Implementado |
+| Design system mode-based gradients | frontend/index.html v7.1 | ✅ Implementado |
+| WebSocket rooms por bar | byflow_v73_backend.py | ⏳ Pendiente |
+| Spotify search integration | byflow_v73_backend.py | ⏳ Pendiente (requiere API key) |
+| Sesion QR mesa sin registro | byflow_v73_backend.py | ⏳ Pendiente |
 
 ---
 
