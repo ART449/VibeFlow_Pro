@@ -2386,7 +2386,7 @@ async function jmSearch() {
           <div style="font-size:.7rem;color:var(--sub);">${escHtml(t.artist_name)} · ${Math.floor(t.duration/60)}:${String(t.duration%60).padStart(2,'0')}</div>
           <div style="font-size:.6rem;color:#2dd4bf;opacity:.7;">♫ Licencia libre</div>
         </div>
-        <button onclick="jmPlay('${escHtml(t.audio)}','${escHtml(t.name.replace(/'/g,''))}')"
+        <button onclick="jmPlay('${escHtml(t.audio)}','${escHtml(t.name.replace(/'/g,''))}','${escHtml(t.artist_name.replace(/'/g,''))}','${t.id}')"
           style="padding:6px 12px;border-radius:6px;border:1px solid var(--border);background:var(--accent);color:#fff;cursor:pointer;font-size:.75rem;white-space:nowrap;">
           ▶ Play
         </button>
@@ -2404,15 +2404,18 @@ function jmSaveKey() {
   jmSearch();
 }
 
-function jmPlay(audioUrl, title) {
+function jmPlay(audioUrl, title, artist, trackId) {
   if (jmAudio) { jmAudio.pause(); jmAudio = null; }
-  // Jamendo da URL directa de streaming — lo metemos en el reproductor embebido
   const container = document.getElementById('embed-container');
   const player = document.getElementById('music-player-embed');
+  const jmLink = trackId ? `https://www.jamendo.com/track/${trackId}` : 'https://www.jamendo.com';
   container.innerHTML = `<div style="background:var(--card);border-radius:8px;padding:12px;text-align:center;">
-    <div style="font-size:.8rem;font-weight:600;margin-bottom:8px;">${escHtml(title)}</div>
+    <div style="font-size:.8rem;font-weight:600;margin-bottom:4px;">${escHtml(title)}</div>
+    <div style="font-size:.7rem;color:var(--sub);margin-bottom:8px;">por ${escHtml(artist || 'Artista')}</div>
     <audio id="jm-audio-player" controls autoplay style="width:100%;border-radius:6px;" src="${escHtml(audioUrl)}"></audio>
-    <div style="font-size:.6rem;color:#2dd4bf;margin-top:4px;">♫ Jamendo — Musica libre con licencia CC</div>
+    <div style="font-size:.6rem;color:#2dd4bf;margin-top:6px;">
+      ♫ Musica libre via <a href="${jmLink}" target="_blank" rel="noopener" style="color:#2dd4bf;text-decoration:underline;">Jamendo</a> · Licencia CC
+    </div>
   </div>`;
   player.style.display = 'block';
   showToast('▶️ ' + title.substring(0, 35));

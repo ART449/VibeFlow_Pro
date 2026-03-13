@@ -8,6 +8,13 @@ Esfuerzo: ⚡ Rapido (1 sesion) | 🔧 Medio (2-3 sesiones) | 🏗 Grande (1+ se
 
 ## 🔴 PRIORIDAD ALTA — Impacto directo en lanzamiento
 
+### 0. Licencia comercial de Jamendo
+- **Que hacer:** Contactar licensing@jamendo.com ANTES de cobrar licencias PRO
+- **Por que:** Jamendo API es gratis solo para uso no-comercial
+- **Dato:** ByFlow ya tiene creditos y backlink requeridos por sus ToS
+- **Requisitos ToS:** Creditar artista + Jamendo como proveedor + link al track
+- **Esfuerzo:** ⚡ Solo un email
+
 ### 1. Sistema de pagos para licencias PRO
 - **Que investigar:** Stripe, MercadoPago, PayPal — cual integrar primero
 - **Por que:** Sin pagos no hay revenue. Las licencias se generan manual con curl
