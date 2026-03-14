@@ -1,0 +1,14 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(PORT=3000 node server.js)",
+      "Bash(npm start)",
+      "Bash(npm install*)",
+      "Bash(curl -s http://localhost:3000/*)",
+      "Bash(git --version)",
+      "Bash(gh auth:*)",
+      "Bash(netstat -ano)",
+      "Bash(VIBEFLOW_URL=* ROOM_ID=* node grok-client.js)"
+    ]
+  }
+}

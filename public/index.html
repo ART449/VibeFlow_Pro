@@ -1114,9 +1114,13 @@ select.inp{cursor:pointer;}
   .sidebar{display:none;}
   .right-panel{display:none;}
   .ia-panel{display:none;}
+  .ia-panel.active{display:flex!important;position:fixed;top:50px;left:0;right:0;bottom:60px;width:100%;z-index:90;border-left:none;}
   .bares-panel{display:none;}
+  .bares-panel.active{display:flex!important;position:fixed;top:50px;left:0;right:0;bottom:60px;width:100%;z-index:90;border-left:none;}
   .yt-panel{display:none;}
+  .yt-panel.active{display:flex!important;position:fixed;top:50px;left:0;right:0;bottom:60px;width:100%;z-index:90;border-left:none;}
   .settings-panel{display:none!important;}
+  .settings-panel.active{display:flex!important;position:fixed;top:50px;left:0;right:0;bottom:60px;width:100%;z-index:90;border-left:none;overflow-y:auto;}
   #tp-display{font-size:2.4rem;}
   .topbar{padding:0 10px;}
   .brand{font-size:15px;}
@@ -1336,6 +1340,13 @@ select.inp{cursor:pointer;}
             </button>
             <span style="font-size:8px;color:rgba(0,245,160,.6);letter-spacing:.5px;">LETRA</span>
           </div>
+          <div style="display:flex;flex-direction:column;align-items:center;gap:3px;">
+            <button class="ctrl-btn" onclick="openLocalAudio()" title="Cargar archivo MP3/audio desde tu computadora" style="background:rgba(58,134,255,.08);border-color:rgba(58,134,255,.2);">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:20px;height:20px;"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
+            </button>
+            <span style="font-size:8px;color:rgba(58,134,255,.6);letter-spacing:.5px;">AUDIO</span>
+          </div>
+          <input type="file" id="local-audio-input" accept="audio/*" style="display:none;" onchange="handleLocalAudio(this)">
         </div>
         <div id="tp-mode-indicator" style="display:flex;justify-content:center;margin-top:6px;gap:8px;align-items:center;">
           <span class="tp-lrc-badge manual" id="tp-mode-badge">Modo manual</span>
@@ -1941,17 +1952,21 @@ select.inp{cursor:pointer;}
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
       <span>Karaoke</span>
     </button>
+    <button class="mnav-btn" data-mode="youtube" onclick="mobileSetMode('youtube',this)">
+      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M23.495 6.205a3.007 3.007 0 0 0-2.088-2.088c-1.87-.501-9.396-.501-9.396-.501s-7.507-.01-9.396.501A3.007 3.007 0 0 0 .527 6.205a31.247 31.247 0 0 0-.522 5.805 31.247 31.247 0 0 0 .522 5.783 3.007 3.007 0 0 0 2.088 2.088c1.868.502 9.396.502 9.396.502s7.506 0 9.396-.502a3.007 3.007 0 0 0 2.088-2.088 31.247 31.247 0 0 0 .5-5.783 31.247 31.247 0 0 0-.5-5.805zM9.609 15.601V8.408l6.264 3.602z"/></svg>
+      <span>YouTube</span>
+    </button>
     <button class="mnav-btn" onclick="openCatalog()">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
       <span>Canciones</span>
     </button>
-    <button class="mnav-btn" data-mode="cola" onclick="mobileSetMode('cola',this)">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><line x1="20" y1="8" x2="20" y2="14"/><line x1="23" y1="11" x2="17" y2="11"/></svg>
-      <span>Cola</span>
-    </button>
     <button class="mnav-btn" data-mode="remote" onclick="mobileSetMode('remote',this)">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="5" y="2" width="14" height="20" rx="2"/><circle cx="12" cy="17" r="1"/></svg>
       <span>Remoto</span>
+    </button>
+    <button class="mnav-btn" data-mode="settings" onclick="mobileSetMode('settings',this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+      <span>Config</span>
     </button>
   </div>
 </div>
@@ -2223,11 +2238,18 @@ function highlightWord(idx) {
   const next = document.getElementById('tw-' + idx);
   if (next) {
     next.classList.add('tp-active');
-    // Scroll: use the LINE element for smoother scrolling
+    // Scroll: use the LINE element, debounced to prevent vibration
     const lineIdx = _wordToLine[idx];
-    const lineEl = (lineIdx !== undefined) ? document.getElementById('tl-' + lineIdx) : null;
-    const scrollTarget = lineEl || next;
-    scrollTarget.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    if (lineIdx !== undefined && lineIdx !== tpState.currentLine) {
+      const lineEl = document.getElementById('tl-' + lineIdx);
+      if (lineEl) {
+        // Cancel any pending scroll to prevent competing animations
+        if (tpState._scrollRAF) cancelAnimationFrame(tpState._scrollRAF);
+        tpState._scrollRAF = requestAnimationFrame(() => {
+          lineEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        });
+      }
+    }
   }
 
   tpState.currentIdx = idx;
@@ -2678,18 +2700,10 @@ function setMode(mode) {
     if (sidebar)    sidebar.style.display    = 'flex';
     if (rightPanel) rightPanel.style.display = 'flex';
   } else if (mode === 'ia') {
-    if (!isPremium('ollama_ai')) {
-      showToast('Modo IA requiere licencia PRO');
-      setMode('karaoke'); return;
-    }
     if (sidebar)    sidebar.style.display    = 'flex';
     if (iaPanel)    { iaPanel.classList.add('active'); iaPanel.style.display = 'flex'; }
     checkOllamaStatus();
   } else if (mode === 'youtube') {
-    if (!isPremium('music_streaming')) {
-      showToast('Musica Streaming requiere licencia PRO');
-      setMode('karaoke'); return;
-    }
     if (sidebar)    sidebar.style.display    = 'flex';
     if (ytPanel)    { ytPanel.classList.add('active'); ytPanel.style.display = 'flex'; }
   } else if (mode === 'bares') {
@@ -2737,9 +2751,10 @@ function updatePremiumUI() {
     const existing = btn.querySelector('.pro-badge');
     if (existing) existing.remove();
     let needsPro = false;
-    if (mode === 'bares'   && !isPremium('bares'))           needsPro = true;
-    if (mode === 'youtube' && !isPremium('music_streaming')) needsPro = true;
-    if (mode === 'ia'      && !isPremium('ollama_ai'))        needsPro = true;
+    // License gates disabled for live demo
+    // if (mode === 'bares'   && !isPremium('bares'))           needsPro = true;
+    // if (mode === 'youtube' && !isPremium('music_streaming')) needsPro = true;
+    // if (mode === 'ia'      && !isPremium('ollama_ai'))        needsPro = true;
     if (needsPro) {
       const badge = document.createElement('span');
       badge.className = 'pro-badge';
@@ -2821,12 +2836,8 @@ let baresState = {
 };
 
 function baresInit() {
-  if (isPremium('bares')) {
-    baresShowContent();
-  } else {
-    document.getElementById('oem-gate').style.display    = 'flex';
-    document.getElementById('bares-content').style.display = 'none';
-  }
+  // License gate disabled for live demo
+  baresShowContent();
 }
 
 function baresShowContent(key) {
@@ -3951,6 +3962,8 @@ function _startTwinSync() {
       try { _feedTimeToLRC(_ytPlayer.getCurrentTime()); } catch {}
     } else if (_activePlayerType === 'soundcloud' && _scWidget) {
       _scWidget.getPosition(pos => _feedTimeToLRC(pos / 1000));
+    } else if (_activePlayerType === 'local' && localAudio && !localAudio.paused) {
+      _feedTimeToLRC(localAudio.currentTime);
     }
     // Jamendo usa timeupdate event directo, no necesita polling
   }, 50);
@@ -4000,7 +4013,7 @@ function updateTwinBadge() {
   const badge = document.getElementById('tp-mode-badge');
   if (!badge) return;
   if (_twinMode && _activePlayerType) {
-    const names = { youtube: 'YouTube', soundcloud: 'SoundCloud', jamendo: 'Jamendo' };
+    const names = { youtube: 'YouTube', soundcloud: 'SoundCloud', jamendo: 'Jamendo', local: 'Audio Local' };
     badge.textContent = '🔗 Gemelo: ' + (names[_activePlayerType] || _activePlayerType);
     badge.className = 'tp-lrc-badge lrc';
   } else if (tpState.isLRC) {
@@ -4574,6 +4587,8 @@ function abSeek(e) {
 
 function abClose() {
   if (abAudio) { abAudio.pause(); abAudio = null; }
+  if (localAudio) { localAudio.pause(); localAudio = null; }
+  onPlayerEnd(_activePlayerType);
   document.getElementById('audio-bar').classList.remove('active');
 }
 
@@ -4630,14 +4645,40 @@ function makeDraggable(el, id) {
 function mobileSetMode(mode, btn) {
   document.querySelectorAll('.mnav-btn').forEach(b => b.classList.remove('active'));
   if (btn) btn.classList.add('active');
+  // Reset all panels first
   const sidebar = document.querySelector('.sidebar');
   const rightPanel = document.querySelector('.right-panel');
+  const iaPanel    = document.getElementById('ia-panel');
+  const ytPanel    = document.getElementById('yt-panel');
+  const baresPanel = document.getElementById('bares-panel');
+  const settingsPanel = document.getElementById('settings-panel');
   if (sidebar)    sidebar.style.cssText = '';
   if (rightPanel) rightPanel.style.cssText = '';
-  if (mode === 'cola' && sidebar) {
+  [iaPanel, ytPanel, baresPanel, settingsPanel].forEach(p => {
+    if (p) { p.classList.remove('active'); p.style.cssText = ''; }
+  });
+  // Panel modes — activate panel (CSS .active rule handles fullscreen on mobile)
+  if (mode === 'youtube' && ytPanel) {
+    ytPanel.classList.add('active'); ytPanel.style.display = 'flex';
+    currentMode = 'youtube';
+  } else if (mode === 'ia' && iaPanel) {
+    iaPanel.classList.add('active'); iaPanel.style.display = 'flex';
+    currentMode = 'ia';
+    checkOllamaStatus();
+  } else if (mode === 'bares' && baresPanel) {
+    baresPanel.classList.add('active'); baresPanel.style.display = 'flex';
+    currentMode = 'bares';
+    baresInit();
+  } else if (mode === 'settings' && settingsPanel) {
+    settingsPanel.classList.add('active'); settingsPanel.style.display = 'flex';
+    currentMode = 'settings';
+    loadStats();
+  } else if (mode === 'cola' && sidebar) {
     sidebar.style.cssText = 'display:flex!important;position:fixed;inset:0;top:54px;bottom:60px;width:100%;z-index:90;background:var(--card);';
   } else if (mode === 'remote' && rightPanel) {
     rightPanel.style.cssText = 'display:flex!important;position:fixed;inset:0;top:54px;bottom:60px;width:100%;z-index:90;background:var(--card);';
+  } else if (mode === 'karaoke') {
+    currentMode = 'karaoke';
   }
 }
 
@@ -5204,6 +5245,71 @@ function textoLimpio(texto) {
   if (!texto) return true;
   const lower = texto.toLowerCase();
   return !_palabrasProhibidas.some(p => lower.includes(p));
+}
+
+// ── Local Audio Player (MP3 desde la laptop) ─────────────────────────────
+let localAudio = null;
+
+function openLocalAudio() {
+  document.getElementById('local-audio-input').click();
+}
+
+function handleLocalAudio(input) {
+  const file = input.files && input.files[0];
+  if (!file) return;
+  // Clean up previous
+  if (localAudio) { localAudio.pause(); localAudio = null; }
+  onPlayerEnd(_activePlayerType);
+
+  const url = URL.createObjectURL(file);
+  localAudio = new Audio(url);
+  const filename = file.name.replace(/\.[^.]+$/, '');
+
+  // Show in audio bar
+  document.getElementById('ab-name').textContent = filename;
+  document.getElementById('audio-bar').classList.add('active');
+  document.getElementById('ab-ico-play').style.display = 'none';
+  document.getElementById('ab-ico-pause').style.display = 'block';
+
+  // Connect to Web Audio FX engine
+  try { connectAudioToFX(localAudio); } catch (e) { console.warn('[LocalAudio] FX:', e.message); }
+
+  // Twin player bridge — sync with teleprompter
+  localAudio.addEventListener('play', () => {
+    onPlayerPlay('local');
+    document.getElementById('ab-ico-play').style.display = 'none';
+    document.getElementById('ab-ico-pause').style.display = 'block';
+  });
+  localAudio.addEventListener('pause', () => {
+    onPlayerPause('local');
+    document.getElementById('ab-ico-play').style.display = 'block';
+    document.getElementById('ab-ico-pause').style.display = 'none';
+  });
+  localAudio.addEventListener('ended', () => {
+    onPlayerEnd('local');
+    document.getElementById('ab-ico-play').style.display = 'block';
+    document.getElementById('ab-ico-pause').style.display = 'none';
+  });
+  localAudio.addEventListener('timeupdate', () => {
+    if (!localAudio || !localAudio.duration) return;
+    const pct = (localAudio.currentTime / localAudio.duration) * 100;
+    document.getElementById('ab-fill').style.width = pct + '%';
+    document.getElementById('ab-time').textContent = fmtTime(localAudio.currentTime) + ' / ' + fmtTime(localAudio.duration);
+    // Feed time to LRC if twin mode
+    if (_twinMode && tpState.isLRC && tpState.autoScrolling) {
+      _feedTimeToLRC(localAudio.currentTime);
+    }
+  });
+
+  // Wire audio bar controls to local audio
+  abAudio = localAudio;
+
+  // Start playing
+  localAudio.play().catch(e => showToast('Error: ' + e.message));
+  showToast('🎵 ' + filename);
+
+  // Reset file input so same file can be re-selected
+  input.value = '';
 }
 
 // Override agregarCola para validar antes de enviar
