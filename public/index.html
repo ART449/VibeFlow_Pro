@@ -1336,6 +1336,13 @@ select.inp{cursor:pointer;}
             </button>
             <span style="font-size:8px;color:rgba(0,245,160,.6);letter-spacing:.5px;">LETRA</span>
           </div>
+          <div style="display:flex;flex-direction:column;align-items:center;gap:3px;">
+            <button class="ctrl-btn" onclick="openLocalAudio()" title="Cargar archivo MP3/audio desde tu computadora" style="background:rgba(58,134,255,.08);border-color:rgba(58,134,255,.2);">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:20px;height:20px;"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
+            </button>
+            <span style="font-size:8px;color:rgba(58,134,255,.6);letter-spacing:.5px;">AUDIO</span>
+          </div>
+          <input type="file" id="local-audio-input" accept="audio/*" style="display:none;" onchange="handleLocalAudio(this)">
         </div>
         <div id="tp-mode-indicator" style="display:flex;justify-content:center;margin-top:6px;gap:8px;align-items:center;">
           <span class="tp-lrc-badge manual" id="tp-mode-badge">Modo manual</span>
@@ -2678,18 +2685,10 @@ function setMode(mode) {
     if (sidebar)    sidebar.style.display    = 'flex';
     if (rightPanel) rightPanel.style.display = 'flex';
   } else if (mode === 'ia') {
-    if (!isPremium('ollama_ai')) {
-      showToast('Modo IA requiere licencia PRO');
-      setMode('karaoke'); return;
-    }
     if (sidebar)    sidebar.style.display    = 'flex';
     if (iaPanel)    { iaPanel.classList.add('active'); iaPanel.style.display = 'flex'; }
     checkOllamaStatus();
   } else if (mode === 'youtube') {
-    if (!isPremium('music_streaming')) {
-      showToast('Musica Streaming requiere licencia PRO');
-      setMode('karaoke'); return;
-    }
     if (sidebar)    sidebar.style.display    = 'flex';
     if (ytPanel)    { ytPanel.classList.add('active'); ytPanel.style.display = 'flex'; }
   } else if (mode === 'bares') {
@@ -3951,6 +3950,8 @@ function _startTwinSync() {
       try { _feedTimeToLRC(_ytPlayer.getCurrentTime()); } catch {}
     } else if (_activePlayerType === 'soundcloud' && _scWidget) {
       _scWidget.getPosition(pos => _feedTimeToLRC(pos / 1000));
+    } else if (_activePlayerType === 'local' && localAudio && !localAudio.paused) {
+      _feedTimeToLRC(localAudio.currentTime);
     }
     // Jamendo usa timeupdate event directo, no necesita polling
   }, 50);
@@ -4000,7 +4001,7 @@ function updateTwinBadge() {
   const badge = document.getElementById('tp-mode-badge');
   if (!badge) return;
   if (_twinMode && _activePlayerType) {
-    const names = { youtube: 'YouTube', soundcloud: 'SoundCloud', jamendo: 'Jamendo' };
+    const names = { youtube: 'YouTube', soundcloud: 'SoundCloud', jamendo: 'Jamendo', local: 'Audio Local' };
     badge.textContent = '🔗 Gemelo: ' + (names[_activePlayerType] || _activePlayerType);
     badge.className = 'tp-lrc-badge lrc';
   } else if (tpState.isLRC) {
@@ -4574,6 +4575,8 @@ function abSeek(e) {
 
 function abClose() {
   if (abAudio) { abAudio.pause(); abAudio = null; }
+  if (localAudio) { localAudio.pause(); localAudio = null; }
+  onPlayerEnd(_activePlayerType);
   document.getElementById('audio-bar').classList.remove('active');
 }
 
@@ -5204,6 +5207,71 @@ function textoLimpio(texto) {
   if (!texto) return true;
   const lower = texto.toLowerCase();
   return !_palabrasProhibidas.some(p => lower.includes(p));
+}
+
+// ── Local Audio Player (MP3 desde la laptop) ─────────────────────────────
+let localAudio = null;
+
+function openLocalAudio() {
+  document.getElementById('local-audio-input').click();
+}
+
+function handleLocalAudio(input) {
+  const file = input.files && input.files[0];
+  if (!file) return;
+  // Clean up previous
+  if (localAudio) { localAudio.pause(); localAudio = null; }
+  onPlayerEnd(_activePlayerType);
+
+  const url = URL.createObjectURL(file);
+  localAudio = new Audio(url);
+  const filename = file.name.replace(/\.[^.]+$/, '');
+
+  // Show in audio bar
+  document.getElementById('ab-name').textContent = filename;
+  document.getElementById('audio-bar').classList.add('active');
+  document.getElementById('ab-ico-play').style.display = 'none';
+  document.getElementById('ab-ico-pause').style.display = 'block';
+
+  // Connect to Web Audio FX engine
+  try { connectAudioToFX(localAudio); } catch (e) { console.warn('[LocalAudio] FX:', e.message); }
+
+  // Twin player bridge — sync with teleprompter
+  localAudio.addEventListener('play', () => {
+    onPlayerPlay('local');
+    document.getElementById('ab-ico-play').style.display = 'none';
+    document.getElementById('ab-ico-pause').style.display = 'block';
+  });
+  localAudio.addEventListener('pause', () => {
+    onPlayerPause('local');
+    document.getElementById('ab-ico-play').style.display = 'block';
+    document.getElementById('ab-ico-pause').style.display = 'none';
+  });
+  localAudio.addEventListener('ended', () => {
+    onPlayerEnd('local');
+    document.getElementById('ab-ico-play').style.display = 'block';
+    document.getElementById('ab-ico-pause').style.display = 'none';
+  });
+  localAudio.addEventListener('timeupdate', () => {
+    if (!localAudio || !localAudio.duration) return;
+    const pct = (localAudio.currentTime / localAudio.duration) * 100;
+    document.getElementById('ab-fill').style.width = pct + '%';
+    document.getElementById('ab-time').textContent = fmtTime(localAudio.currentTime) + ' / ' + fmtTime(localAudio.duration);
+    // Feed time to LRC if twin mode
+    if (_twinMode && tpState.isLRC && tpState.autoScrolling) {
+      _feedTimeToLRC(localAudio.currentTime);
+    }
+  });
+
+  // Wire audio bar controls to local audio
+  abAudio = localAudio;
+
+  // Start playing
+  localAudio.play().catch(e => showToast('Error: ' + e.message));
+  showToast('🎵 ' + filename);
+
+  // Reset file input so same file can be re-selected
+  input.value = '';
 }
 
 // Override agregarCola para validar antes de enviar
