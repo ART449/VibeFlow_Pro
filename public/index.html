@@ -2346,6 +2346,11 @@ function toggleAutoScroll() { tpState.autoScrolling ? stopAutoScroll() : startAu
 
 function startAutoScroll() {
   if (!tpState.words.length) return;
+  // ── SIEMPRE limpiar timers anteriores antes de crear nuevos ──
+  clearInterval(tpState.intervalId);  tpState.intervalId = null;
+  clearInterval(tpState.lrcTimerId);  tpState.lrcTimerId = null;
+  _stopTwinSync();
+
   tpState.autoScrolling = true;
   updatePlayBtn();
 
@@ -2357,6 +2362,8 @@ function startAutoScroll() {
 }
 
 function startManualScroll() {
+  // Limpiar interval previo por seguridad (evita timers duplicados)
+  clearInterval(tpState.intervalId); tpState.intervalId = null;
   // Single stable interval — NO recursive setTimeout, NO multiple timer chains
   const baseInterval = Math.max(100, 500 / tpState.speed);
   let skipTicks = 0; // used for line-boundary pauses
@@ -2384,6 +2391,8 @@ function startManualScroll() {
 }
 
 function startLRCPlayback() {
+  // Limpiar timer LRC previo por seguridad (evita timers duplicados)
+  clearInterval(tpState.lrcTimerId); tpState.lrcTimerId = null;
   // Si hay un reproductor gemelo activo, el bridge maneja el sync LRC.
   // Solo usar performance.now() fallback cuando no hay player conectado.
   if (_twinMode && _activePlayerType) {
@@ -3910,18 +3919,9 @@ function onPlayerPlay(playerType) {
   _twinMode = true;
   console.log('[Gemelos] ▶ ' + playerType + ' → teleprompter arranca');
   // Auto-iniciar teleprompter si tiene letras cargadas
-  if (tpState.words.length > 0 && !tpState.autoScrolling) {
-    tpState.autoScrolling = true;
-    updatePlayBtn();
-    // Si tiene LRC, solo activamos el sync interval (no el timer de performance.now)
-    if (tpState.isLRC && tpState.lrcData) {
-      _startTwinSync();
-    } else {
-      startManualScroll();
-    }
-  } else if (tpState.autoScrolling && tpState.isLRC) {
-    // Ya estaba scrolleando, asegurar que el sync corre
-    _startTwinSync();
+  // Usar startAutoScroll() que limpia timers previos — evita acumulación
+  if (tpState.words.length > 0) {
+    startAutoScroll();
   }
   updateTwinBadge();
 }
@@ -3929,15 +3929,7 @@ function onPlayerPlay(playerType) {
 function onPlayerPause(playerType) {
   console.log('[Gemelos] ⏸ ' + playerType + ' → teleprompter pausa');
   if (_twinMode && tpState.autoScrolling) {
-    // Pausar teleprompter sin perder posición
-    tpState.autoScrolling = false;
-    clearInterval(tpState.intervalId);
-    clearInterval(tpState.lrcTimerId);
-    _stopTwinSync();
-    if (tpState.isLRC && tpState.startTime > 0) {
-      tpState.pauseOffset = performance.now() - tpState.startTime;
-    }
-    updatePlayBtn();
+    stopAutoScroll(); // Usa la función centralizada — evita estado inconsistente
   }
   updateTwinBadge();
 }
