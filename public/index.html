@@ -2736,9 +2736,10 @@ function updatePremiumUI() {
     const existing = btn.querySelector('.pro-badge');
     if (existing) existing.remove();
     let needsPro = false;
-    if (mode === 'bares'   && !isPremium('bares'))           needsPro = true;
-    if (mode === 'youtube' && !isPremium('music_streaming')) needsPro = true;
-    if (mode === 'ia'      && !isPremium('ollama_ai'))        needsPro = true;
+    // License gates disabled for live demo
+    // if (mode === 'bares'   && !isPremium('bares'))           needsPro = true;
+    // if (mode === 'youtube' && !isPremium('music_streaming')) needsPro = true;
+    // if (mode === 'ia'      && !isPremium('ollama_ai'))        needsPro = true;
     if (needsPro) {
       const badge = document.createElement('span');
       badge.className = 'pro-badge';
@@ -2820,12 +2821,8 @@ let baresState = {
 };
 
 function baresInit() {
-  if (isPremium('bares')) {
-    baresShowContent();
-  } else {
-    document.getElementById('oem-gate').style.display    = 'flex';
-    document.getElementById('bares-content').style.display = 'none';
-  }
+  // License gate disabled for live demo
+  baresShowContent();
 }
 
 function baresShowContent(key) {
