@@ -1952,17 +1952,21 @@ select.inp{cursor:pointer;}
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
       <span>Karaoke</span>
     </button>
+    <button class="mnav-btn" data-mode="youtube" onclick="mobileSetMode('youtube',this)">
+      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M23.495 6.205a3.007 3.007 0 0 0-2.088-2.088c-1.87-.501-9.396-.501-9.396-.501s-7.507-.01-9.396.501A3.007 3.007 0 0 0 .527 6.205a31.247 31.247 0 0 0-.522 5.805 31.247 31.247 0 0 0 .522 5.783 3.007 3.007 0 0 0 2.088 2.088c1.868.502 9.396.502 9.396.502s7.506 0 9.396-.502a3.007 3.007 0 0 0 2.088-2.088 31.247 31.247 0 0 0 .5-5.783 31.247 31.247 0 0 0-.5-5.805zM9.609 15.601V8.408l6.264 3.602z"/></svg>
+      <span>YouTube</span>
+    </button>
     <button class="mnav-btn" onclick="openCatalog()">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
       <span>Canciones</span>
     </button>
-    <button class="mnav-btn" data-mode="cola" onclick="mobileSetMode('cola',this)">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><line x1="20" y1="8" x2="20" y2="14"/><line x1="23" y1="11" x2="17" y2="11"/></svg>
-      <span>Cola</span>
-    </button>
     <button class="mnav-btn" data-mode="remote" onclick="mobileSetMode('remote',this)">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="5" y="2" width="14" height="20" rx="2"/><circle cx="12" cy="17" r="1"/></svg>
       <span>Remoto</span>
+    </button>
+    <button class="mnav-btn" data-mode="settings" onclick="mobileSetMode('settings',this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+      <span>Config</span>
     </button>
   </div>
 </div>
@@ -4641,14 +4645,40 @@ function makeDraggable(el, id) {
 function mobileSetMode(mode, btn) {
   document.querySelectorAll('.mnav-btn').forEach(b => b.classList.remove('active'));
   if (btn) btn.classList.add('active');
+  // Reset all panels first
   const sidebar = document.querySelector('.sidebar');
   const rightPanel = document.querySelector('.right-panel');
+  const iaPanel    = document.getElementById('ia-panel');
+  const ytPanel    = document.getElementById('yt-panel');
+  const baresPanel = document.getElementById('bares-panel');
+  const settingsPanel = document.getElementById('settings-panel');
   if (sidebar)    sidebar.style.cssText = '';
   if (rightPanel) rightPanel.style.cssText = '';
-  if (mode === 'cola' && sidebar) {
+  [iaPanel, ytPanel, baresPanel, settingsPanel].forEach(p => {
+    if (p) { p.classList.remove('active'); p.style.cssText = ''; }
+  });
+  // Panel modes — activate panel (CSS .active rule handles fullscreen on mobile)
+  if (mode === 'youtube' && ytPanel) {
+    ytPanel.classList.add('active'); ytPanel.style.display = 'flex';
+    currentMode = 'youtube';
+  } else if (mode === 'ia' && iaPanel) {
+    iaPanel.classList.add('active'); iaPanel.style.display = 'flex';
+    currentMode = 'ia';
+    checkOllamaStatus();
+  } else if (mode === 'bares' && baresPanel) {
+    baresPanel.classList.add('active'); baresPanel.style.display = 'flex';
+    currentMode = 'bares';
+    baresInit();
+  } else if (mode === 'settings' && settingsPanel) {
+    settingsPanel.classList.add('active'); settingsPanel.style.display = 'flex';
+    currentMode = 'settings';
+    loadStats();
+  } else if (mode === 'cola' && sidebar) {
     sidebar.style.cssText = 'display:flex!important;position:fixed;inset:0;top:54px;bottom:60px;width:100%;z-index:90;background:var(--card);';
   } else if (mode === 'remote' && rightPanel) {
     rightPanel.style.cssText = 'display:flex!important;position:fixed;inset:0;top:54px;bottom:60px;width:100%;z-index:90;background:var(--card);';
+  } else if (mode === 'karaoke') {
+    currentMode = 'karaoke';
   }
 }
 
