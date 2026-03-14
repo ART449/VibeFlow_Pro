@@ -1114,9 +1114,13 @@ select.inp{cursor:pointer;}
   .sidebar{display:none;}
   .right-panel{display:none;}
   .ia-panel{display:none;}
+  .ia-panel.active{display:flex!important;position:fixed;top:50px;left:0;right:0;bottom:60px;width:100%;z-index:90;border-left:none;}
   .bares-panel{display:none;}
+  .bares-panel.active{display:flex!important;position:fixed;top:50px;left:0;right:0;bottom:60px;width:100%;z-index:90;border-left:none;}
   .yt-panel{display:none;}
+  .yt-panel.active{display:flex!important;position:fixed;top:50px;left:0;right:0;bottom:60px;width:100%;z-index:90;border-left:none;}
   .settings-panel{display:none!important;}
+  .settings-panel.active{display:flex!important;position:fixed;top:50px;left:0;right:0;bottom:60px;width:100%;z-index:90;border-left:none;overflow-y:auto;}
   #tp-display{font-size:2.4rem;}
   .topbar{padding:0 10px;}
   .brand{font-size:15px;}
@@ -2230,11 +2234,18 @@ function highlightWord(idx) {
   const next = document.getElementById('tw-' + idx);
   if (next) {
     next.classList.add('tp-active');
-    // Scroll: use the LINE element for smoother scrolling
+    // Scroll: use the LINE element, debounced to prevent vibration
     const lineIdx = _wordToLine[idx];
-    const lineEl = (lineIdx !== undefined) ? document.getElementById('tl-' + lineIdx) : null;
-    const scrollTarget = lineEl || next;
-    scrollTarget.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    if (lineIdx !== undefined && lineIdx !== tpState.currentLine) {
+      const lineEl = document.getElementById('tl-' + lineIdx);
+      if (lineEl) {
+        // Cancel any pending scroll to prevent competing animations
+        if (tpState._scrollRAF) cancelAnimationFrame(tpState._scrollRAF);
+        tpState._scrollRAF = requestAnimationFrame(() => {
+          lineEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        });
+      }
+    }
   }
 
   tpState.currentIdx = idx;
