@@ -4054,11 +4054,28 @@ function ytCacheSet(query, data) {
   } catch {}
 }
 
+// Búsqueda libre (Piped, sin API key) — funciona siempre
+async function ytFreeSearch(q) {
+  const r = await fetch(`/api/youtube/free-search?q=${encodeURIComponent(q)}`);
+  const d = await r.json();
+  if (d.error) throw new Error(d.error);
+  if (!d.items || !d.items.length) return null;
+  // Piped trae _duration en segundos, convertir
+  const durs = {};
+  d.items.forEach(item => {
+    if (item._duration) {
+      const m = Math.floor(item._duration / 60);
+      const s = item._duration % 60;
+      durs[item.id.videoId] = `${m}:${String(s).padStart(2,'0')}`;
+    }
+  });
+  return { items: d.items, durs };
+}
+
 async function ytSearch() {
   const q   = document.getElementById('yt-search-inp').value.trim();
   const res = document.getElementById('yt-results');
-  if (!q)       { showToast('⚠️ Escribe algo para buscar'); return; }
-  if (!ytApiKey){ showToast('⚠️ Guarda tu API key primero'); return; }
+  if (!q) { showToast('⚠️ Escribe algo para buscar'); return; }
 
   // Checar cache primero — si ya buscamos esto, no gastar cuota
   const cached = ytCacheGet(q);
@@ -4070,23 +4087,45 @@ async function ytSearch() {
 
   res.innerHTML = '<div class="yt-empty">🔍 Buscando...</div>';
   try {
-    const r = await fetch(`/api/youtube/search?q=${encodeURIComponent(q)}&key=${encodeURIComponent(ytApiKey)}`);
-    const d = await r.json();
-    if (d.error) { res.innerHTML = '<div class="yt-empty">❌ ' + escHtml(d.error) + '</div>'; return; }
-    if (!d.items || !d.items.length) { res.innerHTML = '<div class="yt-empty">Sin resultados</div>'; return; }
+    let items, durs = {};
+    let usedFree = false;
 
-    // Obtener duraciones
-    const ids    = d.items.map(i => i.id.videoId).join(',');
-    const detRes = await fetch(`/api/youtube/videos?ids=${ids}&key=${encodeURIComponent(ytApiKey)}`);
-    const detD   = await detRes.json();
-    const durs   = {};
-    if (detD.items) detD.items.forEach(v => { durs[v.id] = ytParseDuration(v.contentDetails.duration); });
+    // Intentar con API key primero (si tiene una)
+    if (ytApiKey) {
+      try {
+        const r = await fetch(`/api/youtube/search?q=${encodeURIComponent(q)}&key=${encodeURIComponent(ytApiKey)}`);
+        const d = await r.json();
+        if (!d.error && d.items && d.items.length) {
+          items = d.items;
+          // Obtener duraciones
+          const ids    = d.items.map(i => i.id.videoId).join(',');
+          const detRes = await fetch(`/api/youtube/videos?ids=${ids}&key=${encodeURIComponent(ytApiKey)}`);
+          const detD   = await detRes.json();
+          if (detD.items) detD.items.forEach(v => { durs[v.id] = ytParseDuration(v.contentDetails.duration); });
+        }
+      } catch {}
+    }
+
+    // Fallback: búsqueda libre sin API key
+    if (!items) {
+      const free = await ytFreeSearch(q);
+      if (free) {
+        items = free.items;
+        durs = free.durs;
+        usedFree = true;
+      }
+    }
+
+    if (!items || !items.length) {
+      res.innerHTML = '<div class="yt-empty">Sin resultados</div>';
+      return;
+    }
 
     // Guardar en cache
-    ytCacheSet(q, { items: d.items, durs });
-
-    ytResults = d.items;
-    ytRenderResults(d.items, durs, res);
+    ytCacheSet(q, { items, durs });
+    ytResults = items;
+    ytRenderResults(items, durs, res);
+    if (usedFree) showToast('🔓 Búsqueda libre (sin API key)');
   } catch (e) {
     res.innerHTML = '<div class="yt-empty">❌ Error: ' + escHtml(e.message) + '</div>';
   }

@@ -480,6 +480,56 @@ app.post('/api/teleprompter', (req, res) => {
 });
 
 // ── YouTube Search (proxy para evitar CORS) ─────────────────────────────────
+
+// Piped instances (fallback sin API key)
+const PIPED_INSTANCES = [
+  'https://pipedapi.kavin.rocks',
+  'https://pipedapi.adminforge.de',
+  'https://pipedapi.in.projectsegfau.lt'
+];
+
+// Busqueda libre via Piped — NO necesita API key
+app.get('/api/youtube/free-search', async (req, res) => {
+  const q = (req.query.q || '').trim();
+  if (!q) return res.status(400).json({ error: 'Falta parametro: q' });
+
+  let lastErr = 'Todos los servidores fallaron';
+  for (const instance of PIPED_INSTANCES) {
+    try {
+      const r = await fetch(`${instance}/search?q=${encodeURIComponent(q)}&filter=videos`, {
+        headers: { 'User-Agent': 'ByFlow/2.1' },
+        signal: AbortSignal.timeout(8000)
+      });
+      if (!r.ok) { lastErr = `${instance}: HTTP ${r.status}`; continue; }
+      const data = await r.json();
+      const items = (data.items || []).filter(i => i.type === 'stream').slice(0, 12);
+
+      // Convertir al formato que el frontend ya espera
+      const formatted = {
+        items: items.map(v => ({
+          id: { videoId: v.url?.replace('/watch?v=', '') || '' },
+          snippet: {
+            title: v.title || '',
+            channelTitle: v.uploaderName || '',
+            thumbnails: {
+              medium: { url: v.thumbnail || '' },
+              default: { url: v.thumbnail || '' }
+            }
+          },
+          // Piped ya trae duracion
+          _duration: v.duration || 0
+        }))
+      };
+      return res.json(formatted);
+    } catch (e) {
+      lastErr = `${instance}: ${e.message}`;
+      continue;
+    }
+  }
+  res.status(502).json({ error: 'Busqueda libre no disponible: ' + lastErr });
+});
+
+// Busqueda con API key de Google (metodo original)
 app.get('/api/youtube/search', async (req, res) => {
   const { q, key, pageToken } = req.query;
   if (!q || !key) return res.status(400).json({ error: 'Faltan parámetros: q y key' });
