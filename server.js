@@ -165,6 +165,97 @@ function checkRateLimit(ip, maxAttempts = 5, windowMs = 60000) {
   return true;
 }
 
+// ── Security Shield — Analizador de datos entrantes ─────────────────────────
+const SECURITY_LOG_FILE = path.join(DATA_DIR, 'security_log.json');
+const securityLog = loadJSON('security_log.json', { blocked: [], summary: { total: 0, byType: {} } });
+
+// Patrones maliciosos que detecta el shield
+const MALICIOUS_PATTERNS = [
+  // XSS
+  { name: 'xss_script',    rx: /<script[\s>]/i },
+  { name: 'xss_event',     rx: /\bon\w+\s*=/i },
+  { name: 'xss_javascript', rx: /javascript\s*:/i },
+  { name: 'xss_data_uri',  rx: /data\s*:\s*text\/html/i },
+  // SQL Injection
+  { name: 'sqli_union',    rx: /\bUNION\s+(ALL\s+)?SELECT\b/i },
+  { name: 'sqli_drop',     rx: /\bDROP\s+(TABLE|DATABASE)\b/i },
+  { name: 'sqli_insert',   rx: /\bINSERT\s+INTO\b.*VALUES/i },
+  { name: 'sqli_comment',  rx: /('|")\s*(OR|AND)\s+('|"|\d)/i },
+  // Path Traversal
+  { name: 'path_traversal', rx: /\.\.[\/\\]/g },
+  { name: 'null_byte',     rx: /%00/g },
+  // Command Injection
+  { name: 'cmd_injection', rx: /[;&|`$]\s*(cat|ls|rm|wget|curl|nc|bash|sh|python|node|eval)\b/i },
+  { name: 'cmd_backtick',  rx: /`[^`]+`/ },
+  // NoSQL Injection
+  { name: 'nosql_operator', rx: /\$(?:gt|gte|lt|lte|ne|in|nin|or|and|not|regex|where|exists)\b/i },
+  // Template injection
+  { name: 'ssti',          rx: /\{\{.*\}\}/g },
+  // Encoded attacks
+  { name: 'hex_encode',    rx: /\\x[0-9a-f]{2}.*\\x[0-9a-f]{2}/i },
+  // File upload signatures (virus/malware common headers)
+  { name: 'exe_header',    rx: /^TVqQAAMAAAA/  },          // MZ header base64
+  { name: 'elf_header',    rx: /^f0VMRg/  },               // ELF header base64
+  { name: 'php_tag',       rx: /<\?php/i },
+  { name: 'webshell',      rx: /\b(eval|assert|system|exec|passthru|shell_exec|popen)\s*\(/i }
+];
+
+function scanValue(val, depth = 0) {
+  if (depth > 5) return null; // prevent deep recursion
+  if (typeof val === 'string') {
+    for (const p of MALICIOUS_PATTERNS) {
+      if (p.rx.test(val)) return p.name;
+    }
+  } else if (Array.isArray(val)) {
+    for (const item of val) {
+      const hit = scanValue(item, depth + 1);
+      if (hit) return hit;
+    }
+  } else if (val && typeof val === 'object') {
+    // Check keys too (NoSQL injection uses $gt etc as keys)
+    for (const k of Object.keys(val)) {
+      if (/^\$/.test(k)) return 'nosql_operator_key';
+      const hit = scanValue(val[k], depth + 1);
+      if (hit) return hit;
+    }
+  }
+  return null;
+}
+
+function logSecurityEvent(type, ip, detail) {
+  const entry = {
+    type, ip,
+    detail: typeof detail === 'string' ? detail.slice(0, 200) : String(detail).slice(0, 200),
+    time: new Date().toISOString()
+  };
+  securityLog.blocked.push(entry);
+  if (securityLog.blocked.length > 500) securityLog.blocked = securityLog.blocked.slice(-300);
+  securityLog.summary.total++;
+  securityLog.summary.byType[type] = (securityLog.summary.byType[type] || 0) + 1;
+  debouncedSave('security_log.json', securityLog);
+  console.log(`[SHIELD] BLOCKED ${type} from ${ip}: ${entry.detail}`);
+}
+
+// Global rate limiter (per IP, all endpoints)
+const _globalRates = {};
+function globalRateLimit(ip, max = 60, windowMs = 60000) {
+  const now = Date.now();
+  if (!_globalRates[ip]) _globalRates[ip] = [];
+  _globalRates[ip] = _globalRates[ip].filter(t => now - t < windowMs);
+  if (_globalRates[ip].length >= max) return false;
+  _globalRates[ip].push(now);
+  return true;
+}
+
+// Clean up rate limit memory every 5 min
+setInterval(() => {
+  const now = Date.now();
+  for (const ip of Object.keys(_globalRates)) {
+    _globalRates[ip] = _globalRates[ip].filter(t => now - t < 60000);
+    if (_globalRates[ip].length === 0) delete _globalRates[ip];
+  }
+}, 300000);
+
 // ── App Setup ───────────────────────────────────────────────────────────────
 const PORT = process.env.PORT || 8080;
 const HOST = '0.0.0.0';
@@ -178,6 +269,55 @@ const io = new Server(server, {
 
 app.use(cors());
 app.use(express.json({ limit: '1mb' }));
+
+// ── Security Shield Middleware ──────────────────────────────────────────────
+app.use((req, res, next) => {
+  const ip = req.ip || req.connection?.remoteAddress || 'unknown';
+
+  // 1. Global rate limit (60 req/min per IP)
+  if (!globalRateLimit(ip)) {
+    logSecurityEvent('rate_limit', ip, `${req.method} ${req.path}`);
+    return res.status(429).json({ error: 'Demasiadas peticiones. Espera un momento.' });
+  }
+
+  // 2. Block suspicious User-Agents (common scanners/bots)
+  const ua = (req.headers['user-agent'] || '').toLowerCase();
+  const suspiciousUA = ['sqlmap', 'nikto', 'nmap', 'masscan', 'dirbuster', 'gobuster',
+    'hydra', 'metasploit', 'burpsuite', 'zap', 'nuclei', 'wfuzz', 'ffuf'];
+  for (const s of suspiciousUA) {
+    if (ua.includes(s)) {
+      logSecurityEvent('scanner_blocked', ip, `UA: ${ua.slice(0, 100)}`);
+      return res.status(403).json({ error: 'Acceso denegado' });
+    }
+  }
+
+  // 3. Scan query params
+  for (const [key, val] of Object.entries(req.query)) {
+    const hit = scanValue(val);
+    if (hit) {
+      logSecurityEvent(hit, ip, `query.${key}=${String(val).slice(0, 100)}`);
+      return res.status(400).json({ error: 'Solicitud bloqueada por seguridad' });
+    }
+  }
+
+  // 4. Scan request body (POST/PUT/PATCH)
+  if (req.body && typeof req.body === 'object') {
+    const hit = scanValue(req.body);
+    if (hit) {
+      logSecurityEvent(hit, ip, `body: ${JSON.stringify(req.body).slice(0, 150)}`);
+      return res.status(400).json({ error: 'Contenido bloqueado por seguridad' });
+    }
+  }
+
+  // 5. Block path traversal in URL
+  if (/\.\.[\/\\]/.test(req.path) || /%2e%2e/i.test(req.path)) {
+    logSecurityEvent('path_traversal_url', ip, req.path);
+    return res.status(400).json({ error: 'Ruta no permitida' });
+  }
+
+  next();
+});
+
 app.use(express.static(path.join(__dirname, 'public')));
 
 // ── Estado con persistencia ─────────────────────────────────────────────────
@@ -649,12 +789,42 @@ app.get('/api/lrclib/search', async (req, res) => {
   }
 });
 
+// ── Security Log API (protegida con admin key) ──────────────────────────────
+app.get('/api/security/log', (req, res) => {
+  const adminKey = req.headers['x-admin-key'] || req.query.admin;
+  if (adminKey !== ADMIN_SECRET && adminKey !== MASTER_ADMIN) {
+    return res.status(401).json({ error: 'Admin key requerida' });
+  }
+  const limit = Math.min(parseInt(req.query.limit) || 50, 200);
+  const recent = securityLog.blocked.slice(-limit).reverse();
+  res.json({
+    total_blocked: securityLog.summary.total,
+    by_type: securityLog.summary.byType,
+    recent,
+    shield_active: true
+  });
+});
+
+// Limpiar log de seguridad
+app.delete('/api/security/log', (req, res) => {
+  const adminKey = req.headers['x-admin-key'];
+  if (adminKey !== ADMIN_SECRET && adminKey !== MASTER_ADMIN) {
+    return res.status(401).json({ error: 'Admin key requerida' });
+  }
+  securityLog.blocked = [];
+  securityLog.summary = { total: 0, byType: {} };
+  saveJSON('security_log.json', securityLog);
+  res.json({ ok: true, message: 'Log de seguridad limpiado' });
+});
+
 // Health
 app.get('/api/health', (req, res) => res.json({
-  status: 'ok', version: '2.0.0', uptime: process.uptime(),
+  status: 'ok', version: '2.1.0-shield', uptime: process.uptime(),
   ip: getLocalIp(), port: PORT,
   songs: state.canciones.length,
-  queue: state.cola.length
+  queue: state.cola.length,
+  shield: true,
+  blocked_total: securityLog.summary.total
 }));
 
 // SPA fallback
