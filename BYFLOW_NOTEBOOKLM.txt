@@ -1,0 +1,470 @@
+====================================================================
+BYFLOW — DOCUMENTO COMPLETO PARA NOTEBOOKLM
+"Vive Cantando con ByFlow" — powered by IArtLabs
+Fecha: 15 marzo 2026 | Version: v3.1
+====================================================================
+
+INDICE:
+1. Que es ByFlow
+2. El Creador: ArT-AtR (Arturo Torres)
+3. Arquitectura Tecnica
+4. Features Implementados (Frontend)
+5. Features Implementados (Backend)
+6. API Endpoints completos
+7. WebSocket Events
+8. Modos de la Aplicacion
+9. GFlow IA — Sistema de Inteligencia Artificial
+10. Sistema de Licencias Premium
+11. Teleprompter Engine
+12. Modulo de Bares
+13. Estudio de Letras (ecosistema completo)
+14. Letras originales de ArT-AtR
+15. Politica de Propiedad Intelectual
+16. Politica Anti-Pirateria
+17. Features Portados del Backend Python v7.3
+18. Proyectos Paralelos (Stem Engine, Backend Python)
+19. Ideas para Lanzar (Roadmap)
+20. Competencia
+21. Infraestructura y Deploy
+22. Historial de Cambios Recientes
+
+====================================================================
+1. QUE ES BYFLOW
+====================================================================
+
+ByFlow es una plataforma todo-en-uno de karaoke inteligente y entretenimiento en vivo. Es un "Director Vocal" que escucha y guia al cantante. Cero contaminacion visual.
+
+Produccion: https://byflowapp.up.railway.app
+Repo: https://github.com/ART449/VibeFlow_Pro
+Empresa: IArtLabs
+Lema: "Vive Cantando con ByFlow"
+
+4 modos principales:
+- Karaoke (GRATIS): Teleprompter, cola de cantantes, letras sincronizadas
+- Musica (PRO): Streaming embebido de YouTube, SoundCloud y Jamendo
+- Bares (PRO): Gestion de mesas, promos, jingle, cola de peticiones, DJ Soundboard
+- IA (PRO): Asistente GFlow con Grok API y Ollama local para generar letras y sugerir canciones
+
+====================================================================
+2. EL CREADOR: ArT-AtR (Arturo Torres)
+====================================================================
+
+Nombre: Arturo Torres
+Alias: ArT - AtR ("Art en el arte de rimarte")
+Perfil: Rimador experto en verso, prosa y lirica tecnica. Mezcla la crudeza de la calle con la precision de la tecnologia (hacking, algoritmos, IA).
+Filosofia: "El sistema parpadea, pero el codigo no miente"
+
+Estilo lirico: Tecnico-sentimental.
+- Metricas de octosilabos para versos
+- Rimas consonantes pareadas (AABB) para estribillos
+- Terminologia de software con metaforas de vida y superacion
+
+Tematicas base:
+- Tecnologia & Trap: terminos como 404, glitch, matrix, hacking, data, binary
+- Desamor & Realidad: idealizacion, manipulacion, decepcion
+- Redencion & Familia: guia paterna, lucha contra vicios
+
+Perfil Suno (suno.com/me): ~100+ tracks, 10 paginas.
+Proyectos musicales: TEC-PATL (serie nahua), Codigo (tech-lirica), ByFlow Trinity.
+Canciones clave: SENTIDO PERDIDO, LA BACHA, El Alma (Tributo a Mama), ITZTLI, EL TABLERO DE JUDAS.
+
+====================================================================
+3. ARQUITECTURA TECNICA
+====================================================================
+
+Stack: Node.js + Express + Socket.IO (server.js) | HTML/CSS/JS SPA (public/index.html)
+Runtime: Node.js >= 18.0.0
+Frontend: Vanilla JavaScript (sin frameworks) — ~5,654 lineas en un solo archivo SPA
+Backend: server.js — ~978 lineas
+Real-time: Socket.IO
+IA: Grok API (grok-3-mini, server-side) + Ollama (local, opcional)
+Lyrics: LRCLib (Creative Commons)
+Musica: YouTube Data API + SoundCloud + Jamendo API
+Deploy: Railway (auto-deploy desde GitHub push a main)
+Puerto produccion: 8080
+Dependencias: express ^4.18.2, socket.io ^4.7.4, cors ^2.8.5, qrcode ^1.5.3
+
+Diagrama:
+CLIENTES (Moviles, tablets, microfonos, controles de karaoke, QR)
+    |
+    v
+byflowapp.up.railway.app (Node.js)
+    |-- Karaoke Engine (Cola, Teleprompter, LRC sync, Scoring)
+    |-- Bares Manager (Mesas, Ordenes, VIP, Promos)
+    |-- GFlow IA (Grok/Ollama, DJ mode, Owner mode, Maintenance)
+    |-- YouTube Streaming
+    |-- SoundCloud Integration
+    |-- Licencias Premium
+    |-- Socket.IO (sincronizacion en tiempo real)
+    |
+    v
+PANTALLAS / TV / PROYECTORES / MOVILES
+
+====================================================================
+4. FEATURES IMPLEMENTADOS — FRONTEND (public/index.html)
+====================================================================
+
+- Welcome screen con seleccion de modo
+- Paneles ocultos hasta elegir modo (setMode() reescrito: oculta TODO, muestra solo lo del modo activo)
+- Branding ByFlow + "Vive Cantando"
+- Teleprompter con letras sincronizadas (LRC word-by-word highlighting)
+- Cola de cantantes con drag & drop
+- Catalogo de canciones con busqueda
+- Panel de Musica: YouTube embed + SoundCloud + Jamendo
+- CERO descargas (politica anti-pirateria estricta)
+- Panel de Bares: mesas colapsables, promos editables, jingle
+- Cola de mesas pendientes (peticiones de cantantes por mesa)
+- Promos automaticas entre canciones con tiempo configurable
+- Jingle de transicion (Web Audio API)
+- Panel de IA con Ollama/Grok (generar letras, sugerir canciones)
+- Control remoto via QR
+- Seccion legal completa (contacto, licencia, redes IArtLabs)
+- Visualizador de audio
+- Panel de Configuracion (perfil usuario, apariencia, toggles audio, status API keys)
+- Boton de engranaje en topbar para acceso rapido a Settings
+- DJ Soundboard en panel Bares: 9 pads SFX (airhorn, aplausos, redoble, scratch, ovacion, campana, sirena, bass drop, woosh)
+- Busqueda gratuita de YouTube (fallback sin API key)
+- Navegacion movil con overlay (YouTube, Settings, IA, Bares en mobile nav)
+- Tema oscuro con gradientes (pink #ff006e, purple #8338ec, blue #3a86ff, green #00f5a0)
+- Design system por modo: bares=naranja, ia=morado, youtube=rojo, karaoke=rosa
+- 400+ clases utility con CSS custom properties
+- Responsive: breakpoints en 900px y 600px
+
+====================================================================
+5. FEATURES IMPLEMENTADOS — BACKEND (server.js)
+====================================================================
+
+- Express + Socket.IO
+- CRUD canciones y cola persistente (JSON en data/)
+- Sistema de licencias online (HMAC-SHA256 + device binding)
+- Generacion de claves VFP-XXXXX-XXXXX-XXXXX-XXXXX
+- Admin endpoints protegidos con X-Admin-Key
+- Rate limiting en activacion (5 intentos/min)
+- Endpoint de descarga ELIMINADO (politica ByFlow anti-pirateria)
+- Deploy automatico Railway via GitHub push
+- Filtro de contenido: 35+ palabras prohibidas (ES+EN) con validacion server-side
+- Estadisticas de uso: GET /api/stats (top canciones, top cantantes, chart 7 dias)
+- LRCLIB proxy: GET /api/lrclib/search (evita problemas CORS)
+- Tracking de eventos: cola_add y song_played con persistencia en data/stats.json
+- Security Shield middleware
+- Termux monitor script para monitoreo movil
+
+====================================================================
+6. API ENDPOINTS COMPLETOS
+====================================================================
+
+Cola de cantantes:
+- GET /api/cola — Obtener cola de cantantes
+- POST /api/cola — Agregar cantante a la cola
+- PATCH /api/cola/{id} — Actualizar estado (esperando/cantando)
+- DELETE /api/cola/{id} — Eliminar cantante de la cola
+
+Mesas / Bares:
+- PATCH /api/mesas/{num} — Cambiar estado de mesa (libre/ocupada/VIP)
+
+Canciones:
+- POST /api/canciones — Guardar cancion con letras
+
+IA (GFlow):
+- GET /api/ai/status — Estado de backends IA (Grok/Ollama)
+- POST /api/ai/chat — Chat con GFlow (requiere X-License-Token)
+
+Licencias:
+- GET /api/license/status — Estado de activacion
+- POST /api/license/activate — Activar licencia Premium
+- POST /api/license/deactivate — Desactivar licencia
+
+Estadisticas:
+- GET /api/stats — Top canciones, top cantantes, chart 7 dias
+
+Letras:
+- GET /api/lrclib/search — Proxy a LRCLib para buscar letras (evita CORS)
+
+Otros:
+- GET /api/health — Health check (status, version, uptime, songs, queue)
+- GET /api/qr — Generar QR para control remoto
+
+====================================================================
+7. WEBSOCKET EVENTS
+====================================================================
+
+Server hacia Client:
+- init: cola, mesas, teleprompter — Sincronizacion inicial al conectar
+- cola_update: array de cantantes — Cola actualizada
+- mesas_update: array de mesas — Estado de mesas actualizado
+- tp_update: lyrics, currentWord, isPlaying, speed — Estado del teleprompter
+- singer_changed: cantante activo — Cambio de cantante activo
+- tp_speed_update: velocidad — Cambio de velocidad de reproduccion
+
+Client hacia Server:
+- tp_lyrics: texto de letras — Enviar letras para sincronizar
+- tp_scroll: indice de palabra — Reportar posicion actual
+- tp_speed: velocidad — Ajustar velocidad
+
+====================================================================
+8. MODOS DE LA APLICACION
+====================================================================
+
+- karaoke: Cola + teleprompter + scoring (Gratis)
+- remote: Control remoto via QR (Gratis)
+- ia: GFlow asistente DJ (Premium)
+- youtube: Busqueda y streaming de musica (Premium)
+- bares: Gestion de mesas, ordenes, promos (Premium)
+- settings: Configuracion, perfil, API keys (Gratis)
+
+====================================================================
+9. GFLOW IA — SISTEMA DE INTELIGENCIA ARTIFICIAL
+====================================================================
+
+GFlow es el asistente IA integrado en ByFlow. Usa Grok API (grok-3-mini) en servidor y Ollama como alternativa local.
+
+Modo DJ (default):
+"Te llamas GFlow, el DJ IA integrado en ByFlow (powered by IArtLabs, creado por ArT-AtR / Arturo Torres). Tu objetivo no es solo poner canciones: tu objetivo es dominar la pista, leer la sala."
+Reglas: detecta contexto, asume configuracion razonable, no recomienda al azar, construye sets como peliculas.
+
+Modo Owner / Superuser (Arturo Torres):
+"ATENCION: Estas hablando con Arturo Torres (ArT-AtR), el creador de ByFlow y tu jefe. Ve al grano. Puedes ser informal, usar humor, hablar como camarada."
+
+Modo Mantenimiento:
+"MODO MANTENIMIENTO ACTIVADO. Eres GFlow en rol de tecnico. Tu trabajo es revisar la app desde adentro y reportar problemas. NO puedes cambiar NADA del codigo. Responde con formato: [OK] / [ERROR] / [WARNING]."
+
+====================================================================
+10. SISTEMA DE LICENCIAS PREMIUM
+====================================================================
+
+- Formato de clave: VFP-XXXXX-XXXXX-XXXXX-XXXXX
+- Seguridad: HMAC-SHA256 + device binding
+- Activacion: Online con token por usuario
+- Rate limiting: 5 intentos/min
+- Almacenamiento: localStorage (byflow_license_token)
+- Features gateadas: bares, music_streaming, ollama_ai
+- Validacion frontend: isPremium(feature)
+- Admin: endpoints protegidos con X-Admin-Key
+- Contacto licencias: licencias@iartlabs.com
+
+====================================================================
+11. TELEPROMPTER ENGINE
+====================================================================
+
+- Soporta texto plano y formato LRC sincronizado
+- Parser LRC: [MM:SS.ms] texto
+- Highlighting word-by-word con auto-scroll
+- Control de velocidad: 0.2x a 5.0x
+- Modo fullscreen con tracking de progreso
+- Busqueda de letras online via LRCLib (Creative Commons)
+- Motor de generacion de letras ArT-AtR (offline)
+- Fix aplicado: play/pause race condition — timers ya no se acumulan
+
+====================================================================
+12. MODULO DE BARES
+====================================================================
+
+- Grid de mesas con 3 estados: libre, ocupada, VIP
+- Sistema de ordenes con timestamps
+- Estadisticas en tiempo real (mesas ocupadas, libres, VIP, ordenes)
+- Programacion de mensajes promocionales entre canciones
+- Soundboard DJ con 9 efectos: airhorn, aplausos, redoble, scratch, ovacion, campana, sirena, bass drop, woosh
+- Jingle de transicion con Web Audio API
+- Configuracion en localStorage: byflow_bar_name, byflow_bar_mesas
+
+====================================================================
+13. ESTUDIO DE LETRAS (ecosistema completo)
+====================================================================
+
+El Estudio de Letras tiene 3 pestanas:
+
+1. Generar — Engine offline v2: 192 frases base, 65+ rimas, algoritmo Fisher-Yates shuffle para variedad infinita
+2. Mis Letras — 11 letras originales de ArT-AtR con busqueda, preview y carga directa al teleprompter
+3. Suno — Catalogo de 30 canciones del perfil ART-ATR con genero, tema y conteo de plays
+
+Todas las letras generadas llevan firma obligatoria BYFLOW_SIGNATURE (copropiedad 50/50 ArT-AtR / ByFlow).
+
+====================================================================
+14. LETRAS ORIGINALES DE ArT-AtR
+====================================================================
+
+Catalogo maestro: data/letras_art_atr.txt — 41 canciones de 4 fuentes:
+- OneNote
+- Google Photos
+- Archivo local
+- Suno
+
+11 letras transcritas completas hardcodeadas en index.html (array _artLetras).
+30 canciones Suno catalogadas en index.html (array _sunoTracks).
+
+Otras fuentes de letras:
+- Rap de desamor y traicion (~21 lineas, estilo crudo callejero)
+- Archivo maestro: identidad ArT-AtR, cancion "Let it flow" (ES+EN), cancion melancolica con SFX
+- Proyecto Galgo (letras en imagen)
+- Perfil Suno ART-ATR: ~100+ tracks, proyectos TEC-PATL, Codigo, ByFlow Trinity
+
+====================================================================
+15. POLITICA DE PROPIEDAD INTELECTUAL (OBLIGATORIA)
+====================================================================
+
+- TODA letra generada por ByFlow (ya sea por IA o por el generador offline) lleva firma obligatoria de ArT-AtR
+- Copropiedad 50/50: La propiedad intelectual de cualquier letra generada queda: 50% ArT-AtR (Arturo Torres) / 50% ByFlow (IArtLabs)
+- Esto es por regla y norma, sin excepcion
+- La firma incluye: autor (ArT-AtR), herramienta (ByFlow), y aviso de copropiedad 50/50
+- Implementado en: offerLoadLyrics(), generateOfflineLyrics(), constante BYFLOW_SIGNATURE
+
+====================================================================
+16. POLITICA ANTI-PIRATERIA
+====================================================================
+
+- No existe endpoint de descarga de audio
+- No se usa yt-dlp, ytdl, ni ningun downloader
+- YouTube solo via iframe embed
+- SoundCloud solo via widget embed
+- Jamendo streaming via su API (musica Creative Commons libre)
+- Endpoint de descarga fue ELIMINADO como politica de ByFlow
+
+====================================================================
+17. FEATURES PORTADOS DEL BACKEND PYTHON v7.3
+====================================================================
+
+Implementados:
+- Filtro de contenido (35+ palabras ES+EN) — de byflow_v73_backend.py
+- Estadisticas de uso (top songs/singers) — de byflow_v73_backend.py
+- LRCLIB proxy server-side — de byflow_v73_backend.py
+- Design system mode-based gradients — de frontend/index.html v7.1
+- Tracking de eventos con persistencia JSON
+
+Pendientes:
+- WebSocket rooms por bar — de byflow_v73_backend.py
+- Spotify search integration — requiere API key
+- Sesion QR mesa sin registro — de byflow_v73_backend.py
+
+====================================================================
+18. PROYECTOS PARALELOS
+====================================================================
+
+--- Stem Engine v0.3 (en desarrollo con ChatGPT) ---
+- Motor de separacion de pistas con Demucs
+- Transcripcion MIDI con Basic Pitch (import lazy)
+- Analisis BPM, tonalidad, acordes
+- Cache por hash, WebSocket progreso
+- Pipeline beatbox a MIDI a arreglo:
+  - Deteccion de golpes de beatbox (kick, snare, hihat, clap, tom)
+  - Clasificacion heuristica de percusion
+  - Cuantizacion a rejilla temporal
+  - Exportacion MIDI de bateria
+  - Generacion de preview WAV
+  - Endpoint POST /api/beatbox/jobs/{job_id}/arrange (16/32/64 compases)
+  - Waveform JSON para frontend
+- Siguiente: v0.4 — Grabador beatbox en frontend, editor secuenciador, boton "Convertir a beat"
+
+--- Backend Byflow v7.3 (Python/FastAPI) ---
+- API con JWT auth, WebSocket rooms por bar
+- Sistema de mesas por QR (sesion de invitado)
+- Filtro de palabras obscenas en nombres
+- Cola de peticiones en tiempo real
+- Pendiente: migrar a Railway o conectar con el server.js actual
+
+====================================================================
+19. IDEAS PARA LANZAR (ROADMAP)
+====================================================================
+
+PRIORIDAD ALTA — Impacto directo en lanzamiento:
+0. Licencia comercial de Jamendo — Contactar licensing@jamendo.com ANTES de cobrar PRO (Jamendo API gratis solo para uso no-comercial)
+1. Sistema de pagos para licencias PRO — Stripe, MercadoPago, o PayPal
+2. App movil para mesas de bar — PWA (Progressive Web App) es lo mas rapido
+3. Integrar Stem Engine v0.3 con ByFlow — Boton "Crear version karaoke", grabador beatbox, secuenciador
+4. Musixmatch API para letras sincronizadas — API gratuita 2000 calls/dia, mas catalogo que LRCLib
+
+PRIORIDAD MEDIA — Mejoran el producto:
+5. Editor de audio con IA (mejora tu voz sin cambiarla) — Noise reduction, compresion, EQ, pitch correction
+6. Modo DJ con crossfade automatico — Web Audio API, beatmatching basico
+7. Pantalla de TV/proyector dedicada — Ruta /tv con karaoke fullscreen + promos
+8. Grabacion de sesion del cantante — MediaRecorder API, boton "Grabar mi turno"
+
+PRIORIDAD BAJA — Nice to have:
+9. Ranking y gamificacion — Aplausometro desde celulares del publico (WebSocket)
+10. Integracion con Spotify (solo embed) — ToS prohibe karaoke que modifique audio
+11. Deezer previews (30 seg gratis) — Para escuchar antes de cantar
+12. Modo ensayo/practica — Slider de velocidad (time stretch sin cambiar pitch)
+13. Temas visuales por bar — CSS custom properties, 5-6 temas predefinidos
+14. Multi-idioma (EN/ES) — i18n simple con JSON
+15. Analytics dashboard para dueno del bar — Chart.js, metricas utiles
+
+Decision de arquitectura pendiente:
+Opcion recomendada: Node frontend + Python microservicios (lo mejor de ambos mundos)
+
+====================================================================
+20. COMPETENCIA
+====================================================================
+
+- Suno — Generacion de musica IA (ellos generan, ByFlow mejora al artista real)
+- KaraFun — Karaoke profesional para bares (caro, cerrado)
+- Yokee — App de karaoke movil (consumer, no B2B)
+- StarMaker — Karaoke social (no tiene modo bar/DJ)
+
+Ventaja de ByFlow: Todo-en-uno + respeta al artista + modo bar profesional
+
+====================================================================
+21. INFRAESTRUCTURA Y DEPLOY
+====================================================================
+
+- Railway deployment (auto-deploy desde GitHub push a main)
+- .gitignore protege secretos: .license_secret, .admin_secret, licenses.json
+- Tag v3.0 en GitHub
+- Variables Railway pendientes: ALLOWED_HOSTS, CORS_ORIGINS
+- Puerto produccion: 8080
+- Archivos de datos persistentes: data/cola.json, data/letras_art_atr.txt, data/stats.json
+
+Archivos clave del proyecto:
+- server.js (~978 lineas) — Backend completo
+- public/index.html (~5,654 lineas) — Todo el frontend SPA
+- ESTADO_PROYECTO.md — Estado actual y pendientes
+- IDEAS_PARA_LANZAR.md — Roadmap con ideas priorizadas
+- CLAUDE.md — Contexto completo para desarrollo con IA
+- BYFLOW_PRODUCTION.md — Documentacion de produccion
+- package.json — Dependencias Node.js
+
+Contacto IArtLabs:
+- General: contacto@iartlabs.com
+- Licencias: licencias@iartlabs.com
+- Soporte: soporte@iartlabs.com
+
+====================================================================
+22. HISTORIAL DE CAMBIOS RECIENTES
+====================================================================
+
+(Mas reciente primero)
+- feat: add free YouTube search fallback (no API key needed)
+- feat: add Security Shield middleware + Termux monitor script
+- fix: add missing IA button to mobile navigation bar
+- fix: remove leaked Grok API key and improve error messages
+- ui: mejoras de interaccion y feedback visual en toda la app
+- fix: teleprompter play/pause race condition — timers no longer accumulate
+- fix: add YouTube/Settings to mobile nav + fix mobileSetMode for all panels
+- fix: teleprompter vibration + mobile panels (YouTube/IA/Bares/Settings)
+- fix: remove ALL license gates for live demo (PRO badges, bares init)
+- feat: add local MP3 playback + remove license gates for live demo
+- Match production layout: sidebar + slide panels + glassmorphism
+- Scale to production: full frontend + expanded backend
+- Add owner detection with auto maintenance mode
+
+====================================================================
+PENDIENTES INMEDIATOS (siguiente sesion)
+====================================================================
+
+Prioridad ALTA:
+- Probar welcome screen en produccion
+- Probar transiciones entre los 3 modos desde welcome
+- Verificar que Jamendo search funciona con client_id
+- Probar SoundCloud embed con URL real
+- Configurar variables Railway: ALLOWED_HOSTS, CORS_ORIGINS
+
+Prioridad MEDIA:
+- Agregar Jamendo client_id por defecto
+- Mejorar busqueda SoundCloud
+- Test de licencias end-to-end
+- Responsive mobile
+- Pulir transicion de jingle
+
+====================================================================
+FIN DEL DOCUMENTO
+ByFlow v3.1 — "Vive Cantando con ByFlow" — powered by IArtLabs
+Copyright 2024-2026 IArtLabs / ArT-AtR (Arturo Torres)
+====================================================================
