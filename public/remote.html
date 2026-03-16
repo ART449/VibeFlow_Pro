@@ -202,6 +202,11 @@ if (saved) document.getElementById('inp-name').value = saved;
 document.querySelectorAll('.form-card input').forEach(inp => {
   inp.addEventListener('keydown', e => { if (e.key === 'Enter') submitSong(); });
 });
+
+// Reconnection feedback
+socket.on('disconnect', () => showToast('Reconectando...', 'error'));
+socket.on('reconnect', () => { showToast('Conectado!', 'success'); fetchQueue(); });
+function fetchQueue() { fetch('/api/cola').then(r=>r.json()).then(d=>{cola=d;renderQueue();}).catch(()=>{}); }
 </script>
 </body>
 </html>

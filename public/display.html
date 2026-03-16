@@ -286,6 +286,10 @@ async function runMaintenance() {
 function wait(ms) { return new Promise(r => setTimeout(r, ms)); }
 function esc(s) { const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
 
+// Reconnection handling
+socket.on('disconnect', () => console.warn('ByFlow Display disconnected'));
+socket.on('reconnect', () => { console.log('ByFlow Display reconnected'); fetchQueue(); });
+
 // Auto-refresh queue every 30s as backup
 setInterval(fetchQueue, 30000);
 </script>
