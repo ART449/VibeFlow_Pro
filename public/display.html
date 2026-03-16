@@ -3,342 +3,291 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>VibeFlow Pro — Display</title>
+  <title>ByFlow — Display</title>
   <script src="/socket.io/socket.io.js"></script>
   <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { overflow: hidden; background: #000; color: #fff; font-family: sans-serif; }
-    #main-content { width: 100vw; height: 100vh; position: relative; }
+    :root{--p:#ff006e;--s:#8338ec;--g:#00f5a0;--bg:#07070d;}
+    *{margin:0;padding:0;box-sizing:border-box;}
+    body{overflow:hidden;background:var(--bg);color:#fff;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;width:100vw;height:100vh;}
 
-    #yt-player {
-      width: 100%; height: 100%;
-      border: none; display: block;
-    }
+    /* Main layout */
+    #main{width:100%;height:100%;position:relative;display:flex;}
+
+    /* YouTube player area */
+    #player-area{flex:1;position:relative;background:#000;}
+    #yt-player{width:100%;height:100%;border:none;display:block;}
+
+    /* Sidebar queue (right side, always visible) */
+    #queue-sidebar{width:320px;background:rgba(10,10,18,.95);border-left:1px solid rgba(255,255,255,.06);display:flex;flex-direction:column;flex-shrink:0;}
+
+    /* Now singing banner */
+    #now-singing{padding:20px;background:linear-gradient(135deg,rgba(255,0,110,.12),rgba(131,56,236,.08));border-bottom:1px solid rgba(255,255,255,.06);}
+    #now-singing .label{font-size:.65rem;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--p);margin-bottom:6px;}
+    #now-singing .singer{font-size:1.6rem;font-weight:900;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+    #now-singing .song{font-size:.85rem;color:rgba(255,255,255,.5);margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+    #now-empty{padding:20px;text-align:center;color:rgba(255,255,255,.2);font-size:.9rem;border-bottom:1px solid rgba(255,255,255,.06);}
+
+    /* Queue list */
+    #queue-header{padding:14px 20px 8px;font-size:.65rem;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:rgba(255,255,255,.3);}
+    #queue-list{flex:1;overflow-y:auto;padding:0 12px 12px;}
+    .q-item{display:flex;align-items:center;gap:12px;padding:12px;border-radius:10px;margin-bottom:4px;transition:background .3s;}
+    .q-item:nth-child(1){background:rgba(255,255,255,.04);}
+    .q-num{width:28px;height:28px;border-radius:50%;background:rgba(255,255,255,.06);display:flex;align-items:center;justify-content:center;font-size:.75rem;font-weight:800;color:rgba(255,255,255,.3);flex-shrink:0;}
+    .q-item:nth-child(1) .q-num{background:var(--p);color:#fff;}
+    .q-info{flex:1;min-width:0;}
+    .q-name{font-size:.9rem;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+    .q-song{font-size:.7rem;color:rgba(255,255,255,.35);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+    .q-empty{text-align:center;padding:40px 20px;color:rgba(255,255,255,.15);font-size:.8rem;}
+
+    /* Branding footer */
+    #brand-footer{padding:14px;text-align:center;border-top:1px solid rgba(255,255,255,.04);}
+    #brand-footer .logo{font-size:1.1rem;font-weight:900;background:linear-gradient(135deg,#ff006e,#8338ec,#3a86ff);-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+    #brand-footer .sub{font-size:.55rem;color:rgba(255,255,255,.15);letter-spacing:2px;margin-top:2px;}
+
+    /* Idle/waiting fullscreen */
+    #idle-screen{position:absolute;inset:0;z-index:500;background:radial-gradient(ellipse at 50% 40%,rgba(20,10,40,.97),var(--bg));display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;transition:opacity .5s;}
+    #idle-screen.hidden{opacity:0;pointer-events:none;}
+    #idle-logo{font-size:4rem;font-weight:900;background:linear-gradient(135deg,#ff006e,#8338ec,#3a86ff);-webkit-background-clip:text;-webkit-text-fill-color:transparent;animation:logoPulse 3s ease-in-out infinite;}
+    #idle-msg{font-size:1.2rem;color:rgba(255,255,255,.3);}
+    #idle-qr{margin-top:12px;opacity:.6;}
+    @keyframes logoPulse{0%,100%{opacity:1;transform:scale(1);}50%{opacity:.85;transform:scale(1.02);}}
 
     /* Overlay layer for promos */
-    #overlay {
-      position: absolute; top: 0; left: 0;
-      width: 100%; height: 100%;
-      display: none; z-index: 1000;
-      background: #000;
-    }
-    #overlay.active { display: flex; align-items: center; justify-content: center; }
-    #overlay.fade-in  { animation: fadeIn 0.5s ease-in; }
-    #overlay.fade-out { animation: fadeOut 0.5s ease-out; }
-
-    #promo-video { max-width: 100%; max-height: 100%; }
+    #overlay{position:absolute;top:0;left:0;width:100%;height:100%;display:none;z-index:1000;background:#000;}
+    #overlay.active{display:flex;align-items:center;justify-content:center;}
+    #promo-video{max-width:100%;max-height:100%;}
 
     /* Scoreboard */
-    #scoreboard {
-      position: absolute; top: 0; left: 0;
-      width: 100%; height: 100%;
-      display: none; z-index: 900;
-      background: rgba(0,0,0,0.85);
-      flex-direction: column; align-items: center; justify-content: center;
-    }
-    #scoreboard.active { display: flex; }
-    #scoreboard h1 { font-size: 4rem; margin-bottom: 1rem; }
-    #scoreboard p  { font-size: 2rem; opacity: 0.7; }
+    #scoreboard{position:absolute;top:0;left:0;width:100%;height:100%;display:none;z-index:900;background:rgba(0,0,0,.85);flex-direction:column;align-items:center;justify-content:center;}
+    #scoreboard.active{display:flex;}
+    #scoreboard h1{font-size:4rem;margin-bottom:1rem;}
+    #scoreboard p{font-size:2rem;opacity:.7;}
 
-    /* Waiting / song queue screen */
-    #waiting {
-      position: absolute; top: 0; left: 0;
-      width: 100%; height: 100%;
-      display: none; z-index: 800;
-      background: #111;
-      flex-direction: column; align-items: center; justify-content: center;
-    }
-    #waiting.active { display: flex; }
-    #waiting h2 { font-size: 3rem; }
-    #waiting p  { font-size: 1.5rem; margin-top: 1rem; opacity: 0.6; }
+    /* Skip button */
+    #skip-btn{position:absolute;bottom:2rem;right:2rem;z-index:1100;padding:1rem 2rem;font-size:1.2rem;background:rgba(255,255,255,.2);color:#fff;border:1px solid rgba(255,255,255,.4);border-radius:8px;cursor:pointer;display:none;}
 
-    /* Skip button (studio) */
-    #skip-btn {
-      position: absolute; bottom: 2rem; right: 2rem;
-      z-index: 1100; padding: 1rem 2rem;
-      font-size: 1.2rem; background: rgba(255,255,255,0.2);
-      color: #fff; border: 1px solid rgba(255,255,255,0.4);
-      border-radius: 8px; cursor: pointer; display: none;
-    }
-    #skip-btn:hover { background: rgba(255,255,255,0.35); }
+    /* Maintenance */
+    #maintenance{position:absolute;inset:0;display:none;z-index:1300;background:rgba(0,0,0,.95);flex-direction:column;align-items:center;justify-content:center;font-family:'Courier New',monospace;}
+    #maintenance.active{display:flex;}
+    #maintenance h1{font-size:2rem;color:var(--g);margin-bottom:2rem;}
+    #maintenance .status-line{font-size:1.2rem;margin:.3rem 0;opacity:.9;}
+    #maintenance .ok{color:var(--g);}
+    #maintenance .warn{color:#ffcc00;}
+    #maintenance .err{color:#ff4444;}
+    #maintenance .footer{margin-top:2rem;opacity:.4;font-size:.9rem;}
 
-    /* Maintenance mode panel */
-    #maintenance {
-      position: absolute; top: 0; left: 0;
-      width: 100%; height: 100%;
-      display: none; z-index: 1300;
-      background: rgba(0,0,0,0.95);
-      flex-direction: column; align-items: center; justify-content: center;
-      font-family: 'Courier New', monospace;
-    }
-    #maintenance.active { display: flex; }
-    #maintenance h1 { font-size: 2rem; color: #00f5a0; margin-bottom: 2rem; }
-    #maintenance .status-line { font-size: 1.2rem; margin: 0.3rem 0; opacity: 0.9; }
-    #maintenance .ok { color: #00f5a0; }
-    #maintenance .warn { color: #ffcc00; }
-    #maintenance .err { color: #ff4444; }
-    #maintenance .footer { margin-top: 2rem; opacity: 0.4; font-size: 0.9rem; }
-
-    /* Capture moment toast */
-    #capture-toast {
-      position: absolute; bottom: 3rem; left: 50%;
-      transform: translateX(-50%); z-index: 1200;
-      background: rgba(255,255,255,0.15); backdrop-filter: blur(10px);
-      padding: 1.5rem 3rem; border-radius: 16px;
-      font-size: 1.4rem; text-align: center;
-      display: none;
-    }
-    #capture-toast.active { display: block; animation: slideUp 0.4s ease-out; }
-
-    @keyframes fadeIn  { from { opacity: 0; } to { opacity: 1; } }
-    @keyframes fadeOut { from { opacity: 1; } to { opacity: 0; } }
-    @keyframes slideUp { from { transform: translateX(-50%) translateY(40px); opacity: 0; }
-                          to   { transform: translateX(-50%) translateY(0);    opacity: 1; } }
+    /* Capture toast */
+    #capture-toast{position:absolute;bottom:3rem;left:50%;transform:translateX(-50%);z-index:1200;background:rgba(255,255,255,.15);backdrop-filter:blur(10px);padding:1.5rem 3rem;border-radius:16px;font-size:1.4rem;text-align:center;display:none;}
+    #capture-toast.active{display:block;animation:slideUp .4s ease-out;}
+    @keyframes slideUp{from{transform:translateX(-50%) translateY(40px);opacity:0;}to{transform:translateX(-50%) translateY(0);opacity:1;}}
   </style>
 </head>
 <body>
-  <div id="main-content">
-    <iframe id="yt-player" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+  <div id="main">
+    <div id="player-area">
+      <iframe id="yt-player" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+      <div id="idle-screen">
+        <div id="idle-logo">ByFlow</div>
+        <div id="idle-msg">Vive Cantando</div>
+        <div id="idle-qr"></div>
+        <div style="font-size:.7rem;color:rgba(255,255,255,.12);margin-top:20px;">Escanea el QR para pedir tu cancion</div>
+      </div>
+    </div>
+
+    <div id="queue-sidebar">
+      <div id="now-singing" style="display:none;">
+        <div class="label">Cantando ahora</div>
+        <div class="singer" id="now-name">—</div>
+        <div class="song" id="now-song">—</div>
+      </div>
+      <div id="now-empty">Esperando cantantes...</div>
+      <div id="queue-header">Siguiente en la cola</div>
+      <div id="queue-list">
+        <div class="q-empty">La cola esta vacia. Escanea el QR!</div>
+      </div>
+      <div id="brand-footer">
+        <div class="logo">ByFlow</div>
+        <div class="sub">VIVE CANTANDO &middot; powered by IArtLabs</div>
+      </div>
+    </div>
   </div>
 
-  <div id="overlay">
-    <video id="promo-video" autoplay muted playsinline></video>
-  </div>
-
-  <div id="scoreboard">
-    <h1 id="score-value">--</h1>
-    <p>Puntuación</p>
-  </div>
-
-  <div id="waiting">
-    <h2>Selecciona la siguiente canción</h2>
-    <p>VibeFlow Pro</p>
-  </div>
-
+  <div id="overlay"><video id="promo-video" autoplay muted playsinline></video></div>
+  <div id="scoreboard"><h1 id="score-value">--</h1><p>Puntuacion</p></div>
   <button id="skip-btn" onclick="skipOverlay()">Saltar ▶</button>
-
   <div id="capture-toast"></div>
-
   <div id="maintenance">
-    <h1>GFlow — Modo Mantenimiento</h1>
+    <h1>ByFlow — Modo Mantenimiento</h1>
     <div id="maintenance-report"></div>
-    <p class="footer">Owner detected — auto-activated</p>
+    <p class="footer">Owner detected</p>
   </div>
 
-  <script>
-    // ==========================================
-    // CONNECT TO VIBEFLOW BACKEND
-    // ==========================================
-    const params = new URLSearchParams(location.search);
-    const roomId = params.get('room') || 'sala1';
-    const socket = io();
+<script>
+const socket = io();
+let cola = [];
 
-    socket.on('connect', () => {
-      socket.emit('join-room', roomId);
-      console.log('Connected to VibeFlow — room:', roomId);
-    });
+// ── Connect & fetch initial state ──
+socket.on('connect', () => {
+  console.log('ByFlow Display connected');
+  fetchQueue();
+  loadQR();
+});
 
-    // ==========================================
-    // SEQUENCE HANDLER (karaoke transitions)
-    // ==========================================
-    let overlayTimer = null;
+socket.on('cola_update', data => { cola = data; renderQueue(); });
 
-    socket.on('sequence', async (data) => {
-      for (const step of data.steps) {
-        await executeStep(step);
-      }
-    });
+async function fetchQueue() {
+  try {
+    const r = await fetch('/api/cola');
+    cola = await r.json();
+    renderQueue();
+  } catch {}
+}
 
-    async function executeStep(step) {
-      switch (step.type) {
-        case 'scoreboard':
-          showScoreboard(step.data);
-          await wait(step.duration);
-          hideScoreboard();
-          break;
-        case 'overlay':
-          await showOverlay(step.content, step.duration);
-          break;
-        case 'awaiting':
-          showWaiting();
-          break;
-      }
+async function loadQR() {
+  try {
+    const r = await fetch('/api/qr');
+    const data = await r.json();
+    if (data.qr) {
+      const qrDiv = document.getElementById('idle-qr');
+      qrDiv.innerHTML = `<img src="${data.qr}" style="width:140px;height:140px;border-radius:8px;">`;
     }
+  } catch {}
+}
 
-    // ==========================================
-    // OVERLAY (promos)
-    // ==========================================
-    function showOverlay(videoSrc, duration) {
-      return new Promise((resolve) => {
-        const overlay = document.getElementById('overlay');
-        const video = document.getElementById('promo-video');
+function renderQueue() {
+  const singing = cola.find(c => c.estado === 'cantando');
+  const waiting = cola.filter(c => c.estado === 'esperando');
 
-        video.src = '/videos/' + videoSrc;
-        overlay.classList.remove('fade-out');
-        overlay.classList.add('active', 'fade-in');
+  // Now singing section
+  const nowDiv = document.getElementById('now-singing');
+  const emptyDiv = document.getElementById('now-empty');
+  if (singing) {
+    nowDiv.style.display = 'block';
+    emptyDiv.style.display = 'none';
+    document.getElementById('now-name').textContent = singing.cantante;
+    document.getElementById('now-song').textContent = singing.cancion;
+  } else {
+    nowDiv.style.display = 'none';
+    emptyDiv.style.display = 'block';
+  }
 
-        clearTimeout(overlayTimer);
-        overlayTimer = setTimeout(() => {
-          hideOverlay();
-          resolve();
-        }, duration);
-      });
-    }
+  // Idle screen: show when nobody singing and no queue
+  const idle = document.getElementById('idle-screen');
+  if (singing) {
+    idle.classList.add('hidden');
+  } else if (!waiting.length) {
+    idle.classList.remove('hidden');
+  }
 
-    function hideOverlay() {
-      const overlay = document.getElementById('overlay');
-      const video = document.getElementById('promo-video');
-      overlay.classList.remove('active', 'fade-in');
-      video.pause();
-      video.removeAttribute('src');
-      document.getElementById('skip-btn').style.display = 'none';
-      clearTimeout(overlayTimer);
-    }
+  // Queue list
+  const list = document.getElementById('queue-list');
+  if (!waiting.length) {
+    list.innerHTML = '<div class="q-empty">La cola esta vacia. Escanea el QR!</div>';
+    return;
+  }
+  list.innerHTML = waiting.map((c, i) => `
+    <div class="q-item">
+      <div class="q-num">${i + 1}</div>
+      <div class="q-info">
+        <div class="q-name">${esc(c.cantante)}</div>
+        <div class="q-song">${esc(c.cancion)}</div>
+      </div>
+    </div>`).join('');
+}
 
-    function skipOverlay() {
-      hideOverlay();
-    }
+// ── Overlay / Promo system (preserved from original) ──
+let overlayTimer = null;
 
-    socket.on('force-overlay', (data) => {
-      showOverlay(data.content, data.duration);
-    });
+socket.on('sequence', async (data) => {
+  for (const step of data.steps) await executeStep(step);
+});
 
-    socket.on('cancel-overlay', () => hideOverlay());
-    socket.on('clear-overlay', () => hideOverlay());
+async function executeStep(step) {
+  switch (step.type) {
+    case 'scoreboard': showScoreboard(step.data); await wait(step.duration); hideScoreboard(); break;
+    case 'overlay': await showOverlay(step.content, step.duration); break;
+    case 'awaiting': break;
+  }
+}
 
-    // ==========================================
-    // STUDIO OVERLAY (tips, skippable)
-    // ==========================================
-    socket.on('studio-overlay', (data) => {
-      showOverlay(data.content, data.duration);
-      if (data.skippable) {
-        document.getElementById('skip-btn').style.display = 'block';
-      }
-    });
+function showOverlay(videoSrc, duration) {
+  return new Promise(resolve => {
+    const overlay = document.getElementById('overlay');
+    const video = document.getElementById('promo-video');
+    video.src = '/videos/' + videoSrc;
+    overlay.classList.add('active');
+    clearTimeout(overlayTimer);
+    overlayTimer = setTimeout(() => { hideOverlay(); resolve(); }, duration);
+  });
+}
 
-    // ==========================================
-    // SCOREBOARD
-    // ==========================================
-    function showScoreboard(data) {
-      const sb = document.getElementById('scoreboard');
-      sb.classList.add('active');
-    }
+function hideOverlay() {
+  const overlay = document.getElementById('overlay');
+  const video = document.getElementById('promo-video');
+  overlay.classList.remove('active');
+  video.pause();
+  video.removeAttribute('src');
+  document.getElementById('skip-btn').style.display = 'none';
+  clearTimeout(overlayTimer);
+}
 
-    function hideScoreboard() {
-      document.getElementById('scoreboard').classList.remove('active');
-    }
+function skipOverlay() { hideOverlay(); }
+socket.on('force-overlay', data => showOverlay(data.content, data.duration));
+socket.on('cancel-overlay', () => hideOverlay());
+socket.on('clear-overlay', () => hideOverlay());
+socket.on('studio-overlay', data => {
+  showOverlay(data.content, data.duration);
+  if (data.skippable) document.getElementById('skip-btn').style.display = 'block';
+});
 
-    // ==========================================
-    // WAITING SCREEN
-    // ==========================================
-    function showWaiting() {
-      document.getElementById('waiting').classList.add('active');
-    }
+function showScoreboard(data) { document.getElementById('scoreboard').classList.add('active'); }
+function hideScoreboard() { document.getElementById('scoreboard').classList.remove('active'); }
 
-    socket.on('load-song', () => {
-      document.getElementById('waiting').classList.remove('active');
-    });
+socket.on('load-song', () => {
+  document.getElementById('idle-screen').classList.add('hidden');
+});
 
-    // ==========================================
-    // IDLE SCREENSAVER
-    // ==========================================
-    socket.on('idle-screensaver', (data) => {
-      showOverlay(data.content, 30000);
-    });
+socket.on('idle-screensaver', data => showOverlay(data.content, 30000));
 
-    // ==========================================
-    // CAPTURE VIRAL MOMENT
-    // ==========================================
-    socket.on('capture-moment', (data) => {
-      const toast = document.getElementById('capture-toast');
-      toast.textContent = data.message;
-      toast.classList.add('active');
-      setTimeout(() => toast.classList.remove('active'), 8000);
-    });
+socket.on('capture-moment', data => {
+  const toast = document.getElementById('capture-toast');
+  toast.textContent = data.message;
+  toast.classList.add('active');
+  setTimeout(() => toast.classList.remove('active'), 8000);
+});
 
-    // ==========================================
-    // RECORDING INDICATOR
-    // ==========================================
-    socket.on('recording-started', () => {
-      hideOverlay();
-    });
+socket.on('recording-started', () => hideOverlay());
 
-    // ==========================================
-    // MAINTENANCE MODE (owner detection)
-    // ==========================================
-    socket.on('maintenance-mode', (data) => {
-      const panel = document.getElementById('maintenance');
-      if (data.active) {
-        hideOverlay();
-        panel.classList.add('active');
-        runMaintenanceCheck();
-      } else {
-        panel.classList.remove('active');
-      }
-    });
+// ── Maintenance ──
+socket.on('maintenance-mode', data => {
+  const panel = document.getElementById('maintenance');
+  if (data.active) { hideOverlay(); panel.classList.add('active'); runMaintenance(); }
+  else panel.classList.remove('active');
+});
 
-    async function runMaintenanceCheck() {
-      const report = document.getElementById('maintenance-report');
-      report.innerHTML = '<p class="status-line">Running diagnostics...</p>';
+async function runMaintenance() {
+  const report = document.getElementById('maintenance-report');
+  report.innerHTML = '<p class="status-line">Running diagnostics...</p>';
+  const checks = [];
+  try {
+    const r = await fetch('/api/health');
+    const d = await r.json();
+    checks.push({ label: 'Server', status: 'ok', detail: `v${d.version || '?'} — uptime ${Math.floor(d.uptime)}s` });
+  } catch { checks.push({ label: 'Server', status: 'err', detail: 'No response' }); }
+  checks.push({ label: 'Socket.IO', status: socket.connected ? 'ok' : 'err', detail: socket.connected ? `Connected (${socket.id})` : 'Disconnected' });
+  checks.push({ label: 'Cola', status: 'ok', detail: `${cola.length} item(s)` });
+  report.innerHTML = checks.map(c => {
+    const icon = c.status === 'ok' ? '[OK]' : c.status === 'warn' ? '[WARNING]' : '[ERROR]';
+    return `<p class="status-line ${c.status}">${icon} ${c.label}: ${c.detail}</p>`;
+  }).join('');
+}
 
-      const checks = [];
+// ── Helpers ──
+function wait(ms) { return new Promise(r => setTimeout(r, ms)); }
+function esc(s) { const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
 
-      // Check health endpoint
-      try {
-        const r = await fetch('/api/health');
-        const d = await r.json();
-        checks.push({ label: 'Server', status: 'ok', detail: `v${d.version || '?'} — uptime ${Math.floor(d.uptime)}s — ${d.rooms} rooms` });
-      } catch {
-        checks.push({ label: 'Server', status: 'err', detail: 'No response' });
-      }
-
-      // Check Socket.IO
-      checks.push({
-        label: 'Socket.IO',
-        status: socket.connected ? 'ok' : 'err',
-        detail: socket.connected ? `Connected (${socket.id})` : 'Disconnected'
-      });
-
-      // Check room
-      checks.push({
-        label: 'Room',
-        status: 'ok',
-        detail: roomId
-      });
-
-      // Check rooms status
-      try {
-        const r = await fetch('/api/rooms/status');
-        const rooms = await r.json();
-        checks.push({ label: 'Active rooms', status: rooms.length > 0 ? 'ok' : 'warn', detail: `${rooms.length} room(s)` });
-      } catch {
-        checks.push({ label: 'Rooms API', status: 'err', detail: 'Failed' });
-      }
-
-      // Check YouTube API
-      try {
-        const r = await fetch('/api/youtube/search?q=test');
-        const d = await r.json();
-        checks.push({
-          label: 'YouTube API',
-          status: d.results && d.results.length > 0 ? 'ok' : 'warn',
-          detail: d.message || `${d.results.length} results`
-        });
-      } catch {
-        checks.push({ label: 'YouTube API', status: 'err', detail: 'Failed' });
-      }
-
-      // Render report
-      report.innerHTML = checks.map(c => {
-        const icon = c.status === 'ok' ? '[OK]' : c.status === 'warn' ? '[WARNING]' : '[ERROR]';
-        return `<p class="status-line ${c.status}">${icon} ${c.label}: ${c.detail}</p>`;
-      }).join('');
-    }
-
-    // ==========================================
-    // HELPERS
-    // ==========================================
-    function wait(ms) { return new Promise((r) => setTimeout(r, ms)); }
-  </script>
+// Auto-refresh queue every 30s as backup
+setInterval(fetchQueue, 30000);
+</script>
 </body>
 </html>

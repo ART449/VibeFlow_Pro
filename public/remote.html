@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>ByFlow — Pide tu cancion</title>
+  <script src="/socket.io/socket.io.js"></script>
+  <style>
+    :root{--bg:#0a0a12;--card:rgba(255,255,255,.04);--border:rgba(255,255,255,.08);--p:#ff006e;--g:#00f5a0;--sub:rgba(255,255,255,.45);--text:#fff;}
+    *{margin:0;padding:0;box-sizing:border-box;}
+    html,body{height:100%;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;overflow-x:hidden;}
+    body{display:flex;flex-direction:column;min-height:100dvh;}
+
+    .header{text-align:center;padding:24px 16px 12px;flex-shrink:0;}
+    .logo{font-size:2rem;font-weight:900;letter-spacing:-1px;background:linear-gradient(135deg,#ff006e,#8338ec,#3a86ff);-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+    .tagline{font-size:.75rem;color:var(--sub);margin-top:2px;}
+
+    .main{flex:1;padding:0 16px 16px;display:flex;flex-direction:column;gap:14px;max-width:420px;margin:0 auto;width:100%;}
+
+    .form-card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:20px;display:flex;flex-direction:column;gap:14px;}
+    .form-card label{font-size:.7rem;font-weight:700;color:var(--sub);letter-spacing:.5px;text-transform:uppercase;}
+    .form-card input{width:100%;padding:14px 16px;border-radius:10px;border:1px solid var(--border);background:rgba(255,255,255,.06);color:#fff;font-size:1rem;outline:none;transition:border-color .2s;}
+    .form-card input:focus{border-color:var(--p);}
+    .form-card input::placeholder{color:rgba(255,255,255,.2);}
+
+    .mesa-row{display:flex;gap:8px;align-items:center;}
+    .mesa-row select{flex:1;padding:12px;border-radius:10px;border:1px solid var(--border);background:rgba(255,255,255,.06);color:#fff;font-size:.9rem;outline:none;appearance:none;}
+
+    .submit-btn{width:100%;padding:16px;border:none;border-radius:12px;background:linear-gradient(135deg,var(--p),#8338ec);color:#fff;font-size:1.1rem;font-weight:800;cursor:pointer;transition:transform .15s,opacity .15s;letter-spacing:.5px;}
+    .submit-btn:active{transform:scale(.96);}
+    .submit-btn:disabled{opacity:.4;transform:none;}
+
+    .queue-section{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:16px;flex:1;min-height:0;display:flex;flex-direction:column;}
+    .queue-title{font-size:.7rem;font-weight:700;color:var(--sub);letter-spacing:.5px;text-transform:uppercase;margin-bottom:10px;}
+    .queue-list{flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:6px;-webkit-overflow-scrolling:touch;}
+    .queue-item{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:10px;background:rgba(255,255,255,.02);border:1px solid transparent;}
+    .queue-item.singing{border-color:var(--p);background:rgba(255,0,110,.06);}
+    .queue-pos{width:24px;height:24px;border-radius:50%;background:rgba(255,255,255,.06);display:flex;align-items:center;justify-content:center;font-size:.7rem;font-weight:800;color:var(--sub);flex-shrink:0;}
+    .queue-item.singing .queue-pos{background:var(--p);color:#fff;}
+    .queue-info{flex:1;min-width:0;}
+    .queue-name{font-size:.85rem;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+    .queue-song{font-size:.7rem;color:var(--sub);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+    .queue-status{font-size:.6rem;font-weight:700;letter-spacing:.5px;padding:2px 6px;border-radius:6px;}
+    .queue-status.singing{background:rgba(255,0,110,.15);color:var(--p);}
+    .queue-status.waiting{background:rgba(255,255,255,.05);color:var(--sub);}
+    .queue-empty{text-align:center;padding:20px;color:var(--sub);font-size:.8rem;}
+
+    .toast{position:fixed;top:20px;left:50%;transform:translateX(-50%) translateY(-80px);background:rgba(20,20,30,.95);border:1px solid var(--border);backdrop-filter:blur(10px);padding:12px 24px;border-radius:12px;font-size:.85rem;z-index:9000;transition:transform .3s cubic-bezier(.34,1.56,.64,1);pointer-events:none;}
+    .toast.show{transform:translateX(-50%) translateY(0);}
+    .toast.success{border-color:rgba(0,245,160,.3);color:var(--g);}
+    .toast.error{border-color:rgba(255,68,68,.3);color:#ff4444;}
+
+    .footer{text-align:center;padding:12px;flex-shrink:0;}
+    .footer span{font-size:.6rem;color:rgba(255,255,255,.15);letter-spacing:2px;}
+
+    @media(min-width:600px){
+      .main{padding-top:20px;}
+      .header{padding-top:40px;}
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <div class="logo">ByFlow</div>
+    <div class="tagline">Vive Cantando</div>
+  </div>
+
+  <div class="main">
+    <div class="form-card">
+      <div>
+        <label>Tu nombre</label>
+        <input type="text" id="inp-name" placeholder="Ej: Carlos" maxlength="100" autocomplete="off">
+      </div>
+      <div>
+        <label>Cancion que quieres cantar</label>
+        <input type="text" id="inp-song" placeholder="Ej: Amor Eterno - Juan Gabriel" maxlength="200" autocomplete="off">
+      </div>
+      <div class="mesa-row" id="mesa-row" style="display:none;">
+        <div style="flex:1;">
+          <label>Mesa (opcional)</label>
+          <select id="sel-mesa"><option value="">Sin mesa</option></select>
+        </div>
+      </div>
+      <button class="submit-btn" id="btn-submit" onclick="submitSong()">Pedir cancion</button>
+    </div>
+
+    <div class="queue-section">
+      <div class="queue-title">Cola de cantantes</div>
+      <div class="queue-list" id="queue-list">
+        <div class="queue-empty">No hay nadie en la cola. Se el primero!</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="footer">
+    <span>powered by IArtLabs</span>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+<script>
+const socket = io();
+let cola = [];
+
+socket.on('connect', () => {
+  fetch('/api/cola').then(r => r.json()).then(data => { cola = data; renderQueue(); });
+  loadMesas();
+});
+
+socket.on('cola_update', data => { cola = data; renderQueue(); });
+
+async function loadMesas() {
+  try {
+    const r = await fetch('/api/mesas');
+    const mesas = await r.json();
+    if (mesas.length > 0) {
+      const sel = document.getElementById('sel-mesa');
+      mesas.forEach(m => {
+        const opt = document.createElement('option');
+        opt.value = m.numero;
+        opt.textContent = 'Mesa ' + m.numero;
+        sel.appendChild(opt);
+      });
+      document.getElementById('mesa-row').style.display = 'flex';
+    }
+  } catch {}
+}
+
+function renderQueue() {
+  const list = document.getElementById('queue-list');
+  const waiting = cola.filter(c => c.estado !== 'terminado');
+  if (!waiting.length) {
+    list.innerHTML = '<div class="queue-empty">No hay nadie en la cola. Se el primero!</div>';
+    return;
+  }
+  let pos = 0;
+  list.innerHTML = waiting.map(c => {
+    const isSinging = c.estado === 'cantando';
+    pos++;
+    return `<div class="queue-item ${isSinging ? 'singing' : ''}">
+      <div class="queue-pos">${isSinging ? '🎤' : pos}</div>
+      <div class="queue-info">
+        <div class="queue-name">${esc(c.cantante)}</div>
+        <div class="queue-song">${esc(c.cancion)}</div>
+      </div>
+      <span class="queue-status ${isSinging ? 'singing' : 'waiting'}">${isSinging ? 'CANTANDO' : 'ESPERA'}</span>
+    </div>`;
+  }).join('');
+}
+
+async function submitSong() {
+  const nameInp = document.getElementById('inp-name');
+  const songInp = document.getElementById('inp-song');
+  const name = nameInp.value.trim();
+  const song = songInp.value.trim();
+  if (!name) { nameInp.focus(); showToast('Escribe tu nombre', 'error'); return; }
+  if (!song) { songInp.focus(); showToast('Escribe la cancion', 'error'); return; }
+
+  const btn = document.getElementById('btn-submit');
+  btn.disabled = true;
+  btn.textContent = 'Enviando...';
+
+  try {
+    const body = { cantante: name, cancion: song };
+    const mesa = document.getElementById('sel-mesa').value;
+    if (mesa) body.mesa = mesa;
+
+    const r = await fetch('/api/cola', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body)
+    });
+    const data = await r.json();
+    if (!r.ok) {
+      showToast(data.error || 'Error al enviar', 'error');
+    } else {
+      showToast('Listo! Te agregamos a la cola', 'success');
+      songInp.value = '';
+      localStorage.setItem('byflow_patron_name', name);
+    }
+  } catch {
+    showToast('Sin conexion al servidor', 'error');
+  }
+  btn.disabled = false;
+  btn.textContent = 'Pedir cancion';
+}
+
+function showToast(msg, type) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast show ' + (type || '');
+  setTimeout(() => t.className = 'toast', 2500);
+}
+
+function esc(s) { const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
+
+// Restore name from last visit
+const saved = localStorage.getItem('byflow_patron_name');
+if (saved) document.getElementById('inp-name').value = saved;
+
+// Enter key submits
+document.querySelectorAll('.form-card input').forEach(inp => {
+  inp.addEventListener('keydown', e => { if (e.key === 'Enter') submitSong(); });
+});
+</script>
+</body>
+</html>

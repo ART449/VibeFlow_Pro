@@ -348,7 +348,7 @@ const state = {
 // QR para acceso remoto
 app.get('/api/qr', async (req, res) => {
   const ip  = getLocalIp();
-  const url = `http://${ip}:${PORT}`;
+  const url = `http://${ip}:${PORT}/remote.html`;
   try {
     const QRCode = require('qrcode');
     const qr = await QRCode.toDataURL(url, { width: 256, margin: 1 });
