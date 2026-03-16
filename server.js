@@ -261,13 +261,21 @@ const PORT = process.env.PORT || 8080;
 const HOST = '0.0.0.0';
 const app  = express();
 const server = http.createServer(app);
+// ── CORS & Allowed Origins ─────────────────────────────────────────────────
+const ALLOWED_ORIGINS = process.env.CORS_ORIGINS
+  ? process.env.CORS_ORIGINS.split(',').map(s => s.trim())
+  : ['*'];
+const corsOptions = ALLOWED_ORIGINS.includes('*')
+  ? {}
+  : { origin: ALLOWED_ORIGINS };
+
 const io = new Server(server, {
-  cors: { origin: '*' },
+  cors: corsOptions,
   pingTimeout: 30000,
   pingInterval: 10000
 });
 
-app.use(cors());
+app.use(cors(corsOptions));
 app.use(express.json({ limit: '1mb' }));
 
 // ── Security Shield Middleware ──────────────────────────────────────────────
