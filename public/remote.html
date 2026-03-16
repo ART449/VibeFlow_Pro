@@ -29,6 +29,7 @@
     .submit-btn{width:100%;padding:16px;border:none;border-radius:12px;background:linear-gradient(135deg,var(--p),#8338ec);color:#fff;font-size:1.1rem;font-weight:800;cursor:pointer;transition:transform .15s,opacity .15s;letter-spacing:.5px;}
     .submit-btn:active{transform:scale(.96);}
     .submit-btn:disabled{opacity:.4;transform:none;}
+    .submit-btn{touch-action:manipulation;-webkit-tap-highlight-color:transparent;}
 
     .queue-section{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:16px;flex:1;min-height:0;display:flex;flex-direction:column;}
     .queue-title{font-size:.7rem;font-weight:700;color:var(--sub);letter-spacing:.5px;text-transform:uppercase;margin-bottom:10px;}
@@ -81,7 +82,7 @@
           <select id="sel-mesa"><option value="">Sin mesa</option></select>
         </div>
       </div>
-      <button class="submit-btn" id="btn-submit" onclick="submitSong()">Pedir cancion</button>
+      <button class="submit-btn" id="btn-submit" type="button">Pedir cancion</button>
     </div>
 
     <div class="queue-section">
@@ -99,15 +100,31 @@
   <div class="toast" id="toast"></div>
 
 <script>
-const socket = io();
+let socket = null;
 let cola = [];
 
-socket.on('connect', () => {
-  fetch('/api/cola').then(r => r.json()).then(data => { cola = data; renderQueue(); });
+// Init socket with error handling
+try {
+  socket = io();
+  socket.on('connect', () => {
+    console.log('[ByFlow] Socket conectado');
+    fetchQueue();
+    loadMesas();
+  });
+  socket.on('cola_update', data => { cola = data; renderQueue(); });
+  socket.on('disconnect', () => showToast('Reconectando...', 'error'));
+  socket.on('reconnect', () => { showToast('Conectado!', 'success'); fetchQueue(); });
+} catch (e) {
+  console.error('[ByFlow] Socket.IO no disponible:', e);
+  // Fallback: cargar cola por HTTP
+  fetchQueue();
   loadMesas();
-});
+  setInterval(fetchQueue, 5000);
+}
 
-socket.on('cola_update', data => { cola = data; renderQueue(); });
+function fetchQueue() {
+  fetch('/api/cola').then(r=>r.json()).then(d=>{cola=d;renderQueue();}).catch(()=>{});
+}
 
 async function loadMesas() {
   try {
@@ -193,7 +210,8 @@ async function submitSong() {
       songInp.value = '';
       localStorage.setItem('byflow_patron_name', name);
     }
-  } catch {
+  } catch (e) {
+    console.error('[ByFlow] Error enviando:', e);
     showToast('Sin conexion al servidor', 'error');
   }
   btn.disabled = false;
@@ -213,15 +231,16 @@ function esc(s) { const d = document.createElement('div'); d.textContent = s; re
 const saved = localStorage.getItem('byflow_patron_name');
 if (saved) document.getElementById('inp-name').value = saved;
 
+// Button event listener (more reliable on mobile than onclick)
+document.getElementById('btn-submit').addEventListener('click', function(e) {
+  e.preventDefault();
+  submitSong();
+});
+
 // Enter key submits
 document.querySelectorAll('.form-card input').forEach(inp => {
   inp.addEventListener('keydown', e => { if (e.key === 'Enter') submitSong(); });
 });
-
-// Reconnection feedback
-socket.on('disconnect', () => showToast('Reconectando...', 'error'));
-socket.on('reconnect', () => { showToast('Conectado!', 'success'); fetchQueue(); });
-function fetchQueue() { fetch('/api/cola').then(r=>r.json()).then(d=>{cola=d;renderQueue();}).catch(()=>{}); }
 </script>
 </body>
 </html>
