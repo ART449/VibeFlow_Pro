@@ -148,6 +148,17 @@ function renderQueue() {
   }).join('');
 }
 
+// Client-side content filter (mirrors server PALABRAS_PROHIBIDAS)
+const FILTRO = ['puta','puto','putos','putas','mierda','coño','joder','hostia',
+  'cabron','cabrón','gilipollas','pendejo','culero','chinga','verga',
+  'polla','culo','marica','maricón','perra','zorra','bastardo',
+  'idiota','imbecil','imbécil','estupido','estúpido',
+  'fuck','shit','bitch','asshole','dick','pussy','cunt','nigger','faggot'];
+function checkFiltro(text) {
+  const l = text.toLowerCase();
+  return FILTRO.find(p => l.includes(p));
+}
+
 async function submitSong() {
   const nameInp = document.getElementById('inp-name');
   const songInp = document.getElementById('inp-song');
@@ -155,6 +166,10 @@ async function submitSong() {
   const song = songInp.value.trim();
   if (!name) { nameInp.focus(); showToast('Escribe tu nombre', 'error'); return; }
   if (!song) { songInp.focus(); showToast('Escribe la cancion', 'error'); return; }
+  if (name.length > 100) { nameInp.focus(); showToast('Nombre muy largo', 'error'); return; }
+  if (song.length > 200) { songInp.focus(); showToast('Cancion muy larga', 'error'); return; }
+  if (checkFiltro(name)) { nameInp.focus(); showToast('Nombre contiene contenido inapropiado', 'error'); return; }
+  if (checkFiltro(song)) { songInp.focus(); showToast('Cancion contiene contenido inapropiado', 'error'); return; }
 
   const btn = document.getElementById('btn-submit');
   btn.disabled = true;

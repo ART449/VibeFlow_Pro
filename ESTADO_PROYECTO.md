@@ -75,14 +75,39 @@ ByFlow es una plataforma todo-en-uno de karaoke y entretenimiento en vivo.
 - [x] **Sistema licencias** — Verificado: checkLicenseStatus, activate, isPremium, PRO badges, token persistente
 - [x] **Jingle mejorado** — Tono triangle (mas calido), volumen configurable con slider en Settings, boton Test
 
+## COMPLETADO EN SESION 2026-03-16 (Plan Don Pato)
+
+### Nuevas vistas para bar
+- [x] **remote.html** — Vista patron (celular): formulario nombre+cancion+mesa, cola solo-lectura, filtro client-side, guarda nombre en localStorage
+- [x] **display.html** — Vista TV/proyector: banner "Cantando ahora", cola numerada, pantalla idle con logo+QR, branding ByFlow+IArtLabs
+- [x] **QR apunta a /remote.html** — Patrones ya no ven panel DJ
+
+### Empaquetado
+- [x] **Dockerfile** — node:20-alpine, produccion-ready
+- [x] **docker-compose.yml** — Puerto 8080, volumen data/ persistente
+- [x] **.dockerignore** — Protege secretos y node_modules
+- [x] **don-pato.sh** — Script de inicio rapido con instrucciones
+
+### Herramientas
+- [x] **plan-tracker.js** — Tracker interactivo en terminal del plan de 7 dias (node plan-tracker.js)
+
+### Mejoras tecnicas
+- [x] **Filtro contenido client-side** en remote.html (mirror de server PALABRAS_PROHIBIDAS)
+- [x] **Reconexion WiFi** — Toast feedback en remote.html, auto-refetch en display.html
+- [x] **Auto-refresh** — display.html refetch cada 30s como backup
+
 ## PENDIENTES (siguiente sesion)
 
-### Prioridad ALTA
+### Prioridad ALTA — Don Pato
+- [ ] Probar remote.html en Pixel real via WiFi local (t3f)
+- [ ] Probar display.html en TV via HDMI (t4e)
+- [ ] `docker compose up --build` en laptop local (t5d)
+- [ ] Noche de prueba en Don Pato (Dia 6 del plan)
 - [ ] Deploy a produccion y verificar en byflowapp.up.railway.app
 - [ ] Configurar en Railway: `CORS_ORIGINS=https://byflowapp.up.railway.app`
-- [ ] Test end-to-end licencias en produccion (generar clave admin, activar, verificar PRO)
 
 ### Prioridad MEDIA
+- [ ] Test end-to-end licencias en produccion
 - [ ] Animaciones mas fluidas en cambio de modo
 - [ ] Tema claro/oscuro toggle
 
@@ -101,7 +126,7 @@ ByFlow es una plataforma todo-en-uno de karaoke y entretenimiento en vivo.
 | Design system mode-based gradients | frontend/index.html v7.1 | ✅ Implementado |
 | WebSocket rooms por bar | byflow_v73_backend.py | ⏳ Pendiente |
 | Spotify search integration | byflow_v73_backend.py | ⏳ Pendiente (requiere API key) |
-| Sesion QR mesa sin registro | byflow_v73_backend.py | ⏳ Pendiente |
+| Sesion QR mesa sin registro | byflow_v73_backend.py | ✅ Implementado (remote.html) |
 
 ---
 
@@ -145,4 +170,4 @@ ByFlow es una plataforma todo-en-uno de karaoke y entretenimiento en vivo.
 
 ---
 
-*Ultima actualizacion: 2026-03-16 — ByFlow v3.1*
+*Ultima actualizacion: 2026-03-16 — ByFlow v3.2 (Plan Don Pato 57%)*
