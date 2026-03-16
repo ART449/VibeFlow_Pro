@@ -1130,6 +1130,15 @@ select.inp{cursor:pointer;}
   .main{overflow:auto;touch-action:manipulation;}
   .center{overflow:auto;touch-action:manipulation;}
   .scrollable{-webkit-overflow-scrolling:touch;touch-action:manipulation;}
+  /* Welcome screen mobile */
+  .welcome-cards{grid-template-columns:1fr;max-width:360px;gap:12px;}
+  .welcome-card{padding:18px 16px;flex-direction:row;gap:14px;text-align:left;}
+  .welcome-card .wc-icon{width:48px;height:48px;min-width:48px;font-size:22px;}
+  .welcome-card .wc-title{font-size:15px;}
+  .welcome-card .wc-desc{font-size:11px;}
+  .welcome-logo{font-size:2.4rem;}
+  .welcome-sub{font-size:.9rem;}
+  .welcome-footer{margin-top:16px;gap:6px;}
 }
 @media(max-width:600px){
   .player-bar{padding:10px 16px;}
@@ -1137,6 +1146,9 @@ select.inp{cursor:pointer;}
   .ctrl-btn.play{width:56px;height:56px;}
   #tp-display{font-size:1.8rem;}
   .catalog-modal{width:96%;max-height:90vh;border-radius:12px;}
+  .welcome-logo{font-size:2rem;}
+  .welcome-cards{max-width:300px;}
+  .welcome-card{padding:14px 12px;}
 }
 
 /* ── UI Interaction Improvements ─────────────────────────────────────── */
@@ -1955,6 +1967,16 @@ input:focus-visible,textarea:focus-visible{
           <div class="settings-row">
             <span class="settings-label">Jingle entre canciones</span>
             <button class="settings-toggle on" id="set-jingle-toggle" onclick="toggleJingle(this)"></button>
+          </div>
+          <div class="settings-row">
+            <span class="settings-label">Volumen jingle</span>
+            <div style="display:flex;align-items:center;gap:8px;">
+              <input type="range" min="0" max="0.4" step="0.02" value="0.15" id="set-jingle-vol"
+                     oninput="localStorage.setItem('byflow_jingle_vol',this.value);document.getElementById('jingle-vol-val').textContent=Math.round(this.value*100)+'%'"
+                     style="width:100px;accent-color:var(--p);">
+              <span id="jingle-vol-val" style="font-size:11px;color:var(--sub);min-width:30px;">15%</span>
+              <button onclick="playJingle()" style="padding:3px 8px;border-radius:4px;border:1px solid var(--border);background:transparent;color:var(--sub);cursor:pointer;font-size:10px;">Test</button>
+            </div>
           </div>
           <div class="settings-row">
             <span class="settings-label">Promos automaticas</span>
@@ -5077,19 +5099,26 @@ function skipPromo() {
 
 function playJingle() {
   try {
+    const vol = parseFloat(localStorage.getItem('byflow_jingle_vol') || '0.15');
     const ctx = new (window.AudioContext || window.webkitAudioContext)();
-    const notes = [523.25, 659.25, 783.99, 1046.50]; // C5, E5, G5, C6
+    const master = ctx.createGain();
+    master.gain.value = vol;
+    master.connect(ctx.destination);
+    // ByFlow signature jingle: C5-E5-G5-C6 arpeggio with warm triangle tone
+    const notes = [523.25, 659.25, 783.99, 1046.50];
+    const spacing = 0.14;
     notes.forEach((freq, i) => {
       const osc = ctx.createOscillator();
       const gain = ctx.createGain();
-      osc.type = 'sine';
+      osc.type = 'triangle';
       osc.frequency.value = freq;
-      gain.gain.setValueAtTime(0.15, ctx.currentTime + i * 0.15);
-      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + i * 0.15 + 0.4);
+      const t = ctx.currentTime + i * spacing;
+      gain.gain.setValueAtTime(1.0, t);
+      gain.gain.exponentialRampToValueAtTime(0.01, t + 0.45);
       osc.connect(gain);
-      gain.connect(ctx.destination);
-      osc.start(ctx.currentTime + i * 0.15);
-      osc.stop(ctx.currentTime + i * 0.15 + 0.5);
+      gain.connect(master);
+      osc.start(t);
+      osc.stop(t + 0.5);
     });
   } catch {}
 }
@@ -5251,6 +5280,14 @@ function loadSettingsState() {
     if (btn) btn.classList.remove('on');
     const canvas = document.getElementById('main-viz');
     if (canvas) canvas.style.display = 'none';
+  }
+  // Jingle volume
+  const jvol = localStorage.getItem('byflow_jingle_vol');
+  if (jvol) {
+    const sl = document.getElementById('set-jingle-vol');
+    if (sl) sl.value = jvol;
+    const lbl = document.getElementById('jingle-vol-val');
+    if (lbl) lbl.textContent = Math.round(jvol * 100) + '%';
   }
   // API status
   const ytKey = localStorage.getItem('yt_api_key');

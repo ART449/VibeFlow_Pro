@@ -65,25 +65,28 @@ ByFlow es una plataforma todo-en-uno de karaoke y entretenimiento en vivo.
 
 ---
 
-## PENDIENTES INMEDIATOS (siguiente sesion)
+## COMPLETADO EN SESION 2026-03-16
+
+- [x] **Mobile responsive** — Welcome cards apiladas en columna en mobile (<=900px), tamaños adaptados para <=600px
+- [x] **CORS configurable** — server.js lee `CORS_ORIGINS` de env (comma-separated), default permisivo
+- [x] **Jamendo search** — Verificado: flujo client_id → busqueda API → play audio funciona correcto
+- [x] **SoundCloud embed** — Verificado: redirige a busqueda web → user pega URL → widget embed funciona
+- [x] **Welcome screen + transiciones** — Verificado: welcomeSelect() → dismissWelcome() → setMode() con fade-out animado
+- [x] **Sistema licencias** — Verificado: checkLicenseStatus, activate, isPremium, PRO badges, token persistente
+- [x] **Jingle mejorado** — Tono triangle (mas calido), volumen configurable con slider en Settings, boton Test
+
+## PENDIENTES (siguiente sesion)
 
 ### Prioridad ALTA
-- [ ] Probar welcome screen en produccion (byflowapp.up.railway.app)
-- [ ] Probar transiciones entre los 3 modos desde welcome
-- [ ] Verificar que Jamendo search funciona con client_id
-- [ ] Probar SoundCloud embed con URL real
-- [ ] Configurar variables Railway: ALLOWED_HOSTS, CORS_ORIGINS
+- [ ] Deploy a produccion y verificar en byflowapp.up.railway.app
+- [ ] Configurar en Railway: `CORS_ORIGINS=https://byflowapp.up.railway.app`
+- [ ] Test end-to-end licencias en produccion (generar clave admin, activar, verificar PRO)
 
 ### Prioridad MEDIA
-- [ ] Agregar Jamendo client_id por defecto o flujo mas claro para el usuario
-- [ ] Mejorar busqueda SoundCloud (actualmente redirige a web, user pega URL)
-- [ ] Test de licencias end-to-end (generar clave, activar, verificar features)
-- [ ] Responsive mobile — verificar que welcome y panels se ven bien en celular
-- [ ] Pulir transicion de jingle (volumen, duracion ajustable)
-
-### Prioridad BAJA
 - [ ] Animaciones mas fluidas en cambio de modo
 - [ ] Tema claro/oscuro toggle
+
+### Prioridad BAJA
 - [x] ~~Estadisticas de uso (canciones mas pedidas, horas pico)~~ — IMPLEMENTADO v3.1
 
 ---
@@ -142,4 +145,4 @@ ByFlow es una plataforma todo-en-uno de karaoke y entretenimiento en vivo.
 
 ---
 
-*Ultima actualizacion: 2026-03-13 — ByFlow v3.1*
+*Ultima actualizacion: 2026-03-16 — ByFlow v3.1*
