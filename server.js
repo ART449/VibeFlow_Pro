@@ -2,6 +2,7 @@
 // BYFLOW — Vive Cantando (powered by IArtLabs) - Server (Node.js + Express + Socket.IO)
 // Persistencia JSON + CRUD completo + Error handling
 // ═══════════════════════════════════════════════════════════════════════════
+require('dotenv').config({ quiet: true });
 
 const express     = require('express');
 const http        = require('http');
