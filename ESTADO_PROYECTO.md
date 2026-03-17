@@ -74,20 +74,28 @@ ByFlow es una plataforma todo-en-uno de karaoke y entretenimiento en vivo.
 - [x] **Welcome screen + transiciones** — Verificado: welcomeSelect() → dismissWelcome() → setMode() con fade-out animado
 - [x] **Sistema licencias** — Verificado: checkLicenseStatus, activate, isPremium, PRO badges, token persistente
 - [x] **Jingle mejorado** — Tono triangle (mas calido), volumen configurable con slider en Settings, boton Test
+- [x] **Welcome screen v2** — 4 cards (Karaoke, Musica, Bares, IA Studio) con glassmorphism, glow effects, stagger animations, ripple touch
+- [x] **Gzip compression** — Middleware compression() reduce transferencia ~75% (278KB → 69KB)
+- [x] **Cache headers** — Assets estaticos con maxAge 1 dia
+- [x] **Toast notifications v2** — Tipos success/error/warning/info con icono, color-coded border, progress bar animada
+- [x] **Deploy a produccion** — Verificado en byflowapp.up.railway.app con gzip activo
+- [x] **Backup completo** — OneDrive\Backup-ByFlow\VibeFlow_Pro_backup_2026-03-16.zip (195MB)
 
 ## PENDIENTES (siguiente sesion)
 
 ### Prioridad ALTA
-- [ ] Deploy a produccion y verificar en byflowapp.up.railway.app
 - [ ] Configurar en Railway: `CORS_ORIGINS=https://byflowapp.up.railway.app`
 - [ ] Test end-to-end licencias en produccion (generar clave admin, activar, verificar PRO)
+- [ ] Integrar landing page de ChatGPT al repo (landing/index.html)
 
 ### Prioridad MEDIA
-- [ ] Animaciones mas fluidas en cambio de modo
-- [ ] Tema claro/oscuro toggle
+- [ ] Tema claro/oscuro toggle (CSS variables ya preparadas por Kimi)
+- [ ] Socket.IO rooms por venue (arquitectura DeepSeek lista)
+- [ ] Modelo de monetizacion: Free / PRO Creator $199/mes / Venue $799-1499/mes
 
 ### Prioridad BAJA
 - [x] ~~Estadisticas de uso (canciones mas pedidas, horas pico)~~ — IMPLEMENTADO v3.1
+- [ ] PWA + Service Worker (propuesta DeepSeek pendiente)
 
 ---
 
