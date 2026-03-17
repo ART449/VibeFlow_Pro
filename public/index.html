@@ -7094,37 +7094,41 @@ async function uSearchLyrics(q) {
       data.slice(0, 5).forEach(d => results.push(d));
     }
   } catch {}
-  // 2. Local ArT-AtR letras
-  if (typeof _artLetras !== 'undefined') {
-    const ql = q.toLowerCase();
-    _artLetras.filter(l => l.titulo.toLowerCase().includes(ql) || l.letra.toLowerCase().includes(ql))
-      .slice(0, 3).forEach(l => results.push({ trackName: l.titulo, artistName: 'ArT-AtR', plainLyrics: l.letra, _local: true }));
-  }
+  // 2. Local ArT-AtR letras (try/catch para evitar TDZ con let)
+  try {
+    const arts = window._artLetras || (typeof _artLetras !== 'undefined' ? _artLetras : []);
+    if (arts.length) {
+      const ql = q.toLowerCase();
+      arts.filter(l => l.titulo.toLowerCase().includes(ql) || l.letra.toLowerCase().includes(ql))
+        .slice(0, 3).forEach(l => results.push({ trackName: l.titulo, artistName: 'ArT-AtR', plainLyrics: l.letra, _local: true }));
+    }
+  } catch {}
   return results;
 }
 
 async function uSearchYoutube(q) {
-  // Reuse existing ytSearch logic
-  const key = ytApiKey || localStorage.getItem('byflow_yt_key');
-  if (key) {
-    try {
+  // Reuse existing ytSearch logic (try/catch para evitar TDZ)
+  try {
+    const key = (window.ytApiKey || '') || localStorage.getItem('byflow_yt_key') || '';
+    if (key) {
       const r = await fetch('/api/youtube/search?q=' + encodeURIComponent(q) + '&key=' + encodeURIComponent(key), { signal: AbortSignal.timeout(5000) });
       const d = await r.json();
       if (d.items && d.items.length) return d.items;
-    } catch {}
-  }
+    }
+  } catch {}
   // Fallback free search
-  if (typeof ytFreeSearch === 'function') {
-    try {
+  try {
+    if (typeof ytFreeSearch === 'function') {
       const free = await ytFreeSearch(q);
       if (free && free.items) return free.items;
-    } catch {}
-  }
+    }
+  } catch {}
   return [];
 }
 
 async function uSearchJamendo(q) {
-  const clientId = (typeof JAMENDO_CLIENT_ID !== 'undefined' && JAMENDO_CLIENT_ID) || localStorage.getItem('byflow_jamendo_id');
+  let clientId = '';
+  try { clientId = (window.JAMENDO_CLIENT_ID || '') || localStorage.getItem('byflow_jamendo_id') || ''; } catch {}
   if (!clientId) return [];
   try {
     const r = await fetch('https://api.jamendo.com/v3.0/tracks/?client_id=' + clientId + '&format=json&search=' + encodeURIComponent(q) + '&limit=5&order=relevance', { signal: AbortSignal.timeout(5000) });
