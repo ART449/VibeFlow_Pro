@@ -4918,6 +4918,10 @@ const _artLetras = [
     letra:'Sigo sintiendo y es que la verdad por ti estoy muriendo\neste sentimiento ya no lo quito con nada\ny eso que lo he tratado de borrar durante varias madrugadas\ny no ha resultado nada\n\nMientras mas embrutecido por todo lo que he fumado y he bebido\nmejor me he sentido\ny es que yo a ti no te encuentro sentido\nde como te has permitido caer tan bajo sin motivo\nSi todo lo tenias conmigo\n\nYa quiero olvidarme de ti\ny de todo el tiempo que te di\nbastante ya perdi\nPor intentar hacerte feliz\n\nNo me rueges que me quede si tu ni siquiera realmente me quieres\nsolo lo haces pa mantener la facha\ny seguir fumando de mi bacha\n\nNo caere de nuevo en tu juego\nsolo me quieres pa conseguirte de lo mas caro de lo mas bueno\npero conmigo realmente no quieres compartir tu amor ni tu tiempo\n\nPa que nos hacemos tontos\ntu a mi me enganyas con otro\nme dejaste el cora todo roto\n\npa que me dejas vivo?\nsolo y sin ningun motivo para seguir sufriendo\nPor un amor que me olvido\n\nPero ya entendi comprendi que tu no eres para mi\ny que yo solo era un chiste para ti\nque tu con otro ya eras feliz\nmientras te escondias de mi' }
 ];
 
+// Registrar letras ArT-AtR en window para acceso seguro desde buscador universal
+window.__artLetrasData = _artLetras;
+window.__artLetrasReady = true;
+
 // Suno catalog (titles + metadata, no full lyrics — those live on suno.com)
 const _sunoTracks = [
   { titulo:'SENTIDO PERDIDO', genero:'Rap, R&B', tema:'Desamor / Identidad', plays:3, nota:'Letra 100% original ArT-AtR. Intro hablado.' },
@@ -7093,13 +7097,12 @@ async function uSearchLyrics(q) {
       const data = await r.json();
       data.slice(0, 5).forEach(d => results.push(d));
     }
-  } catch {}
-  // 2. Local ArT-AtR letras (try/catch para evitar TDZ con let)
+  } catch (e) { console.warn('[uSearch] LRCLIB:', e.message); }
+  // 2. Local ArT-AtR letras — acceso seguro via window (var se hoistea, let/const no)
   try {
-    const arts = window._artLetras || (typeof _artLetras !== 'undefined' ? _artLetras : []);
-    if (arts.length) {
+    if (window.__artLetrasReady && window.__artLetrasData) {
       const ql = q.toLowerCase();
-      arts.filter(l => l.titulo.toLowerCase().includes(ql) || l.letra.toLowerCase().includes(ql))
+      window.__artLetrasData.filter(l => l.titulo.toLowerCase().includes(ql) || l.letra.toLowerCase().includes(ql))
         .slice(0, 3).forEach(l => results.push({ trackName: l.titulo, artistName: 'ArT-AtR', plainLyrics: l.letra, _local: true }));
     }
   } catch {}
@@ -7107,28 +7110,28 @@ async function uSearchLyrics(q) {
 }
 
 async function uSearchYoutube(q) {
-  // Reuse existing ytSearch logic (try/catch para evitar TDZ)
-  try {
-    const key = (window.ytApiKey || '') || localStorage.getItem('byflow_yt_key') || '';
-    if (key) {
+  // Leer API key directamente de localStorage (evita TDZ de let ytApiKey)
+  const key = localStorage.getItem('yt_api_key') || '';
+  if (key) {
+    try {
       const r = await fetch('/api/youtube/search?q=' + encodeURIComponent(q) + '&key=' + encodeURIComponent(key), { signal: AbortSignal.timeout(5000) });
       const d = await r.json();
       if (d.items && d.items.length) return d.items;
-    }
-  } catch {}
+    } catch (e) { console.warn('[uSearch] YouTube API:', e.message); }
+  }
   // Fallback free search
   try {
     if (typeof ytFreeSearch === 'function') {
       const free = await ytFreeSearch(q);
       if (free && free.items) return free.items;
     }
-  } catch {}
+  } catch (e) { console.warn('[uSearch] YT free:', e.message); }
   return [];
 }
 
 async function uSearchJamendo(q) {
-  let clientId = '';
-  try { clientId = (window.JAMENDO_CLIENT_ID || '') || localStorage.getItem('byflow_jamendo_id') || ''; } catch {}
+  // Leer client ID directamente de localStorage (evita TDZ de const)
+  const clientId = localStorage.getItem('byflow_jamendo_id') || '';
   if (!clientId) return [];
   try {
     const r = await fetch('https://api.jamendo.com/v3.0/tracks/?client_id=' + clientId + '&format=json&search=' + encodeURIComponent(q) + '&limit=5&order=relevance', { signal: AbortSignal.timeout(5000) });
