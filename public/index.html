@@ -408,26 +408,36 @@ select.inp{cursor:pointer;}
 
 /* Effects bar */
 .fx-bar{
-  padding:9px 20px;
-  background:rgba(0,0,0,.6);
-  backdrop-filter:blur(10px);
-  border-top:1px solid var(--border);
-  display:flex;gap:18px;align-items:center;flex-wrap:wrap;z-index:2;
+  padding:6px 20px;
+  background:rgba(0,0,0,.4);
+  border-top:1px solid rgba(255,255,255,.04);
+  display:flex;gap:12px;align-items:center;justify-content:center;flex-wrap:nowrap;z-index:2;
+  overflow-x:auto;
 }
-.fx-group{display:flex;align-items:center;gap:7px;}
-.fx-group label{font-size:10px;color:var(--sub);white-space:nowrap;font-weight:600;letter-spacing:.5px;}
+.fx-group{display:flex;align-items:center;gap:5px;flex-shrink:0;}
+.fx-group label{font-size:9px;color:rgba(255,255,255,.3);white-space:nowrap;font-weight:700;letter-spacing:.5px;}
 .fx-group input[type=range]{
-  width:72px;height:3px;
+  width:64px;height:4px;
   -webkit-appearance:none;appearance:none;
-  background:rgba(255,255,255,.1);border-radius:4px;outline:none;cursor:pointer;
+  background:rgba(255,255,255,.08);border-radius:4px;outline:none;cursor:pointer;
+  transition:background .2s;
 }
+.fx-group input[type=range]:hover{background:rgba(255,255,255,.15);}
 .fx-group input[type=range]::-webkit-slider-thumb{
-  -webkit-appearance:none;width:14px;height:14px;
+  -webkit-appearance:none;width:12px;height:12px;
   border-radius:50%;background:var(--p);
-  box-shadow:0 0 6px var(--glow-p);cursor:pointer;
-  transition:transform .15s;
+  box-shadow:0 0 8px var(--glow-p);cursor:pointer;
+  transition:all .15s;
 }
-.fx-group input[type=range]::-webkit-slider-thumb:hover{transform:scale(1.3);}
+.fx-group input[type=range]::-webkit-slider-thumb:hover{transform:scale(1.3);box-shadow:0 0 14px var(--glow-p);}
+.fx-group input[type=range]::-moz-range-thumb{
+  width:12px;height:12px;border:none;
+  border-radius:50%;background:var(--p);
+  box-shadow:0 0 8px var(--glow-p);cursor:pointer;
+}
+.fx-group input[type=range]::-moz-range-track{
+  height:4px;background:rgba(255,255,255,.08);border-radius:4px;border:none;
+}
 
 /* Player bar */
 .player-bar{
@@ -1014,6 +1024,36 @@ select.inp{cursor:pointer;}
 .mnav-btn span{font-size:9px;font-weight:700;letter-spacing:.3px;}
 .mnav-btn.active{color:var(--p);}
 .mnav-btn:active{transform:scale(.92);}
+
+/* ── Mobile Cola Modal ────────────────────────────────────────────── */
+.cola-modal-overlay{
+  position:fixed;inset:0;z-index:500;background:rgba(0,0,0,.7);
+  display:none;align-items:center;justify-content:center;padding:16px;
+}
+.cola-modal-overlay.open{display:flex;}
+.cola-modal{
+  background:var(--card);border-radius:20px;width:100%;max-width:500px;
+  max-height:70vh;display:flex;flex-direction:column;
+  border:1px solid var(--border);
+  animation:modalPop .2s ease-out;
+}
+@keyframes modalPop{from{transform:scale(.95);opacity:0}to{transform:scale(1);opacity:1}}
+@keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
+.cola-modal-head{
+  padding:16px 20px 12px;border-bottom:1px solid var(--border);
+  display:flex;align-items:center;justify-content:space-between;flex-shrink:0;
+}
+.cola-modal-head h3{font-size:16px;font-weight:800;color:var(--text);}
+.cola-modal-close{background:none;border:none;color:var(--sub);font-size:22px;cursor:pointer;padding:4px 8px;}
+.cola-modal-body{flex:1;overflow-y:auto;padding:12px 16px;-webkit-overflow-scrolling:touch;}
+.cola-modal-add{
+  padding:12px 16px;border-top:1px solid var(--border);flex-shrink:0;
+  display:flex;gap:6px;align-items:center;
+}
+.cola-modal-add .inp{flex:1;height:38px;font-size:13px;border-radius:10px;
+  background:rgba(255,255,255,.06);border:1px solid var(--border);color:var(--text);padding:0 10px;}
+.cola-modal-add .btn-add{width:38px;height:38px;border-radius:10px;flex-shrink:0;
+  background:linear-gradient(135deg,var(--p),var(--s));border:none;color:#fff;font-size:20px;cursor:pointer;}
 
 /* ── Drag reorder (enhanced in UI improvements section) ─────────────── */
 
@@ -1752,7 +1792,7 @@ input:focus-visible,textarea:focus-visible{
         </button>
       </div>
       <div class="scrollable" id="lista-cola">
-        <div class="empty-state"><span>🎤</span><p>Cola vacía</p></div>
+        <div class="empty-state"><span>🎤</span><p>Agrega el primer cantante para empezar</p></div>
       </div>
       <!-- Mesas Pendientes (auto-populated from cola) -->
       <div class="pending-section" id="pending-section" style="display:none;">
@@ -1891,7 +1931,7 @@ input:focus-visible,textarea:focus-visible{
     <div class="right-panel">
       <h4 title="Escanea este QR desde otro celular para controlar el karaoke remotamente">Control Remoto (QR)</h4>
       <img id="qr-img" alt="Codigo QR para control remoto de ByFlow" title="Escanea con la camara de tu celular para conectarte">
-      <div id="qr-url" title="URL para acceder desde otro dispositivo en la misma red WiFi">Cargando...</div>
+      <div id="qr-url" title="URL para acceder desde otro dispositivo en la misma red WiFi">Conectando...</div>
       <div class="divider"></div>
       <h4 title="Guarda canciones con su letra para cargarlas rapidamente desde el Catalogo">Guardar Nueva Cancion</h4>
       <input type="text" class="rp-input" id="new-song-title" placeholder="Titulo de la cancion..." title="Nombre de la cancion" style="margin-bottom:6px;">
@@ -2395,7 +2435,7 @@ input:focus-visible,textarea:focus-visible{
             Historial de Sesion
           </div>
           <div id="session-history-list" style="max-height:150px;overflow-y:auto;font-size:10px;color:var(--sub);">
-            <div style="text-align:center;opacity:.4;">Sin canciones en esta sesion</div>
+            <div style="text-align:center;opacity:.4;">Empieza a cantar para ver tus estadisticas</div>
           </div>
         </div>
 
@@ -2654,6 +2694,22 @@ input:focus-visible,textarea:focus-visible{
   </div>
 </div>
 
+<!-- Mobile Cola Modal -->
+<div class="cola-modal-overlay" id="cola-modal" onclick="if(event.target===this)closeColaModal()">
+  <div class="cola-modal">
+    <div class="cola-modal-head">
+      <h3>Cola de Cantantes</h3>
+      <button class="cola-modal-close" onclick="closeColaModal()">&times;</button>
+    </div>
+    <div class="cola-modal-body" id="cola-modal-list"></div>
+    <div class="cola-modal-add">
+      <input type="text" class="inp" id="m-input-cantante" placeholder="Cantante..." onkeypress="if(event.key==='Enter')document.getElementById('m-input-cancion').focus()">
+      <input type="text" class="inp" id="m-input-cancion" placeholder="Cancion..." onkeypress="if(event.key==='Enter')mAgregarCola()">
+      <button class="btn-add" onclick="mAgregarCola()">+</button>
+    </div>
+  </div>
+</div>
+
 <div class="mobile-nav" id="mobile-nav">
   <div class="mobile-nav-inner">
     <button class="mnav-btn active" data-mode="karaoke" onclick="mobileSetMode('karaoke',this)">
@@ -2664,9 +2720,9 @@ input:focus-visible,textarea:focus-visible{
       <svg viewBox="0 0 24 24" fill="currentColor"><path d="M23.495 6.205a3.007 3.007 0 0 0-2.088-2.088c-1.87-.501-9.396-.501-9.396-.501s-7.507-.01-9.396.501A3.007 3.007 0 0 0 .527 6.205a31.247 31.247 0 0 0-.522 5.805 31.247 31.247 0 0 0 .522 5.783 3.007 3.007 0 0 0 2.088 2.088c1.868.502 9.396.502 9.396.502s7.506 0 9.396-.502a3.007 3.007 0 0 0 2.088-2.088 31.247 31.247 0 0 0 .5-5.783 31.247 31.247 0 0 0-.5-5.805zM9.609 15.601V8.408l6.264 3.602z"/></svg>
       <span>YouTube</span>
     </button>
-    <button class="mnav-btn" onclick="openCatalog()">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
-      <span>Canciones</span>
+    <button class="mnav-btn" onclick="openColaModal()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M16 3h5v5"/><path d="M4 20L21 3"/><path d="M21 16v5h-5"/><path d="M15 15l6 6"/><path d="M4 4l5 5"/></svg>
+      <span>Cola</span>
     </button>
     <button class="mnav-btn" data-mode="ia" onclick="mobileSetMode('ia',this)">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 2a9 9 0 0 1 9 9c0 4.56-2.87 8.5-7 9.7V22h-4v-1.3C5.87 19.5 3 15.56 3 11a9 9 0 0 1 9-9z"/><circle cx="9" cy="11" r="1" fill="currentColor"/><circle cx="15" cy="11" r="1" fill="currentColor"/></svg>
@@ -2682,7 +2738,7 @@ input:focus-visible,textarea:focus-visible{
     </button>
     <button class="mnav-btn" data-mode="settings" onclick="mobileSetMode('settings',this)">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
-      <span>Config</span>
+      <span>Ajustes</span>
     </button>
   </div>
 </div>
@@ -3427,7 +3483,7 @@ function renderCola(cola) {
   if (cola) colaCache = cola;
   const el = document.getElementById('lista-cola');
   if (!el) return;
-  if (!colaCache.length) { el.innerHTML = '<div class="empty-state"><span>🎤</span><p>Cola vacía</p></div>'; return; }
+  if (!colaCache.length) { el.innerHTML = '<div class="empty-state"><span>🎤</span><p>Agrega el primer cantante para empezar</p></div>'; return; }
   el.innerHTML = colaCache.map((c, i) => {
     const singing = c.estado === 'cantando';
     return '<div class="queue-item' + (singing ? ' singing' : '') + '">' +
@@ -3466,6 +3522,46 @@ async function agregarCola() {
   } catch { showToast('Error al agregar'); }
 }
 async function eliminarCola(id) { try { await fetch('/api/cola/'+id, {method:'DELETE'}); fetchCola(); } catch {} }
+
+// ── Mobile Cola Modal ──────────────────────────────────────────────────
+function openColaModal() {
+  renderColaModal();
+  document.getElementById('cola-modal').classList.add('open');
+}
+function closeColaModal() {
+  document.getElementById('cola-modal').classList.remove('open');
+}
+function renderColaModal() {
+  const el = document.getElementById('cola-modal-list');
+  if (!el) return;
+  if (!colaCache.length) { el.innerHTML = '<div style="text-align:center;padding:32px 0;color:var(--sub);">La cola esta vacia — escribe un nombre abajo para empezar</div>'; return; }
+  el.innerHTML = colaCache.map((c, i) => {
+    const singing = c.estado === 'cantando';
+    return '<div class="queue-item' + (singing ? ' singing' : '') + '">' +
+      '<div class="qi-number">' + (i+1) + '</div>' +
+      '<div class="qi-info"><div class="qi-name">' + escHtml(c.cantante) + '</div>' +
+      '<div class="qi-song">' + escHtml(c.cancion || 'Sin cancion') + (c.mesa ? ' · Mesa '+c.mesa : '') + '</div></div>' +
+      '<div class="qi-actions">' +
+      '<button class="qi-btn play-btn" onclick="activarCantante(\'' + c.id + '\');closeColaModal()" title="Cantar"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg></button>' +
+      '<button class="qi-btn del-btn" onclick="eliminarCola(\'' + c.id + '\')" title="Quitar"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg></button>' +
+      '</div></div>';
+  }).join('');
+}
+async function mAgregarCola() {
+  const cantante = document.getElementById('m-input-cantante').value.trim();
+  const cancion = document.getElementById('m-input-cancion').value.trim();
+  if (!cantante) return;
+  if (!textoLimpio(cantante) || !textoLimpio(cancion)) { showToast('Contenido inapropiado'); return; }
+  try {
+    const r = await fetch('/api/cola', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ cantante, cancion }) });
+    if (!r.ok) { showToast('Error al agregar'); return; }
+    document.getElementById('m-input-cantante').value = '';
+    document.getElementById('m-input-cancion').value = '';
+    showToast('Agregado: ' + cantante);
+    await fetchCola();
+    renderColaModal();
+  } catch { showToast('Error al agregar'); }
+}
 async function activarCantante(id) {
   try {
     await fetch('/api/cola/'+id, { method:'PATCH', headers:{'Content-Type':'application/json'}, body:JSON.stringify({estado:'cantando'}) });
@@ -4925,7 +5021,7 @@ function renderSessionHistory() {
   const el = document.getElementById('session-history-list');
   if (!el) return;
   if (!_sessionHistory.length) {
-    el.innerHTML = '<div style="text-align:center;opacity:.4;">Sin canciones en esta sesion</div>';
+    el.innerHTML = '<div style="text-align:center;opacity:.4;">Empieza a cantar para ver tus estadisticas</div>';
     return;
   }
   el.innerHTML = _sessionHistory.slice().reverse().map(h => {
@@ -5592,6 +5688,8 @@ renderCola = function(cola) {
   const items = document.querySelectorAll('#lista-cola .queue-item');
   const data  = cola || colaCache;
   items.forEach((el, i) => { if (data[i]) makeDraggable(el, data[i].id); });
+  // Sync mobile cola modal
+  if (document.getElementById('cola-modal')?.classList.contains('open')) renderColaModal();
 };
 
 // ── Audio Player Bar ──────────────────────────────────────────────────
