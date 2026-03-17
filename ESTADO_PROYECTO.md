@@ -1,8 +1,8 @@
 # BYFLOW — Estado del Proyecto
 ## "Vive Cantando con ByFlow" — powered by IArtLabs
 
-**Version:** v3.1
-**Fecha:** 2026-03-13
+**Version:** v3.2
+**Fecha:** 2026-03-16
 **Produccion:** https://byflowapp.up.railway.app
 **Repo:** https://github.com/ART449/VibeFlow_Pro
 
@@ -81,9 +81,43 @@ ByFlow es una plataforma todo-en-uno de karaoke y entretenimiento en vivo.
 - [x] **Deploy a produccion** — Verificado en byflowapp.up.railway.app con gzip activo
 - [x] **Backup completo** — OneDrive\Backup-ByFlow\VibeFlow_Pro_backup_2026-03-16.zip (195MB)
 
+## COMPLETADO EN SESION 2026-03-16 (parte 2) — v3.2
+
+### YouTube + Teleprompter integrado
+- [x] **ytPlayWithLyrics()** — Un clic reproduce video Y auto-busca letra en LRCLIB
+- [x] **Auto-parse artista/track** — Limpieza de titulos YouTube (quita "Official Video", "Lyrics", etc.)
+- [x] **YouTube API key actualizada** — `AIzaSyBTFWSrpFCNagcOgPPGt0BZA5A8v5TgT7w` con migracion automatica de key vieja en localStorage
+
+### Auto-queue y historial
+- [x] **Auto-queue** — Siguiente cantante arranca automatico al terminar cancion (toggle en Settings)
+- [x] **Historial de sesion** — sessionStorage aislado por dispositivo, visible en Settings
+- [x] **addToHistory()** — Registra titulo, artista, fuente y timestamp
+
+### Activar cantante = flujo completo
+- [x] **activarCantante() mejorado** — Al activar un cantante de la cola: auto-busca en YouTube API + carga letra al teleprompter
+- [x] **Fix currentMode check** — `typeof currentMode === 'undefined'` previene ReferenceError antes de setMode()
+
+### Modo Remote limpio
+- [x] **Remote = vista publica** — Solo teleprompter + banner "Ahora Canta", sin controles DJ
+- [x] **Oculta:** topbar, playerBar, fxBar, vizBar, sidebar, embed container, botones fullscreen/next
+
+### UI/UX fixes
+- [x] **Sidebar oculto en Bares/Settings** — Evita overflow horizontal, layout limpio
+- [x] **Seccion de precios** — 3 planes (Gratis/$0, PRO Creator/$199 MXN, PRO Venue/$799 MXN) en panel de licencias
+- [x] **Fallback letras locales** — Si LRCLIB no encuentra, busca en las 11 letras de ArT-AtR
+- [x] **Preview snippets** — Resultados locales muestran fragmento, no letra completa
+
+### Backend / Real-time
+- [x] **Contador online** — `io.emit('online_count')` en connect/disconnect, badge en topbar
+- [x] **5 licencias PRO de prueba** — Generadas con admin endpoint
+
+### Backup
+- [x] **Backup v2** — OneDrive\Backup-ByFlow\VibeFlow_Pro_backup_2026-03-16_v2.zip (3.9MB)
+
 ## PENDIENTES (siguiente sesion)
 
 ### Prioridad ALTA
+- [ ] **YouTube API referrer**: Agregar `/*` al final de ambas URLs en Google Cloud Console (localhost/* y byflowapp.up.railway.app/*)
 - [ ] Configurar en Railway: `CORS_ORIGINS=https://byflowapp.up.railway.app`
 - [ ] Test end-to-end licencias en produccion (generar clave admin, activar, verificar PRO)
 - [ ] Integrar landing page de ChatGPT al repo (landing/index.html)
@@ -91,11 +125,12 @@ ByFlow es una plataforma todo-en-uno de karaoke y entretenimiento en vivo.
 ### Prioridad MEDIA
 - [ ] Tema claro/oscuro toggle (CSS variables ya preparadas por Kimi)
 - [ ] Socket.IO rooms por venue (arquitectura DeepSeek lista)
-- [ ] Modelo de monetizacion: Free / PRO Creator $199/mes / Venue $799-1499/mes
+- [x] ~~Modelo de monetizacion~~ — Implementado: 3 tiers en panel licencias
 
 ### Prioridad BAJA
 - [x] ~~Estadisticas de uso (canciones mas pedidas, horas pico)~~ — IMPLEMENTADO v3.1
 - [ ] PWA + Service Worker (propuesta DeepSeek pendiente)
+- [ ] Panel Vistas (multi-view dashboard estilo Python Panel DJ)
 
 ---
 
@@ -153,4 +188,4 @@ ByFlow es una plataforma todo-en-uno de karaoke y entretenimiento en vivo.
 
 ---
 
-*Ultima actualizacion: 2026-03-16 — ByFlow v3.1*
+*Ultima actualizacion: 2026-03-16 — ByFlow v3.2*
