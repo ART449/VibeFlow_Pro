@@ -1514,7 +1514,8 @@ input:focus-visible,textarea:focus-visible{
       </button>
     </div>
     <div style="display:flex;align-items:center;gap:8px;">
-      <span id="online-count" title="Dispositivos conectados" style="font-size:10px;color:var(--g);display:none;">● <span id="online-num">0</span></span>
+      <span id="online-count" title="Dispositivos en tu sala" style="font-size:10px;color:var(--g);display:none;">● <span id="online-num">0</span></span>
+      <span id="room-badge" title="Tu sala — comparte este codigo" style="font-size:9px;background:var(--card2);border:1px solid var(--border);padding:2px 6px;border-radius:6px;cursor:pointer;display:none;" onclick="copyRoomLink()">🔗 <span id="room-id-display">---</span></span>
       <div id="datetime">--</div>
     </div>
     <button class="topbar-settings" onclick="setMode('settings')" title="Configuracion y perfil">
@@ -2486,25 +2487,70 @@ function loadSocketIO() {
   });
 }
 
+// ── Room ID: cada dispositivo tiene su sesion aislada ───────────────────────
+// DJ genera roomId unico. Remote se une al room del DJ via ?room=XXXX en URL.
+function getMyRoomId() {
+  // Check URL param first (Remote mode joins DJ's room)
+  const urlRoom = new URLSearchParams(window.location.search).get('room');
+  if (urlRoom) { sessionStorage.setItem('bf_room', urlRoom); return urlRoom; }
+  // DJ: generate or reuse session room
+  let rid = sessionStorage.getItem('bf_room');
+  if (!rid) {
+    rid = Math.random().toString(36).substring(2, 8).toUpperCase();
+    sessionStorage.setItem('bf_room', rid);
+  }
+  return rid;
+}
+const _myRoomId = getMyRoomId();
+
+function copyRoomLink() {
+  const base = window.location.origin + '/?room=' + _myRoomId;
+  navigator.clipboard.writeText(base).then(() => {
+    showToast('🔗 Link de sala copiado: ' + base);
+  }).catch(() => {
+    prompt('Copia este link para compartir tu sala:', base);
+  });
+}
+
+// Show room badge after socket connects
+function showRoomBadge() {
+  const badge = document.getElementById('room-badge');
+  const display = document.getElementById('room-id-display');
+  if (badge) badge.style.display = '';
+  if (display) display.textContent = _myRoomId;
+}
+
 async function connectSocket() {
   const loaded = await loadSocketIO();
   if (!loaded || typeof io === 'undefined') { console.warn('Socket.IO no disponible'); return; }
   if (socket && socket.connected) return; // prevent duplicate connections
   socket = io(SOCKET_URL, { reconnectionDelay: 2000, reconnectionDelayMax: 10000 });
   let _lastInit = 0;
-  socket.on('connect', () => console.log('[WS] Conectado:', socket.id));
+  socket.on('connect', () => {
+    console.log('[WS] Conectado:', socket.id, 'Room:', _myRoomId);
+    socket.emit('join_room', { roomId: _myRoomId });
+  });
+  socket.on('room_joined', (data) => {
+    console.log('[WS] Room joined:', data.roomId);
+    // Si el room ya tiene letra (Remote se une a DJ activo), cargarla
+    if (data.teleprompter && data.teleprompter.lyrics) setLyrics(data.teleprompter.lyrics);
+    showRoomBadge();
+  });
+  socket.on('room_count', (n) => {
+    const el = document.getElementById('online-count');
+    const num = document.getElementById('online-num');
+    if (el && num) { num.textContent = n; el.style.display = n > 0 ? '' : 'none'; }
+  });
   socket.on('init', (data) => {
     const now = Date.now();
     if (now - _lastInit < 1000) return; // debounce rapid reconnects
     _lastInit = now;
     if (data.cola)        renderCola(data.cola);
     if (data.mesas)       renderMesas(data.mesas);
-    if (data.teleprompter && data.teleprompter.lyrics) setLyrics(data.teleprompter.lyrics);
+    // NO cargar teleprompter del init global — solo del room
   });
   socket.on('online_count', (n) => {
-    const el = document.getElementById('online-count');
-    const num = document.getElementById('online-num');
-    if (el && num) { num.textContent = n; el.style.display = n > 0 ? '' : 'none'; }
+    // Global count — se puede mostrar en admin/settings
   });
   socket.on('cola_update',  (cola)  => renderCola(cola));
   socket.on('mesas_update', (mesas) => renderMesas(mesas));

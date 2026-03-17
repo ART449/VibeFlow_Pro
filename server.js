@@ -419,6 +419,21 @@ const state = {
   license:      loadJSON('licenses.json', { licenses: [] })
 };
 
+// ── Rooms (aislamiento por sesion) ──────────────────────────────────────────
+// Cada DJ tiene su room. Remote viewers se unen al room del DJ.
+// El teleprompter es POR ROOM, la cola/mesas son globales (del venue).
+const rooms = {};  // { roomId: { teleprompter: { lyrics, currentWord, scrollSpeed, isPlaying } } }
+
+function getRoom(roomId) {
+  if (!roomId) return null;
+  if (!rooms[roomId]) {
+    rooms[roomId] = {
+      teleprompter: { lyrics: '', currentWord: -1, scrollSpeed: 1, isPlaying: false }
+    };
+  }
+  return rooms[roomId];
+}
+
 // ── API REST ────────────────────────────────────────────────────────────────
 
 // QR para acceso remoto
@@ -971,6 +986,23 @@ io.on('connection', (socket) => {
   console.log(`[WS] Cliente conectado: ${socket.id}`);
   io.emit('online_count', io.engine.clientsCount);
 
+  let myRoom = null;
+
+  // Cliente se une a un room (DJ crea, Remote se une)
+  socket.on('join_room', (data) => {
+    const roomId = (data && data.roomId) ? String(data.roomId).substring(0, 20) : null;
+    if (!roomId) return;
+    if (myRoom) socket.leave(myRoom);
+    myRoom = roomId;
+    socket.join(roomId);
+    const room = getRoom(roomId);
+    socket.emit('room_joined', { roomId, teleprompter: room.teleprompter });
+    // Conteo de usuarios en este room
+    const roomSize = io.sockets.adapter.rooms.get(roomId)?.size || 0;
+    io.to(roomId).emit('room_count', roomSize);
+    console.log(`[WS] ${socket.id} joined room ${roomId} (${roomSize} users)`);
+  });
+
   socket.emit('init', {
     cola: state.cola, mesas: state.mesas,
     teleprompter: state.teleprompter,
@@ -978,23 +1010,43 @@ io.on('connection', (socket) => {
   });
 
   socket.on('tp_scroll', (data) => {
-    state.teleprompter.currentWord = data.currentWord ?? state.teleprompter.currentWord;
-    state.teleprompter.isPlaying   = data.isPlaying   ?? state.teleprompter.isPlaying;
-    debouncedSave('teleprompter.json', state.teleprompter);
-    socket.broadcast.emit('tp_update', state.teleprompter);
+    if (myRoom) {
+      const room = getRoom(myRoom);
+      room.teleprompter.currentWord = data.currentWord ?? room.teleprompter.currentWord;
+      room.teleprompter.isPlaying   = data.isPlaying   ?? room.teleprompter.isPlaying;
+      socket.to(myRoom).emit('tp_update', room.teleprompter);
+    } else {
+      state.teleprompter.currentWord = data.currentWord ?? state.teleprompter.currentWord;
+      state.teleprompter.isPlaying   = data.isPlaying   ?? state.teleprompter.isPlaying;
+      debouncedSave('teleprompter.json', state.teleprompter);
+      socket.broadcast.emit('tp_update', state.teleprompter);
+    }
   });
 
   socket.on('tp_lyrics', (data) => {
-    state.teleprompter.lyrics = data.lyrics || '';
-    state.teleprompter.currentWord = -1;
-    saveJSON('teleprompter.json', state.teleprompter);
-    io.emit('tp_update', state.teleprompter);
+    if (myRoom) {
+      const room = getRoom(myRoom);
+      room.teleprompter.lyrics = data.lyrics || '';
+      room.teleprompter.currentWord = -1;
+      io.to(myRoom).emit('tp_update', room.teleprompter);
+    } else {
+      state.teleprompter.lyrics = data.lyrics || '';
+      state.teleprompter.currentWord = -1;
+      saveJSON('teleprompter.json', state.teleprompter);
+      io.emit('tp_update', state.teleprompter);
+    }
   });
 
   socket.on('tp_speed', (data) => {
-    state.teleprompter.scrollSpeed = data.speed ?? 1;
-    debouncedSave('teleprompter.json', state.teleprompter);
-    io.emit('tp_speed_update', { speed: state.teleprompter.scrollSpeed });
+    if (myRoom) {
+      const room = getRoom(myRoom);
+      room.teleprompter.scrollSpeed = data.speed ?? 1;
+      io.to(myRoom).emit('tp_speed_update', { speed: room.teleprompter.scrollSpeed });
+    } else {
+      state.teleprompter.scrollSpeed = data.speed ?? 1;
+      debouncedSave('teleprompter.json', state.teleprompter);
+      io.emit('tp_speed_update', { speed: state.teleprompter.scrollSpeed });
+    }
   });
 
   socket.on('cola_add', (data) => {
@@ -1032,6 +1084,10 @@ io.on('connection', (socket) => {
 
   socket.on('disconnect', () => {
     console.log(`[WS] Cliente desconectado: ${socket.id}`);
+    if (myRoom) {
+      const roomSize = io.sockets.adapter.rooms.get(myRoom)?.size || 0;
+      io.to(myRoom).emit('room_count', roomSize);
+    }
     io.emit('online_count', io.engine.clientsCount);
   });
 });
