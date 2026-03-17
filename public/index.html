@@ -1300,10 +1300,14 @@ select.inp{cursor:pointer;}
   .topbar{padding:0 10px;}
   .brand{font-size:15px;}
   .mode-switch{display:none;}
+  .byflow-bar{display:none!important;}
   /* Mobile-nav y player-bar fijos en bottom */
   .mobile-nav{display:block;position:fixed;bottom:0;left:0;right:0;z-index:200;}
   .player-bar{position:fixed;bottom:59px;left:0;right:0;z-index:199;overflow-x:auto;}
   .fx-bar{display:none;}
+  /* Vistas y Remoto: ocultos en mobile nav (acceso desde topbar desktop) */
+  .mnav-btn[data-mode="vistas"]{display:none!important;}
+  .mnav-btn[data-mode="remote"]{display:none!important;}
   /* Layout: center scrollea, con padding para player+nav fijos */
   .main{overflow:hidden;touch-action:manipulation;}
   .center{overflow-y:auto;-webkit-overflow-scrolling:touch;touch-action:manipulation;padding-bottom:180px;}
