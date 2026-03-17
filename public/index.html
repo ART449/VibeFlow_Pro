@@ -26,7 +26,10 @@
 [data-theme="light"] .topbar{background:rgba(245,245,250,.95);}
 [data-theme="light"] .sidebar{background:var(--card);}
 [data-theme="light"] .right-panel{background:var(--card);}
-[data-theme="light"] .player-bar{background:rgba(245,245,250,.97);}
+[data-theme="light"] .player-bar{background:rgba(245,245,250,.95);}
+[data-theme="light"] .ctrl-btn{background:rgba(0,0,0,.04);border-color:rgba(0,0,0,.08);color:rgba(0,0,0,.5);}
+[data-theme="light"] .ctrl-btn:hover{background:rgba(0,0,0,.1);border-color:rgba(0,0,0,.15);color:#111;}
+[data-theme="light"] .player-bar-toggle{background:rgba(245,245,250,.9);border-color:rgba(0,0,0,.08);color:rgba(0,0,0,.35);}
 [data-theme="light"] .mobile-nav{background:rgba(245,245,250,.97);}
 [data-theme="light"] .welcome-overlay{background:var(--bg);}
 [data-theme="light"] input,[data-theme="light"] textarea,[data-theme="light"] select{background:var(--card2);color:var(--text);border-color:var(--border);}
@@ -428,51 +431,68 @@ select.inp{cursor:pointer;}
 
 /* Player bar */
 .player-bar{
-  background:rgba(7,7,13,.97);
-  backdrop-filter:blur(20px);
-  border-top:1px solid var(--border);
-  padding:16px 28px;flex-shrink:0;z-index:10;
+  background:rgba(7,7,13,.95);
+  backdrop-filter:blur(24px);
+  border-top:1px solid rgba(255,255,255,.06);
+  padding:12px 20px 10px;flex-shrink:0;z-index:10;
   position:relative;
+  transition:all .3s cubic-bezier(.4,0,.2,1);
+  overflow:hidden;
+}
+.player-bar.collapsed{
+  padding:0;max-height:0;border-top-color:transparent;opacity:0;pointer-events:none;
 }
 .player-bar::before{
-  content:'';position:absolute;top:0;left:0;right:0;height:1px;
-  background:linear-gradient(90deg,transparent,rgba(255,0,110,.4),rgba(131,56,236,.4),transparent);
+  content:'';position:absolute;top:0;left:10%;right:10%;height:1px;
+  background:linear-gradient(90deg,transparent,rgba(255,0,110,.3),rgba(131,56,236,.3),transparent);
 }
-.player-controls{display:flex;align-items:center;justify-content:center;gap:14px;}
-.ctrl-btn{
+.player-bar-toggle{
+  width:40px;height:16px;border-radius:8px 8px 0 0;margin:0 auto;display:flex;
+  background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.06);border-bottom:none;
+  color:rgba(255,255,255,.3);font-size:9px;cursor:pointer;z-index:11;
+  align-items:center;justify-content:center;transition:all .2s;flex-shrink:0;
+}
+.player-bar-toggle:hover{color:#fff;background:rgba(255,255,255,.1);}
+.player-controls{display:flex;align-items:center;justify-content:center;gap:6px;}
+.ctrl-group{display:flex;align-items:center;gap:4px;padding:0 6px;position:relative;}
+.ctrl-group+.ctrl-group::before{
+  content:'';position:absolute;left:0;top:20%;height:60%;width:1px;
   background:rgba(255,255,255,.06);
-  border:1px solid rgba(255,255,255,.1);
-  color:rgba(255,255,255,.7);
-  width:52px;height:52px;border-radius:50%;
+}
+.ctrl-btn{
+  background:rgba(255,255,255,.04);
+  border:1px solid rgba(255,255,255,.07);
+  color:rgba(255,255,255,.55);
+  width:40px;height:40px;border-radius:12px;
   display:flex;align-items:center;justify-content:center;
-  transition:all .18s;
+  transition:all .2s cubic-bezier(.4,0,.2,1);
+  position:relative;
 }
-.ctrl-btn svg{width:20px;height:20px;}
+.ctrl-btn svg{width:16px;height:16px;}
 .ctrl-btn:hover{
-  background:rgba(255,255,255,.13);
-  border-color:rgba(255,255,255,.22);
-  color:#fff;transform:scale(1.08);
-  box-shadow:0 2px 14px rgba(255,255,255,.1);
+  background:rgba(255,255,255,.1);
+  border-color:rgba(255,255,255,.15);
+  color:#fff;transform:translateY(-2px);
+  box-shadow:0 4px 16px rgba(0,0,0,.3);
 }
-.ctrl-btn:active{transform:scale(.95);}
+.ctrl-btn:active{transform:translateY(0) scale(.95);}
+.ctrl-btn.accent-green{color:rgba(0,245,160,.7);border-color:rgba(0,245,160,.12);background:rgba(0,245,160,.05);}
+.ctrl-btn.accent-green:hover{color:#00f5a0;border-color:rgba(0,245,160,.3);background:rgba(0,245,160,.12);box-shadow:0 4px 20px rgba(0,245,160,.15);}
+.ctrl-btn.accent-blue{color:rgba(58,134,255,.7);border-color:rgba(58,134,255,.12);background:rgba(58,134,255,.05);}
+.ctrl-btn.accent-blue:hover{color:#3a86ff;border-color:rgba(58,134,255,.3);background:rgba(58,134,255,.12);box-shadow:0 4px 20px rgba(58,134,255,.15);}
 .ctrl-btn.play{
   background:linear-gradient(135deg,var(--p),var(--s));
   border:none;color:#fff;
-  width:68px;height:68px;
-  box-shadow:0 0 0 0 var(--glow-p),0 6px 24px var(--glow-p);
+  width:52px;height:52px;border-radius:16px;
+  box-shadow:0 4px 20px var(--glow-p);
   transform:none;
-  animation:playPulse 3s ease-in-out infinite;
 }
-@keyframes playPulse{
-  0%,100%{box-shadow:0 0 0 0 var(--glow-p),0 6px 24px var(--glow-p);}
-  50%{box-shadow:0 0 0 8px transparent,0 6px 32px var(--glow-p);}
-}
-.ctrl-btn.play:hover{box-shadow:0 0 0 10px transparent,0 8px 36px var(--glow-p);transform:scale(1.08);animation:none;}
-.ctrl-btn.play:active{transform:scale(.95);animation:none;}
-.ctrl-btn.play svg{width:26px;height:26px;}
+.ctrl-btn.play:hover{transform:translateY(-2px) scale(1.05);box-shadow:0 8px 32px var(--glow-p);}
+.ctrl-btn.play:active{transform:translateY(0) scale(.95);}
+.ctrl-btn.play svg{width:22px;height:22px;}
 .speed-display{
-  font-size:12px;color:var(--sub);min-width:42px;text-align:center;
-  font-variant-numeric:tabular-nums;font-weight:800;letter-spacing:.5px;
+  font-size:11px;color:rgba(255,255,255,.35);min-width:36px;text-align:center;
+  font-variant-numeric:tabular-nums;font-weight:700;letter-spacing:.3px;
 }
 
 /* ── Right Panel ─────────────────────────────────────────────────────── */
@@ -1360,6 +1380,7 @@ select.inp{cursor:pointer;}
   .mode-switch{display:none;}
   .byflow-bar{display:none!important;}
   .panel-toggle{display:none!important;}
+  .player-bar-toggle{display:none!important;}
   /* Mobile-nav y player-bar fijos en bottom */
   .mobile-nav{display:block;position:fixed;bottom:0;left:0;right:0;z-index:200;}
   .player-bar{position:fixed;bottom:59px;left:0;right:0;z-index:199;overflow-x:auto;}
@@ -1384,10 +1405,11 @@ select.inp{cursor:pointer;}
 }
 @media(max-width:600px){
   .player-bar{padding:4px 6px 2px;}
-  .player-controls{gap:4px;flex-wrap:nowrap;overflow-x:auto;justify-content:flex-start;padding-bottom:0;}
-  .ctrl-btn{width:36px;height:36px;flex-shrink:0;font-size:13px;}
-  .ctrl-btn.play{width:46px;height:46px;flex-shrink:0;}
-  .ctrl-label{font-size:7px;}
+  .player-controls{gap:2px;flex-wrap:nowrap;overflow-x:auto;justify-content:flex-start;padding-bottom:0;}
+  .ctrl-group{padding:0 3px;}
+  .ctrl-group+.ctrl-group::before{display:none;}
+  .ctrl-btn{width:34px;height:34px;flex-shrink:0;border-radius:10px;}
+  .ctrl-btn.play{width:42px;height:42px;flex-shrink:0;border-radius:12px;}
   .tp-lrc-badge{display:none!important;}
   /* Hide FX sliders on small mobile */
   .player-bar .fx-sliders{display:none;}
@@ -1821,63 +1843,45 @@ input:focus-visible,textarea:focus-visible{
       </div>
 
       <!-- Player -->
-      <div class="player-bar">
+      <button class="player-bar-toggle" id="player-bar-toggle" onclick="togglePlayerBar()" title="Mostrar/ocultar controles">&#x25BC;</button>
+      <div class="player-bar" id="player-bar-main">
         <div class="player-controls">
-          <div style="display:flex;flex-direction:column;align-items:center;gap:3px;">
-            <button class="ctrl-btn" onclick="tpPrev()" title="Retroceder una palabra">
+          <div class="ctrl-group">
+            <button class="ctrl-btn" onclick="tpPrev()" title="Retroceder">
               <svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 6h2v12H6zm3.5 6l8.5 6V6z"/></svg>
             </button>
-            <span style="font-size:8px;color:rgba(255,255,255,.25);letter-spacing:.5px;">ATRAS</span>
-          </div>
-          <div style="display:flex;flex-direction:column;align-items:center;gap:3px;">
-            <button class="ctrl-btn" onclick="tpSpeedDown()" title="Reducir velocidad del scroll automatico">
+            <button class="ctrl-btn" onclick="tpSpeedDown()" title="Mas lento">
               <svg viewBox="0 0 24 24" fill="currentColor"><path d="M11 18V6l-8.5 6zm.5-6l8.5 6V6z"/></svg>
             </button>
-            <span style="font-size:8px;color:rgba(255,255,255,.25);letter-spacing:.5px;">LENTO</span>
+            <span class="speed-display" id="speed-label" title="Velocidad">1.0x</span>
           </div>
-          <span class="speed-display" id="speed-label" title="Velocidad actual del teleprompter">1.0x</span>
-          <div style="display:flex;flex-direction:column;align-items:center;gap:3px;">
-            <button class="ctrl-btn play" id="btn-play" onclick="toggleAutoScroll(); this.blur();" title="Iniciar o pausar el scroll automatico de la letra">
+          <div class="ctrl-group">
+            <button class="ctrl-btn play" id="btn-play" onclick="toggleAutoScroll(); this.blur();" title="Play / Pausa">
               <svg id="ico-play" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
               <svg id="ico-pause" viewBox="0 0 24 24" fill="currentColor" style="display:none"><path d="M6 19h4V5H6zm8-14v14h4V5z"/></svg>
             </button>
-            <span style="font-size:8px;color:rgba(255,255,255,.25);letter-spacing:.5px;">PLAY</span>
           </div>
-          <span class="speed-display" id="word-counter" title="Palabra actual / total de palabras">0/0</span>
-          <div style="display:flex;flex-direction:column;align-items:center;gap:3px;">
-            <button class="ctrl-btn" onclick="tpSpeedUp()" title="Aumentar velocidad del scroll automatico">
+          <div class="ctrl-group">
+            <span class="speed-display" id="word-counter" title="Palabras">0/0</span>
+            <button class="ctrl-btn" onclick="tpSpeedUp()" title="Mas rapido">
               <svg viewBox="0 0 24 24" fill="currentColor"><path d="M4 18l8.5-6L4 6zm9-12v12l8.5-6z"/></svg>
             </button>
-            <span style="font-size:8px;color:rgba(255,255,255,.25);letter-spacing:.5px;">RAPIDO</span>
-          </div>
-          <div style="display:flex;flex-direction:column;align-items:center;gap:3px;">
-            <button class="ctrl-btn" onclick="tpNext()" title="Avanzar una palabra">
+            <button class="ctrl-btn" onclick="tpNext()" title="Avanzar">
               <svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 18l8.5-6L6 6zm8.5 0H17V6h-2.5z"/></svg>
             </button>
-            <span style="font-size:8px;color:rgba(255,255,255,.25);letter-spacing:.5px;">SIGUIENTE</span>
           </div>
-          <div style="display:flex;flex-direction:column;align-items:center;gap:3px;">
-            <button class="ctrl-btn" onclick="tpReset()" title="Detener y reiniciar la posicion de la letra">
-              <svg viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="6" width="12" height="12" rx="1"/></svg>
+          <div class="ctrl-group">
+            <button class="ctrl-btn" onclick="tpReset()" title="Parar">
+              <svg viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="6" width="12" height="12" rx="2"/></svg>
             </button>
-            <span style="font-size:8px;color:rgba(255,255,255,.25);letter-spacing:.5px;">PARAR</span>
-          </div>
-          <div style="display:flex;flex-direction:column;align-items:center;gap:3px;">
-            <button class="ctrl-btn" onclick="openLyricsSearch()" title="Buscar letra automaticamente en internet" style="background:rgba(0,245,160,.08);border-color:rgba(0,245,160,.2);">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:20px;height:20px;"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            <button class="ctrl-btn accent-green" onclick="openLyricsSearch()" title="Buscar letra">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
             </button>
-            <span style="font-size:8px;color:rgba(0,245,160,.6);letter-spacing:.5px;">LETRA</span>
-          </div>
-          <div style="display:flex;flex-direction:column;align-items:center;gap:3px;">
-            <button class="ctrl-btn" onclick="openLocalAudio()" title="Cargar archivo MP3/audio desde tu computadora" style="background:rgba(58,134,255,.08);border-color:rgba(58,134,255,.2);">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:20px;height:20px;"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
+            <button class="ctrl-btn accent-blue" onclick="openLocalAudio()" title="Cargar audio">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
             </button>
-            <span style="font-size:8px;color:rgba(58,134,255,.6);letter-spacing:.5px;">AUDIO</span>
           </div>
           <input type="file" id="local-audio-input" accept="audio/*" style="display:none;" onchange="handleLocalAudio(this)">
-        </div>
-        <div id="tp-mode-indicator" style="display:flex;justify-content:center;margin-top:6px;gap:8px;align-items:center;">
-          <span class="tp-lrc-badge manual" id="tp-mode-badge">Modo manual</span>
         </div>
       </div>
     </div>
@@ -6475,6 +6479,24 @@ function closeModeMore() {
 document.addEventListener('click', (e) => {
   if (!e.target.closest('.mode-more')) closeModeMore();
 });
+
+// ── Player Bar Toggle ─────────────────────────────────────────────────────
+function togglePlayerBar() {
+  const pb = document.getElementById('player-bar-main');
+  const fx = document.querySelector('.fx-bar');
+  const btn = document.getElementById('player-bar-toggle');
+  pb.classList.toggle('collapsed');
+  if (fx) fx.style.display = pb.classList.contains('collapsed') ? 'none' : '';
+  btn.innerHTML = pb.classList.contains('collapsed') ? '&#x25B2;' : '&#x25BC;';
+  localStorage.setItem('byflow_player_hidden', pb.classList.contains('collapsed') ? '1' : '');
+}
+if (localStorage.getItem('byflow_player_hidden') === '1') {
+  document.getElementById('player-bar-main')?.classList.add('collapsed');
+  const fx = document.querySelector('.fx-bar');
+  if (fx) fx.style.display = 'none';
+  const btn = document.getElementById('player-bar-toggle');
+  if (btn) btn.innerHTML = '&#x25B2;';
+}
 
 // ── Sidebar / Right Panel Toggle ──────────────────────────────────────────
 function toggleSidebar() {
