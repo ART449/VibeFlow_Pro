@@ -3567,9 +3567,10 @@ function setMode(mode) {
   if (mobileNavEl) mobileNavEl.style.display = '';
   if (centerEl) centerEl.style.paddingBottom = '';
 
+  const isMobile = window.innerWidth <= 900;
   if (mode === 'karaoke') {
-    if (sidebar)    sidebar.style.display    = 'flex';
-    if (rightPanel) rightPanel.style.display = 'flex';
+    if (sidebar && !isMobile)    sidebar.style.display    = 'flex';
+    if (rightPanel && !isMobile) rightPanel.style.display = 'flex';
   } else if (mode === 'remote') {
     // Vista publico: SOLO teleprompter + banner "cantando ahora" (sin NINGUN control)
     if (topbar) topbar.style.display = 'none';
@@ -3594,11 +3595,11 @@ function setMode(mode) {
     const centerEl = document.querySelector('.center');
     if (centerEl) centerEl.style.paddingBottom = '0';
   } else if (mode === 'ia') {
-    if (sidebar)    sidebar.style.display    = 'flex';
+    if (sidebar && !isMobile)    sidebar.style.display    = 'flex';
     if (iaPanel)    { iaPanel.classList.add('active'); iaPanel.style.display = 'flex'; }
     checkOllamaStatus();
   } else if (mode === 'youtube') {
-    if (sidebar)    sidebar.style.display    = 'flex';
+    if (sidebar && !isMobile)    sidebar.style.display    = 'flex';
     if (ytPanel)    { ytPanel.classList.add('active'); ytPanel.style.display = 'flex'; }
   } else if (mode === 'bares') {
     // Sidebar oculto — la cola se gestiona desde Mesas Pendientes
