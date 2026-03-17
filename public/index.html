@@ -3143,9 +3143,40 @@ function setMode(mode) {
   if (settingsPanel){ settingsPanel.classList.remove('active'); settingsPanel.style.display = 'none'; }
 
   // 2. Mostrar lo que corresponde al modo
-  if (mode === 'karaoke' || mode === 'remote') {
+  const topbar = document.querySelector('.topbar');
+  const playerBar = document.querySelector('.player-bar');
+  const fxBar = document.querySelector('.fx-bar');
+  const vizBar = document.getElementById('viz-container');
+  // Restore topbar/controls by default
+  if (topbar) topbar.style.display = '';
+  if (playerBar) playerBar.style.display = '';
+  if (fxBar) fxBar.style.display = '';
+  if (vizBar) vizBar.style.display = '';
+  // Restore remote-hidden elements
+  const nsNext = document.querySelector('.ns-next-btn');
+  const fsBtn = document.querySelector('.tp-fullscreen-btn');
+  const embed = document.getElementById('music-player-embed');
+  if (nsNext) nsNext.style.display = '';
+  if (fsBtn) fsBtn.style.display = '';
+  if (embed) embed.style.display = '';
+
+  if (mode === 'karaoke') {
     if (sidebar)    sidebar.style.display    = 'flex';
     if (rightPanel) rightPanel.style.display = 'flex';
+  } else if (mode === 'remote') {
+    // Vista publico: solo teleprompter + banner "cantando ahora" (sin controles)
+    if (topbar) topbar.style.display = 'none';
+    if (playerBar) playerBar.style.display = 'none';
+    if (fxBar) fxBar.style.display = 'none';
+    if (vizBar) vizBar.style.display = 'none';
+    // Ocultar controles de DJ en el banner
+    const nsNext = document.querySelector('.ns-next-btn');
+    const fsBtn = document.querySelector('.tp-fullscreen-btn');
+    if (nsNext) nsNext.style.display = 'none';
+    if (fsBtn) fsBtn.style.display = 'none';
+    // Ocultar embed container (el audio lo maneja el DJ)
+    const embed = document.getElementById('music-player-embed');
+    if (embed) embed.style.display = 'none';
   } else if (mode === 'ia') {
     if (sidebar)    sidebar.style.display    = 'flex';
     if (iaPanel)    { iaPanel.classList.add('active'); iaPanel.style.display = 'flex'; }
