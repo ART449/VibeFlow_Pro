@@ -2568,7 +2568,10 @@ async function connectSocket() {
     document.getElementById('speed-label').textContent = tpState.speed.toFixed(1) + 'x';
   });
   socket.on('singer_changed', async (singer) => {
-    if (singer && singer.cancion) {
+    // Solo actualizar banner "Ahora Canta" — la letra y YouTube
+    // se manejan en activarCantante() para evitar race conditions.
+    // En modo Remote, cargar letra del catalogo si hay match.
+    if (singer && singer.cancion && typeof currentMode !== 'undefined' && currentMode === 'remote') {
       await fetchSongs();
       const match = allSongs.find(s =>
         s.titulo.toLowerCase().includes(singer.cancion.toLowerCase()) ||
@@ -2576,7 +2579,6 @@ async function connectSocket() {
       );
       if (match && match.letra) {
         setLyrics(match.letra);
-        socket.emit('tp_lyrics', { lyrics: match.letra });
       }
     }
   });
@@ -4539,11 +4541,11 @@ function onPlayerEnd(playerType) {
   }
   updateTwinBadge();
 
-  // ── Auto-play next from queue ──
-  if (_autoQueueEnabled) {
+  // ── Auto-play next from queue (solo DJ, no Remote) ──
+  if (_autoQueueEnabled && (typeof currentMode === 'undefined' || currentMode !== 'remote')) {
     const next = colaCache.find(c => c.estado === 'esperando');
     if (next) {
-      setTimeout(() => siguienteCantante(), 2000); // 2s pause between songs
+      setTimeout(() => siguienteCantante(), 2000);
     }
   }
 }
@@ -4678,22 +4680,23 @@ async function ytPlayWithLyrics(videoId, title) {
     let url = 'https://lrclib.net/api/search?track_name=' + encodeURIComponent(track);
     if (artist) url += '&artist_name=' + encodeURIComponent(artist);
     const r = await fetch(url);
-    if (!r.ok) return;
+    if (!r.ok) return false;
     const data = await r.json();
-    if (!data.length) return;
+    if (!data.length) return false;
 
     // Prefer LRC synced lyrics, fallback to plain
     const lrc = data.find(d => d.syncedLyrics && d.syncedLyrics.length > 10);
     const plain = data.find(d => d.plainLyrics && d.plainLyrics.length > 10);
     const best = lrc || plain;
-    if (!best) return;
+    if (!best) return false;
 
     const lyrics = lrc ? best.syncedLyrics : best.plainLyrics;
     setLyrics(lyrics);
     if (socket) socket.emit('tp_lyrics', { lyrics });
     const type = lrc ? 'LRC sincronizado' : 'texto';
     showToast('🎵 Letra auto-cargada (' + type + '): ' + (best.trackName || track).substring(0, 30));
-  } catch {}
+    return true;
+  } catch { return false; }
 }
 
 function ytEmbed(videoId, title) {
@@ -5186,19 +5189,9 @@ activarCantante = async function(id) {
   const item = colaCache.find(c => c.id === id);
   if (!item || !item.cancion) return;
 
-  // 1. Check local catalog first
-  await fetchSongs();
-  const match = allSongs.find(s =>
-    s.titulo.toLowerCase().includes(item.cancion.toLowerCase()) ||
-    item.cancion.toLowerCase().includes(s.titulo.toLowerCase())
-  );
-  if (match && match.letra) {
-    setLyrics(match.letra);
-    if (socket) socket.emit('tp_lyrics', { lyrics: match.letra });
-    showToast('🎤 ' + item.cantante + ' — letra cargada');
-  }
+  let lyricsLoaded = false;
 
-  // 2. Auto-search YouTube for the song and play it
+  // 1. Auto-search YouTube + LRCLIB (mejor calidad: letras sincronizadas)
   if (ytApiKey && (typeof currentMode === 'undefined' || currentMode !== 'remote')) {
     try {
       const q = item.cancion + (item.cantante ? ' ' + item.cantante : '');
@@ -5207,10 +5200,25 @@ activarCantante = async function(id) {
       const d = await r.json();
       if (d.items && d.items.length) {
         const vid = d.items[0];
-        ytPlayWithLyrics(vid.id.videoId, vid.snippet.title);
+        // ytPlayWithLyrics busca en LRCLIB y carga letra sincronizada
+        lyricsLoaded = await ytPlayWithLyrics(vid.id.videoId, vid.snippet.title);
         showToast('▶ ' + vid.snippet.title.substring(0, 35));
       }
     } catch {}
+  }
+
+  // 2. Fallback: catalogo local solo si YouTube/LRCLIB no cargo letra
+  if (!lyricsLoaded) {
+    await fetchSongs();
+    const match = allSongs.find(s =>
+      s.titulo.toLowerCase().includes(item.cancion.toLowerCase()) ||
+      item.cancion.toLowerCase().includes(s.titulo.toLowerCase())
+    );
+    if (match && match.letra) {
+      setLyrics(match.letra);
+      if (socket) socket.emit('tp_lyrics', { lyrics: match.letra });
+      showToast('🎤 ' + item.cantante + ' — letra cargada');
+    }
   }
 };
 
