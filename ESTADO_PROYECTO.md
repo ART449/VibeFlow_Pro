@@ -225,11 +225,19 @@ Ver `PLAN_MAESTRO_v4.md` para el plan completo con 4 fases.
 - [x] Backend: 5 endpoints (register, login, GET perfil, PUT perfil, GET actividad)
 - [x] Persistencia: data/perfiles.json + data/actividad.json
 
-### FASE 3 — Bares + Eventos Locales [PENDIENTE]
-- [ ] Noches de Talento en panel Bares
-- [ ] Votacion en vivo via QR
-- [ ] Mapa de bares (Google Maps API)
-- [ ] Notificacion a productores (YouTube Data API)
+### FASE 3 — Bares + Eventos Locales [COMPLETADA 3.1 + 3.2]
+- [x] Noches de Talento en panel Bares
+- [x] Crear evento (nombre, fecha, hora, tema, max participantes)
+- [x] Inscripcion de escritores con letra + beat
+- [x] Estados: abierto → en_vivo → cerrado
+- [x] Votacion en vivo via QR (1 voto por IP por evento)
+- [x] Vista publica de votacion (?evento=ID)
+- [x] Resultados en tiempo real con ranking y medallas
+- [x] Socket.IO: evento_update, evento_estado, evento_voto
+- [x] Backend: 7 endpoints (CRUD eventos, inscribir, votar, resultados)
+- [x] Persistencia: data/eventos.json
+- [ ] Mapa de bares (Google Maps API) — FASE 3.3 futuro
+- [ ] Notificacion a productores (YouTube Data API) — FASE 3.4 futuro
 
 ### FASE 4 — Modelo de negocio extendido [PENDIENTE]
 - [ ] Stripe checkout integrado

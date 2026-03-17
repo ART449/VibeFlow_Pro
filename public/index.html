@@ -2470,6 +2470,31 @@ input:focus-visible,textarea:focus-visible{
             </div>
           </div>
 
+          <!-- Noches de Talento (FASE 3) -->
+          <div class="bares-section">
+            <div class="bares-section-title" style="color:#f59e0b;">
+              <svg viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+              Noches de Talento
+            </div>
+
+            <!-- Crear evento -->
+            <div id="talent-create" style="margin-bottom:12px;">
+              <input class="bar-order-inp" id="talent-nombre" placeholder="Nombre del evento..." style="margin-bottom:4px;">
+              <div style="display:flex;gap:4px;margin-bottom:4px;">
+                <input class="bar-order-inp" id="talent-fecha" type="date" style="flex:1;">
+                <input class="bar-order-inp" id="talent-hora" type="time" value="20:00" style="width:90px;">
+              </div>
+              <div style="display:flex;gap:4px;margin-bottom:4px;">
+                <input class="bar-order-inp" id="talent-tema" placeholder="Tema (opcional)" style="flex:1;">
+                <input class="bar-order-inp" id="talent-max" type="number" min="2" max="50" value="10" placeholder="Max" style="width:60px;">
+              </div>
+              <button class="oem-unlock-btn" style="font-size:11px;padding:9px;width:100%;background:linear-gradient(135deg,#f59e0b,#ef4444);" onclick="talentCreateEvent()">Crear Evento</button>
+            </div>
+
+            <!-- Lista de eventos -->
+            <div id="talent-events" style="max-height:300px;overflow-y:auto;"></div>
+          </div>
+
           <!-- Configuración del bar -->
           <div class="bares-section">
             <div class="bares-section-title">
@@ -4256,6 +4281,7 @@ function baresShowContent(key) {
   baresRenderGrid();
   baresUpdateStats();
   baresRenderOrders();
+  talentLoadEvents();
 }
 
 function baresSetupBar() {
@@ -4349,6 +4375,181 @@ function baresRenderOrders() {
 
 // Actualizar tiempos de órdenes cada minuto
 setInterval(() => { if (baresState.orders.length) baresRenderOrders(); }, 60000);
+
+// ── Noches de Talento (FASE 3) ────────────────────────────────────────────
+async function talentCreateEvent() {
+  const nombre = document.getElementById('talent-nombre').value.trim();
+  const fecha = document.getElementById('talent-fecha').value;
+  const hora = document.getElementById('talent-hora').value;
+  const tema = document.getElementById('talent-tema').value.trim();
+  const maxP = document.getElementById('talent-max').value;
+  const bar = localStorage.getItem('OEM_LS_BAR') || '';
+  if (!nombre || !fecha) { showToast('Nombre y fecha son requeridos', 'warning'); return; }
+  try {
+    const res = await fetch('/api/eventos', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ nombre, fecha, hora, tema, maxParticipantes: maxP, bar })
+    });
+    if (res.ok) {
+      showToast('Evento creado', 'success');
+      document.getElementById('talent-nombre').value = '';
+      document.getElementById('talent-tema').value = '';
+      talentLoadEvents();
+    } else {
+      const d = await res.json();
+      showToast(d.error || 'Error', 'error');
+    }
+  } catch { showToast('Error de conexion', 'error'); }
+}
+
+async function talentLoadEvents() {
+  const container = document.getElementById('talent-events');
+  if (!container) return;
+  try {
+    const res = await fetch('/api/eventos');
+    const events = await res.json();
+    if (events.length === 0) {
+      container.innerHTML = '<div style="text-align:center;padding:14px;opacity:.4;font-size:11px;">No hay eventos programados</div>';
+      return;
+    }
+    container.innerHTML = events.map(ev => {
+      const fechaStr = new Date(ev.fecha + 'T' + ev.hora).toLocaleDateString('es-MX', { weekday:'short', day:'numeric', month:'short' });
+      const estadoBadge = ev.estado === 'en_vivo' ? '<span style="background:#ef4444;color:#fff;padding:2px 6px;border-radius:8px;font-size:9px;animation:pulse 1s infinite;">EN VIVO</span>'
+        : ev.estado === 'cerrado' ? '<span style="background:var(--border);color:var(--sub);padding:2px 6px;border-radius:8px;font-size:9px;">CERRADO</span>'
+        : '<span style="background:rgba(245,158,11,.2);color:#f59e0b;padding:2px 6px;border-radius:8px;font-size:9px;">ABIERTO</span>';
+      const inscritosStr = ev.inscritos.map(i => `<div style="font-size:10px;color:var(--sub);padding:2px 0;">&#9998; ${escapeHtml(i.alias)} — ${escapeHtml(i.titulo || 'Sin titulo')}</div>`).join('');
+      const qrLink = window.location.origin + '/?evento=' + ev.id;
+      return `<div style="background:var(--card2);border:1px solid var(--border);border-radius:10px;padding:12px;margin-bottom:8px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+          <div style="font-weight:700;font-size:13px;color:var(--text);">${escapeHtml(ev.nombre)}</div>
+          ${estadoBadge}
+        </div>
+        <div style="font-size:10px;color:var(--sub);margin-bottom:4px;">${fechaStr} ${ev.hora} ${ev.tema ? '— ' + escapeHtml(ev.tema) : ''}</div>
+        <div style="font-size:10px;color:#f59e0b;margin-bottom:6px;">${ev.inscritos.length}/${ev.maxParticipantes} inscritos</div>
+        ${inscritosStr}
+        <div style="display:flex;gap:4px;margin-top:8px;flex-wrap:wrap;">
+          ${ev.estado === 'abierto' ? '<button class="oem-unlock-btn" style="font-size:9px;padding:6px 10px;background:#ef4444;" onclick="talentSetEstado(\'' + ev.id + '\',\'en_vivo\')">Iniciar EN VIVO</button>' : ''}
+          ${ev.estado === 'en_vivo' ? '<button class="oem-unlock-btn" style="font-size:9px;padding:6px 10px;background:#666;" onclick="talentSetEstado(\'' + ev.id + '\',\'cerrado\')">Cerrar votacion</button>' : ''}
+          ${ev.estado === 'en_vivo' ? '<button class="oem-unlock-btn" style="font-size:9px;padding:6px 10px;background:#f59e0b;" onclick="talentShowResults(\'' + ev.id + '\')">Ver resultados</button>' : ''}
+          ${ev.estado !== 'cerrado' ? '<button class="oem-unlock-btn" style="font-size:9px;padding:6px 10px;background:rgba(255,255,255,.1);" onclick="talentCopyQR(\'' + ev.id + '\')">Copiar QR link</button>' : ''}
+          ${ev.estado === 'cerrado' ? '<button class="oem-unlock-btn" style="font-size:9px;padding:6px 10px;background:rgba(255,255,255,.1);" onclick="talentShowResults(\'' + ev.id + '\')">Resultados finales</button>' : ''}
+        </div>
+      </div>`;
+    }).join('');
+  } catch { container.innerHTML = '<div style="text-align:center;padding:14px;opacity:.4;font-size:11px;">Error cargando eventos</div>'; }
+}
+
+async function talentSetEstado(id, estado) {
+  try {
+    const res = await fetch('/api/eventos/' + id + '/estado', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ estado })
+    });
+    if (res.ok) {
+      showToast(estado === 'en_vivo' ? 'Evento EN VIVO — votacion abierta' : 'Votacion cerrada', estado === 'en_vivo' ? 'success' : 'info');
+      talentLoadEvents();
+    }
+  } catch { showToast('Error', 'error'); }
+}
+
+async function talentShowResults(id) {
+  try {
+    const res = await fetch('/api/eventos/' + id + '/resultados');
+    const data = await res.json();
+    const ranking = data.ranking;
+    const modal = document.createElement('div');
+    modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px;';
+    modal.onclick = e => { if (e.target === modal) modal.remove(); };
+    const rows = ranking.map((r, i) => {
+      const medal = i === 0 ? '&#127942;' : i === 1 ? '&#129352;' : i === 2 ? '&#129353;' : (i + 1) + '.';
+      return `<div style="display:flex;align-items:center;gap:10px;padding:10px;background:var(--card2);border-radius:8px;margin-bottom:6px;${i === 0 ? 'border:1px solid #f59e0b;' : ''}">
+        <div style="font-size:20px;min-width:30px;text-align:center;">${medal}</div>
+        <div style="flex:1;">
+          <div style="font-weight:700;color:var(--text);font-size:13px;">${escapeHtml(r.alias)}</div>
+          <div style="font-size:10px;color:var(--sub);">${escapeHtml(r.titulo)}${r.beat ? ' — ' + escapeHtml(r.beat.canal) : ''}</div>
+        </div>
+        <div style="font-size:18px;font-weight:700;color:#f59e0b;">${r.votos}</div>
+      </div>`;
+    }).join('');
+    modal.innerHTML = `<div style="background:var(--bg);border:1px solid var(--border);border-radius:12px;padding:24px;max-width:450px;width:100%;max-height:80vh;overflow-y:auto;">
+      <h3 style="color:#f59e0b;margin-bottom:4px;">&#127775; ${escapeHtml(data.evento)}</h3>
+      <div style="font-size:11px;color:var(--sub);margin-bottom:16px;">${data.estado === 'en_vivo' ? 'Votacion en curso' : 'Resultados finales'}</div>
+      ${rows || '<div style="text-align:center;padding:20px;color:var(--sub);">Sin votos todavia</div>'}
+      <button onclick="this.closest('div[style*=fixed]').remove()" style="margin-top:12px;width:100%;padding:8px;background:var(--border);border:none;border-radius:6px;color:var(--text);cursor:pointer;">Cerrar</button>
+    </div>`;
+    document.body.appendChild(modal);
+  } catch { showToast('Error cargando resultados', 'error'); }
+}
+
+function talentCopyQR(id) {
+  const link = window.location.origin + '/?evento=' + id;
+  navigator.clipboard.writeText(link).then(() => showToast('Link copiado: ' + link, 'success')).catch(() => showToast(link, 'info'));
+}
+
+// Auto-load eventos cuando se entra a modo Bares
+if (typeof socket !== 'undefined') {
+  socket.on('evento_update', () => talentLoadEvents());
+  socket.on('evento_estado', () => talentLoadEvents());
+  socket.on('evento_voto', (data) => {
+    if (document.getElementById('talent-events')) talentLoadEvents();
+  });
+}
+
+// Vista publica de votacion (acceso via QR)
+function talentCheckVoterMode() {
+  const params = new URLSearchParams(window.location.search);
+  const eventoId = params.get('evento');
+  if (!eventoId) return;
+  talentOpenVoterView(eventoId);
+}
+
+async function talentOpenVoterView(eventoId) {
+  try {
+    const res = await fetch('/api/eventos/' + eventoId);
+    if (!res.ok) { showToast('Evento no encontrado', 'error'); return; }
+    const ev = await res.json();
+    if (ev.estado !== 'en_vivo') { showToast('La votacion no esta activa', 'warning'); return; }
+
+    const modal = document.createElement('div');
+    modal.id = 'talent-voter-modal';
+    modal.style.cssText = 'position:fixed;inset:0;background:var(--bg);z-index:10000;padding:20px;overflow-y:auto;';
+    const participantes = ev.inscritos.map(i =>
+      `<button onclick="talentVoteFor('${eventoId}','${escapeHtml(i.alias)}')" style="display:block;width:100%;padding:16px;margin-bottom:8px;background:var(--card2);border:2px solid var(--border);border-radius:12px;color:var(--text);font-size:14px;font-weight:600;cursor:pointer;text-align:left;">
+        <div>&#9998; ${escapeHtml(i.alias)}</div>
+        <div style="font-size:11px;color:var(--sub);font-weight:400;margin-top:4px;">${escapeHtml(i.titulo || '')}</div>
+      </button>`
+    ).join('');
+    modal.innerHTML = `
+      <div style="max-width:400px;margin:0 auto;">
+        <h2 style="color:#f59e0b;margin-bottom:4px;">&#127775; ${escapeHtml(ev.nombre)}</h2>
+        <p style="color:var(--sub);font-size:12px;margin-bottom:20px;">Toca el nombre del participante para votar. Solo puedes votar una vez.</p>
+        ${participantes}
+        <div id="talent-vote-msg" style="text-align:center;padding:12px;display:none;"></div>
+      </div>
+    `;
+    document.body.appendChild(modal);
+  } catch { showToast('Error cargando evento', 'error'); }
+}
+
+async function talentVoteFor(eventoId, alias) {
+  try {
+    const res = await fetch('/api/eventos/' + eventoId + '/votar', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ alias })
+    });
+    const data = await res.json();
+    const msg = document.getElementById('talent-vote-msg');
+    if (res.ok) {
+      if (msg) { msg.style.display = 'block'; msg.innerHTML = '<div style="font-size:24px;">&#127881;</div><div style="color:#f59e0b;font-weight:700;font-size:16px;">Voto registrado para ' + escapeHtml(alias) + '</div>'; }
+      document.querySelectorAll('#talent-voter-modal button').forEach(b => { b.disabled = true; b.style.opacity = '.4'; });
+    } else {
+      if (msg) { msg.style.display = 'block'; msg.innerHTML = '<div style="color:var(--sub);">' + escapeHtml(data.error || 'Error') + '</div>'; }
+    }
+  } catch { showToast('Error de conexion', 'error'); }
+}
 
 // ── QR ────────────────────────────────────────────────────────────────────
 async function loadQR() {
@@ -7712,6 +7913,9 @@ function vpPlay(videoId, title) {
   // se resetea con F5/refresh. No hay forma de saltarse el welcome.
   document.querySelector('.sidebar').classList.add('panel-hidden');
   document.querySelector('.right-panel').classList.add('panel-hidden');
+
+  // Check if voter mode (QR link to event)
+  if (typeof talentCheckVoterMode === 'function') talentCheckVoterMode();
 })();
 </script>
 </body>
