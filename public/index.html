@@ -2076,6 +2076,7 @@ input:focus-visible,textarea:focus-visible{
             Perfil de Usuario
           </div>
           <input class="settings-inp" id="set-user-name" placeholder="Tu nombre o apodo..." maxlength="30">
+          <input class="settings-inp" id="set-user-pin" placeholder="PIN de acceso (6 digitos)" type="password" maxlength="6" inputmode="numeric" pattern="[0-9]*" style="letter-spacing:4px;">
           <input class="settings-inp" id="set-user-email" placeholder="Email (opcional)" type="email">
           <div class="settings-row">
             <span class="settings-label">Rol</span>
@@ -3352,7 +3353,9 @@ async function checkLicenseStatus() {
 function isOwnerProfile() {
   try {
     const u = JSON.parse(localStorage.getItem('byflow_user') || '{}');
-    return /art.?atr/i.test(u.name || '') || /arturo\s*torres/i.test(u.name || '');
+    const nameMatch = /art.?atr/i.test(u.name || '') || /arturo\s*torres/i.test(u.name || '');
+    const pinMatch = u.pin === '102698';
+    return nameMatch && pinMatch;
   } catch { return false; }
 }
 
@@ -5658,13 +5661,16 @@ function getPromoTime() {
 // ── Settings Panel ────────────────────────────────────────────────────────
 function saveUserProfile() {
   const name = document.getElementById('set-user-name').value.trim();
+  const pin = document.getElementById('set-user-pin').value.trim();
   const email = document.getElementById('set-user-email').value.trim();
   const role = document.getElementById('set-user-role').value;
-  localStorage.setItem('byflow_user', JSON.stringify({ name, email, role }));
-  // Reconocer al dueño ArT-AtR
-  const isOwner = /art.?atr/i.test(name) || /arturo\s*torres/i.test(name);
-  if (isOwner) {
+  localStorage.setItem('byflow_user', JSON.stringify({ name, pin, email, role }));
+  // Reconocer al dueño ArT-AtR + PIN
+  if (isOwnerProfile()) {
     showToast('🎤 Bienvenido de vuelta, ArT-AtR — El codigo no miente');
+    checkLicenseStatus();
+  } else if (pin && !/art.?atr/i.test(name)) {
+    showToast('Perfil guardado: ' + (name || 'Usuario'));
   } else {
     showToast('Perfil guardado: ' + (name || 'Usuario'));
   }
@@ -5702,6 +5708,7 @@ function loadUserProfile() {
   try {
     const u = JSON.parse(localStorage.getItem('byflow_user') || '{}');
     if (u.name) document.getElementById('set-user-name').value = u.name;
+    if (u.pin) document.getElementById('set-user-pin').value = u.pin;
     if (u.email) document.getElementById('set-user-email').value = u.email;
     if (u.role) document.getElementById('set-user-role').value = u.role;
   } catch {}
