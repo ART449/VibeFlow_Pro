@@ -139,22 +139,51 @@ ByFlow es una plataforma todo-en-uno de karaoke y entretenimiento en vivo.
 - [x] **Licencias en produccion** — Endpoint `/api/license/status` respondiendo
 - [x] **Stats en produccion** — Endpoint `/api/stats` respondiendo
 
+## COMPLETADO EN SESION 2026-03-17 (parte 2) — v3.4
+
+### Pulidota completa (23 fixes)
+- [x] **Backend (10 fixes):** rate-limit memory leak, Socket.IO validation, debouncedSave, Stripe route ordering, SIGINT handler, Set O(1) reorder, sanitize AI/YT errors, admin header-only, dead code removal
+- [x] **Frontend (10 fixes):** var(--text) dark mode, viewport accessibility, touch targets 36px, input color theme, tp-display sync, legal v3.3, QR alt text, aria-label, word-break
+- [x] **JS Logic (3 fixes):** currentMode declared (was implicit global), Jamendo localStorage key fix, AudioContext leak fix in playJingle
+
+### Landing Page de marketing
+- [x] **public/landing.html** — Pagina completa de marketing con hero, features, pricing, testimoniales
+- [x] **Ruta vanity** — /landing sirve la pagina sin .html
+- [x] **SEO** — Meta tags, OpenGraph, responsive, scroll animations
+- [x] **Pricing** — 3 planes (Gratis/PRO Creator $199/PRO Venue $799)
+
+### Panel Vistas (DJ Dashboard)
+- [x] **Nuevo modo "vistas"** — Dashboard multi-panel para DJs
+- [x] **Layout 3 columnas** — Cola + Teleprompter + YouTube Search
+- [x] **Sincronizacion en tiempo real** — Cola refleja colaCache, now-singing con pulso
+- [x] **YouTube search integrado** — vpSearch() busca y vpPlay() reproduce
+- [x] **Responsive** — Columna unica en mobile, grid 3 cols en desktop
+- [x] **Boton en topbar + mobile-nav** — Acceso rapido al dashboard
+
+### Herramientas Claude Code instaladas
+- [x] **GSD (Get-Shit-Done)** — 38 commands + 15 agents
+- [x] **Everything-Claude-Code** — Core profile + 16 skills + 14 commands + 6 agents
+- [x] **claude-mem** — Memoria persistente entre sesiones
+- [x] **CLI-Anything** — 5 commands para generar CLIs
+- [x] **UI-UX Pro Max** — Skill de diseno
+
 ## PENDIENTES (siguiente sesion)
 
 ### Prioridad ALTA
 - [ ] Test end-to-end licencias en produccion (activar clave PRO, verificar features desbloqueadas)
-- [ ] Integrar landing page al repo (landing/index.html) — no existe todavia, hay que crearla
 - [ ] Backup v3 a OneDrive con todos los cambios de esta sesion
+- [ ] Stripe checkout real en landing page (pago PRO online)
+- [ ] Redes sociales + email de contacto en footer landing (pendiente datos de Arturo)
 
 ### Prioridad MEDIA
-- [ ] PWA + Service Worker (propuesta DeepSeek pendiente)
-- [ ] Panel Vistas (multi-view dashboard estilo Python Panel DJ)
-- [ ] Landing page publica para marketing/Facebook
-
-### Prioridad BAJA
 - [ ] Sesion QR mesa sin registro
 - [ ] Spotify search integration (requiere API key)
 - [ ] Convertir SVG icons a PNG para full PWA compatibility
+- [ ] Panel Vistas: agregar controles de player (play/pause/next) en el dashboard
+
+### Prioridad BAJA
+- [ ] Testimoniales reales en landing page
+- [ ] MASTER_ADMIN env var en Railway
 
 ---
 
