@@ -5113,7 +5113,7 @@ activarCantante = async function(id) {
   }
 
   // 2. Auto-search YouTube for the song and play it
-  if (ytApiKey && currentMode !== 'remote') {
+  if (ytApiKey && (typeof currentMode === 'undefined' || currentMode !== 'remote')) {
     try {
       const q = item.cancion + (item.cantante ? ' ' + item.cantante : '');
       const params = new URLSearchParams({ part:'snippet', type:'video', maxResults:'1', q, key:ytApiKey });
