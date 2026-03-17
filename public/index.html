@@ -5093,22 +5093,38 @@ async function siguienteCantante() {
   }
 }
 
-// Patch activarCantante to auto-load lyrics
+// Patch activarCantante to auto-search YT + load lyrics
 const _origActivar = activarCantante;
 activarCantante = async function(id) {
   await _origActivar(id);
   const item = colaCache.find(c => c.id === id);
-  if (item && item.cancion) {
-    await fetchSongs();
-    const match = allSongs.find(s =>
-      s.titulo.toLowerCase().includes(item.cancion.toLowerCase()) ||
-      item.cancion.toLowerCase().includes(s.titulo.toLowerCase())
-    );
-    if (match && match.letra) {
-      setLyrics(match.letra);
-      if (socket) socket.emit('tp_lyrics', { lyrics: match.letra });
-      showToast('🎤 ' + item.cantante + ' — letra cargada');
-    }
+  if (!item || !item.cancion) return;
+
+  // 1. Check local catalog first
+  await fetchSongs();
+  const match = allSongs.find(s =>
+    s.titulo.toLowerCase().includes(item.cancion.toLowerCase()) ||
+    item.cancion.toLowerCase().includes(s.titulo.toLowerCase())
+  );
+  if (match && match.letra) {
+    setLyrics(match.letra);
+    if (socket) socket.emit('tp_lyrics', { lyrics: match.letra });
+    showToast('🎤 ' + item.cantante + ' — letra cargada');
+  }
+
+  // 2. Auto-search YouTube for the song and play it
+  if (ytApiKey && currentMode !== 'remote') {
+    try {
+      const q = item.cancion + (item.cantante ? ' ' + item.cantante : '');
+      const params = new URLSearchParams({ part:'snippet', type:'video', maxResults:'1', q, key:ytApiKey });
+      const r = await fetch('/api/youtube/search?' + params);
+      const d = await r.json();
+      if (d.items && d.items.length) {
+        const vid = d.items[0];
+        ytPlayWithLyrics(vid.id.videoId, vid.snippet.title);
+        showToast('▶ ' + vid.snippet.title.substring(0, 35));
+      }
+    } catch {}
   }
 };
 
