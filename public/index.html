@@ -2096,6 +2096,17 @@ input:focus-visible,textarea:focus-visible{
           <button class="settings-btn" onclick="loadStats()" style="margin-top:8px;">Actualizar Estadisticas</button>
         </div>
 
+        <!-- Historial de Sesion -->
+        <div class="settings-section">
+          <div class="settings-section-title">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+            Historial de Sesion
+          </div>
+          <div id="session-history-list" style="max-height:150px;overflow-y:auto;font-size:10px;color:var(--sub);">
+            <div style="text-align:center;opacity:.4;">Sin canciones en esta sesion</div>
+          </div>
+        </div>
+
         <!-- Acerca de -->
         <div class="settings-section" style="text-align:center;padding:16px;">
           <div style="font-size:16px;font-weight:900;background:linear-gradient(135deg,#ff006e,#8338ec,#3a86ff);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">ByFlow</div>
@@ -4087,7 +4098,7 @@ function lsCopyLyrics() {
 }
 
 // ── YouTube ───────────────────────────────────────────────────────────────
-const YT_DEFAULT_KEY = 'AIzaSyAa8sVHiUQgBnZ6je1FRmGGlj7F8GYvPC4';
+const YT_DEFAULT_KEY = 'AIzaSyBTFWSrpFCNagcOgPPGt0BZA5A8v5TgT7w';
 let ytApiKey  = localStorage.getItem('yt_api_key') || YT_DEFAULT_KEY;
 let ytResults = [];
 
@@ -4236,7 +4247,7 @@ function ytRenderResults(items, durs, res) {
       </div>
       <div class="yt-actions">
         <button class="yt-btn yt-btn-dl" id="ytplay-${idx}"
-          onclick="ytEmbed('${id}','${escHtml(title.replace(/'/g,''))}')"
+          onclick="ytPlayWithLyrics('${id}','${escHtml(title.replace(/'/g,''))}')"
           title="Reproducir">
           <svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
           Play
@@ -4321,6 +4332,40 @@ function onPlayerEnd(playerType) {
     stopAutoScroll();
   }
   updateTwinBadge();
+
+  // ── Auto-play next from queue ──
+  if (_autoQueueEnabled) {
+    const next = colaCache.find(c => c.estado === 'esperando');
+    if (next) {
+      setTimeout(() => siguienteCantante(), 2000); // 2s pause between songs
+    }
+  }
+}
+
+// ── Session History ──────────────────────────────────────────────────────
+let _sessionHistory = JSON.parse(sessionStorage.getItem('bf_history') || '[]');
+let _autoQueueEnabled = localStorage.getItem('byflow_autoqueue') !== '0';
+
+function addToHistory(title, artist, source) {
+  const entry = { title, artist: artist || '', source, time: new Date().toLocaleTimeString() };
+  _sessionHistory.push(entry);
+  sessionStorage.setItem('bf_history', JSON.stringify(_sessionHistory));
+  renderSessionHistory();
+}
+
+function renderSessionHistory() {
+  const el = document.getElementById('session-history-list');
+  if (!el) return;
+  if (!_sessionHistory.length) {
+    el.innerHTML = '<div style="text-align:center;opacity:.4;">Sin canciones en esta sesion</div>';
+    return;
+  }
+  el.innerHTML = _sessionHistory.slice().reverse().map(h => {
+    const icons = { youtube: '▶', soundcloud: '☁', jamendo: '♫', local: '🎵' };
+    return '<div style="padding:4px 0;border-bottom:1px solid rgba(255,255,255,.05);display:flex;justify-content:space-between;">' +
+      '<span>' + (icons[h.source] || '♪') + ' ' + escHtml(h.title.substring(0, 40)) + (h.artist ? ' — ' + escHtml(h.artist) : '') + '</span>' +
+      '<span style="opacity:.4;">' + h.time + '</span></div>';
+  }).join('');
 }
 
 // ── Sync interval: alimenta tiempo real del player al LRC engine ──
@@ -4407,6 +4452,43 @@ if (!window.YT) {
   document.head.appendChild(ytApiScript);
 }
 window.onYouTubeIframeAPIReady = function() { console.log('[ByFlow] YouTube IFrame API ready'); };
+
+// ── YT + Teleprompter combo: un solo clic ────────────────────────────────
+async function ytPlayWithLyrics(videoId, title) {
+  ytEmbed(videoId, title);
+  // Parse "Artist - Song" or just use full title as track name
+  let artist = '', track = title;
+  addToHistory(title, '', 'youtube');
+  const sep = title.match(/\s[-–—|]\s/);
+  if (sep) {
+    artist = title.substring(0, sep.index).trim();
+    track  = title.substring(sep.index + sep[0].length).trim();
+  }
+  // Clean common YouTube title noise
+  track = track.replace(/\s*[\(\[](official|video|lyrics|audio|hd|hq|ft\.?|feat\.?|prod\.?|music video|visualizer|clip oficial|video oficial|letra)[^\)\]]*[\)\]]/gi, '').trim();
+  artist = artist.replace(/\s*[\(\[](official|vevo|topic)[^\)\]]*[\)\]]/gi, '').trim();
+
+  try {
+    let url = 'https://lrclib.net/api/search?track_name=' + encodeURIComponent(track);
+    if (artist) url += '&artist_name=' + encodeURIComponent(artist);
+    const r = await fetch(url);
+    if (!r.ok) return;
+    const data = await r.json();
+    if (!data.length) return;
+
+    // Prefer LRC synced lyrics, fallback to plain
+    const lrc = data.find(d => d.syncedLyrics && d.syncedLyrics.length > 10);
+    const plain = data.find(d => d.plainLyrics && d.plainLyrics.length > 10);
+    const best = lrc || plain;
+    if (!best) return;
+
+    const lyrics = lrc ? best.syncedLyrics : best.plainLyrics;
+    setLyrics(lyrics);
+    if (socket) socket.emit('tp_lyrics', { lyrics });
+    const type = lrc ? 'LRC sincronizado' : 'texto';
+    showToast('🎵 Letra auto-cargada (' + type + '): ' + (best.trackName || track).substring(0, 30));
+  } catch {}
+}
 
 function ytEmbed(videoId, title) {
   onPlayerEnd(_activePlayerType); // Limpiar player anterior
@@ -5335,7 +5417,8 @@ function toggleAutoPromo(btn) {
 
 function toggleAutoQueue(btn) {
   btn.classList.toggle('on');
-  localStorage.setItem('byflow_autoqueue', btn.classList.contains('on') ? '1' : '0');
+  _autoQueueEnabled = btn.classList.contains('on');
+  localStorage.setItem('byflow_autoqueue', _autoQueueEnabled ? '1' : '0');
 }
 
 function loadSettingsState() {
