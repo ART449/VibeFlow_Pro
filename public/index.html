@@ -1192,23 +1192,26 @@ select.inp{cursor:pointer;}
   .right-panel{display:none;}
   /* iOS: disable expensive backdrop-filter on mobile */
   .topbar,.fx-bar,.player-bar,.mobile-nav{-webkit-backdrop-filter:none!important;backdrop-filter:none!important;}
+  /* Panels: fijos entre topbar y player+nav */
   .ia-panel{display:none;}
-  .ia-panel.active{display:flex!important;position:fixed;top:54px;left:0;right:0;bottom:60px;width:100%;z-index:90;border-left:none;overflow-y:auto;-webkit-overflow-scrolling:touch;}
+  .ia-panel.active{display:flex!important;position:fixed;top:54px;left:0;right:0;bottom:148px;width:100%;z-index:90;border-left:none;overflow-y:auto;-webkit-overflow-scrolling:touch;}
   .bares-panel{display:none;}
-  .bares-panel.active{display:flex!important;position:fixed;top:54px;left:0;right:0;bottom:60px;width:100%;z-index:90;border-left:none;overflow-y:auto;-webkit-overflow-scrolling:touch;}
+  .bares-panel.active{display:flex!important;position:fixed;top:54px;left:0;right:0;bottom:148px;width:100%;z-index:90;border-left:none;overflow-y:auto;-webkit-overflow-scrolling:touch;}
   .yt-panel{display:none;}
-  .yt-panel.active{display:flex!important;position:fixed;top:54px;left:0;right:0;bottom:60px;width:100%;z-index:90;border-left:none;overflow-y:auto;-webkit-overflow-scrolling:touch;}
+  .yt-panel.active{display:flex!important;position:fixed;top:54px;left:0;right:0;bottom:148px;width:100%;z-index:90;border-left:none;overflow-y:auto;-webkit-overflow-scrolling:touch;}
   .settings-panel{display:none!important;}
-  .settings-panel.active{display:flex!important;position:fixed;top:54px;left:0;right:0;bottom:60px;width:100%;z-index:90;border-left:none;overflow-y:auto;-webkit-overflow-scrolling:touch;}
+  .settings-panel.active{display:flex!important;position:fixed;top:54px;left:0;right:0;bottom:148px;width:100%;z-index:90;border-left:none;overflow-y:auto;-webkit-overflow-scrolling:touch;}
   #tp-display{font-size:2.4rem;}
   .topbar{padding:0 10px;}
   .brand{font-size:15px;}
   .mode-switch{display:none;}
-  .mobile-nav{display:block;}
+  /* Mobile-nav y player-bar fijos en bottom */
+  .mobile-nav{display:block;position:fixed;bottom:0;left:0;right:0;z-index:200;}
+  .player-bar{position:fixed;bottom:59px;left:0;right:0;z-index:199;overflow-x:auto;}
   .fx-bar{display:none;}
-  /* Main y center: solo center scrollea (evita triple-scroll iOS) */
+  /* Layout: center scrollea, con padding para player+nav fijos */
   .main{overflow:hidden;touch-action:manipulation;}
-  .center{overflow-y:auto;-webkit-overflow-scrolling:touch;touch-action:manipulation;}
+  .center{overflow-y:auto;-webkit-overflow-scrolling:touch;touch-action:manipulation;padding-bottom:180px;}
   .scrollable{-webkit-overflow-scrolling:touch;touch-action:manipulation;}
   /* Welcome screen mobile */
   .welcome-cards{grid-template-columns:1fr;max-width:360px;gap:12px;}
@@ -1222,9 +1225,14 @@ select.inp{cursor:pointer;}
   .welcome-footer{margin-top:16px;gap:6px;}
 }
 @media(max-width:600px){
-  .player-bar{padding:10px 16px;}
-  .ctrl-btn{width:44px;height:44px;}
-  .ctrl-btn.play{width:56px;height:56px;}
+  .player-bar{padding:4px 6px 2px;}
+  .player-controls{gap:4px;flex-wrap:nowrap;overflow-x:auto;justify-content:flex-start;padding-bottom:0;}
+  .ctrl-btn{width:36px;height:36px;flex-shrink:0;font-size:13px;}
+  .ctrl-btn.play{width:46px;height:46px;flex-shrink:0;}
+  .ctrl-label{font-size:7px;}
+  .tp-lrc-badge{display:none!important;}
+  /* Hide FX sliders on small mobile */
+  .player-bar .fx-sliders{display:none;}
   #tp-display{font-size:1.8rem;}
   .catalog-modal{width:96%;max-height:90vh;border-radius:12px;}
   .welcome-logo{font-size:2rem;}
@@ -3244,27 +3252,42 @@ function setMode(mode) {
   const nsNext = document.querySelector('.ns-next-btn');
   const fsBtn = document.querySelector('.tp-fullscreen-btn');
   const embed = document.getElementById('music-player-embed');
+  const tpWelcome = document.getElementById('tp-welcome');
+  const mobileNavEl = document.querySelector('.mobile-nav');
+  const centerEl = document.querySelector('.center');
   if (nsNext) nsNext.style.display = '';
   if (fsBtn) fsBtn.style.display = '';
   if (embed) embed.style.display = '';
+  if (tpWelcome) tpWelcome.style.display = '';
+  if (mobileNavEl) mobileNavEl.style.display = '';
+  if (centerEl) centerEl.style.paddingBottom = '';
 
   if (mode === 'karaoke') {
     if (sidebar)    sidebar.style.display    = 'flex';
     if (rightPanel) rightPanel.style.display = 'flex';
   } else if (mode === 'remote') {
-    // Vista publico: solo teleprompter + banner "cantando ahora" (sin controles)
+    // Vista publico: SOLO teleprompter + banner "cantando ahora" (sin NINGUN control)
     if (topbar) topbar.style.display = 'none';
     if (playerBar) playerBar.style.display = 'none';
     if (fxBar) fxBar.style.display = 'none';
     if (vizBar) vizBar.style.display = 'none';
+    // Ocultar mobile nav
+    const mobileNav = document.querySelector('.mobile-nav');
+    if (mobileNav) mobileNav.style.display = 'none';
     // Ocultar controles de DJ en el banner
     const nsNext = document.querySelector('.ns-next-btn');
-    const fsBtn = document.querySelector('.tp-fullscreen-btn');
+    const fsBtn2 = document.querySelector('.tp-fullscreen-btn');
     if (nsNext) nsNext.style.display = 'none';
-    if (fsBtn) fsBtn.style.display = 'none';
+    if (fsBtn2) fsBtn2.style.display = 'none';
     // Ocultar embed container (el audio lo maneja el DJ)
-    const embed = document.getElementById('music-player-embed');
-    if (embed) embed.style.display = 'none';
+    const embed2 = document.getElementById('music-player-embed');
+    if (embed2) embed2.style.display = 'none';
+    // Ocultar welcome/empty state y boton buscar letra
+    const tpWelcome = document.getElementById('tp-welcome');
+    if (tpWelcome) tpWelcome.style.display = 'none';
+    // Quitar padding-bottom del center (no hay player-bar en remote)
+    const centerEl = document.querySelector('.center');
+    if (centerEl) centerEl.style.paddingBottom = '0';
   } else if (mode === 'ia') {
     if (sidebar)    sidebar.style.display    = 'flex';
     if (iaPanel)    { iaPanel.classList.add('active'); iaPanel.style.display = 'flex'; }
@@ -5368,8 +5391,9 @@ function mobileSetMode(mode, btn) {
     loadStats();
   } else if (mode === 'cola' && sidebar) {
     sidebar.style.cssText = 'display:flex!important;position:fixed;inset:0;top:54px;bottom:60px;width:100%;z-index:90;background:var(--card);';
-  } else if (mode === 'remote' && rightPanel) {
-    rightPanel.style.cssText = 'display:flex!important;position:fixed;inset:0;top:54px;bottom:60px;width:100%;z-index:90;background:var(--card);';
+  } else if (mode === 'remote') {
+    setMode('remote');
+    return;
   } else if (mode === 'karaoke') {
     currentMode = 'karaoke';
   }
