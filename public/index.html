@@ -94,6 +94,7 @@ input,textarea,select{font-family:inherit;}
 .mode-btn.ia-btn.active{background:linear-gradient(135deg,var(--s),var(--a));box-shadow:0 3px 16px var(--glow-s);}
 .mode-btn.bares-btn.active{background:linear-gradient(135deg,#f59e0b,#ef4444);box-shadow:0 3px 16px rgba(245,158,11,.3);}
 .mode-btn.vistas-btn.active{background:linear-gradient(135deg,var(--a),var(--g));box-shadow:0 3px 16px rgba(58,134,255,.3);}
+.mode-btn.estudio-btn.active{background:linear-gradient(135deg,#06b6d4,#3b82f6);box-shadow:0 3px 16px rgba(6,182,212,.3);}
 
 /* ── Mode More Dropdown ── */
 .mode-more{position:relative;}
@@ -243,6 +244,124 @@ body.mode-ia .topbar::after{background:linear-gradient(90deg,transparent,var(--s
 body.mode-ia .brand{background:linear-gradient(135deg,var(--s),var(--a));-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
 body.mode-youtube .topbar::after{background:linear-gradient(90deg,transparent,#ff4444,#ff006e,transparent);}
 body.mode-youtube .brand{background:linear-gradient(135deg,#ff4444,#ff006e);-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+body.mode-estudio .topbar::after{background:linear-gradient(90deg,transparent,#06b6d4,#3b82f6,transparent);}
+body.mode-estudio .brand{background:linear-gradient(135deg,#06b6d4,#3b82f6);-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+body.mode-estudio .btn-add{background:linear-gradient(135deg,#06b6d4,#3b82f6);box-shadow:0 2px 10px rgba(6,182,212,.25);}
+
+/* ── Estudio Panel ── */
+.estudio-panel{
+  display:none;position:fixed;top:48px;left:0;right:0;bottom:0;z-index:50;
+  background:var(--bg);overflow:hidden;
+  grid-template-columns:1fr 1fr;grid-template-rows:auto 1fr auto;gap:0;
+}
+.estudio-panel.active{display:grid;}
+.est-header{
+  grid-column:1/-1;padding:12px 20px;
+  border-bottom:1px solid var(--border);
+  display:flex;align-items:center;gap:12px;
+  background:linear-gradient(135deg,rgba(6,182,212,.06),rgba(59,130,246,.04));
+}
+.est-header-title{
+  font-size:14px;font-weight:700;
+  background:linear-gradient(135deg,#06b6d4,#3b82f6);-webkit-background-clip:text;-webkit-text-fill-color:transparent;
+}
+.est-header-badge{font-size:9px;color:var(--sub);text-transform:uppercase;letter-spacing:1.5px;opacity:.7;}
+/* Beat search (left) */
+.est-beats{
+  border-right:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden;
+}
+.est-beats-head{padding:12px;border-bottom:1px solid var(--border);}
+.est-beats-head h4{font-size:11px;color:var(--sub);text-transform:uppercase;letter-spacing:1.5px;margin:0 0 8px;}
+.est-search-row{display:flex;gap:6px;}
+.est-search-input{
+  flex:1;background:var(--card2);border:1px solid var(--border);border-radius:8px;
+  padding:8px 12px;color:var(--text);font-size:13px;outline:none;
+}
+.est-search-input:focus{border-color:#06b6d4;box-shadow:0 0 0 3px rgba(6,182,212,.15);}
+.est-search-btn{
+  background:linear-gradient(135deg,#06b6d4,#3b82f6);border:none;border-radius:8px;
+  color:#fff;padding:8px 14px;cursor:pointer;font-size:12px;font-weight:600;
+}
+.est-search-btn:hover{opacity:.9;transform:scale(1.02);}
+.est-genre-row{display:flex;gap:4px;margin-top:8px;flex-wrap:wrap;}
+.est-genre-btn{
+  background:var(--card2);border:1px solid var(--border);border-radius:16px;
+  padding:4px 10px;font-size:10px;color:var(--sub);cursor:pointer;transition:all .15s;
+}
+.est-genre-btn:hover,.est-genre-btn.active{background:rgba(6,182,212,.15);color:#06b6d4;border-color:#06b6d4;}
+.est-results{flex:1;overflow-y:auto;padding:8px;}
+.est-result-item{
+  display:flex;align-items:center;gap:10px;padding:10px;
+  border-radius:10px;cursor:pointer;transition:background .15s;
+}
+.est-result-item:hover{background:var(--card2);}
+.est-result-thumb{width:80px;height:45px;border-radius:6px;object-fit:cover;background:var(--card2);}
+.est-result-info{flex:1;min-width:0;}
+.est-result-title{font-size:12px;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.est-result-channel{font-size:10px;color:var(--sub);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.est-result-use{
+  background:linear-gradient(135deg,#06b6d4,#3b82f6);border:none;border-radius:6px;
+  color:#fff;padding:6px 10px;font-size:10px;font-weight:600;cursor:pointer;
+  white-space:nowrap;
+}
+.est-result-use:hover{opacity:.9;}
+/* Letra editor (right) */
+.est-editor{display:flex;flex-direction:column;overflow:hidden;}
+.est-editor-head{padding:12px;border-bottom:1px solid var(--border);}
+.est-editor-head h4{font-size:11px;color:var(--sub);text-transform:uppercase;letter-spacing:1.5px;margin:0 0 8px;}
+.est-letra-input{
+  width:100%;background:var(--card2);border:1px solid var(--border);border-radius:8px;
+  padding:8px 12px;color:var(--text);font-size:13px;outline:none;margin-bottom:6px;
+}
+.est-letra-input:focus{border-color:#06b6d4;}
+.est-letra-area{
+  flex:1;width:100%;background:transparent;border:none;
+  color:var(--text);font-size:14px;line-height:1.8;padding:12px;
+  resize:none;outline:none;font-family:inherit;
+}
+.est-letra-area::placeholder{color:var(--sub);opacity:.5;}
+/* Beat player + disclaimer (bottom) */
+.est-footer{
+  grid-column:1/-1;padding:10px 20px;
+  border-top:1px solid var(--border);
+  display:flex;align-items:center;gap:12px;
+  background:var(--card);min-height:60px;
+}
+.est-beat-player{flex:1;display:flex;align-items:center;gap:12px;}
+.est-beat-embed{width:280px;height:50px;border-radius:8px;overflow:hidden;background:#000;}
+.est-beat-embed iframe{width:100%;height:100%;border:0;}
+.est-play-master{
+  width:44px;height:44px;border-radius:50%;border:none;
+  background:linear-gradient(135deg,#06b6d4,#3b82f6);color:#fff;
+  display:flex;align-items:center;justify-content:center;cursor:pointer;
+  font-size:18px;box-shadow:0 4px 16px rgba(6,182,212,.3);transition:all .15s;
+}
+.est-play-master:hover{transform:scale(1.08);box-shadow:0 6px 24px rgba(6,182,212,.4);}
+.est-rec-btn{
+  width:36px;height:36px;border-radius:50%;border:2px solid #ef4444;
+  background:transparent;color:#ef4444;display:flex;align-items:center;justify-content:center;
+  cursor:pointer;font-size:14px;transition:all .15s;
+}
+.est-rec-btn.recording{background:#ef4444;color:#fff;animation:pulse-rec 1s infinite;}
+@keyframes pulse-rec{0%,100%{box-shadow:0 0 0 0 rgba(239,68,68,.4);}50%{box-shadow:0 0 0 10px rgba(239,68,68,0);}}
+.est-disclaimer{
+  font-size:10px;color:var(--sub);display:flex;align-items:center;gap:6px;
+  margin-left:auto;max-width:300px;
+}
+.est-disclaimer a{color:#06b6d4;text-decoration:none;}
+.est-disclaimer a:hover{text-decoration:underline;}
+.est-save-btn{
+  background:linear-gradient(135deg,#06b6d4,#3b82f6);border:none;border-radius:8px;
+  color:#fff;padding:8px 16px;font-size:12px;font-weight:600;cursor:pointer;
+}
+.est-save-btn:hover{opacity:.9;}
+.est-empty{padding:40px 20px;text-align:center;color:var(--sub);font-size:13px;}
+/* Estudio responsive */
+@media(max-width:900px){
+  .estudio-panel.active{grid-template-columns:1fr;grid-template-rows:auto auto 1fr auto;}
+  .est-beats{max-height:45vh;border-right:none;border-bottom:1px solid var(--border);}
+  .est-beat-embed{width:200px;}
+}
 #datetime{font-size:10px;color:var(--sub);white-space:nowrap;font-variant-numeric:tabular-nums;}
 
 /* ── Main ────────────────────────────────────────────────────────────── */
@@ -1745,6 +1864,10 @@ input:focus-visible,textarea:focus-visible{
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="5" y="2" width="14" height="20" rx="2"/><circle cx="12" cy="17" r="1"/></svg>
             Remoto
           </button>
+          <button class="mode-btn estudio-btn" data-mode="estudio" onclick="setMode('estudio');closeModeMore()" title="Escribe letras sobre beats de YouTube">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M11 5H6a2 2 0 0 0-2 2v11a2 2 0 0 0 2 2h11a2 2 0 0 0 2-2v-5"/><path d="M18 2l4 4-10 10H8v-4L18 2z"/></svg>
+            Estudio
+          </button>
           <button class="mode-btn ia-btn" data-mode="ia" onclick="setMode('ia');closeModeMore()" title="GFlow — DJ IA para letras y sets">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 2a9 9 0 0 1 9 9c0 4.56-2.87 8.5-7 9.7V22h-4v-1.3C5.87 19.5 3 15.56 3 11a9 9 0 0 1 9-9z"/><circle cx="9" cy="11" r="1" fill="currentColor"/><circle cx="15" cy="11" r="1" fill="currentColor"/></svg>
             IA Studio
@@ -2652,6 +2775,60 @@ input:focus-visible,textarea:focus-visible{
   </div>
 </div>
 
+<!-- ═══ PANEL ESTUDIO DE BEATS ═══ -->
+<div class="estudio-panel" id="estudio-panel">
+  <div class="est-header">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px;height:16px;opacity:.6;"><path d="M11 5H6a2 2 0 0 0-2 2v11a2 2 0 0 0 2 2h11a2 2 0 0 0 2-2v-5"/><path d="M18 2l4 4-10 10H8v-4L18 2z"/></svg>
+    <span class="est-header-title">Estudio de Beats</span>
+    <span class="est-header-badge">Escribe. Suena. Conecta.</span>
+  </div>
+
+  <!-- Left: Beat search -->
+  <div class="est-beats">
+    <div class="est-beats-head">
+      <h4>Buscar Beat</h4>
+      <div class="est-search-row">
+        <input class="est-search-input" id="est-search-input" placeholder="trap sad, reggaeton, lo-fi..." onkeydown="if(event.key==='Enter')estSearchBeats()">
+        <button class="est-search-btn" onclick="estSearchBeats()">Buscar</button>
+      </div>
+      <div class="est-genre-row">
+        <button class="est-genre-btn" onclick="estGenreSearch(this,'trap type beat')">Trap</button>
+        <button class="est-genre-btn" onclick="estGenreSearch(this,'reggaeton instrumental')">Reggaeton</button>
+        <button class="est-genre-btn" onclick="estGenreSearch(this,'hip hop boom bap beat')">Hip-Hop</button>
+        <button class="est-genre-btn" onclick="estGenreSearch(this,'r&b type beat')">R&B</button>
+        <button class="est-genre-btn" onclick="estGenreSearch(this,'lo-fi beat')">Lo-Fi</button>
+        <button class="est-genre-btn" onclick="estGenreSearch(this,'drill type beat')">Drill</button>
+        <button class="est-genre-btn" onclick="estGenreSearch(this,'latin trap beat')">Latin</button>
+      </div>
+    </div>
+    <div class="est-results" id="est-results">
+      <div class="est-empty">Busca un beat para empezar a escribir tu letra</div>
+    </div>
+  </div>
+
+  <!-- Right: Letra editor -->
+  <div class="est-editor">
+    <div class="est-editor-head">
+      <h4>Tu Letra</h4>
+      <input class="est-letra-input" id="est-titulo" placeholder="Titulo de tu letra...">
+    </div>
+    <textarea class="est-letra-area" id="est-letra-area" placeholder="Escribe tu letra aqui...&#10;&#10;Verso 1:&#10;El beat suena y mi pluma despierta...&#10;&#10;Coro:&#10;..."></textarea>
+  </div>
+
+  <!-- Bottom: Player + controls -->
+  <div class="est-footer">
+    <div class="est-beat-player">
+      <div class="est-beat-embed" id="est-beat-embed"></div>
+      <button class="est-play-master" id="est-play-master" onclick="estTogglePlay()" title="Play/Pausa beat + mic">&#9654;</button>
+      <button class="est-rec-btn" id="est-rec-btn" onclick="estToggleRec()" title="Grabar voz">&#9679;</button>
+    </div>
+    <div class="est-disclaimer" id="est-disclaimer" style="display:none;">
+      &#127925; Beat por: <a id="est-disc-link" href="#" target="_blank" id="est-disc-name"></a> — Apoya al productor
+    </div>
+    <button class="est-save-btn" onclick="estSaveLetter()">Guardar Letra</button>
+  </div>
+</div>
+
 <!-- ═══ MOBILE BOTTOM NAV ═══ -->
 <!-- ═══ PANEL VISTAS (DJ Dashboard) ═══ -->
 <div class="vistas-panel" id="vistas-panel">
@@ -2727,6 +2904,10 @@ input:focus-visible,textarea:focus-visible{
     <button class="mnav-btn" data-mode="ia" onclick="mobileSetMode('ia',this)">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 2a9 9 0 0 1 9 9c0 4.56-2.87 8.5-7 9.7V22h-4v-1.3C5.87 19.5 3 15.56 3 11a9 9 0 0 1 9-9z"/><circle cx="9" cy="11" r="1" fill="currentColor"/><circle cx="15" cy="11" r="1" fill="currentColor"/></svg>
       <span>IA</span>
+    </button>
+    <button class="mnav-btn" data-mode="estudio" onclick="mobileSetMode('estudio',this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M11 5H6a2 2 0 0 0-2 2v11a2 2 0 0 0 2 2h11a2 2 0 0 0 2-2v-5"/><path d="M18 2l4 4-10 10H8v-4L18 2z"/></svg>
+      <span>Estudio</span>
     </button>
     <button class="mnav-btn" data-mode="vistas" onclick="mobileSetMode('vistas',this)">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
@@ -3629,6 +3810,7 @@ function setMode(mode) {
   const baresPanel = document.getElementById('bares-panel');
   const settingsPanel = document.getElementById('settings-panel');
   const vistasPanel = document.getElementById('vistas-panel');
+  const estudioPanel = document.getElementById('estudio-panel');
 
   // 1. Ocultar TODO primero
   if (sidebar)      sidebar.style.display      = 'none';
@@ -3638,6 +3820,7 @@ function setMode(mode) {
   if (baresPanel)   { baresPanel.classList.remove('active'); baresPanel.style.display = 'none'; }
   if (settingsPanel){ settingsPanel.classList.remove('active'); settingsPanel.style.display = 'none'; }
   if (vistasPanel)  { vistasPanel.classList.remove('active'); vistasPanel.style.display = 'none'; }
+  if (estudioPanel) { estudioPanel.classList.remove('active'); estudioPanel.style.display = 'none'; }
 
   // 2. Mostrar lo que corresponde al modo
   const topbar = document.querySelector('.topbar');
@@ -3701,6 +3884,11 @@ function setMode(mode) {
     // Sidebar oculto — la cola se gestiona desde Mesas Pendientes
     if (baresPanel) { baresPanel.classList.add('active'); baresPanel.style.display = 'flex'; }
     baresInit();
+  } else if (mode === 'estudio') {
+    // Estudio de Beats: ocultar main, mostrar panel estudio
+    const mainEl = document.querySelector('.main');
+    if (mainEl) mainEl.style.display = 'none';
+    if (estudioPanel) { estudioPanel.classList.add('active'); estudioPanel.style.display = 'grid'; }
   } else if (mode === 'vistas') {
     // DJ Dashboard: ocultar main layout, mostrar vistas grid
     const mainEl = document.querySelector('.main');
@@ -3711,8 +3899,8 @@ function setMode(mode) {
     if (settingsPanel)  { settingsPanel.classList.add('active'); settingsPanel.style.display = 'flex'; }
     loadStats();
   }
-  // Restore .main visibility for non-vistas modes
-  if (mode !== 'vistas') {
+  // Restore .main visibility for non-overlay modes
+  if (mode !== 'vistas' && mode !== 'estudio') {
     const mainEl = document.querySelector('.main');
     if (mainEl) mainEl.style.display = '';
   }
@@ -6663,6 +6851,160 @@ function updateTutorial() {
 // Auto-show tutorial on first visit
 if (!localStorage.getItem('byflow_tutorial_done')) {
   setTimeout(openTutorial, 1500);
+}
+
+// ── Estudio de Beats functions ────────────────────────────────────────────
+let _estBeatPlayer = null;
+let _estBeatInfo = null; // { videoId, titulo, canal, canalUrl }
+let _estMediaRecorder = null;
+let _estRecChunks = [];
+let _estRecBlob = null;
+let _estIsPlaying = false;
+let _estIsRecording = false;
+
+async function estSearchBeats() {
+  const q = document.getElementById('est-search-input').value.trim();
+  if (!q) return;
+  const searchQ = q + (q.toLowerCase().includes('beat') ? '' : ' type beat instrumental');
+  const container = document.getElementById('est-results');
+  container.innerHTML = '<div class="est-empty">Buscando beats...</div>';
+  try {
+    const apiKey = localStorage.getItem('byflow_yt_api_key') || 'AIzaSyBTFWSrpFCNagcOgPPGt0BZA5A8v5TgT7w';
+    const url = `https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&maxResults=15&q=${encodeURIComponent(searchQ)}&key=${apiKey}`;
+    const res = await fetch(url);
+    const data = await res.json();
+    if (!data.items || data.items.length === 0) {
+      container.innerHTML = '<div class="est-empty">No se encontraron beats. Intenta otro genero.</div>';
+      return;
+    }
+    container.innerHTML = '';
+    data.items.forEach(item => {
+      const vid = item.id.videoId;
+      const title = item.snippet.title;
+      const channel = item.snippet.channelTitle;
+      const thumb = item.snippet.thumbnails.default.url;
+      const div = document.createElement('div');
+      div.className = 'est-result-item';
+      div.innerHTML = `
+        <img class="est-result-thumb" src="${thumb}" alt="" loading="lazy">
+        <div class="est-result-info">
+          <div class="est-result-title" title="${title}">${title}</div>
+          <div class="est-result-channel">&#127908; ${channel}</div>
+        </div>
+        <button class="est-result-use" onclick="estSelectBeat('${vid}',\`${title.replace(/`/g,"'")}\`,'${channel}')">Usar Beat</button>
+      `;
+      container.appendChild(div);
+    });
+  } catch (e) {
+    container.innerHTML = '<div class="est-empty">Error buscando. Revisa tu API key en Ajustes.</div>';
+  }
+}
+
+function estGenreSearch(btn, query) {
+  document.querySelectorAll('.est-genre-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('est-search-input').value = query;
+  estSearchBeats();
+}
+
+function estSelectBeat(videoId, titulo, canal) {
+  _estBeatInfo = {
+    videoId,
+    titulo,
+    canal,
+    canalUrl: 'https://www.youtube.com/results?search_query=' + encodeURIComponent(canal)
+  };
+  // Embed beat player (small)
+  const embed = document.getElementById('est-beat-embed');
+  embed.innerHTML = `<iframe src="https://www.youtube.com/embed/${videoId}?enablejsapi=1&rel=0&modestbranding=1" allow="autoplay" allowfullscreen></iframe>`;
+  // Show disclaimer
+  const disc = document.getElementById('est-disclaimer');
+  disc.style.display = 'flex';
+  const link = document.getElementById('est-disc-link');
+  link.href = _estBeatInfo.canalUrl;
+  link.textContent = canal;
+  // Toast
+  if (typeof showToast === 'function') showToast('Beat seleccionado: ' + titulo, 'success');
+}
+
+function estTogglePlay() {
+  const btn = document.getElementById('est-play-master');
+  const iframe = document.querySelector('#est-beat-embed iframe');
+  if (!iframe) {
+    if (typeof showToast === 'function') showToast('Selecciona un beat primero', 'warning');
+    return;
+  }
+  _estIsPlaying = !_estIsPlaying;
+  if (_estIsPlaying) {
+    iframe.contentWindow.postMessage('{"event":"command","func":"playVideo","args":""}', '*');
+    btn.innerHTML = '&#10074;&#10074;';
+  } else {
+    iframe.contentWindow.postMessage('{"event":"command","func":"pauseVideo","args":""}', '*');
+    btn.innerHTML = '&#9654;';
+  }
+}
+
+async function estToggleRec() {
+  const btn = document.getElementById('est-rec-btn');
+  if (_estIsRecording) {
+    // Stop recording
+    if (_estMediaRecorder && _estMediaRecorder.state === 'recording') {
+      _estMediaRecorder.stop();
+    }
+    _estIsRecording = false;
+    btn.classList.remove('recording');
+    btn.title = 'Grabar voz';
+    return;
+  }
+  // Start recording
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    _estRecChunks = [];
+    _estMediaRecorder = new MediaRecorder(stream, { mimeType: 'audio/webm;codecs=opus' });
+    _estMediaRecorder.ondataavailable = e => { if (e.data.size > 0) _estRecChunks.push(e.data); };
+    _estMediaRecorder.onstop = () => {
+      _estRecBlob = new Blob(_estRecChunks, { type: 'audio/webm' });
+      stream.getTracks().forEach(t => t.stop());
+      if (typeof showToast === 'function') showToast('Grabacion guardada en sesion', 'success');
+    };
+    _estMediaRecorder.start();
+    _estIsRecording = true;
+    btn.classList.add('recording');
+    btn.title = 'Detener grabacion';
+  } catch (e) {
+    if (typeof showToast === 'function') showToast('No se pudo acceder al microfono', 'error');
+  }
+}
+
+async function estSaveLetter() {
+  const titulo = document.getElementById('est-titulo').value.trim();
+  const letra = document.getElementById('est-letra-area').value.trim();
+  if (!titulo || !letra) {
+    if (typeof showToast === 'function') showToast('Escribe un titulo y tu letra', 'warning');
+    return;
+  }
+  const payload = {
+    titulo,
+    letra,
+    beat: _estBeatInfo || null,
+    fecha: new Date().toISOString()
+  };
+  try {
+    const res = await fetch('/api/letras-beat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    if (res.ok) {
+      if (typeof showToast === 'function') showToast('Letra guardada con exito', 'success');
+      document.getElementById('est-titulo').value = '';
+      document.getElementById('est-letra-area').value = '';
+    } else {
+      if (typeof showToast === 'function') showToast('Error al guardar', 'error');
+    }
+  } catch (e) {
+    if (typeof showToast === 'function') showToast('Error de conexion', 'error');
+  }
 }
 
 // ── Panel Vistas (DJ Dashboard) functions ─────────────────────────────────
