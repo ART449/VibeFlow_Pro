@@ -14,16 +14,27 @@
 ## Proyecto
 - **Nombre:** ByFlow — "Vive Cantando con ByFlow"
 - **Empresa:** IArtLabs (powered by)
-- **Version:** v3.1
+- **Version:** v3.4 → v4.0 en progreso
 - **Produccion:** https://byflowapp.up.railway.app
 - **Repo:** https://github.com/ART449/VibeFlow_Pro
 - **Stack:** Node.js + Express + Socket.IO (server.js) | HTML/CSS/JS SPA (public/index.html)
 - **Concepto:** Karaoke inteligente y teleprompter para raperos/cantantes. Cero contaminacion visual. El software es un "Director Vocal" que escucha y guia.
+- **Vision v4.0:** Ecosistema creativo que conecta bares, escritores y productores via beats de YouTube
+
+## Modos de la app (v4.0)
+1. **Karaoke** (GRATIS) — Teleprompter, cola, letras sincronizadas
+2. **Musica** (PRO) — YouTube/SoundCloud/Jamendo streaming
+3. **Bares** (PRO) — Mesas, promos, jingle, soundboard, eventos
+4. **IA Studio** (PRO) — Ollama, generar letras, sugerir canciones
+5. **Estudio** (NUEVO v4) — Doble reproductor beat+voz, editor de letra, ranking
+6. **Vistas** — DJ Dashboard multi-panel
+7. **Remote** — Vista publica teleprompter
 
 ## Archivos clave
 - `server.js` — Backend completo (API, licencias, Socket.IO)
-- `public/index.html` — TODO el frontend (SPA ~2800 lineas)
+- `public/index.html` — TODO el frontend (SPA ~6700 lineas)
 - `ESTADO_PROYECTO.md` — Estado actual y pendientes
+- `PLAN_MAESTRO_v4.md` — Plan v4.0 completo (fases, legal, equipo, modelo de negocio)
 - `IDEAS_PARA_LANZAR.md` — Ideas que requieren investigacion
 
 ## Al iniciar sesion

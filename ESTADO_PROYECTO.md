@@ -1,7 +1,7 @@
 # BYFLOW — Estado del Proyecto
 ## "Vive Cantando con ByFlow" — powered by IArtLabs
 
-**Version:** v3.3
+**Version:** v3.4 → v4.0 en progreso
 **Fecha:** 2026-03-17
 **Produccion:** https://byflowapp.up.railway.app
 **Repo:** https://github.com/ART449/VibeFlow_Pro
@@ -167,23 +167,42 @@ ByFlow es una plataforma todo-en-uno de karaoke y entretenimiento en vivo.
 - [x] **CLI-Anything** — 5 commands para generar CLIs
 - [x] **UI-UX Pro Max** — Skill de diseno
 
-## PENDIENTES (siguiente sesion)
+## v4.0 — Plan Maestro "Ecosistema Creativo"
 
-### Prioridad ALTA
-- [ ] Test end-to-end licencias en produccion (activar clave PRO, verificar features desbloqueadas)
-- [ ] Backup v3 a OneDrive con todos los cambios de esta sesion
-- [ ] Stripe checkout real en landing page (pago PRO online)
-- [ ] Redes sociales + email de contacto en footer landing (pendiente datos de Arturo)
+Ver `PLAN_MAESTRO_v4.md` para el plan completo con 4 fases.
 
-### Prioridad MEDIA
-- [ ] Sesion QR mesa sin registro
-- [ ] Spotify search integration (requiere API key)
-- [ ] Convertir SVG icons a PNG para full PWA compatibility
-- [ ] Panel Vistas: agregar controles de player (play/pause/next) en el dashboard
+### FASE 1 — Estudio de Beats [EN PROGRESO]
+- [ ] Modo "estudio" en setMode() con gradiente azul-cyan
+- [ ] Doble reproductor: YouTube (beat) + getUserMedia (voz)
+- [ ] Control maestro: un solo PLAY sincroniza ambos
+- [ ] Grabacion de voz (Blob WebM, session vs permanente por plan)
+- [ ] Editor de letra con timestamps y asistente IA
+- [ ] Busqueda filtrada de beats (type beat, instrumental)
+- [ ] Backend: data/letras-beat.json + endpoints CRUD + votos
+- [ ] Disclaimer productor siempre visible
 
-### Prioridad BAJA
-- [ ] Testimoniales reales en landing page
+### FASE 2 — Ranking y Comunidad [PENDIENTE]
+- [ ] Ranking publico de letras (votos, semana/mes/todos)
+- [ ] Perfiles de creador (alias, bio, stats)
+- [ ] Feed de actividad
+
+### FASE 3 — Bares + Eventos Locales [PENDIENTE]
+- [ ] Noches de Talento en panel Bares
+- [ ] Votacion en vivo via QR
+- [ ] Mapa de bares (Google Maps API)
+- [ ] Notificacion a productores (YouTube Data API)
+
+### FASE 4 — Modelo de negocio extendido [PENDIENTE]
+- [ ] Stripe checkout integrado
+- [ ] Plan PRO Productor ($149 MXN)
+- [ ] Limites por plan (3 beats/dia gratis, ilimitado PRO)
+
+### Pendientes generales
+- [ ] Test e2e licencias en produccion
+- [ ] Backup v3 a OneDrive
+- [ ] Redes sociales + email en landing
 - [ ] MASTER_ADMIN env var en Railway
+- [ ] Sesion QR mesa sin registro
 
 ---
 
@@ -241,4 +260,4 @@ ByFlow es una plataforma todo-en-uno de karaoke y entretenimiento en vivo.
 
 ---
 
-*Ultima actualizacion: 2026-03-17 — ByFlow v3.3*
+*Ultima actualizacion: 2026-03-17 — ByFlow v3.4 → v4.0*
