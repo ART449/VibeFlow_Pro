@@ -2054,7 +2054,7 @@ input:focus-visible,textarea:focus-visible{
     <div class="right-panel">
       <h4 title="Escanea este QR desde otro celular para controlar el karaoke remotamente">Control Remoto (QR)</h4>
       <img id="qr-img" alt="Codigo QR para control remoto de ByFlow" title="Escanea con la camara de tu celular para conectarte">
-      <div id="qr-url" title="URL para acceder desde otro dispositivo en la misma red WiFi">Conectando...</div>
+      <div id="qr-url" title="URL para acceder desde otro dispositivo en la misma red WiFi" style="font-size:10px;word-break:break-all;">Cargando URL...</div>
       <div class="divider"></div>
       <h4 title="Guarda canciones con su letra para cargarlas rapidamente desde el Catalogo">Guardar Nueva Cancion</h4>
       <input type="text" class="rp-input" id="new-song-title" placeholder="Titulo de la cancion..." title="Nombre de la cancion" style="margin-bottom:6px;">
@@ -3658,7 +3658,13 @@ function loadOnlineLyrics(idx, useLRC) {
 // ── Cola ──────────────────────────────────────────────────────────────────
 let colaCache = [];
 async function fetchCola() {
-  try { const r = await fetch('/api/cola'); colaCache = await r.json(); renderCola(colaCache); if (currentMode === 'vistas') vpRefresh(); } catch {}
+  try {
+    const r = await fetch('/api/cola');
+    colaCache = await r.json();
+    renderCola(colaCache);
+    renderColaModal();
+    if (currentMode === 'vistas') vpRefresh();
+  } catch {}
 }
 function renderCola(cola) {
   if (cola) colaCache = cola;
@@ -4169,14 +4175,19 @@ setInterval(() => { if (baresState.orders.length) baresRenderOrders(); }, 60000)
 
 // ── QR ────────────────────────────────────────────────────────────────────
 async function loadQR() {
+  const img = document.getElementById('qr-img');
+  const url = document.getElementById('qr-url');
   try {
     const r = await fetch('/api/qr');
     const d = await r.json();
-    const img = document.getElementById('qr-img');
-    const url = document.getElementById('qr-url');
     if (img && d.qr) img.src = d.qr;
-    if (url) url.textContent = d.url || 'No disponible';
-  } catch { document.getElementById('qr-url').textContent = location.origin; }
+    if (url) url.textContent = d.url || location.origin;
+  } catch {
+    // No QR endpoint or failed — show production URL
+    if (url) url.textContent = location.origin;
+    if (img) img.alt = 'QR no disponible en este entorno';
+    if (img) img.style.display = 'none';
+  }
 }
 
 // ── IA — Grok + Ollama Integration ────────────────────────────────────────
