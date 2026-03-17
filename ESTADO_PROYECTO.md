@@ -1,8 +1,8 @@
 # BYFLOW — Estado del Proyecto
 ## "Vive Cantando con ByFlow" — powered by IArtLabs
 
-**Version:** v3.2
-**Fecha:** 2026-03-16
+**Version:** v3.3
+**Fecha:** 2026-03-17
 **Produccion:** https://byflowapp.up.railway.app
 **Repo:** https://github.com/ART449/VibeFlow_Pro
 
@@ -114,23 +114,47 @@ ByFlow es una plataforma todo-en-uno de karaoke y entretenimiento en vivo.
 ### Backup
 - [x] **Backup v2** — OneDrive\Backup-ByFlow\VibeFlow_Pro_backup_2026-03-16_v2.zip (3.9MB)
 
+## COMPLETADO EN SESION 2026-03-17 — v3.3
+
+### Aislamiento de sesion (Socket.IO Rooms)
+- [x] **Socket.IO Rooms** — Cada dispositivo genera roomId unico en sessionStorage
+- [x] **Teleprompter aislado** — Letras, scroll y velocidad son POR ROOM (no globales)
+- [x] **Remote via URL** — `?room=XXXX` permite unirse a la sala del DJ
+- [x] **room_count** — Muestra usuarios conectados en TU sala, no global
+- [x] **Room badge en topbar** — Click copia link de sala para compartir
+- [x] **Cola/mesas global** — La cola de cantantes sigue siendo del venue (compartida)
+- [x] **getRoom()** — Server crea rooms on-demand, limpieza automatica al desconectar
+
+### Tema claro/oscuro
+- [x] **Light theme completo** — CSS variables via `[data-theme="light"]`
+- [x] **Toggle funcional** — Settings > Apariencia > Modo oscuro ON/OFF
+- [x] **Persistencia** — localStorage guarda preferencia, se carga en loadSettingsState()
+- [x] **Meta theme-color** — Actualiza para iOS status bar (oscuro/claro)
+- [x] **Cobertura:** topbar, sidebar, panels, cards, inputs, scrollbar, modals, welcome, toast
+
+### Produccion verificada
+- [x] **YouTube API referrer fix** — `/*` wildcard en Google Cloud Console
+- [x] **CORS_ORIGINS** — Configurado en Railway: `https://byflowapp.up.railway.app`
+- [x] **YouTube search en produccion** — Verificado: busqueda "la bamba" retorna resultados
+- [x] **Licencias en produccion** — Endpoint `/api/license/status` respondiendo
+- [x] **Stats en produccion** — Endpoint `/api/stats` respondiendo
+
 ## PENDIENTES (siguiente sesion)
 
 ### Prioridad ALTA
-- [ ] **YouTube API referrer**: Agregar `/*` al final de ambas URLs en Google Cloud Console (localhost/* y byflowapp.up.railway.app/*)
-- [ ] Configurar en Railway: `CORS_ORIGINS=https://byflowapp.up.railway.app`
-- [ ] Test end-to-end licencias en produccion (generar clave admin, activar, verificar PRO)
-- [ ] Integrar landing page de ChatGPT al repo (landing/index.html)
+- [ ] Test end-to-end licencias en produccion (activar clave PRO, verificar features desbloqueadas)
+- [ ] Integrar landing page al repo (landing/index.html) — no existe todavia, hay que crearla
+- [ ] Backup v3 a OneDrive con todos los cambios de esta sesion
 
 ### Prioridad MEDIA
-- [ ] Tema claro/oscuro toggle (CSS variables ya preparadas por Kimi)
-- [ ] Socket.IO rooms por venue (arquitectura DeepSeek lista)
-- [x] ~~Modelo de monetizacion~~ — Implementado: 3 tiers en panel licencias
-
-### Prioridad BAJA
-- [x] ~~Estadisticas de uso (canciones mas pedidas, horas pico)~~ — IMPLEMENTADO v3.1
 - [ ] PWA + Service Worker (propuesta DeepSeek pendiente)
 - [ ] Panel Vistas (multi-view dashboard estilo Python Panel DJ)
+- [ ] Landing page publica para marketing/Facebook
+
+### Prioridad BAJA
+- [ ] Sesion QR mesa sin registro
+- [ ] Spotify search integration (requiere API key)
+- [ ] Convertir SVG icons a PNG para full PWA compatibility
 
 ---
 
@@ -142,7 +166,7 @@ ByFlow es una plataforma todo-en-uno de karaoke y entretenimiento en vivo.
 | Estadisticas de uso (top songs/singers) | byflow_v73_backend.py | ✅ Implementado |
 | LRCLIB proxy server-side | byflow_v73_backend.py | ✅ Implementado |
 | Design system mode-based gradients | frontend/index.html v7.1 | ✅ Implementado |
-| WebSocket rooms por bar | byflow_v73_backend.py | ⏳ Pendiente |
+| WebSocket rooms por bar | byflow_v73_backend.py | ✅ Implementado v3.3 |
 | Spotify search integration | byflow_v73_backend.py | ⏳ Pendiente (requiere API key) |
 | Sesion QR mesa sin registro | byflow_v73_backend.py | ⏳ Pendiente |
 
@@ -180,7 +204,7 @@ ByFlow es una plataforma todo-en-uno de karaoke y entretenimiento en vivo.
 
 ## COMO RETOMAR
 
-1. Abrir terminal en C:\BYFLOW\VibeFlow_Pro\VibeFlow_Pro
+1. Abrir terminal en C:\BYFLOW\VibeFlow_Pro
 2. `git log --oneline -5` para ver ultimos cambios
 3. Leer este archivo para recordar donde quedamos
 4. El preview local corre en puerto 3333 (node server.js)
@@ -188,4 +212,4 @@ ByFlow es una plataforma todo-en-uno de karaoke y entretenimiento en vivo.
 
 ---
 
-*Ultima actualizacion: 2026-03-16 — ByFlow v3.2*
+*Ultima actualizacion: 2026-03-17 — ByFlow v3.3*
