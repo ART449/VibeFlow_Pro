@@ -11,3 +11,4 @@ Thumbs.db
 data/.license_secret
 data/.admin_secret
 data/licenses.json
+subscriptions.json

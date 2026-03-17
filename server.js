@@ -14,6 +14,33 @@ const fs          = require('fs');
 const crypto      = require('crypto');
 const { exec }    = require('child_process');
 
+// ── Stripe (dormido hasta que se configuren env vars) ────────────────────────
+const stripe = process.env.STRIPE_SECRET_KEY
+  ? require('stripe')(process.env.STRIPE_SECRET_KEY)
+  : null;
+
+const SUBS_FILE = path.join(__dirname, 'data', 'subscriptions.json');
+
+function readSubs() {
+  try { return fs.existsSync(SUBS_FILE) ? JSON.parse(fs.readFileSync(SUBS_FILE, 'utf8')) : { users: {} }; }
+  catch { return { users: {} }; }
+}
+function writeSubs(data) {
+  try { fs.writeFileSync(SUBS_FILE, JSON.stringify(data, null, 2), 'utf8'); } catch(e) { console.error('[Stripe] Write error:', e.message); }
+}
+function planFromPrice(priceId) {
+  if (priceId === process.env.STRIPE_PRICE_PRO_CREATOR) return 'PRO_CREATOR';
+  if (priceId === process.env.STRIPE_PRICE_PRO_BAR) return 'PRO_BAR';
+  return 'FREE';
+}
+function featuresForPlan(plan) {
+  switch (plan) {
+    case 'PRO_CREATOR': return { karaoke:true, musica:true, bares:false, ia:true, remoteQR:true };
+    case 'PRO_BAR':     return { karaoke:true, musica:true, bares:true, ia:true, remoteQR:true };
+    default:            return { karaoke:true, musica:false, bares:false, ia:false, remoteQR:false };
+  }
+}
+
 // ── Utilidades ──────────────────────────────────────────────────────────────
 function getLocalIp() {
   const ifaces = os.networkInterfaces();
@@ -277,6 +304,53 @@ const io = new Server(server, {
 });
 
 app.use(cors(corsOptions));
+
+// ── Stripe webhook (DEBE ir ANTES de express.json para recibir raw body) ────
+app.post('/api/stripe/webhook', express.raw({ type: 'application/json' }), async (req, res) => {
+  if (!stripe || !process.env.STRIPE_WEBHOOK_SECRET) return res.status(200).send('Stripe no configurado');
+  const sig = req.headers['stripe-signature'];
+  let event;
+  try { event = stripe.webhooks.constructEvent(req.body, sig, process.env.STRIPE_WEBHOOK_SECRET); }
+  catch (err) { console.error('[Stripe] Webhook sig error:', err.message); return res.status(400).send('Bad sig'); }
+  const subs = readSubs();
+  try {
+    switch (event.type) {
+      case 'checkout.session.completed': {
+        const s = event.data.object;
+        const email = s.customer_details?.email || s.metadata?.email;
+        if (email && s.subscription && s.customer) {
+          subs.users[email] = { ...(subs.users[email]||{}), stripeCustomerId:s.customer, stripeSubscriptionId:s.subscription, status:'active', updatedAt:new Date().toISOString() };
+          writeSubs(subs);
+        }
+        break;
+      }
+      case 'customer.subscription.created':
+      case 'customer.subscription.updated': {
+        const sub = event.data.object;
+        const price = sub.items?.data?.[0]?.price?.id;
+        const plan = planFromPrice(price);
+        const cust = await stripe.customers.retrieve(sub.customer);
+        if (cust.email) {
+          subs.users[cust.email] = { ...(subs.users[cust.email]||{}), plan, status:sub.status, stripeCustomerId:sub.customer, stripeSubscriptionId:sub.id, currentPeriodEnd:sub.current_period_end, updatedAt:new Date().toISOString() };
+          writeSubs(subs);
+        }
+        break;
+      }
+      case 'customer.subscription.deleted': {
+        const sub = event.data.object;
+        for (const email of Object.keys(subs.users)) {
+          if (subs.users[email].stripeSubscriptionId === sub.id) {
+            subs.users[email] = { ...subs.users[email], plan:'FREE', status:'canceled', updatedAt:new Date().toISOString() };
+          }
+        }
+        writeSubs(subs);
+        break;
+      }
+    }
+    res.json({ received: true });
+  } catch (err) { console.error('[Stripe] Webhook error:', err); res.status(500).send('Error'); }
+});
+
 app.use(express.json({ limit: '1mb' }));
 
 // ── Security Shield Middleware ──────────────────────────────────────────────
@@ -958,6 +1032,48 @@ io.on('connection', (socket) => {
   socket.on('disconnect', () => {
     console.log(`[WS] Cliente desconectado: ${socket.id}`);
   });
+});
+
+// ── Stripe Billing endpoints (dormidos sin STRIPE_SECRET_KEY) ────────────────
+app.post('/api/billing/checkout-session', async (req, res) => {
+  if (!stripe) return res.status(503).json({ error: 'Pagos no configurados todavia' });
+  const { plan, email } = req.body || {};
+  if (!email) return res.status(400).json({ error: 'Email requerido' });
+  const priceId = plan === 'PRO_CREATOR' ? process.env.STRIPE_PRICE_PRO_CREATOR
+                : plan === 'PRO_BAR' ? process.env.STRIPE_PRICE_PRO_BAR : null;
+  if (!priceId) return res.status(400).json({ error: 'Plan invalido' });
+  try {
+    const session = await stripe.checkout.sessions.create({
+      mode: 'subscription',
+      line_items: [{ price: priceId, quantity: 1 }],
+      success_url: `${process.env.APP_BASE_URL || 'https://byflowapp.up.railway.app'}/?checkout=success`,
+      cancel_url: `${process.env.APP_BASE_URL || 'https://byflowapp.up.railway.app'}/?checkout=cancel`,
+      customer_email: email,
+      metadata: { plan, email }
+    });
+    res.json({ url: session.url });
+  } catch (err) { console.error('[Stripe] Checkout error:', err.message); res.status(500).json({ error: 'Error al crear checkout' }); }
+});
+
+app.get('/api/billing/status', (req, res) => {
+  const email = req.query.email;
+  const subs = readSubs();
+  const user = email ? subs.users[email] : null;
+  const plan = user?.plan || 'FREE';
+  res.json({ email: email||null, plan, status: user?.status||'inactive', features: featuresForPlan(plan) });
+});
+
+app.post('/api/billing/customer-portal', async (req, res) => {
+  if (!stripe) return res.status(503).json({ error: 'Pagos no configurados todavia' });
+  const { email } = req.body || {};
+  if (!email) return res.status(400).json({ error: 'Email requerido' });
+  const subs = readSubs();
+  const user = subs.users[email];
+  if (!user?.stripeCustomerId) return res.status(404).json({ error: 'Cliente no encontrado' });
+  try {
+    const session = await stripe.billingPortal.sessions.create({ customer: user.stripeCustomerId, return_url: process.env.APP_BASE_URL || 'https://byflowapp.up.railway.app' });
+    res.json({ url: session.url });
+  } catch (err) { console.error('[Stripe] Portal error:', err.message); res.status(500).json({ error: 'Error al abrir portal' }); }
 });
 
 // ── Error handlers ──────────────────────────────────────────────────────────
