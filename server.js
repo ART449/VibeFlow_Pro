@@ -969,6 +969,7 @@ app.get('*', (req, res) => {
 // ── WebSocket (Socket.IO) ───────────────────────────────────────────────────
 io.on('connection', (socket) => {
   console.log(`[WS] Cliente conectado: ${socket.id}`);
+  io.emit('online_count', io.engine.clientsCount);
 
   socket.emit('init', {
     cola: state.cola, mesas: state.mesas,
@@ -1031,6 +1032,7 @@ io.on('connection', (socket) => {
 
   socket.on('disconnect', () => {
     console.log(`[WS] Cliente desconectado: ${socket.id}`);
+    io.emit('online_count', io.engine.clientsCount);
   });
 });
 
