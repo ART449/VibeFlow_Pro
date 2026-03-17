@@ -17,7 +17,7 @@
   --text:#f0f0f0;--sub:rgba(255,255,255,.4);
   --glow-p:rgba(255,0,110,.25);--glow-s:rgba(131,56,236,.25);
 }
-html,body{height:100%;overflow:hidden;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:var(--bg);color:var(--text);}
+html,body{height:100%;height:100dvh;overflow:hidden;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:var(--bg);color:var(--text);overscroll-behavior:none;-webkit-text-size-adjust:100%;}
 button{cursor:pointer;font-family:inherit;}
 input,textarea,select{font-family:inherit;}
 ::-webkit-scrollbar{width:4px;}
@@ -25,7 +25,7 @@ input,textarea,select{font-family:inherit;}
 ::-webkit-scrollbar-thumb{background:rgba(255,255,255,.12);border-radius:4px;}
 
 /* ── Layout ──────────────────────────────────────────────────────────── */
-.app{display:flex;flex-direction:column;height:100vh;}
+.app{display:flex;flex-direction:column;height:100vh;height:100dvh;height:var(--vh,100vh);}
 
 /* ── Topbar ──────────────────────────────────────────────────────────── */
 .topbar{
@@ -1163,17 +1163,19 @@ select.inp{cursor:pointer;}
 
 /* ── Mobile ──────────────────────────────────────────────────────────── */
 @media(max-width:900px){
-  html,body{overflow:auto;-webkit-overflow-scrolling:touch;touch-action:manipulation;}
+  html,body{overflow:auto;overscroll-behavior:none;touch-action:manipulation;}
   .sidebar{display:none;}
   .right-panel{display:none;}
+  /* iOS: disable expensive backdrop-filter on mobile */
+  .topbar,.fx-bar,.player-bar,.mobile-nav{-webkit-backdrop-filter:none!important;backdrop-filter:none!important;}
   .ia-panel{display:none;}
-  .ia-panel.active{display:flex!important;position:fixed;top:50px;left:0;right:0;bottom:60px;width:100%;z-index:90;border-left:none;}
+  .ia-panel.active{display:flex!important;position:fixed;top:54px;left:0;right:0;bottom:60px;width:100%;z-index:90;border-left:none;overflow-y:auto;-webkit-overflow-scrolling:touch;}
   .bares-panel{display:none;}
-  .bares-panel.active{display:flex!important;position:fixed;top:50px;left:0;right:0;bottom:60px;width:100%;z-index:90;border-left:none;}
+  .bares-panel.active{display:flex!important;position:fixed;top:54px;left:0;right:0;bottom:60px;width:100%;z-index:90;border-left:none;overflow-y:auto;-webkit-overflow-scrolling:touch;}
   .yt-panel{display:none;}
-  .yt-panel.active{display:flex!important;position:fixed;top:50px;left:0;right:0;bottom:60px;width:100%;z-index:90;border-left:none;}
+  .yt-panel.active{display:flex!important;position:fixed;top:54px;left:0;right:0;bottom:60px;width:100%;z-index:90;border-left:none;overflow-y:auto;-webkit-overflow-scrolling:touch;}
   .settings-panel{display:none!important;}
-  .settings-panel.active{display:flex!important;position:fixed;top:50px;left:0;right:0;bottom:60px;width:100%;z-index:90;border-left:none;overflow-y:auto;}
+  .settings-panel.active{display:flex!important;position:fixed;top:54px;left:0;right:0;bottom:60px;width:100%;z-index:90;border-left:none;overflow-y:auto;-webkit-overflow-scrolling:touch;}
   #tp-display{font-size:2.4rem;}
   .topbar{padding:0 10px;}
   .brand{font-size:15px;}
@@ -2464,9 +2466,14 @@ function loadSocketIO() {
 async function connectSocket() {
   const loaded = await loadSocketIO();
   if (!loaded || typeof io === 'undefined') { console.warn('Socket.IO no disponible'); return; }
-  socket = io(SOCKET_URL);
+  if (socket && socket.connected) return; // prevent duplicate connections
+  socket = io(SOCKET_URL, { reconnectionDelay: 2000, reconnectionDelayMax: 10000 });
+  let _lastInit = 0;
   socket.on('connect', () => console.log('[WS] Conectado:', socket.id));
   socket.on('init', (data) => {
+    const now = Date.now();
+    if (now - _lastInit < 1000) return; // debounce rapid reconnects
+    _lastInit = now;
     if (data.cola)        renderCola(data.cola);
     if (data.mesas)       renderMesas(data.mesas);
     if (data.teleprompter && data.teleprompter.lyrics) setLyrics(data.teleprompter.lyrics);
@@ -5977,10 +5984,19 @@ function showPanelsForMode(mode) {
 
 // ── Init ──────────────────────────────────────────────────────────────────
 (async function init() {
-  // PWA Service Worker
+  // PWA Service Worker — force update on iOS
   if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('/sw.js').then(r => console.log('[PWA] SW registered')).catch(e => console.log('[PWA] SW failed:', e));
+    navigator.serviceWorker.register('/sw.js').then(r => {
+      console.log('[PWA] SW registered');
+      r.update(); // force check for new SW version
+    }).catch(e => console.log('[PWA] SW failed:', e));
   }
+
+  // iOS viewport fix — recalculate height when address bar shows/hides
+  const setVH = () => document.documentElement.style.setProperty('--vh', window.innerHeight + 'px');
+  setVH();
+  window.addEventListener('resize', setVH);
+  window.addEventListener('orientationchange', () => setTimeout(setVH, 150));
   updateClock();
   setInterval(updateClock, 1000);
   initVisualizer();

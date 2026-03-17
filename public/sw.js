@@ -1,5 +1,5 @@
 // ByFlow Service Worker — Cache-first para assets, network-first para API
-const CACHE_NAME = 'byflow-v3.1';
+const CACHE_NAME = 'byflow-v3.2';
 const STATIC_ASSETS = [
   '/',
   '/index.html',
