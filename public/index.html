@@ -687,14 +687,30 @@ select.inp{cursor:pointer;}
   position:fixed;bottom:24px;left:50%;
   transform:translateX(-50%) translateY(20px);
   background:rgba(20,20,32,.95);color:#fff;
-  padding:11px 22px;border-radius:10px;
+  padding:12px 20px;border-radius:14px;
   border:1px solid var(--border);
   font-size:13px;font-weight:600;
   opacity:0;transition:all .28s;pointer-events:none;z-index:9999;
-  backdrop-filter:blur(12px);
+  backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);
   box-shadow:0 8px 32px rgba(0,0,0,.4);
+  display:flex;align-items:center;gap:10px;max-width:90%;
+  overflow:hidden;
 }
-#toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+#toast::after{
+  content:'';position:absolute;bottom:0;left:0;height:3px;width:100%;
+  background:linear-gradient(90deg,var(--toast-clr,var(--p)),transparent);
+  animation:toastProg 2.8s linear forwards;
+  opacity:0;
+}
+#toast.show::after{opacity:1;}
+@keyframes toastProg{to{width:0;}}
+#toast .t-icon{font-size:16px;flex-shrink:0;}
+#toast .t-msg{flex:1;line-height:1.4;}
+#toast.show{opacity:1;transform:translateX(-50%) translateY(0);pointer-events:auto;}
+#toast.t-success{--toast-clr:#4caf50;border-color:rgba(76,175,80,.3);}
+#toast.t-error{--toast-clr:#f44336;border-color:rgba(244,67,54,.3);}
+#toast.t-warning{--toast-clr:#ff9800;border-color:rgba(255,152,0,.3);}
+#toast.t-info{--toast-clr:var(--p);border-color:rgba(255,0,110,.3);}
 
 /* ── Empty state ─────────────────────────────────────────────────────── */
 .empty-state{display:flex;flex-direction:column;align-items:center;gap:8px;padding:32px;opacity:.3;}
@@ -4732,10 +4748,21 @@ function updateClock() {
 
 // ── Utils ─────────────────────────────────────────────────────────────────
 function escHtml(s) { const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
-function showToast(msg) {
+function showToast(msg, type) {
   const t = document.getElementById('toast');
-  t.textContent = msg; t.classList.add('show');
-  setTimeout(() => t.classList.remove('show'), 2800);
+  const icons = { success:'✓', error:'✕', warning:'!', info:'ℹ' };
+  t.className = ''; // reset classes
+  if (type && icons[type]) {
+    t.innerHTML = '<span class="t-icon">' + icons[type] + '</span><span class="t-msg">' + escHtml(msg) + '</span>';
+    t.classList.add('t-' + type);
+  } else {
+    t.innerHTML = '<span class="t-msg">' + escHtml(msg) + '</span>';
+  }
+  // Reset animation
+  t.offsetHeight; // force reflow
+  t.classList.add('show');
+  clearTimeout(t._timer);
+  t._timer = setTimeout(() => t.classList.remove('show'), 2800);
 }
 
 // ── Keyboard shortcuts ────────────────────────────────────────────────────
