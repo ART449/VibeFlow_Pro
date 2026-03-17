@@ -90,6 +90,101 @@ input,textarea,select{font-family:inherit;}
 .mode-btn.active svg{opacity:1;}
 .mode-btn.ia-btn.active{background:linear-gradient(135deg,var(--s),var(--a));box-shadow:0 3px 16px var(--glow-s);}
 .mode-btn.bares-btn.active{background:linear-gradient(135deg,#f59e0b,#ef4444);box-shadow:0 3px 16px rgba(245,158,11,.3);}
+.mode-btn.vistas-btn.active{background:linear-gradient(135deg,var(--a),var(--g));box-shadow:0 3px 16px rgba(58,134,255,.3);}
+
+/* ── Panel Vistas (DJ Dashboard) ── */
+.vistas-panel{
+  display:none;overflow:hidden;
+  grid-template-columns:280px 1fr 300px;grid-template-rows:auto 1fr auto;
+  gap:0;position:fixed;top:48px;left:0;right:0;bottom:0;z-index:50;
+  background:var(--bg);
+}
+.vistas-panel.active{display:grid;}
+.vp-header{
+  grid-column:1/-1;padding:10px 16px;
+  background:linear-gradient(135deg,rgba(58,134,255,.08),rgba(0,245,160,.04));
+  border-bottom:1px solid var(--border);
+  display:flex;align-items:center;gap:12px;
+}
+.vp-header-title{
+  font-size:13px;font-weight:800;
+  background:linear-gradient(135deg,var(--a),var(--g));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+}
+.vp-header-badge{font-size:9px;color:var(--g);background:rgba(0,245,160,.1);border:1px solid rgba(0,245,160,.2);padding:2px 8px;border-radius:8px;font-weight:700;}
+.vp-cola{
+  grid-row:2;overflow-y:auto;background:var(--card);border-right:1px solid var(--border);
+  display:flex;flex-direction:column;
+}
+.vp-cola-title{padding:10px 12px;font-size:10px;text-transform:uppercase;letter-spacing:1.5px;color:var(--sub);font-weight:700;border-bottom:1px solid var(--border);}
+.vp-cola-list{flex:1;overflow-y:auto;padding:6px;}
+.vp-cola-item{
+  display:flex;align-items:center;gap:8px;padding:8px 10px;margin-bottom:4px;
+  background:rgba(255,255,255,.03);border:1px solid var(--border);border-radius:10px;
+  font-size:11px;cursor:pointer;transition:all .2s;
+}
+.vp-cola-item:hover{background:rgba(255,255,255,.06);border-color:rgba(255,255,255,.12);}
+.vp-cola-item.singing{border-color:var(--p);background:rgba(255,0,110,.07);}
+.vp-cola-num{width:20px;height:20px;border-radius:50%;background:var(--card2);display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:800;flex-shrink:0;}
+.vp-cola-item.singing .vp-cola-num{background:var(--p);color:#fff;}
+.vp-cola-info{flex:1;min-width:0;}
+.vp-cola-name{font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.vp-cola-song{font-size:9px;color:var(--sub);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.vp-center{
+  grid-row:2;display:flex;flex-direction:column;overflow:hidden;
+}
+.vp-tp{
+  flex:1;overflow-y:auto;padding:20px 24px;font-size:2.5rem;font-weight:700;
+  line-height:1.5;text-align:center;word-break:break-word;
+  display:flex;align-items:center;justify-content:center;
+}
+.vp-tp-empty{color:var(--sub);font-size:1.2rem;font-weight:400;}
+.vp-now{
+  padding:8px 16px;display:flex;align-items:center;gap:10px;
+  background:linear-gradient(135deg,rgba(255,0,110,.08),rgba(131,56,236,.06));
+  border-top:1px solid rgba(255,0,110,.12);
+}
+.vp-now-pulse{width:8px;height:8px;border-radius:50%;background:var(--p);box-shadow:0 0 8px var(--glow-p);animation:pulse 1.5s infinite;flex-shrink:0;}
+.vp-now-info{flex:1;min-width:0;}
+.vp-now-name{font-size:12px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.vp-now-song{font-size:10px;color:var(--sub);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.vp-right{
+  grid-row:2;overflow-y:auto;background:var(--card);border-left:1px solid var(--border);
+  display:flex;flex-direction:column;
+}
+.vp-search{padding:10px 12px;border-bottom:1px solid var(--border);}
+.vp-search-inp{
+  width:100%;padding:8px 12px;background:rgba(255,255,255,.04);border:1px solid var(--border);
+  border-radius:8px;color:var(--text);font-size:12px;outline:none;
+}
+.vp-search-inp:focus{border-color:var(--a);}
+.vp-results{flex:1;overflow-y:auto;padding:6px;}
+.vp-result-item{
+  display:flex;align-items:center;gap:8px;padding:8px 10px;margin-bottom:4px;
+  background:rgba(255,255,255,.03);border:1px solid var(--border);border-radius:10px;
+  font-size:11px;cursor:pointer;transition:all .2s;
+}
+.vp-result-item:hover{background:rgba(255,255,255,.06);border-color:var(--a);}
+.vp-result-thumb{width:40px;height:30px;border-radius:6px;background:var(--card2);object-fit:cover;flex-shrink:0;}
+.vp-result-title{flex:1;min-width:0;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.vp-result-play{
+  width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,var(--p),var(--s));
+  display:flex;align-items:center;justify-content:center;color:#fff;font-size:12px;flex-shrink:0;
+  border:none;cursor:pointer;transition:transform .2s;
+}
+.vp-result-play:hover{transform:scale(1.1);}
+.vp-footer{
+  grid-column:1/-1;padding:6px 16px;
+  border-top:1px solid var(--border);background:var(--card);
+  display:flex;align-items:center;gap:12px;font-size:10px;color:var(--sub);
+}
+.vp-footer-stat{display:flex;align-items:center;gap:4px;}
+.vp-footer-stat .dot{width:6px;height:6px;border-radius:50%;}
+@media(max-width:900px){
+  .vistas-panel.active{grid-template-columns:1fr;grid-template-rows:auto auto 1fr auto auto;}
+  .vp-cola{grid-row:auto;max-height:160px;border-right:none;border-bottom:1px solid var(--border);}
+  .vp-right{grid-row:auto;max-height:200px;border-left:none;border-top:1px solid var(--border);}
+}
 
 /* ── Mode-based accent system (inspirado v7.1) ── */
 body.mode-bares .topbar::after{background:linear-gradient(90deg,transparent,#f59e0b,#ef4444,transparent);}
@@ -1523,6 +1618,10 @@ input:focus-visible,textarea:focus-visible{
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M3 7h18M3 7l2 13h14l2-13M3 7l1-3h16l1 3"/><line x1="10" y1="12" x2="10" y2="17"/><line x1="14" y1="12" x2="14" y2="17"/></svg>
         Bares
       </button>
+      <button class="mode-btn vistas-btn" data-mode="vistas" onclick="setMode('vistas')" title="Dashboard DJ — teleprompter, cola y musica en una vista">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+        Vistas
+      </button>
     </div>
     <div style="display:flex;align-items:center;gap:8px;">
       <span id="online-count" title="Dispositivos en tu sala" style="font-size:10px;color:var(--g);display:none;">● <span id="online-num">0</span></span>
@@ -2437,6 +2536,47 @@ input:focus-visible,textarea:focus-visible{
 </div>
 
 <!-- ═══ MOBILE BOTTOM NAV ═══ -->
+<!-- ═══ PANEL VISTAS (DJ Dashboard) ═══ -->
+<div class="vistas-panel" id="vistas-panel">
+  <div class="vp-header">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px;height:16px;opacity:.6;"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+    <span class="vp-header-title">Panel Vistas</span>
+    <span class="vp-header-badge">DJ Dashboard</span>
+  </div>
+  <div class="vp-cola">
+    <div class="vp-cola-title">Cola de Cantantes</div>
+    <div class="vp-cola-list" id="vp-cola-list">
+      <div style="padding:20px;text-align:center;color:var(--sub);font-size:11px;">Cola vacia</div>
+    </div>
+  </div>
+  <div class="vp-center">
+    <div class="vp-tp" id="vp-tp">
+      <div class="vp-tp-empty">Selecciona una cancion para ver la letra aqui</div>
+    </div>
+    <div class="vp-now" id="vp-now" style="display:none;">
+      <div class="vp-now-pulse"></div>
+      <div class="vp-now-info">
+        <div class="vp-now-name" id="vp-now-name">—</div>
+        <div class="vp-now-song" id="vp-now-song">—</div>
+      </div>
+    </div>
+  </div>
+  <div class="vp-right">
+    <div class="vp-search">
+      <input type="text" class="vp-search-inp" id="vp-search-inp" placeholder="Buscar cancion en YouTube..." onkeypress="if(event.key==='Enter')vpSearch()">
+    </div>
+    <div class="vp-results" id="vp-results">
+      <div style="padding:20px;text-align:center;color:var(--sub);font-size:11px;">Busca una cancion para empezar</div>
+    </div>
+  </div>
+  <div class="vp-footer">
+    <div class="vp-footer-stat"><span class="dot" style="background:var(--g);"></span> <span id="vp-cola-count">0</span> en cola</div>
+    <div class="vp-footer-stat"><span class="dot" style="background:var(--p);"></span> <span id="vp-playing">Nada sonando</span></div>
+    <div style="flex:1;"></div>
+    <div style="font-size:9px;color:rgba(255,255,255,.15);">Panel Vistas v1.0</div>
+  </div>
+</div>
+
 <div class="mobile-nav" id="mobile-nav">
   <div class="mobile-nav-inner">
     <button class="mnav-btn active" data-mode="karaoke" onclick="mobileSetMode('karaoke',this)">
@@ -2454,6 +2594,10 @@ input:focus-visible,textarea:focus-visible{
     <button class="mnav-btn" data-mode="ia" onclick="mobileSetMode('ia',this)">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 2a9 9 0 0 1 9 9c0 4.56-2.87 8.5-7 9.7V22h-4v-1.3C5.87 19.5 3 15.56 3 11a9 9 0 0 1 9-9z"/><circle cx="9" cy="11" r="1" fill="currentColor"/><circle cx="15" cy="11" r="1" fill="currentColor"/></svg>
       <span>IA</span>
+    </button>
+    <button class="mnav-btn" data-mode="vistas" onclick="mobileSetMode('vistas',this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+      <span>Vistas</span>
     </button>
     <button class="mnav-btn" data-mode="remote" onclick="mobileSetMode('remote',this)">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="5" y="2" width="14" height="20" rx="2"/><circle cx="12" cy="17" r="1"/></svg>
@@ -3164,7 +3308,7 @@ function loadOnlineLyrics(idx, useLRC) {
 // ── Cola ──────────────────────────────────────────────────────────────────
 let colaCache = [];
 async function fetchCola() {
-  try { const r = await fetch('/api/cola'); colaCache = await r.json(); renderCola(colaCache); } catch {}
+  try { const r = await fetch('/api/cola'); colaCache = await r.json(); renderCola(colaCache); if (currentMode === 'vistas') vpRefresh(); } catch {}
 }
 function renderCola(cola) {
   if (cola) colaCache = cola;
@@ -3275,6 +3419,7 @@ function setMode(mode) {
   const ytPanel    = document.getElementById('yt-panel');
   const baresPanel = document.getElementById('bares-panel');
   const settingsPanel = document.getElementById('settings-panel');
+  const vistasPanel = document.getElementById('vistas-panel');
 
   // 1. Ocultar TODO primero
   if (sidebar)      sidebar.style.display      = 'none';
@@ -3283,6 +3428,7 @@ function setMode(mode) {
   if (ytPanel)      { ytPanel.classList.remove('active');    ytPanel.style.display    = 'none'; }
   if (baresPanel)   { baresPanel.classList.remove('active'); baresPanel.style.display = 'none'; }
   if (settingsPanel){ settingsPanel.classList.remove('active'); settingsPanel.style.display = 'none'; }
+  if (vistasPanel)  { vistasPanel.classList.remove('active'); vistasPanel.style.display = 'none'; }
 
   // 2. Mostrar lo que corresponde al modo
   const topbar = document.querySelector('.topbar');
@@ -3345,9 +3491,20 @@ function setMode(mode) {
     // Sidebar oculto — la cola se gestiona desde Mesas Pendientes
     if (baresPanel) { baresPanel.classList.add('active'); baresPanel.style.display = 'flex'; }
     baresInit();
+  } else if (mode === 'vistas') {
+    // DJ Dashboard: ocultar main layout, mostrar vistas grid
+    const mainEl = document.querySelector('.main');
+    if (mainEl) mainEl.style.display = 'none';
+    if (vistasPanel) { vistasPanel.classList.add('active'); vistasPanel.style.display = 'grid'; }
+    vpRefresh();
   } else if (mode === 'settings') {
     if (settingsPanel)  { settingsPanel.classList.add('active'); settingsPanel.style.display = 'flex'; }
-    loadStats(); // Cargar estadísticas al abrir settings
+    loadStats();
+  }
+  // Restore .main visibility for non-vistas modes
+  if (mode !== 'vistas') {
+    const mainEl = document.querySelector('.main');
+    if (mainEl) mainEl.style.display = '';
   }
 }
 
@@ -6197,6 +6354,97 @@ function showPanelsForMode(mode) {
 }
 
 // No patch needed — showPanelsForMode is called from welcomeSelect/dismissWelcome
+
+// ── Panel Vistas (DJ Dashboard) functions ─────────────────────────────────
+function vpRefresh() {
+  // Sync cola
+  const list = document.getElementById('vp-cola-list');
+  const countEl = document.getElementById('vp-cola-count');
+  if (list && colaCache) {
+    if (colaCache.length === 0) {
+      list.innerHTML = '<div style="padding:20px;text-align:center;color:var(--sub);font-size:11px;">Cola vacia</div>';
+    } else {
+      list.innerHTML = colaCache.map((c, i) => {
+        const singing = c.estado === 'cantando';
+        return `<div class="vp-cola-item${singing ? ' singing' : ''}" onclick="activarCantante('${c.id}')">
+          <div class="vp-cola-num">${i + 1}</div>
+          <div class="vp-cola-info">
+            <div class="vp-cola-name">${c.cantante || 'Sin nombre'}</div>
+            <div class="vp-cola-song">${c.cancion || 'Sin cancion'}</div>
+          </div>
+        </div>`;
+      }).join('');
+    }
+    if (countEl) countEl.textContent = colaCache.length;
+  }
+  // Sync now-singing
+  const singing = colaCache ? colaCache.find(c => c.estado === 'cantando') : null;
+  const vpNow = document.getElementById('vp-now');
+  const vpNowName = document.getElementById('vp-now-name');
+  const vpNowSong = document.getElementById('vp-now-song');
+  const vpPlaying = document.getElementById('vp-playing');
+  if (singing) {
+    if (vpNow) vpNow.style.display = 'flex';
+    if (vpNowName) vpNowName.textContent = singing.cantante || '—';
+    if (vpNowSong) vpNowSong.textContent = singing.cancion || '—';
+    if (vpPlaying) vpPlaying.textContent = singing.cantante;
+  } else {
+    if (vpNow) vpNow.style.display = 'none';
+    if (vpPlaying) vpPlaying.textContent = 'Nada sonando';
+  }
+  // Sync teleprompter text
+  const tpDisplay = document.getElementById('tp-display');
+  const vpTp = document.getElementById('vp-tp');
+  if (vpTp && tpDisplay) {
+    const text = tpDisplay.textContent.trim();
+    if (text && text !== 'Buscar letra en internet') {
+      vpTp.innerHTML = tpDisplay.innerHTML;
+      vpTp.style.fontSize = '1.8rem';
+    } else {
+      vpTp.innerHTML = '<div class="vp-tp-empty">Selecciona una cancion para ver la letra aqui</div>';
+      vpTp.style.fontSize = '';
+    }
+  }
+}
+
+async function vpSearch() {
+  const inp = document.getElementById('vp-search-inp');
+  const results = document.getElementById('vp-results');
+  const q = inp ? inp.value.trim() : '';
+  if (!q) return;
+  results.innerHTML = '<div style="padding:20px;text-align:center;color:var(--sub);font-size:11px;">Buscando...</div>';
+  try {
+    const ytKey = localStorage.getItem('byflow_yt_api_key') || '';
+    const res = await fetch(`/api/youtube/search?q=${encodeURIComponent(q)}&key=${encodeURIComponent(ytKey)}`);
+    const data = await res.json();
+    if (data.error || !data.items || data.items.length === 0) {
+      results.innerHTML = '<div style="padding:20px;text-align:center;color:var(--sub);font-size:11px;">Sin resultados</div>';
+      return;
+    }
+    results.innerHTML = data.items.map(item => {
+      const vid = item.id.videoId || item.id;
+      const title = item.snippet.title.replace(/&amp;/g,'&').replace(/&quot;/g,'"').replace(/&#39;/g,"'");
+      const thumb = item.snippet.thumbnails?.default?.url || '';
+      return `<div class="vp-result-item" onclick="vpPlay('${vid}','${title.replace(/'/g,"\\'")}')">
+        <img class="vp-result-thumb" src="${thumb}" alt="" loading="lazy">
+        <div class="vp-result-title" title="${title}">${title}</div>
+        <button class="vp-result-play">&#9654;</button>
+      </div>`;
+    }).join('');
+  } catch {
+    results.innerHTML = '<div style="padding:20px;text-align:center;color:var(--sub);font-size:11px;">Error de busqueda</div>';
+  }
+}
+
+function vpPlay(videoId, title) {
+  // Use existing ytPlayWithLyrics if available
+  if (typeof ytPlayWithLyrics === 'function') {
+    ytPlayWithLyrics(videoId, title);
+    setTimeout(vpRefresh, 500);
+  } else if (typeof ytEmbed === 'function') {
+    ytEmbed(videoId);
+  }
+}
 
 // ── Init ──────────────────────────────────────────────────────────────────
 (async function init() {

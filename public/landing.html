@@ -1,0 +1,622 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#07070d">
+<meta name="description" content="ByFlow — Karaoke inteligente y entretenimiento en vivo para bares, raperos y cantantes. Teleprompter, streaming, IA y más. Gratis para empezar.">
+<meta property="og:title" content="ByFlow — Vive Cantando">
+<meta property="og:description" content="Karaoke inteligente con teleprompter, streaming de música, gestión de bares e IA Studio. La plataforma todo-en-uno para cantar en vivo.">
+<meta property="og:url" content="https://byflowapp.up.railway.app/landing">
+<meta property="og:type" content="website">
+<meta property="og:image" content="https://byflowapp.up.railway.app/icon-512.svg">
+<meta name="twitter:card" content="summary_large_image">
+<title>ByFlow — Vive Cantando | Karaoke Inteligente</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+:root{
+  --bg:#07070d;--card:#0e0e18;--card2:#13131f;--border:rgba(255,255,255,.07);
+  --p:#ff006e;--s:#8338ec;--a:#3a86ff;--g:#00f5a0;
+  --text:#f0f0f0;--sub:rgba(255,255,255,.4);
+  --glow-p:rgba(255,0,110,.25);--glow-s:rgba(131,56,236,.25);
+}
+html{scroll-behavior:smooth;}
+body{
+  font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Oxygen,Ubuntu,sans-serif;
+  background:var(--bg);color:var(--text);overflow-x:hidden;
+  -webkit-font-smoothing:antialiased;
+}
+a{color:inherit;text-decoration:none;}
+
+/* ── Nav ──────────────────────────────────────────────────── */
+.nav{
+  position:fixed;top:0;left:0;right:0;z-index:100;
+  padding:16px 32px;display:flex;align-items:center;justify-content:space-between;
+  transition:background .3s,box-shadow .3s;
+}
+.nav.scrolled{
+  background:rgba(7,7,13,.95);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);
+  box-shadow:0 1px 0 var(--border);
+}
+.nav-brand{
+  font-size:1.5rem;font-weight:900;letter-spacing:-1px;
+  background:linear-gradient(135deg,#ff006e,#8338ec,#3a86ff);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+}
+.nav-links{display:flex;gap:24px;align-items:center;}
+.nav-links a{font-size:.85rem;color:var(--sub);transition:color .2s;font-weight:500;}
+.nav-links a:hover{color:var(--text);}
+.nav-cta{
+  background:linear-gradient(135deg,var(--p),var(--s));color:#fff !important;
+  padding:8px 20px;border-radius:24px;font-weight:700;font-size:.8rem;
+  transition:transform .2s,box-shadow .2s;
+}
+.nav-cta:hover{transform:translateY(-2px);box-shadow:0 8px 24px var(--glow-p);}
+.nav-menu-btn{display:none;background:none;border:none;color:var(--text);font-size:1.5rem;cursor:pointer;}
+
+/* ── Hero ─────────────────────────────────────────────────── */
+.hero{
+  min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  text-align:center;padding:120px 24px 80px;position:relative;overflow:hidden;
+  background:
+    radial-gradient(ellipse at 20% 20%, rgba(233,30,144,.12) 0%, transparent 50%),
+    radial-gradient(ellipse at 80% 80%, rgba(124,77,255,.08) 0%, transparent 50%),
+    radial-gradient(ellipse at 50% 30%,rgba(20,10,40,.98),rgba(7,7,13,.99));
+}
+.hero-particles{position:absolute;inset:0;overflow:hidden;pointer-events:none;}
+.hero-particles span{
+  position:absolute;width:2px;height:2px;background:rgba(255,255,255,.15);border-radius:50%;
+  animation:float linear infinite;
+}
+@keyframes float{
+  0%{transform:translateY(100vh) scale(0);opacity:0;}
+  10%{opacity:1;}
+  90%{opacity:1;}
+  100%{transform:translateY(-10vh) scale(1);opacity:0;}
+}
+.hero-brand{
+  font-size:.75rem;color:rgba(255,255,255,.2);letter-spacing:3px;text-transform:uppercase;
+  opacity:0;animation:fadeUp .7s ease .1s forwards;
+}
+.hero-logo{
+  font-size:clamp(3rem,8vw,6rem);font-weight:900;letter-spacing:-2px;
+  background:linear-gradient(135deg,#ff006e,#8338ec,#3a86ff);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+  opacity:0;animation:fadeUp .7s ease .2s forwards;
+}
+.hero-tagline{
+  font-size:clamp(1rem,3vw,1.4rem);color:var(--sub);margin-top:-4px;
+  opacity:0;animation:fadeUp .7s ease .35s forwards;
+}
+.hero-subtitle{
+  font-size:clamp(.85rem,2vw,1.1rem);color:rgba(255,255,255,.3);max-width:560px;
+  margin-top:12px;line-height:1.6;
+  opacity:0;animation:fadeUp .7s ease .5s forwards;
+}
+.hero-btns{
+  display:flex;gap:16px;margin-top:32px;flex-wrap:wrap;justify-content:center;
+  opacity:0;animation:fadeUp .7s ease .65s forwards;
+}
+.btn-primary{
+  background:linear-gradient(135deg,var(--p),var(--s));color:#fff;
+  padding:14px 36px;border-radius:32px;font-weight:800;font-size:1rem;
+  border:none;cursor:pointer;transition:transform .2s,box-shadow .2s;
+  box-shadow:0 4px 24px var(--glow-p);
+}
+.btn-primary:hover{transform:translateY(-3px);box-shadow:0 12px 40px var(--glow-p);}
+.btn-secondary{
+  background:rgba(255,255,255,.06);color:var(--text);
+  padding:14px 36px;border-radius:32px;font-weight:700;font-size:1rem;
+  border:1px solid var(--border);cursor:pointer;transition:all .2s;
+}
+.btn-secondary:hover{background:rgba(255,255,255,.1);transform:translateY(-3px);}
+.hero-scroll{
+  position:absolute;bottom:32px;left:50%;transform:translateX(-50%);
+  color:rgba(255,255,255,.15);font-size:1.5rem;animation:bounce 2s infinite;
+}
+@keyframes bounce{0%,100%{transform:translateX(-50%) translateY(0);}50%{transform:translateX(-50%) translateY(8px);}}
+@keyframes fadeUp{from{opacity:0;transform:translateY(16px);}to{opacity:1;transform:translateY(0);}}
+@keyframes cardEntrance{from{opacity:0;transform:translateY(24px);}to{opacity:1;transform:translateY(0);}}
+
+/* ── Section Common ───────────────────────────────────────── */
+section{padding:100px 24px;}
+.section-title{
+  text-align:center;font-size:clamp(1.5rem,4vw,2.2rem);font-weight:900;
+  margin-bottom:12px;
+}
+.section-sub{
+  text-align:center;color:var(--sub);font-size:clamp(.85rem,2vw,1rem);
+  max-width:500px;margin:0 auto 48px;
+}
+.animate-on-scroll{opacity:0;transform:translateY(24px);transition:opacity .6s ease,transform .6s ease;}
+.animate-on-scroll.visible{opacity:1;transform:translateY(0);}
+
+/* ── Features ─────────────────────────────────────────────── */
+.features-grid{
+  display:grid;grid-template-columns:repeat(2,1fr);gap:20px;
+  max-width:800px;margin:0 auto;
+}
+.feature-card{
+  position:relative;overflow:hidden;
+  background:rgba(255,255,255,.04);border:1px solid var(--border);
+  border-radius:20px;padding:32px 24px;
+  backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
+  transition:all .35s cubic-bezier(.4,0,.2,1);
+}
+.feature-card:hover{
+  background:rgba(255,255,255,.07);transform:translateY(-6px) scale(1.01);
+  box-shadow:0 12px 40px rgba(0,0,0,.4);
+}
+.feature-card .fc-glow{
+  position:absolute;inset:0;opacity:0;transition:opacity .35s;pointer-events:none;border-radius:20px;
+}
+.feature-card:hover .fc-glow{opacity:1;}
+.feature-card:nth-child(1) .fc-glow{background:radial-gradient(circle at 50% 0%,rgba(233,30,144,.3) 0%,transparent 70%);}
+.feature-card:nth-child(1):hover{border-color:rgba(233,30,144,.4);}
+.feature-card:nth-child(2) .fc-glow{background:radial-gradient(circle at 50% 0%,rgba(229,57,53,.3) 0%,transparent 70%);}
+.feature-card:nth-child(2):hover{border-color:rgba(229,57,53,.4);}
+.feature-card:nth-child(3) .fc-glow{background:radial-gradient(circle at 50% 0%,rgba(255,111,0,.3) 0%,transparent 70%);}
+.feature-card:nth-child(3):hover{border-color:rgba(255,111,0,.4);}
+.feature-card:nth-child(4) .fc-glow{background:radial-gradient(circle at 50% 0%,rgba(124,77,255,.3) 0%,transparent 70%);}
+.feature-card:nth-child(4):hover{border-color:rgba(124,77,255,.4);}
+.fc-icon{
+  width:56px;height:56px;border-radius:14px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:26px;margin-bottom:16px;
+}
+.fc-icon.karaoke{background:linear-gradient(135deg,var(--p),var(--s));}
+.fc-icon.musica{background:linear-gradient(135deg,#ff4444,#cc0000);}
+.fc-icon.bares{background:linear-gradient(135deg,#f59e0b,#ef4444);}
+.fc-icon.ia{background:linear-gradient(135deg,#7c4dff,#536dfe);}
+.fc-title{font-size:1.1rem;font-weight:800;margin-bottom:8px;display:flex;align-items:center;gap:10px;}
+.fc-tag{
+  font-size:.6rem;padding:2px 8px;border-radius:10px;font-weight:800;letter-spacing:.5px;
+}
+.fc-tag.free{background:rgba(0,245,160,.1);color:var(--g);border:1px solid rgba(0,245,160,.2);}
+.fc-tag.pro{background:rgba(245,158,11,.1);color:#f59e0b;border:1px solid rgba(245,158,11,.2);}
+.fc-desc{font-size:.85rem;color:var(--sub);line-height:1.6;}
+.fc-list{list-style:none;margin-top:12px;font-size:.8rem;color:var(--sub);line-height:2;}
+.fc-list li::before{content:'✓ ';color:var(--g);}
+
+/* ── How It Works ─────────────────────────────────────────── */
+.how-grid{
+  display:grid;grid-template-columns:repeat(3,1fr);gap:24px;
+  max-width:800px;margin:0 auto;
+}
+.how-step{text-align:center;padding:24px 16px;}
+.how-num{
+  width:48px;height:48px;border-radius:50%;margin:0 auto 16px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:1.2rem;font-weight:900;
+  background:linear-gradient(135deg,var(--p),var(--s));color:#fff;
+  box-shadow:0 4px 20px var(--glow-p);
+}
+.how-title{font-weight:800;margin-bottom:8px;font-size:.95rem;}
+.how-desc{font-size:.8rem;color:var(--sub);line-height:1.5;}
+
+/* ── Pricing ──────────────────────────────────────────────── */
+.pricing-grid{
+  display:grid;grid-template-columns:repeat(3,1fr);gap:20px;
+  max-width:900px;margin:0 auto;
+}
+.price-card{
+  background:rgba(255,255,255,.03);border:1px solid var(--border);
+  border-radius:20px;padding:32px 24px;text-align:center;
+  transition:all .35s;position:relative;
+}
+.price-card:hover{transform:translateY(-6px);box-shadow:0 12px 40px rgba(0,0,0,.3);}
+.price-card.popular{
+  background:linear-gradient(135deg,rgba(255,0,110,.08),rgba(131,56,236,.08));
+  border-color:rgba(255,0,110,.25);
+}
+.price-badge{
+  position:absolute;top:-12px;left:50%;transform:translateX(-50%);
+  background:linear-gradient(135deg,#ff006e,#8338ec);color:#fff;
+  font-size:.65rem;font-weight:800;padding:4px 14px;border-radius:12px;
+  text-transform:uppercase;letter-spacing:1px;
+}
+.price-tier{font-size:.75rem;text-transform:uppercase;letter-spacing:1.5px;color:var(--sub);margin-bottom:4px;}
+.price-card.popular .price-tier{color:var(--p);}
+.price-card:nth-child(3) .price-tier{color:#fb923c;}
+.price-amount{font-size:2.8rem;font-weight:900;margin:8px 0 4px;}
+.price-period{font-size:.75rem;color:var(--sub);margin-bottom:20px;}
+.price-features{list-style:none;text-align:left;font-size:.85rem;line-height:2.2;}
+.price-features li{color:var(--sub);}
+.price-features li.active{color:var(--text);}
+.price-features li::before{margin-right:8px;}
+.price-features li.active::before{content:'✓';color:var(--g);}
+.price-features li.inactive::before{content:'✗';color:rgba(255,255,255,.15);}
+.price-features li.inactive{opacity:.4;}
+.price-btn{
+  display:inline-block;width:100%;margin-top:24px;padding:12px;border-radius:12px;
+  font-weight:700;font-size:.85rem;text-align:center;cursor:pointer;
+  border:1px solid var(--border);background:rgba(255,255,255,.05);color:var(--text);
+  transition:all .2s;
+}
+.price-btn:hover{background:rgba(255,255,255,.1);}
+.price-card.popular .price-btn{
+  background:linear-gradient(135deg,var(--p),var(--s));border:none;color:#fff;
+  box-shadow:0 4px 20px var(--glow-p);
+}
+.price-card.popular .price-btn:hover{box-shadow:0 8px 32px var(--glow-p);transform:translateY(-2px);}
+.pricing-note{text-align:center;margin-top:20px;font-size:.75rem;color:rgba(255,255,255,.2);line-height:1.8;}
+
+/* ── Testimonials ─────────────────────────────────────────── */
+.testimonials-grid{
+  display:grid;grid-template-columns:repeat(3,1fr);gap:20px;
+  max-width:900px;margin:0 auto;
+}
+.testimonial-card{
+  background:rgba(255,255,255,.04);border:1px solid var(--border);
+  border-radius:16px;padding:28px 24px;
+  backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
+}
+.tc-quote{font-size:.9rem;color:var(--sub);line-height:1.7;font-style:italic;margin-bottom:20px;}
+.tc-quote::before{content:'"';font-size:2rem;color:var(--p);line-height:0;vertical-align:-8px;margin-right:4px;}
+.tc-author{display:flex;align-items:center;gap:12px;}
+.tc-avatar{
+  width:40px;height:40px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  font-weight:800;font-size:.85rem;color:#fff;
+}
+.tc-avatar:nth-of-type(1){background:linear-gradient(135deg,var(--p),var(--s));}
+.tc-name{font-weight:700;font-size:.85rem;}
+.tc-role{font-size:.7rem;color:var(--sub);}
+
+/* ── CTA Banner ───────────────────────────────────────────── */
+.cta-section{
+  text-align:center;padding:80px 24px;
+  background:
+    radial-gradient(ellipse at 30% 50%, rgba(255,0,110,.1) 0%, transparent 50%),
+    radial-gradient(ellipse at 70% 50%, rgba(131,56,236,.08) 0%, transparent 50%);
+}
+.cta-title{font-size:clamp(1.5rem,4vw,2.5rem);font-weight:900;margin-bottom:12px;}
+.cta-sub{color:var(--sub);margin-bottom:32px;font-size:1rem;}
+
+/* ── Footer ───────────────────────────────────────────────── */
+.footer{
+  background:var(--card);border-top:1px solid var(--border);
+  padding:48px 32px 24px;position:relative;
+}
+.footer::before{
+  content:'';position:absolute;top:0;left:0;right:0;height:2px;
+  background:linear-gradient(90deg,var(--p),var(--s),var(--a));
+}
+.footer-grid{
+  display:grid;grid-template-columns:2fr 1fr 1fr;gap:40px;
+  max-width:900px;margin:0 auto;
+}
+.footer-brand{font-size:1.3rem;font-weight:900;
+  background:linear-gradient(135deg,#ff006e,#8338ec,#3a86ff);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+  margin-bottom:8px;
+}
+.footer-desc{font-size:.8rem;color:var(--sub);line-height:1.6;}
+.footer h4{font-size:.75rem;text-transform:uppercase;letter-spacing:2px;color:var(--sub);margin-bottom:12px;}
+.footer-links{list-style:none;}
+.footer-links li{margin-bottom:8px;}
+.footer-links a{font-size:.85rem;color:rgba(255,255,255,.5);transition:color .2s;}
+.footer-links a:hover{color:var(--text);}
+.footer-bottom{
+  text-align:center;margin-top:40px;padding-top:20px;
+  border-top:1px solid var(--border);
+  font-size:.7rem;color:rgba(255,255,255,.15);letter-spacing:2px;text-transform:uppercase;
+}
+
+/* ── Mobile ───────────────────────────────────────────────── */
+@media(max-width:768px){
+  .nav-links{display:none;}
+  .nav-links.open{
+    display:flex;flex-direction:column;position:fixed;inset:0;
+    background:rgba(7,7,13,.98);backdrop-filter:blur(24px);
+    justify-content:center;align-items:center;gap:32px;z-index:99;
+  }
+  .nav-links.open a{font-size:1.2rem;color:var(--text);}
+  .nav-menu-btn{display:block;z-index:101;}
+  .features-grid{grid-template-columns:1fr;}
+  .how-grid{grid-template-columns:1fr;gap:16px;}
+  .pricing-grid{grid-template-columns:1fr;max-width:360px;}
+  .testimonials-grid{grid-template-columns:1fr;max-width:400px;}
+  .footer-grid{grid-template-columns:1fr;text-align:center;gap:24px;}
+}
+@media(max-width:480px){
+  .nav{padding:12px 16px;}
+  section{padding:60px 16px;}
+  .hero{padding:100px 16px 60px;}
+}
+</style>
+</head>
+<body>
+
+<!-- ── Nav ──────────────────────────────────────────────────── -->
+<nav class="nav" id="nav">
+  <div class="nav-brand">ByFlow</div>
+  <div class="nav-links" id="nav-links">
+    <a href="#features">Features</a>
+    <a href="#como-funciona">Como Funciona</a>
+    <a href="#pricing">Precios</a>
+    <a href="#testimonios">Opiniones</a>
+    <a href="/" class="nav-cta">Abrir ByFlow</a>
+  </div>
+  <button class="nav-menu-btn" id="menu-btn" aria-label="Menu">&#9776;</button>
+</nav>
+
+<!-- ── Hero ─────────────────────────────────────────────────── -->
+<section class="hero">
+  <div class="hero-particles" id="particles"></div>
+  <div class="hero-brand">POWERED BY IARTLABS</div>
+  <h1 class="hero-logo">ByFlow</h1>
+  <p class="hero-tagline">Vive Cantando &#127926;</p>
+  <p class="hero-subtitle">Karaoke inteligente y entretenimiento en vivo para bares, raperos y cantantes. Teleprompter, streaming, IA y mas — todo en una plataforma.</p>
+  <div class="hero-btns">
+    <a href="/" class="btn-primary">Prueba Gratis</a>
+    <a href="#pricing" class="btn-secondary">Ver Planes</a>
+  </div>
+  <div class="hero-scroll">&#8964;</div>
+</section>
+
+<!-- ── Features ─────────────────────────────────────────────── -->
+<section id="features">
+  <h2 class="section-title animate-on-scroll">4 modos, una plataforma</h2>
+  <p class="section-sub animate-on-scroll">Todo lo que necesitas para cantar, entretener y administrar tu bar — sin instalar nada.</p>
+  <div class="features-grid">
+
+    <div class="feature-card animate-on-scroll">
+      <div class="fc-glow"></div>
+      <div class="fc-icon karaoke">&#127908;</div>
+      <div class="fc-title">Karaoke <span class="fc-tag free">GRATIS</span></div>
+      <p class="fc-desc">Teleprompter profesional con letras sincronizadas, cola de cantantes y efectos de audio en tiempo real.</p>
+      <ul class="fc-list">
+        <li>Teleprompter con scroll automatico</li>
+        <li>Cola de cantantes con drag &amp; drop</li>
+        <li>Letras sync desde LRCLIB</li>
+        <li>Control remoto via QR</li>
+      </ul>
+    </div>
+
+    <div class="feature-card animate-on-scroll">
+      <div class="fc-glow"></div>
+      <div class="fc-icon musica">&#127925;</div>
+      <div class="fc-title">Musica <span class="fc-tag pro">PRO</span></div>
+      <p class="fc-desc">Streaming embebido de YouTube, SoundCloud y Jamendo. Busca canciones y reproduce sin salir de ByFlow.</p>
+      <ul class="fc-list">
+        <li>YouTube, SoundCloud, Jamendo</li>
+        <li>Busqueda integrada</li>
+        <li>Auto-carga de letras</li>
+        <li>Cero descargas, 100% legal</li>
+      </ul>
+    </div>
+
+    <div class="feature-card animate-on-scroll">
+      <div class="fc-glow"></div>
+      <div class="fc-icon bares">&#127867;</div>
+      <div class="fc-title">Bares <span class="fc-tag pro">PRO</span></div>
+      <p class="fc-desc">Gestion de mesas, promos automaticas entre canciones, soundboard DJ y cola de peticiones de clientes.</p>
+      <ul class="fc-list">
+        <li>Mesas con peticiones en vivo</li>
+        <li>Promos entre canciones</li>
+        <li>Soundboard DJ (9 SFX)</li>
+        <li>Estadisticas de uso</li>
+      </ul>
+    </div>
+
+    <div class="feature-card animate-on-scroll">
+      <div class="fc-glow"></div>
+      <div class="fc-icon ia">&#10024;</div>
+      <div class="fc-title">IA Studio <span class="fc-tag pro">PRO</span></div>
+      <p class="fc-desc">GFlow DJ — tu asistente de inteligencia artificial que genera letras, sugiere canciones y crea sets personalizados.</p>
+      <ul class="fc-list">
+        <li>Genera letras con IA</li>
+        <li>Sugiere canciones por mood</li>
+        <li>Estudio de letras completo</li>
+        <li>Motor offline (sin internet)</li>
+      </ul>
+    </div>
+
+  </div>
+</section>
+
+<!-- ── How It Works ────────────────────────────────────────── -->
+<section id="como-funciona" style="background:var(--card);">
+  <h2 class="section-title animate-on-scroll">Listo en 3 pasos</h2>
+  <p class="section-sub animate-on-scroll">Sin descargas, sin instalacion. Abre, elige y canta.</p>
+  <div class="how-grid">
+    <div class="how-step animate-on-scroll">
+      <div class="how-num">1</div>
+      <div class="how-title">Elige tu modo</div>
+      <div class="how-desc">Karaoke, Musica, Bares o IA — selecciona como quieres usar ByFlow hoy.</div>
+    </div>
+    <div class="how-step animate-on-scroll">
+      <div class="how-num">2</div>
+      <div class="how-title">Agrega canciones</div>
+      <div class="how-desc">Busca en YouTube, SoundCloud o Jamendo. Las letras se cargan automaticamente.</div>
+    </div>
+    <div class="how-step animate-on-scroll">
+      <div class="how-num">3</div>
+      <div class="how-title">Canta en vivo</div>
+      <div class="how-desc">El teleprompter guia a tus cantantes. Comparte la pantalla remota via QR.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ── Pricing ─────────────────────────────────────────────── -->
+<section id="pricing">
+  <h2 class="section-title animate-on-scroll">Planes y Precios</h2>
+  <p class="section-sub animate-on-scroll">Empieza gratis. Escala cuando quieras.</p>
+  <div class="pricing-grid">
+
+    <div class="price-card animate-on-scroll">
+      <div class="price-tier">Gratis</div>
+      <div class="price-amount">$0</div>
+      <div class="price-period">para siempre</div>
+      <ul class="price-features">
+        <li class="active">Karaoke completo</li>
+        <li class="active">Teleprompter sync</li>
+        <li class="active">Cola de cantantes</li>
+        <li class="active">Letras LRCLIB</li>
+        <li class="inactive">Streaming musica</li>
+        <li class="inactive">Gestion de bares</li>
+        <li class="inactive">IA Studio</li>
+      </ul>
+      <a href="/" class="price-btn">Empieza Gratis</a>
+    </div>
+
+    <div class="price-card popular animate-on-scroll">
+      <div class="price-badge">Popular</div>
+      <div class="price-tier">PRO Creator</div>
+      <div class="price-amount">$199</div>
+      <div class="price-period">MXN/mes &middot; 3 dispositivos</div>
+      <ul class="price-features">
+        <li class="active">Todo lo gratis</li>
+        <li class="active">YouTube streaming</li>
+        <li class="active">SoundCloud embed</li>
+        <li class="active">Jamendo musica CC</li>
+        <li class="active">IA Studio (Ollama)</li>
+        <li class="active">Control remoto QR</li>
+        <li class="inactive">Gestion de bares</li>
+      </ul>
+      <a href="/" class="price-btn">Activar PRO</a>
+    </div>
+
+    <div class="price-card animate-on-scroll">
+      <div class="price-tier">PRO Venue</div>
+      <div class="price-amount">$799</div>
+      <div class="price-period">MXN/mes &middot; 5 dispositivos</div>
+      <ul class="price-features">
+        <li class="active">Todo lo PRO</li>
+        <li class="active">Gestion de bares</li>
+        <li class="active">Mesas y peticiones</li>
+        <li class="active">Promos automaticas</li>
+        <li class="active">DJ Soundboard</li>
+        <li class="active">Estadisticas uso</li>
+        <li class="active">Soporte prioritario</li>
+      </ul>
+      <a href="mailto:contacto@iartlabs.com?subject=ByFlow PRO Venue" class="price-btn">Contactar Ventas</a>
+    </div>
+
+  </div>
+  <div class="pricing-note">
+    Precios en pesos mexicanos (MXN) &middot; IVA incluido &middot; Cancela cuando quieras<br>
+    Licencia perpetua disponible: PRO Creator $1,499 MXN &middot; PRO Venue $4,999 MXN
+  </div>
+</section>
+
+<!-- ── Testimonials ────────────────────────────────────────── -->
+<section id="testimonios" style="background:var(--card);">
+  <h2 class="section-title animate-on-scroll">Lo que dicen nuestros usuarios</h2>
+  <p class="section-sub animate-on-scroll">ByFlow ya esta cambiando la forma de cantar en vivo.</p>
+  <div class="testimonials-grid">
+
+    <div class="testimonial-card animate-on-scroll">
+      <div class="tc-quote">ByFlow transformo las noches de karaoke en mi bar. Antes era un desastre organizar turnos, ahora la cola se maneja sola y los clientes piden canciones desde su mesa.</div>
+      <div class="tc-author">
+        <div class="tc-avatar" style="background:linear-gradient(135deg,var(--p),var(--s));">CM</div>
+        <div>
+          <div class="tc-name">Carlos M.</div>
+          <div class="tc-role">Dueno de Bar — CDMX</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="testimonial-card animate-on-scroll">
+      <div class="tc-quote">El teleprompter es una bestia. Yo rapeo freestyle y tener las letras sincronizadas me ayuda a practicar flows nuevos sin perderme. El modo IA esta loco.</div>
+      <div class="tc-author">
+        <div class="tc-avatar" style="background:linear-gradient(135deg,#f59e0b,#ef4444);">DK</div>
+        <div>
+          <div class="tc-name">Daniel K.</div>
+          <div class="tc-role">Rapero — Monterrey</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="testimonial-card animate-on-scroll">
+      <div class="tc-quote">Lo que mas me gusta es que no necesito instalar nada. Abro ByFlow en la tablet del bar y listo. Los clientes escanean el QR y ven la letra en su celular.</div>
+      <div class="tc-author">
+        <div class="tc-avatar" style="background:linear-gradient(135deg,var(--a),var(--g));">LP</div>
+        <div>
+          <div class="tc-name">Laura P.</div>
+          <div class="tc-role">DJ &amp; Karaoke — Guadalajara</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ── CTA Final ───────────────────────────────────────────── -->
+<section class="cta-section">
+  <h2 class="cta-title animate-on-scroll">Listo para cantar?</h2>
+  <p class="cta-sub animate-on-scroll">Unete a los que ya estan viviendo la musica en vivo de otra forma.</p>
+  <div class="hero-btns animate-on-scroll">
+    <a href="/" class="btn-primary">Abrir ByFlow Gratis</a>
+  </div>
+</section>
+
+<!-- ── Footer ──────────────────────────────────────────────── -->
+<footer class="footer">
+  <div class="footer-grid">
+    <div>
+      <div class="footer-brand">ByFlow</div>
+      <p class="footer-desc">Vive Cantando — Karaoke inteligente y entretenimiento en vivo. La plataforma todo-en-uno para bares, raperos y cantantes.</p>
+    </div>
+    <div>
+      <h4>Producto</h4>
+      <ul class="footer-links">
+        <li><a href="/">Abrir App</a></li>
+        <li><a href="#features">Features</a></li>
+        <li><a href="#pricing">Precios</a></li>
+        <li><a href="mailto:contacto@iartlabs.com">Contacto</a></li>
+      </ul>
+    </div>
+    <div>
+      <h4>Legal</h4>
+      <ul class="footer-links">
+        <li><a href="/">Terminos de Uso</a></li>
+        <li><a href="/">Privacidad</a></li>
+        <li><a href="/">Licencias</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    &copy; 2024-2026 IArtLabs &middot; powered by IArtLabs
+  </div>
+</footer>
+
+<script>
+// ── Scroll animations ──────────────────────────────────────
+const obs = new IntersectionObserver((entries) => {
+  entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); obs.unobserve(e.target); }});
+}, { threshold: 0.1 });
+document.querySelectorAll('.animate-on-scroll').forEach(el => obs.observe(el));
+
+// ── Sticky nav ─────────────────────────────────────────────
+const nav = document.getElementById('nav');
+window.addEventListener('scroll', () => {
+  nav.classList.toggle('scrolled', window.scrollY > 60);
+}, { passive: true });
+
+// ── Mobile menu ────────────────────────────────────────────
+const menuBtn = document.getElementById('menu-btn');
+const navLinks = document.getElementById('nav-links');
+menuBtn.addEventListener('click', () => {
+  const open = navLinks.classList.toggle('open');
+  menuBtn.innerHTML = open ? '&#10005;' : '&#9776;';
+});
+navLinks.querySelectorAll('a').forEach(a => a.addEventListener('click', () => {
+  navLinks.classList.remove('open');
+  menuBtn.innerHTML = '&#9776;';
+}));
+
+// ── Floating particles ─────────────────────────────────────
+const pc = document.getElementById('particles');
+for (let i = 0; i < 30; i++) {
+  const s = document.createElement('span');
+  s.style.left = Math.random() * 100 + '%';
+  s.style.animationDuration = (6 + Math.random() * 10) + 's';
+  s.style.animationDelay = Math.random() * 8 + 's';
+  s.style.width = s.style.height = (1 + Math.random() * 2) + 'px';
+  pc.appendChild(s);
+}
+</script>
+</body>
+</html>
