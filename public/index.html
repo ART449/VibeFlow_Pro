@@ -2250,6 +2250,7 @@ input:focus-visible,textarea:focus-visible{
               <div><span style="color:#ff9500;">Kimi</span> (Moonshot) &mdash; Tema claro/oscuro, marketing, copy</div>
               <div><span style="color:#00d4ff;">Grok</span> (xAI) &mdash; GFlow DJ IA, asistente en vivo</div>
               <div><span style="color:#4285f4;">Gemini</span> (Google) &mdash; Investigacion, optimizacion, consultas tecnicas</div>
+              <div><span style="color:#7c4dff;">Ollama</span> &mdash; Algoritmo de estilo lirico ArT-AtR, motor de escritura offline</div>
               <div><span style="color:#ff6b6b;">Suno</span> &mdash; Musica original ArT-AtR, 100+ tracks</div>
             </div>
 
@@ -4615,6 +4616,8 @@ function onPlayerPause(playerType) {
   updateTwinBadge();
 }
 
+let _playerEndIsCleanup = false; // true when cleaning up before loading a new player
+
 function onPlayerEnd(playerType) {
   console.log('[Gemelos] ⏹ ' + playerType + ' → fin');
   _twinMode = false;
@@ -4626,7 +4629,8 @@ function onPlayerEnd(playerType) {
   updateTwinBadge();
 
   // ── Auto-play next from queue (solo DJ, no Remote) ──
-  if (_autoQueueEnabled && (typeof currentMode === 'undefined' || currentMode !== 'remote')) {
+  // SKIP if this is a cleanup call (loading a new player, not a natural end)
+  if (!_playerEndIsCleanup && _autoQueueEnabled && (typeof currentMode === 'undefined' || currentMode !== 'remote')) {
     const next = colaCache.find(c => c.estado === 'esperando');
     if (next) {
       setTimeout(() => siguienteCantante(), 2000);
@@ -4784,7 +4788,7 @@ async function ytPlayWithLyrics(videoId, title) {
 }
 
 function ytEmbed(videoId, title) {
-  onPlayerEnd(_activePlayerType); // Limpiar player anterior
+  _playerEndIsCleanup = true; onPlayerEnd(_activePlayerType); _playerEndIsCleanup = false;
   if (_ytPlayer) { try { _ytPlayer.destroy(); } catch {} _ytPlayer = null; }
   const container = document.getElementById('embed-container');
   const player = document.getElementById('music-player-embed');
@@ -4820,7 +4824,7 @@ if (!window.SC) {
 }
 
 function scEmbed(trackUrl, title) {
-  onPlayerEnd(_activePlayerType); // Limpiar player anterior
+  _playerEndIsCleanup = true; onPlayerEnd(_activePlayerType); _playerEndIsCleanup = false;
   _scWidget = null;
   const container = document.getElementById('embed-container');
   const player = document.getElementById('music-player-embed');
@@ -4946,7 +4950,7 @@ function jmSaveKey() {
 }
 
 function jmPlay(audioUrl, title, artist, trackId) {
-  onPlayerEnd(_activePlayerType); // Limpiar player anterior
+  _playerEndIsCleanup = true; onPlayerEnd(_activePlayerType); _playerEndIsCleanup = false;
   if (jmAudio) { jmAudio.pause(); jmAudio = null; }
   const container = document.getElementById('embed-container');
   const player = document.getElementById('music-player-embed');
@@ -6099,7 +6103,7 @@ function handleLocalAudio(input) {
   if (!file) return;
   // Clean up previous
   if (localAudio) { localAudio.pause(); localAudio = null; }
-  onPlayerEnd(_activePlayerType);
+  _playerEndIsCleanup = true; onPlayerEnd(_activePlayerType); _playerEndIsCleanup = false;
 
   const url = URL.createObjectURL(file);
   localAudio = new Audio(url);
