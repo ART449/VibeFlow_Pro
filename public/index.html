@@ -886,51 +886,84 @@ select.inp{cursor:pointer;}
 /* ── Welcome Overlay ──────────────────────────────────────────────── */
 .welcome-overlay{
   position:fixed;inset:0;z-index:9000;
-  background:radial-gradient(ellipse at 50% 30%,rgba(20,10,40,.98),rgba(7,7,13,.99));
+  background:
+    radial-gradient(ellipse at 20% 20%, rgba(233,30,144,.12) 0%, transparent 50%),
+    radial-gradient(ellipse at 80% 80%, rgba(124,77,255,.08) 0%, transparent 50%),
+    radial-gradient(ellipse at 50% 30%,rgba(20,10,40,.98),rgba(7,7,13,.99));
   display:flex;flex-direction:column;align-items:center;justify-content:center;
   gap:20px;animation:welcomeFade .8s ease;
 }
 .welcome-overlay.hidden{display:none;}
 @keyframes welcomeFade{from{opacity:0;}to{opacity:1;}}
+@keyframes cardEntrance{from{opacity:0;transform:translateY(24px);}to{opacity:1;transform:translateY(0);}}
+@keyframes fadeUp{from{opacity:0;transform:translateY(16px);}to{opacity:1;transform:translateY(0);}}
 .welcome-logo{
   font-size:3rem;font-weight:900;letter-spacing:-1px;
   background:linear-gradient(135deg,#ff006e,#8338ec,#3a86ff);
   -webkit-background-clip:text;-webkit-text-fill-color:transparent;
-  text-align:center;
+  text-align:center;opacity:0;animation:fadeUp .7s ease forwards;
 }
-.welcome-sub{font-size:1rem;color:var(--sub);text-align:center;margin-top:-8px;}
-.welcome-brand{font-size:.7rem;color:rgba(255,255,255,.2);letter-spacing:3px;text-transform:uppercase;}
+.welcome-sub{font-size:1rem;color:var(--sub);text-align:center;margin-top:-8px;opacity:0;animation:fadeUp .7s ease .15s forwards;}
+.welcome-brand{font-size:.7rem;color:rgba(255,255,255,.2);letter-spacing:3px;text-transform:uppercase;opacity:0;animation:fadeUp .7s ease .05s forwards;}
 .welcome-cards{
-  display:grid;grid-template-columns:repeat(3,1fr);gap:16px;
+  display:grid;grid-template-columns:repeat(2,1fr);gap:16px;
   max-width:700px;width:90%;margin-top:16px;
 }
 .welcome-card{
-  background:rgba(255,255,255,.03);border:1px solid var(--border);
-  border-radius:16px;padding:24px 18px;text-align:center;
-  cursor:pointer;transition:all .25s;display:flex;flex-direction:column;
+  position:relative;overflow:hidden;
+  background:rgba(255,255,255,.04);border:1px solid var(--border);
+  border-radius:20px;padding:24px 18px;text-align:center;
+  cursor:pointer;transition:all .35s cubic-bezier(.4,0,.2,1);display:flex;flex-direction:column;
   align-items:center;gap:10px;
+  backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
+  opacity:0;animation:cardEntrance .5s ease forwards;
 }
+.welcome-card:nth-child(1){animation-delay:.15s;}
+.welcome-card:nth-child(2){animation-delay:.25s;}
+.welcome-card:nth-child(3){animation-delay:.35s;}
+.welcome-card:nth-child(4){animation-delay:.45s;}
+.welcome-card .wc-glow{
+  position:absolute;inset:0;opacity:0;transition:opacity .35s;pointer-events:none;border-radius:20px;
+}
+.welcome-card[data-mode="karaoke"] .wc-glow{background:radial-gradient(circle at 50% 0%,rgba(233,30,144,.35) 0%,transparent 70%);}
+.welcome-card[data-mode="youtube"] .wc-glow{background:radial-gradient(circle at 50% 0%,rgba(229,57,53,.35) 0%,transparent 70%);}
+.welcome-card[data-mode="bares"] .wc-glow{background:radial-gradient(circle at 50% 0%,rgba(255,111,0,.35) 0%,transparent 70%);}
+.welcome-card[data-mode="ia"] .wc-glow{background:radial-gradient(circle at 50% 0%,rgba(124,77,255,.35) 0%,transparent 70%);}
 .welcome-card:hover{
-  background:rgba(255,255,255,.06);border-color:rgba(255,255,255,.15);
-  transform:translateY(-4px);box-shadow:0 8px 30px rgba(0,0,0,.3);
+  background:rgba(255,255,255,.07);transform:translateY(-6px) scale(1.02);
+  box-shadow:0 12px 40px rgba(0,0,0,.4);
 }
+.welcome-card:hover .wc-glow{opacity:1;}
+.welcome-card:hover .wc-icon{transform:scale(1.1) rotate(-3deg);}
+.welcome-card[data-mode="karaoke"]:hover{border-color:rgba(233,30,144,.4);}
+.welcome-card[data-mode="youtube"]:hover{border-color:rgba(229,57,53,.4);}
+.welcome-card[data-mode="bares"]:hover{border-color:rgba(255,111,0,.4);}
+.welcome-card[data-mode="ia"]:hover{border-color:rgba(124,77,255,.4);}
+.welcome-card:active{transform:scale(.97);transition:transform .1s;}
 .welcome-card .wc-icon{
   width:56px;height:56px;border-radius:14px;
   display:flex;align-items:center;justify-content:center;
-  font-size:26px;
+  font-size:26px;transition:transform .3s ease;position:relative;z-index:2;
 }
-.welcome-card .wc-icon.karaoke{background:linear-gradient(135deg,var(--p),var(--s));}
-.welcome-card .wc-icon.youtube{background:linear-gradient(135deg,#ff4444,#cc0000);}
-.welcome-card .wc-icon.bares{background:linear-gradient(135deg,#f59e0b,#ef4444);}
-.welcome-card .wc-title{font-size:14px;font-weight:800;color:#fff;}
-.welcome-card .wc-desc{font-size:11px;color:var(--sub);line-height:1.5;}
+.welcome-card .wc-icon.karaoke{background:linear-gradient(135deg,var(--p),var(--s));border:1px solid rgba(233,30,144,.3);}
+.welcome-card .wc-icon.youtube{background:linear-gradient(135deg,#ff4444,#cc0000);border:1px solid rgba(229,57,53,.3);}
+.welcome-card .wc-icon.bares{background:linear-gradient(135deg,#f59e0b,#ef4444);border:1px solid rgba(255,111,0,.3);}
+.welcome-card .wc-icon.ia{background:linear-gradient(135deg,#7c4dff,#536dfe);border:1px solid rgba(124,77,255,.3);}
+.welcome-card .wc-title{font-size:14px;font-weight:800;color:#fff;position:relative;z-index:2;}
+.welcome-card .wc-desc{font-size:11px;color:var(--sub);line-height:1.5;position:relative;z-index:2;}
 .welcome-card .wc-tag{
-  font-size:8px;padding:2px 8px;border-radius:10px;font-weight:800;letter-spacing:.5px;
+  font-size:8px;padding:2px 8px;border-radius:10px;font-weight:800;letter-spacing:.5px;position:relative;z-index:2;
 }
 .welcome-card .wc-tag.free{background:rgba(0,245,160,.1);color:var(--g);border:1px solid rgba(0,245,160,.2);}
 .welcome-card .wc-tag.pro{background:rgba(245,158,11,.1);color:#f59e0b;border:1px solid rgba(245,158,11,.2);}
+.welcome-card .wc-ripple{
+  position:absolute;border-radius:50%;background:rgba(255,255,255,.2);
+  transform:scale(0);animation:wc-rippleAnim .5s ease-out;pointer-events:none;
+}
+@keyframes wc-rippleAnim{to{transform:scale(4);opacity:0;}}
 .welcome-footer{
   margin-top:24px;display:flex;flex-direction:column;align-items:center;gap:8px;
+  opacity:0;animation:fadeUp .7s ease .55s forwards;
 }
 .welcome-skip{
   padding:8px 24px;border:1px solid rgba(255,255,255,.1);border-radius:8px;
@@ -1133,6 +1166,7 @@ select.inp{cursor:pointer;}
   /* Welcome screen mobile */
   .welcome-cards{grid-template-columns:1fr;max-width:360px;gap:12px;}
   .welcome-card{padding:18px 16px;flex-direction:row;gap:14px;text-align:left;}
+  .welcome-card .wc-glow{display:none;}
   .welcome-card .wc-icon{width:48px;height:48px;min-width:48px;font-size:22px;}
   .welcome-card .wc-title{font-size:15px;}
   .welcome-card .wc-desc{font-size:11px;}
@@ -2171,31 +2205,39 @@ input:focus-visible,textarea:focus-visible{
   <div class="welcome-sub">Vive Cantando 🎤</div>
 
   <div class="welcome-cards">
-    <div class="welcome-card" onclick="welcomeSelect('karaoke')">
+    <div class="welcome-card" data-mode="karaoke" onclick="welcomeSelect('karaoke')">
+      <div class="wc-glow"></div>
       <div class="wc-icon karaoke">&#x1F3A4;</div>
       <div class="wc-title">Karaoke</div>
-      <div class="wc-desc">Teleprompter con letras, cola de cantantes y efectos de audio</div>
+      <div class="wc-desc">Teleprompter con letras sincronizadas, cola de cantantes y efectos</div>
       <span class="wc-tag free">GRATIS</span>
     </div>
-    <div class="welcome-card" onclick="welcomeSelect('youtube')">
+    <div class="welcome-card" data-mode="youtube" onclick="welcomeSelect('youtube')">
+      <div class="wc-glow"></div>
       <div class="wc-icon youtube">&#x1F3B5;</div>
       <div class="wc-title">Musica</div>
-      <div class="wc-desc">Busca y reproduce musica de YouTube y SoundCloud para karaoke</div>
+      <div class="wc-desc">YouTube, SoundCloud y Jamendo para ambientar tu sesion</div>
       <span class="wc-tag pro">PRO</span>
     </div>
-    <div class="welcome-card" onclick="welcomeSelect('bares')">
+    <div class="welcome-card" data-mode="bares" onclick="welcomeSelect('bares')">
+      <div class="wc-glow"></div>
       <div class="wc-icon bares">&#x1F37A;</div>
       <div class="wc-title">Bares</div>
-      <div class="wc-desc">Gestion de mesas, ordenes, promos y control del establecimiento</div>
+      <div class="wc-desc">Mesas, promos, jingles, soundboard DJ y cola de peticiones</div>
+      <span class="wc-tag pro">PRO</span>
+    </div>
+    <div class="welcome-card" data-mode="ia" onclick="welcomeSelect('ia')">
+      <div class="wc-glow"></div>
+      <div class="wc-icon ia">&#x2728;</div>
+      <div class="wc-title">IA Studio</div>
+      <div class="wc-desc">GFlow DJ IA — genera letras, sugiere canciones y crea sets</div>
       <span class="wc-tag pro">PRO</span>
     </div>
   </div>
 
   <div class="welcome-footer">
     <div style="display:flex;gap:12px;align-items:center;margin-bottom:4px;">
-      <span style="font-size:10px;color:var(--sub);">Tambien disponible:</span>
       <span style="font-size:10px;color:var(--a);cursor:pointer;" onclick="welcomeSelect('remote')">&#x1F4F1; Control Remoto</span>
-      <span style="font-size:10px;color:var(--s);cursor:pointer;" onclick="welcomeSelect('ia')">🎧 GFlow DJ IA <small style='color:#f59e0b;'>PRO</small></span>
     </div>
     <button class="welcome-skip" onclick="dismissWelcome()">Entrar directo al modo Karaoke</button>
     <div style="font-size:9px;color:rgba(255,255,255,.15);margin-top:8px;cursor:pointer;" onclick="openLegalModal();dismissWelcome();">&copy; 2024-2026 IArtLabs &middot; Legal &middot; Contacto</div>
@@ -5639,8 +5681,20 @@ function handleLocalAudio(input) {
 const _origAgregarCola = typeof agregarCola === 'function' ? agregarCola : null;
 
 function welcomeSelect(mode) {
-  dismissWelcome();
-  setMode(mode);
+  // Ripple effect on the clicked card
+  const card = document.querySelector(`.welcome-card[data-mode="${mode}"]`);
+  if (card) {
+    const rect = card.getBoundingClientRect();
+    const ripple = document.createElement('span');
+    ripple.classList.add('wc-ripple');
+    const size = Math.max(rect.width, rect.height);
+    ripple.style.width = ripple.style.height = size + 'px';
+    ripple.style.left = (rect.width / 2 - size / 2) + 'px';
+    ripple.style.top = (rect.height / 2 - size / 2) + 'px';
+    card.appendChild(ripple);
+    setTimeout(() => ripple.remove(), 500);
+  }
+  setTimeout(() => { dismissWelcome(); setMode(mode); }, 150);
 }
 
 function dismissWelcome() {

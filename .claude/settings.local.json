@@ -8,7 +8,17 @@
       "Bash(git --version)",
       "Bash(gh auth:*)",
       "Bash(netstat -ano)",
-      "Bash(VIBEFLOW_URL=* ROOM_ID=* node grok-client.js)"
+      "Bash(VIBEFLOW_URL=* ROOM_ID=* node grok-client.js)",
+      "Bash(node -c server.js)",
+      "Bash(curl -s https://byflowapp.up.railway.app/*)",
+      "WebSearch",
+      "WebFetch(domain:developer.jamendo.com)",
+      "WebFetch(domain:byflowapp.up.railway.app)",
+      "Bash(git add:*)",
+      "Bash(git checkout:*)",
+      "Bash(git pull:*)",
+      "Bash(powershell.exe -Command \"if\\(Test-Path ''C:\\\\Users\\\\art44\\\\OneDrive\\\\Backup-ByFlow\\\\VibeFlow_Pro_backup_2026-03-16.zip''\\) { ''{0:N2} MB'' -f \\(\\(Get-Item ''C:\\\\Users\\\\art44\\\\OneDrive\\\\Backup-ByFlow\\\\VibeFlow_Pro_backup_2026-03-16.zip''\\).Length / 1MB\\) } else { ''NOT FOUND'' }\")",
+      "mcp__Claude_Preview__preview_start"
     ]
   }
 }

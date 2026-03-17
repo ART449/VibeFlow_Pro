@@ -3,15 +3,16 @@
 // Persistencia JSON + CRUD completo + Error handling
 // ═══════════════════════════════════════════════════════════════════════════
 
-const express  = require('express');
-const http     = require('http');
-const { Server } = require('socket.io');
-const cors     = require('cors');
-const path     = require('path');
-const os       = require('os');
-const fs       = require('fs');
-const crypto   = require('crypto');
-const { exec } = require('child_process');
+const express     = require('express');
+const http        = require('http');
+const { Server }  = require('socket.io');
+const cors        = require('cors');
+const compression = require('compression');
+const path        = require('path');
+const os          = require('os');
+const fs          = require('fs');
+const crypto      = require('crypto');
+const { exec }    = require('child_process');
 
 // ── Utilidades ──────────────────────────────────────────────────────────────
 function getLocalIp() {
@@ -326,7 +327,8 @@ app.use((req, res, next) => {
   next();
 });
 
-app.use(express.static(path.join(__dirname, 'public')));
+app.use(compression());
+app.use(express.static(path.join(__dirname, 'public'), { maxAge: '1d' }));
 
 // ── Estado con persistencia ─────────────────────────────────────────────────
 const DEFAULT_MESAS = Array.from({ length: 12 }, (_, i) => ({
