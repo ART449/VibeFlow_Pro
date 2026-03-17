@@ -92,6 +92,51 @@ input,textarea,select{font-family:inherit;}
 .mode-btn.bares-btn.active{background:linear-gradient(135deg,#f59e0b,#ef4444);box-shadow:0 3px 16px rgba(245,158,11,.3);}
 .mode-btn.vistas-btn.active{background:linear-gradient(135deg,var(--a),var(--g));box-shadow:0 3px 16px rgba(58,134,255,.3);}
 
+/* ── Mode More Dropdown ── */
+.mode-more{position:relative;}
+.mode-more-btn{color:var(--sub)!important;}
+.mode-dropdown{
+  display:none;position:absolute;top:calc(100% + 8px);right:0;z-index:300;
+  background:var(--card);border:1px solid var(--border);border-radius:12px;
+  padding:6px;min-width:160px;
+  box-shadow:0 12px 40px rgba(0,0,0,.5);
+  backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);
+  animation:fadeUp .2s ease;
+}
+.mode-dropdown.open{display:flex;flex-direction:column;gap:2px;}
+.mode-dropdown .mode-btn{width:100%;justify-content:flex-start;padding:10px 14px;border-radius:8px;font-size:12px;}
+.mode-dropdown .mode-btn:hover{background:rgba(255,255,255,.06);}
+
+/* ── Tutorial Overlay ── */
+.tutorial-overlay{
+  position:fixed;inset:0;z-index:10000;background:rgba(0,0,0,.85);
+  display:none;align-items:center;justify-content:center;
+  backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);
+}
+.tutorial-overlay.open{display:flex;}
+.tutorial-card{
+  background:var(--card);border:1px solid var(--border);border-radius:20px;
+  max-width:420px;width:92%;padding:32px 28px;text-align:center;
+  box-shadow:0 20px 60px rgba(0,0,0,.5);position:relative;
+}
+.tutorial-step{display:none;}
+.tutorial-step.active{display:block;}
+.tutorial-icon{font-size:48px;margin-bottom:16px;}
+.tutorial-title{font-size:1.2rem;font-weight:900;margin-bottom:8px;}
+.tutorial-desc{font-size:.85rem;color:var(--sub);line-height:1.6;margin-bottom:24px;}
+.tutorial-dots{display:flex;justify-content:center;gap:6px;margin-bottom:20px;}
+.tutorial-dot{width:8px;height:8px;border-radius:50%;background:var(--border);transition:all .2s;}
+.tutorial-dot.active{background:var(--p);width:20px;border-radius:4px;}
+.tutorial-btns{display:flex;gap:10px;justify-content:center;}
+.tutorial-btn{
+  padding:10px 24px;border-radius:10px;font-weight:700;font-size:.85rem;
+  border:none;cursor:pointer;transition:all .2s;
+}
+.tutorial-btn.primary{background:linear-gradient(135deg,var(--p),var(--s));color:#fff;box-shadow:0 4px 16px var(--glow-p);}
+.tutorial-btn.primary:hover{transform:translateY(-2px);box-shadow:0 8px 24px var(--glow-p);}
+.tutorial-btn.secondary{background:rgba(255,255,255,.06);color:var(--sub);border:1px solid var(--border);}
+.tutorial-btn.secondary:hover{background:rgba(255,255,255,.1);color:var(--text);}
+
 /* ── Panel Vistas (DJ Dashboard) ── */
 .vistas-panel{
   display:none;overflow:hidden;
@@ -1111,10 +1156,23 @@ select.inp{cursor:pointer;}
 .welcome-skip:hover{border-color:var(--p);color:#fff;}
 
 /* ── Hideable Panels ─────────────────────────────────────────────── */
-.sidebar.panel-hidden{width:0;padding:0;overflow:hidden;border:none;opacity:0;transition:all .3s;}
-.right-panel.panel-hidden{width:0;padding:0;overflow:hidden;border:none;opacity:0;transition:all .3s;}
+.sidebar.panel-hidden{width:0;min-width:0;padding:0;overflow:hidden;border:none;opacity:0;transition:all .3s;}
+.right-panel.panel-hidden{width:0;min-width:0;padding:0;overflow:hidden;border:none;opacity:0;transition:all .3s;}
 .sidebar{transition:all .3s;}
 .right-panel{transition:all .3s;}
+.panel-toggle{
+  position:absolute;top:50%;z-index:60;
+  width:20px;height:48px;border:1px solid var(--border);
+  background:var(--card);color:var(--sub);font-size:10px;
+  display:flex;align-items:center;justify-content:center;cursor:pointer;
+  transition:all .2s;opacity:.5;
+}
+.panel-toggle:hover{opacity:1;background:rgba(255,255,255,.08);color:var(--text);}
+.panel-toggle-left{left:0;border-radius:0 8px 8px 0;transform:translateY(-50%);}
+.panel-toggle-right{right:0;border-radius:8px 0 0 8px;transform:translateY(-50%);}
+.sidebar.panel-hidden ~ .panel-toggle-left,
+.panel-toggle-left{left:0;}
+.main{position:relative;}
 
 /* ── Legal Modal ───────────────────────────────────────────────────── */
 .legal-overlay{
@@ -1301,6 +1359,7 @@ select.inp{cursor:pointer;}
   .brand{font-size:15px;}
   .mode-switch{display:none;}
   .byflow-bar{display:none!important;}
+  .panel-toggle{display:none!important;}
   /* Mobile-nav y player-bar fijos en bottom */
   .mobile-nav{display:block;position:fixed;bottom:0;left:0;right:0;z-index:200;}
   .player-bar{position:fixed;bottom:59px;left:0;right:0;z-index:199;overflow-x:auto;}
@@ -1602,30 +1661,38 @@ input:focus-visible,textarea:focus-visible{
       <div class="brand-sub">Vive Cantando</div>
     </div>
     <div class="mode-switch">
-      <button class="mode-btn active" data-mode="karaoke" onclick="setMode('karaoke')" title="Pantalla principal del teleprompter con letras y controles de karaoke">
+      <button class="mode-btn active" data-mode="karaoke" onclick="setMode('karaoke')" title="Teleprompter con letras y controles de karaoke">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
         Karaoke
       </button>
-      <button class="mode-btn" data-mode="remote" onclick="setMode('remote')" title="Muestra el codigo QR para que otros dispositivos se conecten y controlen remotamente">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="5" y="2" width="14" height="20" rx="2"/><circle cx="12" cy="17" r="1"/><line x1="9" y1="6" x2="15" y2="6"/><line x1="9" y1="10" x2="15" y2="10"/></svg>
-        Remoto
-      </button>
-      <button class="mode-btn ia-btn" data-mode="ia" onclick="setMode('ia')" title="GFlow — DJ IA multigénero para sets, letras, estrategia musical">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 2a9 9 0 0 1 9 9c0 4.56-2.87 8.5-7 9.7V22h-4v-1.3C5.87 19.5 3 15.56 3 11a9 9 0 0 1 9-9z"/><circle cx="9" cy="11" r="1" fill="currentColor"/><circle cx="15" cy="11" r="1" fill="currentColor"/></svg>
-        IA
-      </button>
-      <button class="mode-btn yt-btn" data-mode="youtube" onclick="setMode('youtube')" style="color:#ff4444;" title="Busca musica en YouTube y SoundCloud para karaoke (sin descargas)">
+      <button class="mode-btn yt-btn" data-mode="youtube" onclick="setMode('youtube')" style="color:#ff4444;" title="Busca musica en YouTube, SoundCloud y Jamendo">
         <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/></svg>
         Musica
       </button>
-      <button class="mode-btn bares-btn" data-mode="bares" onclick="setMode('bares')" title="Gestion de mesas, ordenes y configuracion para bares y establecimientos">
+      <button class="mode-btn bares-btn" data-mode="bares" onclick="setMode('bares')" title="Gestion de mesas, promos y soundboard DJ">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M3 7h18M3 7l2 13h14l2-13M3 7l1-3h16l1 3"/><line x1="10" y1="12" x2="10" y2="17"/><line x1="14" y1="12" x2="14" y2="17"/></svg>
         Bares
       </button>
-      <button class="mode-btn vistas-btn" data-mode="vistas" onclick="setMode('vistas')" title="Dashboard DJ — teleprompter, cola y musica en una vista">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
-        Vistas
-      </button>
+      <div class="mode-more" id="mode-more">
+        <button class="mode-btn mode-more-btn" onclick="toggleModeMore()" title="Mas modos">
+          <svg viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="19" cy="12" r="2"/></svg>
+          Mas
+        </button>
+        <div class="mode-dropdown" id="mode-dropdown">
+          <button class="mode-btn" data-mode="remote" onclick="setMode('remote');closeModeMore()" title="Vista publica para pantalla remota">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="5" y="2" width="14" height="20" rx="2"/><circle cx="12" cy="17" r="1"/></svg>
+            Remoto
+          </button>
+          <button class="mode-btn ia-btn" data-mode="ia" onclick="setMode('ia');closeModeMore()" title="GFlow — DJ IA para letras y sets">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 2a9 9 0 0 1 9 9c0 4.56-2.87 8.5-7 9.7V22h-4v-1.3C5.87 19.5 3 15.56 3 11a9 9 0 0 1 9-9z"/><circle cx="9" cy="11" r="1" fill="currentColor"/><circle cx="15" cy="11" r="1" fill="currentColor"/></svg>
+            IA Studio
+          </button>
+          <button class="mode-btn vistas-btn" data-mode="vistas" onclick="setMode('vistas');closeModeMore()" title="Dashboard DJ multi-panel">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+            Panel Vistas
+          </button>
+        </div>
+      </div>
     </div>
     <div style="display:flex;align-items:center;gap:8px;">
       <span id="online-count" title="Dispositivos en tu sala" style="font-size:10px;color:var(--g);display:none;">● <span id="online-num">0</span></span>
@@ -1641,6 +1708,7 @@ input:focus-visible,textarea:focus-visible{
   <div class="main">
 
     <!-- ═══ SIDEBAR: Cola + Mesas ═══ -->
+    <button class="panel-toggle panel-toggle-left" id="toggle-sidebar" onclick="toggleSidebar()" title="Esconder/mostrar cola">&#x25C0;</button>
     <div class="sidebar">
       <div class="sidebar-head">
         <h3 title="Agrega cantantes a la cola para organizar el orden del karaoke">Cola de Cantantes</h3>
@@ -1815,6 +1883,7 @@ input:focus-visible,textarea:focus-visible{
     </div>
 
     <!-- ═══ RIGHT PANEL: QR + Agregar Canción ═══ -->
+    <button class="panel-toggle panel-toggle-right" id="toggle-right" onclick="toggleRightPanel()" title="Esconder/mostrar panel derecho">&#x25B6;</button>
     <div class="right-panel">
       <h4 title="Escanea este QR desde otro celular para controlar el karaoke remotamente">Control Remoto (QR)</h4>
       <img id="qr-img" alt="Codigo QR para control remoto de ByFlow" title="Escanea con la camara de tu celular para conectarte">
@@ -2611,6 +2680,42 @@ input:focus-visible,textarea:focus-visible{
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
       <span>Config</span>
     </button>
+  </div>
+</div>
+
+<!-- ═══ TUTORIAL OVERLAY ═══ -->
+<div class="tutorial-overlay" id="tutorial-overlay">
+  <div class="tutorial-card">
+    <div class="tutorial-step active" data-step="0">
+      <div class="tutorial-icon">&#127908;</div>
+      <div class="tutorial-title">Bienvenido a ByFlow</div>
+      <div class="tutorial-desc">Tu plataforma de karaoke inteligente y entretenimiento en vivo. Te mostramos lo basico en 4 pasos.</div>
+    </div>
+    <div class="tutorial-step" data-step="1">
+      <div class="tutorial-icon">&#127925;</div>
+      <div class="tutorial-title">Karaoke + Musica</div>
+      <div class="tutorial-desc">Agrega cantantes a la cola, busca canciones en YouTube/SoundCloud y las letras se cargan automaticamente en el teleprompter.</div>
+    </div>
+    <div class="tutorial-step" data-step="2">
+      <div class="tutorial-icon">&#127867;</div>
+      <div class="tutorial-title">Modo Bares</div>
+      <div class="tutorial-desc">Gestiona mesas, lanza promos entre canciones y usa el soundboard DJ. Tus clientes piden canciones desde su mesa.</div>
+    </div>
+    <div class="tutorial-step" data-step="3">
+      <div class="tutorial-icon">&#10024;</div>
+      <div class="tutorial-title">IA Studio + Vistas</div>
+      <div class="tutorial-desc">Genera letras con IA, usa el Panel Vistas para ver todo a la vez, y comparte la pantalla remota via QR. Todo desde el menu "Mas" del topbar.</div>
+    </div>
+    <div class="tutorial-step" data-step="4">
+      <div class="tutorial-icon">&#128640;</div>
+      <div class="tutorial-title">Listo para cantar!</div>
+      <div class="tutorial-desc">Usa los botones &#x25C0; &#x25B6; en los laterales para esconder/mostrar paneles y tener mas espacio. Cero contaminacion visual.</div>
+    </div>
+    <div class="tutorial-dots" id="tutorial-dots"></div>
+    <div class="tutorial-btns">
+      <button class="tutorial-btn secondary" id="tutorial-skip" onclick="closeTutorial()">Saltar</button>
+      <button class="tutorial-btn primary" id="tutorial-next" onclick="nextTutorialStep()">Siguiente</button>
+    </div>
   </div>
 </div>
 
@@ -6358,6 +6463,86 @@ function showPanelsForMode(mode) {
 }
 
 // No patch needed — showPanelsForMode is called from welcomeSelect/dismissWelcome
+
+// ── Mode More Dropdown ────────────────────────────────────────────────────
+function toggleModeMore() {
+  const dd = document.getElementById('mode-dropdown');
+  dd.classList.toggle('open');
+}
+function closeModeMore() {
+  document.getElementById('mode-dropdown').classList.remove('open');
+}
+document.addEventListener('click', (e) => {
+  if (!e.target.closest('.mode-more')) closeModeMore();
+});
+
+// ── Sidebar / Right Panel Toggle ──────────────────────────────────────────
+function toggleSidebar() {
+  const sb = document.querySelector('.sidebar');
+  const btn = document.getElementById('toggle-sidebar');
+  sb.classList.toggle('panel-hidden');
+  btn.innerHTML = sb.classList.contains('panel-hidden') ? '&#x25B6;' : '&#x25C0;';
+  localStorage.setItem('byflow_sidebar_hidden', sb.classList.contains('panel-hidden') ? '1' : '');
+}
+function toggleRightPanel() {
+  const rp = document.querySelector('.right-panel');
+  const btn = document.getElementById('toggle-right');
+  rp.classList.toggle('panel-hidden');
+  btn.innerHTML = rp.classList.contains('panel-hidden') ? '&#x25C0;' : '&#x25B6;';
+  localStorage.setItem('byflow_right_hidden', rp.classList.contains('panel-hidden') ? '1' : '');
+}
+// Restore sidebar state
+if (localStorage.getItem('byflow_sidebar_hidden') === '1') {
+  document.querySelector('.sidebar')?.classList.add('panel-hidden');
+  const btn = document.getElementById('toggle-sidebar');
+  if (btn) btn.innerHTML = '&#x25B6;';
+}
+if (localStorage.getItem('byflow_right_hidden') === '1') {
+  document.querySelector('.right-panel')?.classList.add('panel-hidden');
+  const btn = document.getElementById('toggle-right');
+  if (btn) btn.innerHTML = '&#x25C0;';
+}
+
+// ── Tutorial ──────────────────────────────────────────────────────────────
+let _tutorialStep = 0;
+const TUTORIAL_STEPS = 5;
+function openTutorial() {
+  _tutorialStep = 0;
+  updateTutorial();
+  document.getElementById('tutorial-overlay').classList.add('open');
+}
+function closeTutorial() {
+  document.getElementById('tutorial-overlay').classList.remove('open');
+  localStorage.setItem('byflow_tutorial_done', '1');
+}
+function nextTutorialStep() {
+  _tutorialStep++;
+  if (_tutorialStep >= TUTORIAL_STEPS) { closeTutorial(); return; }
+  updateTutorial();
+}
+function updateTutorial() {
+  document.querySelectorAll('.tutorial-step').forEach(s => s.classList.remove('active'));
+  const step = document.querySelector(`.tutorial-step[data-step="${_tutorialStep}"]`);
+  if (step) step.classList.add('active');
+  // Dots
+  const dots = document.getElementById('tutorial-dots');
+  dots.innerHTML = '';
+  for (let i = 0; i < TUTORIAL_STEPS; i++) {
+    const d = document.createElement('div');
+    d.className = 'tutorial-dot' + (i === _tutorialStep ? ' active' : '');
+    d.onclick = () => { _tutorialStep = i; updateTutorial(); };
+    dots.appendChild(d);
+  }
+  // Button text
+  const nextBtn = document.getElementById('tutorial-next');
+  nextBtn.textContent = _tutorialStep === TUTORIAL_STEPS - 1 ? 'Empezar' : 'Siguiente';
+  const skipBtn = document.getElementById('tutorial-skip');
+  skipBtn.style.display = _tutorialStep === TUTORIAL_STEPS - 1 ? 'none' : '';
+}
+// Auto-show tutorial on first visit
+if (!localStorage.getItem('byflow_tutorial_done')) {
+  setTimeout(openTutorial, 1500);
+}
 
 // ── Panel Vistas (DJ Dashboard) functions ─────────────────────────────────
 function vpRefresh() {
