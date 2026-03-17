@@ -3331,6 +3331,12 @@ function setLicenseToken(t) { if(t) localStorage.setItem('byflow_license_token',
 function clearLicenseToken() { localStorage.removeItem('byflow_license_token'); }
 
 async function checkLicenseStatus() {
+  // El dueño ArT-AtR tiene PRO automatico
+  if (isOwnerProfile()) {
+    licenseState = { activated: true, features: ['bares','youtube','ia','ollama_ai','soundcloud','jamendo'] };
+    updatePremiumUI();
+    return;
+  }
   try {
     const token = getLicenseToken();
     const r = await fetch('/api/license/status', {
@@ -3343,7 +3349,16 @@ async function checkLicenseStatus() {
   updatePremiumUI();
 }
 
+function isOwnerProfile() {
+  try {
+    const u = JSON.parse(localStorage.getItem('byflow_user') || '{}');
+    return /art.?atr/i.test(u.name || '') || /arturo\s*torres/i.test(u.name || '');
+  } catch { return false; }
+}
+
 function isPremium(feature) {
+  // El dueño ArT-AtR siempre tiene acceso completo
+  if (isOwnerProfile()) return true;
   return licenseState.activated && licenseState.features.includes(feature);
 }
 
@@ -5670,7 +5685,11 @@ async function settingsActivateLicense() {
 function updateLicenseUI() {
   const statusEl = document.getElementById('set-lic-status');
   const formEl = document.getElementById('set-lic-form');
-  if (licenseState.activated) {
+  const owner = isOwnerProfile();
+  if (owner) {
+    if (statusEl) { statusEl.textContent = '👑 PRO — ArT-AtR (Dueño)'; statusEl.style.color = 'var(--g)'; }
+    if (formEl) formEl.style.display = 'none';
+  } else if (licenseState.activated) {
     if (statusEl) { statusEl.textContent = '✅ PRO activa'; statusEl.style.color = 'var(--g)'; }
     if (formEl) formEl.style.display = 'none';
   } else {
