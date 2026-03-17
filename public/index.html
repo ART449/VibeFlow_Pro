@@ -1811,6 +1811,67 @@ input:focus-visible,textarea:focus-visible{
         <button class="oem-unlock-btn" onclick="licenseActivate()">Activar Licencia Online</button>
         <div class="oem-hint">Contacta a <span>licencias@iartlabs.com</span> para obtener tu licencia PRO</div>
         <span class="oem-reset" onclick="licenseDeactivate()" title="Desactivar licencia">&#x27F3; desactivar</span>
+
+        <!-- ── Planes y Precios ── -->
+        <div style="margin-top:20px;border-top:1px solid rgba(255,255,255,.08);padding-top:16px;">
+          <div style="text-align:center;font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:2px;color:var(--sub);margin-bottom:12px;">Planes ByFlow</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;">
+
+            <!-- FREE -->
+            <div style="background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:12px 8px;text-align:center;">
+              <div style="font-size:9px;text-transform:uppercase;letter-spacing:1px;color:var(--sub);">Gratis</div>
+              <div style="font-size:22px;font-weight:900;color:#fff;margin:4px 0;">$0</div>
+              <div style="font-size:8px;color:var(--sub);margin-bottom:8px;">para siempre</div>
+              <div style="font-size:9px;color:var(--sub);text-align:left;line-height:1.6;">
+                ✓ Karaoke completo<br>
+                ✓ Teleprompter<br>
+                ✓ Cola de cantantes<br>
+                ✓ Letras LRC sync<br>
+                ✗ <span style="opacity:.4">Streaming musica</span><br>
+                ✗ <span style="opacity:.4">Gestion bares</span><br>
+                ✗ <span style="opacity:.4">IA Studio</span>
+              </div>
+            </div>
+
+            <!-- PRO CREATOR -->
+            <div style="background:linear-gradient(135deg,rgba(255,0,110,.08),rgba(131,56,236,.08));border:1px solid rgba(255,0,110,.25);border-radius:12px;padding:12px 8px;text-align:center;position:relative;">
+              <div style="position:absolute;top:-8px;left:50%;transform:translateX(-50%);background:linear-gradient(135deg,#ff006e,#8338ec);color:#fff;font-size:7px;font-weight:800;padding:2px 8px;border-radius:10px;text-transform:uppercase;letter-spacing:1px;">Popular</div>
+              <div style="font-size:9px;text-transform:uppercase;letter-spacing:1px;color:var(--p);">PRO Creator</div>
+              <div style="font-size:22px;font-weight:900;color:#fff;margin:4px 0;">$199</div>
+              <div style="font-size:8px;color:var(--sub);margin-bottom:8px;">MXN/mes · 3 dispositivos</div>
+              <div style="font-size:9px;color:var(--sub);text-align:left;line-height:1.6;">
+                ✓ Todo lo gratis<br>
+                ✓ YouTube streaming<br>
+                ✓ SoundCloud embed<br>
+                ✓ Jamendo musica CC<br>
+                ✓ IA Studio (Ollama)<br>
+                ✓ Control remoto QR<br>
+                ✗ <span style="opacity:.4">Gestion bares</span>
+              </div>
+            </div>
+
+            <!-- PRO BAR -->
+            <div style="background:linear-gradient(135deg,rgba(251,146,60,.08),rgba(255,0,110,.08));border:1px solid rgba(251,146,60,.25);border-radius:12px;padding:12px 8px;text-align:center;">
+              <div style="font-size:9px;text-transform:uppercase;letter-spacing:1px;color:#fb923c;">PRO Venue</div>
+              <div style="font-size:22px;font-weight:900;color:#fff;margin:4px 0;">$799</div>
+              <div style="font-size:8px;color:var(--sub);margin-bottom:8px;">MXN/mes · 5 dispositivos</div>
+              <div style="font-size:9px;color:var(--sub);text-align:left;line-height:1.6;">
+                ✓ Todo lo PRO<br>
+                ✓ Gestion de bares<br>
+                ✓ Mesas y peticiones<br>
+                ✓ Promos automaticas<br>
+                ✓ DJ Soundboard<br>
+                ✓ Estadisticas uso<br>
+                ✓ Soporte prioritario
+              </div>
+            </div>
+
+          </div>
+          <div style="text-align:center;margin-top:10px;font-size:8px;color:rgba(255,255,255,.2);">
+            Precios en pesos mexicanos (MXN) · IVA incluido · Cancela cuando quieras<br>
+            Licencia perpetua disponible: PRO Creator $1,499 MXN · PRO Venue $4,999 MXN
+          </div>
+        </div>
       </div>
 
       <!-- Bares content (shown when unlocked) -->
