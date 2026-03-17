@@ -4099,6 +4099,8 @@ function lsCopyLyrics() {
 
 // ── YouTube ───────────────────────────────────────────────────────────────
 const YT_DEFAULT_KEY = 'AIzaSyBTFWSrpFCNagcOgPPGt0BZA5A8v5TgT7w';
+// Migrar key vieja si existe
+if (localStorage.getItem('yt_api_key') === 'AIzaSyAa8sVHiUQgBnZ6je1FRmGGlj7F8GYvPC4') localStorage.setItem('yt_api_key', YT_DEFAULT_KEY);
 let ytApiKey  = localStorage.getItem('yt_api_key') || YT_DEFAULT_KEY;
 let ytResults = [];
 
