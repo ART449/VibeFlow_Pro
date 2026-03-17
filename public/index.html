@@ -1498,6 +1498,7 @@ input:focus-visible,textarea:focus-visible{
   <!-- ═══ TOPBAR ═══ -->
   <div class="topbar">
     <div class="brand-wrap">
+      <button id="mobile-back-btn" onclick="mobileSetMode('karaoke',document.querySelector('.mnav-btn[data-mode=karaoke]'))" style="display:none;background:none;border:none;color:var(--p);font-size:18px;padding:4px 8px 4px 0;cursor:pointer;" title="Volver a Karaoke">&#x25C0;</button>
       <div class="brand">ByFlow</div>
       <div class="brand-sub">Vive Cantando</div>
     </div>
@@ -2142,6 +2143,24 @@ input:focus-visible,textarea:focus-visible{
           </div>
         </div>
 
+        <!-- Licencia PRO -->
+        <div class="settings-section">
+          <div class="settings-section-title">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z"/></svg>
+            Licencia PRO
+          </div>
+          <div id="set-lic-info" style="font-size:11px;margin-bottom:8px;">
+            <span id="set-lic-status" style="color:var(--sub);">Sin licencia activa</span>
+          </div>
+          <div id="set-lic-form" style="display:flex;gap:6px;margin-bottom:6px;">
+            <input id="set-lic-key" type="text" placeholder="VFP-XXXXX-XXXXX-XXXXX-XXXXX" maxlength="24"
+              oninput="licenseFormatKey(this)" onkeypress="if(event.key==='Enter')settingsActivateLicense()"
+              style="flex:1;background:var(--card2);border:1px solid var(--border);border-radius:8px;padding:8px 10px;color:var(--text);font-size:12px;font-family:monospace;">
+            <button onclick="settingsActivateLicense()" style="background:var(--g);color:#000;border:none;border-radius:8px;padding:8px 14px;font-weight:800;font-size:11px;cursor:pointer;">Activar</button>
+          </div>
+          <div style="font-size:9px;color:var(--sub);">Contacta licencias@iartlabs.com para obtener tu clave PRO</div>
+        </div>
+
         <!-- API Keys -->
         <div class="settings-section">
           <div class="settings-section-title">
@@ -2156,10 +2175,6 @@ input:focus-visible,textarea:focus-visible{
           <div class="settings-row">
             <span class="settings-label">Jamendo Client ID</span>
             <span class="settings-value" id="set-jm-status">No configurada</span>
-          </div>
-          <div class="settings-row">
-            <span class="settings-label">Licencia PRO</span>
-            <span class="settings-value" id="set-lic-status">Inactiva</span>
           </div>
         </div>
 
@@ -5361,6 +5376,9 @@ function makeDraggable(el, id) {
 function mobileSetMode(mode, btn) {
   document.querySelectorAll('.mnav-btn').forEach(b => b.classList.remove('active'));
   if (btn) btn.classList.add('active');
+  // Botón de regreso: mostrar si no es karaoke
+  const backBtn = document.getElementById('mobile-back-btn');
+  if (backBtn) backBtn.style.display = (mode === 'karaoke') ? 'none' : '';
   // Reset all panels first
   const sidebar = document.querySelector('.sidebar');
   const rightPanel = document.querySelector('.right-panel');
@@ -5628,7 +5646,37 @@ function saveUserProfile() {
   const email = document.getElementById('set-user-email').value.trim();
   const role = document.getElementById('set-user-role').value;
   localStorage.setItem('byflow_user', JSON.stringify({ name, email, role }));
-  showToast('Perfil guardado: ' + (name || 'Usuario'));
+  // Reconocer al dueño ArT-AtR
+  const isOwner = /art.?atr/i.test(name) || /arturo\s*torres/i.test(name);
+  if (isOwner) {
+    showToast('🎤 Bienvenido de vuelta, ArT-AtR — El codigo no miente');
+  } else {
+    showToast('Perfil guardado: ' + (name || 'Usuario'));
+  }
+  updateLicenseUI();
+}
+
+// Activar licencia desde Settings
+async function settingsActivateLicense() {
+  const inp = document.getElementById('set-lic-key');
+  if (!inp) return;
+  // Copiar la clave al input del oem-gate y activar
+  const oemInp = document.getElementById('oem-key-inp');
+  if (oemInp) oemInp.value = inp.value;
+  await licenseActivate();
+  updateLicenseUI();
+}
+
+function updateLicenseUI() {
+  const statusEl = document.getElementById('set-lic-status');
+  const formEl = document.getElementById('set-lic-form');
+  if (licenseState.activated) {
+    if (statusEl) { statusEl.textContent = '✅ PRO activa'; statusEl.style.color = 'var(--g)'; }
+    if (formEl) formEl.style.display = 'none';
+  } else {
+    if (statusEl) { statusEl.textContent = 'Sin licencia activa'; statusEl.style.color = 'var(--sub)'; }
+    if (formEl) formEl.style.display = 'flex';
+  }
 }
 
 function loadUserProfile() {
@@ -5719,11 +5767,7 @@ function loadSettingsState() {
   if (jmSt) jmSt.textContent = jmKey ? 'Configurada' : 'No configurada';
   if (jmSt && jmKey) jmSt.style.color = 'var(--g)';
 
-  const licSt = document.getElementById('set-lic-status');
-  if (licSt) {
-    licSt.textContent = licenseState.activated ? 'PRO Activa' : 'Inactiva';
-    if (licenseState.activated) licSt.style.color = 'var(--g)';
-  }
+  updateLicenseUI();
 }
 
 // ── DJ Soundboard (Web Audio API SFX Generator) ──────────────────────────
