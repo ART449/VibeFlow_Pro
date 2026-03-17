@@ -3127,11 +3127,10 @@ function setMode(mode) {
     if (sidebar)    sidebar.style.display    = 'flex';
     if (ytPanel)    { ytPanel.classList.add('active'); ytPanel.style.display = 'flex'; }
   } else if (mode === 'bares') {
-    if (sidebar)    sidebar.style.display    = 'flex';
+    // Sidebar oculto — la cola se gestiona desde Mesas Pendientes
     if (baresPanel) { baresPanel.classList.add('active'); baresPanel.style.display = 'flex'; }
     baresInit();
   } else if (mode === 'settings') {
-    if (sidebar)        sidebar.style.display        = 'flex';
     if (settingsPanel)  { settingsPanel.classList.add('active'); settingsPanel.style.display = 'flex'; }
     loadStats(); // Cargar estadísticas al abrir settings
   }
