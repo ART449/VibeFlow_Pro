@@ -167,24 +167,63 @@ ByFlow es una plataforma todo-en-uno de karaoke y entretenimiento en vivo.
 - [x] **CLI-Anything** — 5 commands para generar CLIs
 - [x] **UI-UX Pro Max** — Skill de diseno
 
+## COMPLETADO EN SESION 2026-03-17 (parte 3) — v4.0 FASE 1+2
+
+### FASE 1 — Estudio de Beats (completo)
+- [x] **Modo "estudio"** — Nuevo modo en setMode() con gradiente azul-cyan, boton en topbar dropdown + mobile-nav
+- [x] **Panel Estudio** — Layout 2 columnas (busqueda beats | editor letra), position:fixed overlay
+- [x] **Busqueda de beats** — YouTube API con filtros automaticos ("type beat instrumental"), 7 generos (Trap, Reggaeton, Hip-Hop, R&B, Lo-Fi, Drill, Latin)
+- [x] **Doble reproductor** — YouTube iframe (beat) + getUserMedia/MediaRecorder (voz WebM/Opus)
+- [x] **Control maestro** — Play/Pausa sincronizado via postMessage al iframe YT
+- [x] **Grabacion de voz** — Boton rec con animacion pulse, Blob en memoria de sesion
+- [x] **Editor de letra** — Textarea con titulo, placeholder guia
+- [x] **Disclaimer productor** — Siempre visible con link al canal del productor
+- [x] **Backend letras-beat** — 5 endpoints (POST crear, GET listar, GET ranking, PUT publicar, POST voto), persistencia JSON
+
+### FASE 2 — Ranking y Comunidad (core)
+- [x] **Tab system** — 3 pestanas en Estudio: Escribir / Top Letras / Mis Letras
+- [x] **Ranking publico** — Lista con posiciones, podio visual (oro/plata/bronce para top 3)
+- [x] **Filtros temporales** — Todos / Semana / Mes (filtrado client-side)
+- [x] **Sistema de votos** — 1 voto por IP por letra (server) + persistencia localStorage (client)
+- [x] **Mis Letras** — Historial completo con preview, fecha, beat asociado, votos
+- [x] **Publicar/Retirar** — Toggle en Mis Letras para aparecer/desaparecer del ranking
+- [x] **Preview letra** — Click en ranking carga la letra en el editor
+- [x] **Campo usuario** — Se guarda alias del usuario con cada letra
+- [x] **Mobile responsive** — Tabs, ranking items y editor adaptados a <900px
+
 ## v4.0 — Plan Maestro "Ecosistema Creativo"
 
 Ver `PLAN_MAESTRO_v4.md` para el plan completo con 4 fases.
 
-### FASE 1 — Estudio de Beats [EN PROGRESO]
-- [ ] Modo "estudio" en setMode() con gradiente azul-cyan
-- [ ] Doble reproductor: YouTube (beat) + getUserMedia (voz)
-- [ ] Control maestro: un solo PLAY sincroniza ambos
-- [ ] Grabacion de voz (Blob WebM, session vs permanente por plan)
-- [ ] Editor de letra con timestamps y asistente IA
-- [ ] Busqueda filtrada de beats (type beat, instrumental)
-- [ ] Backend: data/letras-beat.json + endpoints CRUD + votos
-- [ ] Disclaimer productor siempre visible
+### FASE 1 — Estudio de Beats [COMPLETADA]
+- [x] Modo "estudio" en setMode() con gradiente azul-cyan
+- [x] Doble reproductor: YouTube (beat) + getUserMedia (voz)
+- [x] Control maestro: un solo PLAY sincroniza ambos
+- [x] Grabacion de voz (Blob WebM, session vs permanente por plan)
+- [x] Editor de letra con textarea
+- [x] Busqueda filtrada de beats (type beat, instrumental, 7 generos)
+- [x] Backend: data/letras-beat.json + endpoints CRUD + votos
+- [x] Disclaimer productor siempre visible
 
-### FASE 2 — Ranking y Comunidad [PENDIENTE]
-- [ ] Ranking publico de letras (votos, semana/mes/todos)
-- [ ] Perfiles de creador (alias, bio, stats)
-- [ ] Feed de actividad
+### FASE 2 — Ranking y Comunidad [COMPLETADA]
+- [x] Tab system en Estudio: Escribir / Top Letras / Mis Letras
+- [x] Ranking publico de letras con filtro (todos/semana/mes)
+- [x] Sistema de votos (1 por IP, persistencia localStorage)
+- [x] Podio visual (top 3 con medallas oro/plata/bronce)
+- [x] Mis Letras: historial con preview, publicar/retirar, votos
+- [x] Boton publicar toggle en cada letra
+- [x] Click en letra del ranking la carga en editor
+- [x] Campo usuario guardado con cada letra
+- [x] Perfiles de creador (alias, bio, stats) — COMPLETADO FASE 2.5
+- [x] Feed de actividad — COMPLETADO FASE 2.5
+- [x] Registro/login con alias + PIN (SHA-256)
+- [x] Perfil publico: nombre, bio, stats (letras, publicadas, votos)
+- [x] Editar perfil propio (nombre, bio) con token
+- [x] Feed de actividad en tiempo real (publicaciones + votos)
+- [x] Notificacion toast cuando votan tu letra (Socket.IO)
+- [x] Modal de perfil al clickear autor en ranking
+- [x] Backend: 5 endpoints (register, login, GET perfil, PUT perfil, GET actividad)
+- [x] Persistencia: data/perfiles.json + data/actividad.json
 
 ### FASE 3 — Bares + Eventos Locales [PENDIENTE]
 - [ ] Noches de Talento en panel Bares

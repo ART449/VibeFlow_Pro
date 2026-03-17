@@ -239,12 +239,12 @@ Issues detectados en produccion que hay que resolver:
 
 | Issue | Prioridad | Cuando |
 |-------|-----------|--------|
-| Mezcla español/ingles (Play, Stop, Settings) | MEDIA | FASE 1 |
-| QR dice "Cargando..." sin contexto | MEDIA | FASE 1 |
-| Stats muestran "0" sin guia al usuario | BAJA | Ya resuelto FASE 0 |
-| "Guardar Nueva Cancion" sin placeholder util | MEDIA | FASE 1 |
-| Boton "Modo manual" sin tooltip | BAJA | FASE 1 |
-| Botones de reproducir/parar siempre visibles (0 contaminacion) | ALTA | FASE 1 |
+| Mezcla español/ingles (Play, Stop, Settings) | MEDIA | RESUELTO — "Play" → "Reproducir" |
+| QR dice "Cargando..." sin contexto | MEDIA | RESUELTO — mensaje descriptivo |
+| Stats muestran "0" sin guia al usuario | BAJA | RESUELTO FASE 0 |
+| "Guardar Nueva Cancion" sin placeholder util | MEDIA | RESUELTO — ya tenia placeholders |
+| Boton "Modo manual" sin tooltip | BAJA | RESUELTO — badge tp-mode-badge + tooltip |
+| Botones de reproducir/parar siempre visibles (0 contaminacion) | ALTA | RESUELTO — toggle colapsable |
 
 ---
 

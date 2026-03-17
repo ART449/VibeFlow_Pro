@@ -251,7 +251,7 @@ body.mode-estudio .btn-add{background:linear-gradient(135deg,#06b6d4,#3b82f6);bo
 /* ── Estudio Panel ── */
 .estudio-panel{
   display:none;position:fixed;top:48px;left:0;right:0;bottom:0;z-index:50;
-  background:var(--bg);overflow:hidden;
+  background:var(--bg);overflow:hidden;box-sizing:border-box;width:100%;
   grid-template-columns:1fr 1fr;grid-template-rows:auto 1fr auto;gap:0;
 }
 .estudio-panel.active{display:grid;}
@@ -356,9 +356,83 @@ body.mode-estudio .btn-add{background:linear-gradient(135deg,#06b6d4,#3b82f6);bo
 }
 .est-save-btn:hover{opacity:.9;}
 .est-empty{padding:40px 20px;text-align:center;color:var(--sub);font-size:13px;}
+/* Estudio tabs */
+.est-tabs{display:flex;gap:2px;padding:0 20px;background:var(--card);border-bottom:1px solid var(--border);overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;}
+.est-tabs::-webkit-scrollbar{display:none;}
+.est-tab{
+  padding:10px 18px;border:none;background:transparent;color:var(--sub);
+  font-size:12px;font-weight:600;cursor:pointer;position:relative;transition:color .2s;
+  border-bottom:2px solid transparent;white-space:nowrap;flex-shrink:0;
+}
+.est-tab:hover{color:var(--text);}
+.est-tab.active{color:#06b6d4;border-bottom-color:#06b6d4;}
+.est-tab-content{display:none;flex:1;overflow:hidden;}
+.est-tab-content.active{display:flex;flex-direction:column;}
+/* Grid adjustment for tabs: header + tabs + content + footer */
+.estudio-panel.active{grid-template-rows:auto auto 1fr auto;}
+/* Ranking view */
+.est-ranking{flex:1;overflow-y:auto;padding:16px;}
+.est-ranking-item{
+  display:flex;align-items:center;gap:12px;padding:14px 16px;
+  background:var(--card2);border-radius:12px;border:1px solid var(--border);
+  margin-bottom:8px;transition:border-color .15s;
+}
+.est-ranking-item:hover{border-color:rgba(6,182,212,.3);}
+.est-ranking-pos{
+  width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+  font-size:13px;font-weight:800;flex-shrink:0;
+  background:var(--card);border:1px solid var(--border);color:var(--sub);
+}
+.est-ranking-pos.top1{background:linear-gradient(135deg,#f59e0b,#ef4444);color:#fff;border:none;}
+.est-ranking-pos.top2{background:linear-gradient(135deg,#94a3b8,#64748b);color:#fff;border:none;}
+.est-ranking-pos.top3{background:linear-gradient(135deg,#b45309,#78350f);color:#fff;border:none;}
+.est-ranking-info{flex:1;min-width:0;}
+.est-ranking-title{font-size:13px;font-weight:700;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.est-ranking-meta{font-size:10px;color:var(--sub);margin-top:2px;display:flex;gap:12px;flex-wrap:wrap;}
+.est-ranking-beat{font-size:10px;color:#06b6d4;margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.est-ranking-beat a{color:#06b6d4;text-decoration:none;}
+.est-ranking-beat a:hover{text-decoration:underline;}
+.est-ranking-votes{display:flex;flex-direction:column;align-items:center;gap:4px;flex-shrink:0;}
+.est-vote-btn{
+  width:36px;height:36px;border-radius:50%;border:1px solid var(--border);
+  background:var(--card);color:var(--sub);font-size:16px;cursor:pointer;transition:all .15s;
+  display:flex;align-items:center;justify-content:center;
+}
+.est-vote-btn:hover{border-color:#06b6d4;color:#06b6d4;background:rgba(6,182,212,.08);}
+.est-vote-btn.voted{border-color:#06b6d4;color:#06b6d4;background:rgba(6,182,212,.15);cursor:default;}
+.est-vote-count{font-size:12px;font-weight:700;color:var(--text);}
+.est-ranking-empty{padding:60px 20px;text-align:center;color:var(--sub);font-size:13px;}
+/* Mis letras view */
+.est-mis{flex:1;overflow-y:auto;padding:16px;}
+.est-mis-item{
+  padding:14px 16px;background:var(--card2);border-radius:12px;border:1px solid var(--border);
+  margin-bottom:8px;transition:border-color .15s;
+}
+.est-mis-item:hover{border-color:rgba(6,182,212,.3);}
+.est-mis-head{display:flex;align-items:center;gap:10px;margin-bottom:6px;}
+.est-mis-title{font-size:13px;font-weight:700;color:var(--text);flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.est-mis-date{font-size:10px;color:var(--sub);flex-shrink:0;}
+.est-mis-preview{font-size:11px;color:var(--sub);line-height:1.5;max-height:44px;overflow:hidden;text-overflow:ellipsis;}
+.est-mis-actions{display:flex;gap:6px;margin-top:8px;}
+.est-mis-btn{
+  padding:5px 12px;border-radius:6px;border:1px solid var(--border);
+  background:var(--card);color:var(--sub);font-size:10px;font-weight:600;
+  cursor:pointer;transition:all .15s;
+}
+.est-mis-btn:hover{border-color:#06b6d4;color:#06b6d4;}
+.est-mis-btn.pub{border-color:rgba(6,182,212,.3);color:#06b6d4;}
+.est-mis-btn.pub.active{background:rgba(6,182,212,.15);border-color:#06b6d4;}
+.est-ranking-filter{display:flex;gap:4px;padding:0 16px 8px;flex-shrink:0;}
+.est-filter-btn{
+  padding:5px 12px;border-radius:16px;border:1px solid var(--border);
+  background:transparent;color:var(--sub);font-size:10px;cursor:pointer;transition:all .15s;
+}
+.est-filter-btn:hover,.est-filter-btn.active{background:rgba(6,182,212,.12);color:#06b6d4;border-color:#06b6d4;}
 /* Estudio responsive */
 @media(max-width:900px){
+  .estudio-panel{bottom:60px !important;} /* Space for mobile-nav */
   .estudio-panel.active{grid-template-columns:1fr;grid-template-rows:auto auto 1fr auto;}
+  #est-tab-escribir.active{grid-template-columns:1fr !important;}
   .est-beats{max-height:45vh;border-right:none;border-bottom:1px solid var(--border);}
   .est-beat-embed{width:160px;}
   .est-result-item{padding:8px 4px;}
@@ -366,6 +440,16 @@ body.mode-estudio .btn-add{background:linear-gradient(135deg,#06b6d4,#3b82f6);bo
   .est-search-btn{padding:8px 10px;font-size:11px;}
   .est-footer{flex-wrap:wrap;gap:8px;padding:8px 12px;}
   .est-disclaimer{max-width:100%;margin-left:0;}
+  .est-tabs{padding:0 8px;overflow-x:auto;-webkit-overflow-scrolling:touch;}
+  .est-tab{padding:8px 10px;font-size:10px;white-space:nowrap;}
+  .est-ranking-item{padding:10px 12px;gap:8px;}
+  .est-ranking-pos{width:28px;height:28px;font-size:11px;}
+  .est-vote-btn{width:32px;height:32px;font-size:14px;}
+  /* Hide karaoke elements behind estudio */
+  body.mode-estudio .player-bar,
+  body.mode-estudio .tp-area,
+  body.mode-estudio .sidebar,
+  body.mode-estudio .right-panel{display:none !important;}
 }
 #datetime{font-size:10px;color:var(--sub);white-space:nowrap;font-variant-numeric:tabular-nums;}
 
@@ -1982,6 +2066,7 @@ input:focus-visible,textarea:focus-visible{
           </div>
         </div>
       </div>
+      <span id="tp-mode-badge" class="tp-lrc-badge manual" title="Tipo de letra cargada: LRC sincronizado o modo manual (scroll libre)" style="display:inline-block;font-size:11px;padding:2px 8px;border-radius:8px;background:rgba(255,255,255,.08);color:var(--sub);margin:4px 0 0 8px;"></span>
 
       <!-- Effects -->
       <div class="fx-bar">
@@ -2024,7 +2109,7 @@ input:focus-visible,textarea:focus-visible{
             <span class="speed-display" id="speed-label" title="Velocidad">1.0x</span>
           </div>
           <div class="ctrl-group">
-            <button class="ctrl-btn play" id="btn-play" onclick="toggleAutoScroll(); this.blur();" title="Play / Pausa">
+            <button class="ctrl-btn play" id="btn-play" onclick="toggleAutoScroll(); this.blur();" title="Reproducir / Pausa">
               <svg id="ico-play" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
               <svg id="ico-pause" viewBox="0 0 24 24" fill="currentColor" style="display:none"><path d="M6 19h4V5H6zm8-14v14h4V5z"/></svg>
             </button>
@@ -2059,7 +2144,7 @@ input:focus-visible,textarea:focus-visible{
     <div class="right-panel">
       <h4 title="Escanea este QR desde otro celular para controlar el karaoke remotamente">Control Remoto (QR)</h4>
       <img id="qr-img" alt="Codigo QR para control remoto de ByFlow" title="Escanea con la camara de tu celular para conectarte">
-      <div id="qr-url" title="URL para acceder desde otro dispositivo en la misma red WiFi" style="font-size:10px;word-break:break-all;">Cargando URL...</div>
+      <div id="qr-url" title="URL para acceder desde otro dispositivo en la misma red WiFi" style="font-size:10px;word-break:break-all;">Generando enlace de control remoto...</div>
       <div class="divider"></div>
       <h4 title="Guarda canciones con su letra para cargarlas rapidamente desde el Catalogo">Guardar Nueva Cancion</h4>
       <input type="text" class="rp-input" id="new-song-title" placeholder="Titulo de la cancion..." title="Nombre de la cancion" style="margin-bottom:6px;">
@@ -2788,43 +2873,130 @@ input:focus-visible,textarea:focus-visible{
     <span class="est-header-badge">Escribe. Suena. Conecta.</span>
   </div>
 
-  <!-- Left: Beat search -->
-  <div class="est-beats">
-    <div class="est-beats-head">
-      <h4>Buscar Beat</h4>
-      <div class="est-search-row">
-        <input class="est-search-input" id="est-search-input" placeholder="trap sad, reggaeton, lo-fi..." onkeydown="if(event.key==='Enter')estSearchBeats()">
-        <button class="est-search-btn" onclick="estSearchBeats()">Buscar</button>
+  <!-- Tabs -->
+  <div class="est-tabs" style="grid-column:1/-1;">
+    <button class="est-tab active" data-est-tab="escribir" onclick="estSwitchTab('escribir',this)">&#9998; Escribir</button>
+    <button class="est-tab" data-est-tab="ranking" onclick="estSwitchTab('ranking',this)">&#127942; Top Letras</button>
+    <button class="est-tab" data-est-tab="mis" onclick="estSwitchTab('mis',this)">&#128194; Mis Letras</button>
+    <button class="est-tab" data-est-tab="actividad" onclick="estSwitchTab('actividad',this)">&#128240; Actividad</button>
+    <button class="est-tab" data-est-tab="perfil" onclick="estSwitchTab('perfil',this)">&#128100; Mi Perfil</button>
+  </div>
+
+  <!-- TAB: Escribir (beat search + editor) -->
+  <div class="est-tab-content active" id="est-tab-escribir" style="grid-column:1/-1;display:grid;grid-template-columns:1fr 1fr;overflow:hidden;">
+    <!-- Left: Beat search -->
+    <div class="est-beats">
+      <div class="est-beats-head">
+        <h4>Buscar Beat</h4>
+        <div class="est-search-row">
+          <input class="est-search-input" id="est-search-input" placeholder="trap sad, reggaeton, lo-fi..." onkeydown="if(event.key==='Enter')estSearchBeats()">
+          <button class="est-search-btn" onclick="estSearchBeats()">Buscar</button>
+        </div>
+        <div class="est-genre-row">
+          <button class="est-genre-btn" onclick="estGenreSearch(this,'trap type beat')">Trap</button>
+          <button class="est-genre-btn" onclick="estGenreSearch(this,'reggaeton instrumental')">Reggaeton</button>
+          <button class="est-genre-btn" onclick="estGenreSearch(this,'hip hop boom bap beat')">Hip-Hop</button>
+          <button class="est-genre-btn" onclick="estGenreSearch(this,'r&b type beat')">R&B</button>
+          <button class="est-genre-btn" onclick="estGenreSearch(this,'lo-fi beat')">Lo-Fi</button>
+          <button class="est-genre-btn" onclick="estGenreSearch(this,'drill type beat')">Drill</button>
+          <button class="est-genre-btn" onclick="estGenreSearch(this,'latin trap beat')">Latin</button>
+        </div>
       </div>
-      <div class="est-genre-row">
-        <button class="est-genre-btn" onclick="estGenreSearch(this,'trap type beat')">Trap</button>
-        <button class="est-genre-btn" onclick="estGenreSearch(this,'reggaeton instrumental')">Reggaeton</button>
-        <button class="est-genre-btn" onclick="estGenreSearch(this,'hip hop boom bap beat')">Hip-Hop</button>
-        <button class="est-genre-btn" onclick="estGenreSearch(this,'r&b type beat')">R&B</button>
-        <button class="est-genre-btn" onclick="estGenreSearch(this,'lo-fi beat')">Lo-Fi</button>
-        <button class="est-genre-btn" onclick="estGenreSearch(this,'drill type beat')">Drill</button>
-        <button class="est-genre-btn" onclick="estGenreSearch(this,'latin trap beat')">Latin</button>
+      <div class="est-results" id="est-results">
+        <div class="est-empty">Busca un beat para empezar a escribir tu letra</div>
       </div>
     </div>
-    <div class="est-results" id="est-results">
-      <div class="est-empty">Busca un beat para empezar a escribir tu letra</div>
+    <!-- Right: Letra editor -->
+    <div class="est-editor">
+      <div class="est-editor-head">
+        <h4>Tu Letra</h4>
+        <input class="est-letra-input" id="est-titulo" placeholder="Titulo de tu letra...">
+      </div>
+      <textarea class="est-letra-area" id="est-letra-area" placeholder="Escribe tu letra aqui...&#10;&#10;Verso 1:&#10;El beat suena y mi pluma despierta...&#10;&#10;Coro:&#10;..."></textarea>
     </div>
   </div>
 
-  <!-- Right: Letra editor -->
-  <div class="est-editor">
-    <div class="est-editor-head">
-      <h4>Tu Letra</h4>
-      <input class="est-letra-input" id="est-titulo" placeholder="Titulo de tu letra...">
+  <!-- TAB: Ranking -->
+  <div class="est-tab-content" id="est-tab-ranking" style="grid-column:1/-1;">
+    <div class="est-ranking-filter">
+      <button class="est-filter-btn active" onclick="estLoadRanking('all',this)">Todos</button>
+      <button class="est-filter-btn" onclick="estLoadRanking('week',this)">Semana</button>
+      <button class="est-filter-btn" onclick="estLoadRanking('month',this)">Mes</button>
     </div>
-    <textarea class="est-letra-area" id="est-letra-area" placeholder="Escribe tu letra aqui...&#10;&#10;Verso 1:&#10;El beat suena y mi pluma despierta...&#10;&#10;Coro:&#10;..."></textarea>
+    <div class="est-ranking" id="est-ranking-list">
+      <div class="est-ranking-empty">Cargando ranking...</div>
+    </div>
   </div>
 
-  <!-- Bottom: Player + controls -->
+  <!-- TAB: Mis Letras -->
+  <div class="est-tab-content" id="est-tab-mis" style="grid-column:1/-1;">
+    <div class="est-mis" id="est-mis-list">
+      <div class="est-ranking-empty">Cargando tus letras...</div>
+    </div>
+  </div>
+
+  <!-- TAB: Actividad -->
+  <div class="est-tab-content" id="est-tab-actividad" style="grid-column:1/-1;">
+    <div class="est-actividad" id="est-actividad-list" style="padding:16px;overflow-y:auto;max-height:calc(100vh - 200px);">
+      <div class="est-ranking-empty">Cargando actividad...</div>
+    </div>
+  </div>
+
+  <!-- TAB: Mi Perfil -->
+  <div class="est-tab-content" id="est-tab-perfil" style="grid-column:1/-1;">
+    <div class="est-perfil" style="padding:20px;max-width:500px;margin:0 auto;">
+      <!-- Login/Register form (shown when not logged in) -->
+      <div id="est-perfil-auth">
+        <h4 style="color:var(--p);margin-bottom:12px;">Crea tu perfil de creador</h4>
+        <input class="est-letra-input" id="est-perfil-alias" placeholder="Alias (ej: ArT-AtR)" maxlength="30" style="margin-bottom:8px;">
+        <input class="est-letra-input" id="est-perfil-nombre" placeholder="Nombre (opcional)" maxlength="50" style="margin-bottom:8px;">
+        <input class="est-letra-input" id="est-perfil-pin" type="password" placeholder="PIN (4-8 digitos)" maxlength="8" style="margin-bottom:8px;">
+        <textarea class="est-letra-input" id="est-perfil-bio" placeholder="Bio corta (opcional)..." maxlength="200" style="height:60px;resize:none;margin-bottom:12px;"></textarea>
+        <div style="display:flex;gap:8px;">
+          <button class="est-search-btn" onclick="estPerfilRegister()" style="flex:1;">Crear Perfil</button>
+          <button class="est-search-btn" onclick="estPerfilLogin()" style="flex:1;background:var(--s);">Ya tengo perfil</button>
+        </div>
+      </div>
+      <!-- Profile view (shown when logged in) -->
+      <div id="est-perfil-view" style="display:none;">
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;">
+          <div style="width:60px;height:60px;border-radius:50%;background:var(--p);display:flex;align-items:center;justify-content:center;font-size:24px;color:#fff;">&#128100;</div>
+          <div>
+            <div id="est-perfil-v-nombre" style="font-size:1.2rem;font-weight:700;color:var(--text);"></div>
+            <div id="est-perfil-v-alias" style="font-size:.85rem;color:var(--sub);"></div>
+          </div>
+        </div>
+        <div id="est-perfil-v-bio" style="color:var(--sub);margin-bottom:16px;font-style:italic;"></div>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:16px;">
+          <div style="text-align:center;padding:12px;background:var(--card);border-radius:8px;">
+            <div id="est-perfil-v-letras" style="font-size:1.5rem;font-weight:700;color:var(--p);">0</div>
+            <div style="font-size:.75rem;color:var(--sub);">Letras</div>
+          </div>
+          <div style="text-align:center;padding:12px;background:var(--card);border-radius:8px;">
+            <div id="est-perfil-v-pub" style="font-size:1.5rem;font-weight:700;color:var(--s);">0</div>
+            <div style="font-size:.75rem;color:var(--sub);">Publicadas</div>
+          </div>
+          <div style="text-align:center;padding:12px;background:var(--card);border-radius:8px;">
+            <div id="est-perfil-v-votos" style="font-size:1.5rem;font-weight:700;color:var(--a);">0</div>
+            <div style="font-size:.75rem;color:var(--sub);">Votos</div>
+          </div>
+        </div>
+        <h5 style="color:var(--sub);margin-bottom:8px;">Editar perfil</h5>
+        <input class="est-letra-input" id="est-perfil-edit-nombre" placeholder="Nombre" maxlength="50" style="margin-bottom:8px;">
+        <textarea class="est-letra-input" id="est-perfil-edit-bio" placeholder="Bio..." maxlength="200" style="height:60px;resize:none;margin-bottom:8px;"></textarea>
+        <div style="display:flex;gap:8px;">
+          <button class="est-search-btn" onclick="estPerfilUpdate()" style="flex:1;">Guardar cambios</button>
+          <button class="est-search-btn" onclick="estPerfilLogout()" style="flex:1;background:#666;">Cerrar sesion</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bottom: Player + controls (always visible) -->
   <div class="est-footer">
     <div class="est-beat-player">
       <div class="est-beat-embed" id="est-beat-embed"></div>
-      <button class="est-play-master" id="est-play-master" onclick="estTogglePlay()" title="Play/Pausa beat + mic">&#9654;</button>
+      <button class="est-play-master" id="est-play-master" onclick="estTogglePlay()" title="Reproducir/Pausa beat + mic">&#9654;</button>
       <button class="est-rec-btn" id="est-rec-btn" onclick="estToggleRec()" title="Grabar voz">&#9679;</button>
     </div>
     <div class="est-disclaimer" id="est-disclaimer" style="display:none;">
@@ -6999,9 +7171,11 @@ async function estSaveLetter() {
     if (typeof showToast === 'function') showToast('Escribe un titulo y tu letra', 'warning');
     return;
   }
+  const usuario = localStorage.getItem('byflow_user_alias') || 'Anonimo';
   const payload = {
     titulo,
     letra,
+    usuario,
     beat: _estBeatInfo || null,
     fecha: new Date().toISOString()
   };
@@ -7021,6 +7195,384 @@ async function estSaveLetter() {
   } catch (e) {
     if (typeof showToast === 'function') showToast('Error de conexion', 'error');
   }
+}
+
+// ── Estudio Tabs + Ranking + Mis Letras ──────────────────────────────────
+let _estVotedIds = new Set(JSON.parse(localStorage.getItem('byflow_voted') || '[]'));
+
+function estSwitchTab(tab, btn) {
+  document.querySelectorAll('.est-tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.est-tab-content').forEach(c => { c.classList.remove('active'); c.style.display = 'none'; });
+  if (btn) btn.classList.add('active');
+  const panel = document.getElementById('est-tab-' + tab);
+  if (panel) {
+    panel.classList.add('active');
+    panel.style.display = tab === 'escribir' ? 'grid' : 'flex';
+  }
+  if (tab === 'ranking') estLoadRanking('all');
+  if (tab === 'mis') estLoadMisLetras();
+  if (tab === 'actividad') estLoadActividad();
+  if (tab === 'perfil') estLoadPerfil();
+}
+
+async function estLoadRanking(period, btn) {
+  if (btn) {
+    document.querySelectorAll('.est-filter-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+  }
+  const container = document.getElementById('est-ranking-list');
+  if (!container) return;
+  container.innerHTML = '<div class="est-ranking-empty">Cargando...</div>';
+  try {
+    const res = await fetch('/api/letras-beat/ranking?limit=50');
+    const items = await res.json();
+    // Filter by period
+    const now = Date.now();
+    const filtered = items.filter(item => {
+      if (period === 'all') return true;
+      const itemDate = new Date(item.fecha).getTime();
+      if (period === 'week') return (now - itemDate) < 7 * 24 * 60 * 60 * 1000;
+      if (period === 'month') return (now - itemDate) < 30 * 24 * 60 * 60 * 1000;
+      return true;
+    });
+    if (filtered.length === 0) {
+      container.innerHTML = '<div class="est-ranking-empty">No hay letras publicadas todavia.<br><span style="font-size:11px;opacity:.6;">Escribe tu letra, guardala y publicala para aparecer aqui.</span></div>';
+      return;
+    }
+    container.innerHTML = '';
+    filtered.forEach((item, i) => {
+      const posClass = i === 0 ? 'top1' : i === 1 ? 'top2' : i === 2 ? 'top3' : '';
+      const voted = _estVotedIds.has(item.id);
+      const beatLine = item.beat ? `<div class="est-ranking-beat">&#127908; <a href="${item.beat.canalUrl || '#'}" target="_blank">${item.beat.canal || 'Beat'}</a> — ${item.beat.titulo || ''}</div>` : '';
+      const fecha = new Date(item.fecha).toLocaleDateString('es-MX', { day:'numeric', month:'short' });
+      const div = document.createElement('div');
+      div.className = 'est-ranking-item';
+      div.innerHTML = `
+        <div class="est-ranking-pos ${posClass}">${i + 1}</div>
+        <div class="est-ranking-info">
+          <div class="est-ranking-title">${escapeHtml(item.titulo)}</div>
+          <div class="est-ranking-meta"><span class="est-ranking-author" onclick="event.stopPropagation();estViewCreator('${escapeHtml(item.usuario || 'Anonimo')}')" style="cursor:pointer;text-decoration:underline dotted;" title="Ver perfil de ${escapeHtml(item.usuario || 'Anonimo')}">&#9998; ${escapeHtml(item.usuario || 'Anonimo')}</span><span>${fecha}</span></div>
+          ${beatLine}
+        </div>
+        <div class="est-ranking-votes">
+          <button class="est-vote-btn${voted ? ' voted' : ''}" onclick="estVote('${item.id}',this)" title="${voted ? 'Ya votaste' : 'Votar'}">&#9650;</button>
+          <span class="est-vote-count">${item.votos || 0}</span>
+        </div>
+      `;
+      div.querySelector('.est-ranking-info').style.cursor = 'pointer';
+      div.querySelector('.est-ranking-info').onclick = () => estPreviewLetter(item);
+      container.appendChild(div);
+    });
+  } catch (e) {
+    container.innerHTML = '<div class="est-ranking-empty">Error cargando ranking</div>';
+  }
+}
+
+async function estVote(id, btn) {
+  if (_estVotedIds.has(id)) return;
+  try {
+    const res = await fetch(`/api/letras-beat/${id}/voto`, { method: 'POST' });
+    if (res.ok) {
+      const data = await res.json();
+      _estVotedIds.add(id);
+      localStorage.setItem('byflow_voted', JSON.stringify([..._estVotedIds]));
+      btn.classList.add('voted');
+      btn.title = 'Ya votaste';
+      const countEl = btn.parentElement.querySelector('.est-vote-count');
+      if (countEl) countEl.textContent = data.votos;
+      if (typeof showToast === 'function') showToast('Voto registrado', 'success');
+    } else {
+      const err = await res.json().catch(() => ({}));
+      if (typeof showToast === 'function') showToast(err.error || 'No se pudo votar', 'warning');
+    }
+  } catch {
+    if (typeof showToast === 'function') showToast('Error de conexion', 'error');
+  }
+}
+
+function estPreviewLetter(item) {
+  // Load letter into editor tab for viewing
+  estSwitchTab('escribir', document.querySelector('[data-est-tab="escribir"]'));
+  document.getElementById('est-titulo').value = item.titulo || '';
+  document.getElementById('est-letra-area').value = item.letra || '';
+  if (item.beat && item.beat.videoId) {
+    estSelectBeat(item.beat.videoId, item.beat.titulo, item.beat.canal);
+  }
+  if (typeof showToast === 'function') showToast('Letra cargada: ' + item.titulo, 'info');
+}
+
+async function estLoadMisLetras() {
+  const container = document.getElementById('est-mis-list');
+  if (!container) return;
+  container.innerHTML = '<div class="est-ranking-empty">Cargando...</div>';
+  try {
+    const res = await fetch('/api/letras-beat?limit=50');
+    const data = await res.json();
+    const items = data.items || [];
+    if (items.length === 0) {
+      container.innerHTML = '<div class="est-ranking-empty">No tienes letras guardadas.<br><span style="font-size:11px;opacity:.6;">Ve a Escribir, crea tu letra y guardala.</span></div>';
+      return;
+    }
+    container.innerHTML = '';
+    items.forEach(item => {
+      const fecha = new Date(item.fecha).toLocaleDateString('es-MX', { day:'numeric', month:'short', year:'numeric' });
+      const preview = (item.letra || '').slice(0, 120).replace(/\n/g, ' ') + (item.letra && item.letra.length > 120 ? '...' : '');
+      const pubText = item.publicado ? 'Publicada' : 'Publicar';
+      const pubClass = item.publicado ? 'pub active' : 'pub';
+      const beatTag = item.beat ? `<span style="color:#06b6d4;font-size:10px;">&#127908; ${escapeHtml(item.beat.canal || 'Beat')}</span>` : '';
+      const div = document.createElement('div');
+      div.className = 'est-mis-item';
+      div.innerHTML = `
+        <div class="est-mis-head">
+          <div class="est-mis-title">${escapeHtml(item.titulo)}</div>
+          <div class="est-mis-date">${fecha}</div>
+        </div>
+        <div class="est-mis-preview">${escapeHtml(preview)}</div>
+        ${beatTag ? '<div style="margin-top:4px;">' + beatTag + '</div>' : ''}
+        <div class="est-mis-actions">
+          <button class="est-mis-btn" onclick="estPreviewLetter(${JSON.stringify(item).replace(/"/g,'&quot;')})">Editar</button>
+          <button class="est-mis-btn ${pubClass}" onclick="estTogglePublish('${item.id}',this)">${pubText}</button>
+          <span style="flex:1;"></span>
+          <span style="font-size:10px;color:var(--sub);">&#9650; ${item.votos || 0} votos</span>
+        </div>
+      `;
+      container.appendChild(div);
+    });
+  } catch {
+    container.innerHTML = '<div class="est-ranking-empty">Error cargando letras</div>';
+  }
+}
+
+async function estTogglePublish(id, btn) {
+  try {
+    const res = await fetch(`/api/letras-beat/${id}/publicar`, { method: 'PUT' });
+    if (res.ok) {
+      const data = await res.json();
+      btn.textContent = data.publicado ? 'Publicada' : 'Publicar';
+      btn.className = data.publicado ? 'est-mis-btn pub active' : 'est-mis-btn pub';
+      if (typeof showToast === 'function') showToast(data.publicado ? 'Letra publicada en el ranking' : 'Letra retirada del ranking', data.publicado ? 'success' : 'info');
+    }
+  } catch {
+    if (typeof showToast === 'function') showToast('Error al cambiar estado', 'error');
+  }
+}
+
+function escapeHtml(str) {
+  const div = document.createElement('div');
+  div.textContent = str || '';
+  return div.innerHTML;
+}
+
+// ── Actividad Feed (FASE 2.5) ─────────────────────────────────────────────
+async function estLoadActividad() {
+  const container = document.getElementById('est-actividad-list');
+  if (!container) return;
+  container.innerHTML = '<div class="est-ranking-empty">Cargando...</div>';
+  try {
+    const res = await fetch('/api/actividad?limit=30');
+    const items = await res.json();
+    if (items.length === 0) {
+      container.innerHTML = '<div class="est-ranking-empty">No hay actividad todavia.<br><span style="font-size:11px;opacity:.6;">Publica una letra para que aparezca aqui.</span></div>';
+      return;
+    }
+    container.innerHTML = '';
+    items.forEach(item => {
+      const isVote = item.tipo === 'letra_votada';
+      const icon = isVote ? '&#9650;' : '&#128240;';
+      const text = isVote
+        ? `<strong>${escapeHtml(item.usuario)}</strong> recibio un voto en "<em>${escapeHtml(item.titulo)}</em>" (${item.votos} total)`
+        : `<strong>${escapeHtml(item.usuario)}</strong> publico "<em>${escapeHtml(item.titulo)}</em>"`;
+      const ago = _timeAgo(item.fecha);
+      const div = document.createElement('div');
+      div.style.cssText = 'display:flex;align-items:flex-start;gap:10px;padding:10px 0;border-bottom:1px solid var(--border);';
+      div.innerHTML = `
+        <div style="font-size:18px;min-width:28px;text-align:center;padding-top:2px;">${icon}</div>
+        <div style="flex:1;">
+          <div style="font-size:.85rem;color:var(--text);line-height:1.4;">${text}</div>
+          <div style="font-size:.7rem;color:var(--sub);margin-top:2px;">${ago}</div>
+        </div>
+      `;
+      container.appendChild(div);
+    });
+  } catch {
+    container.innerHTML = '<div class="est-ranking-empty">Error cargando actividad</div>';
+  }
+}
+
+function _timeAgo(dateStr) {
+  const diff = Date.now() - new Date(dateStr).getTime();
+  const mins = Math.floor(diff / 60000);
+  if (mins < 1) return 'Ahora';
+  if (mins < 60) return mins + ' min';
+  const hrs = Math.floor(mins / 60);
+  if (hrs < 24) return hrs + 'h';
+  const days = Math.floor(hrs / 24);
+  if (days < 7) return days + 'd';
+  return new Date(dateStr).toLocaleDateString('es-MX', { day:'numeric', month:'short' });
+}
+
+// ── Perfiles de Creador (FASE 2.5) ───────────────────────────────────────
+let _creatorToken = localStorage.getItem('byflow_creator_token') || null;
+let _creatorAlias = localStorage.getItem('byflow_creator_alias') || null;
+
+function estLoadPerfil() {
+  if (_creatorToken && _creatorAlias) {
+    _showPerfilView();
+  } else {
+    document.getElementById('est-perfil-auth').style.display = 'block';
+    document.getElementById('est-perfil-view').style.display = 'none';
+  }
+}
+
+async function estPerfilRegister() {
+  const alias = document.getElementById('est-perfil-alias').value.trim();
+  const nombre = document.getElementById('est-perfil-nombre').value.trim();
+  const pin = document.getElementById('est-perfil-pin').value.trim();
+  const bio = document.getElementById('est-perfil-bio').value.trim();
+  if (!alias || !pin) { showToast('Alias y PIN son requeridos', 'warning'); return; }
+  if (pin.length < 4) { showToast('PIN minimo 4 digitos', 'warning'); return; }
+  try {
+    const res = await fetch('/api/perfiles/register', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ alias, pin, nombre: nombre || alias, bio })
+    });
+    const data = await res.json();
+    if (!res.ok) { showToast(data.error || 'Error al registrar', 'error'); return; }
+    _creatorToken = data.token;
+    _creatorAlias = data.alias;
+    localStorage.setItem('byflow_creator_token', data.token);
+    localStorage.setItem('byflow_creator_alias', data.alias);
+    localStorage.setItem('byflow_user_alias', data.alias);
+    showToast('Perfil creado: ' + data.alias, 'success');
+    _showPerfilView();
+  } catch { showToast('Error de conexion', 'error'); }
+}
+
+async function estPerfilLogin() {
+  const alias = document.getElementById('est-perfil-alias').value.trim();
+  const pin = document.getElementById('est-perfil-pin').value.trim();
+  if (!alias || !pin) { showToast('Alias y PIN son requeridos', 'warning'); return; }
+  try {
+    const res = await fetch('/api/perfiles/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ alias, pin })
+    });
+    const data = await res.json();
+    if (!res.ok) { showToast(data.error || 'Error al iniciar sesion', 'error'); return; }
+    _creatorToken = data.token;
+    _creatorAlias = data.alias;
+    localStorage.setItem('byflow_creator_token', data.token);
+    localStorage.setItem('byflow_creator_alias', data.alias);
+    localStorage.setItem('byflow_user_alias', data.alias);
+    showToast('Bienvenido ' + data.alias, 'success');
+    _showPerfilView();
+  } catch { showToast('Error de conexion', 'error'); }
+}
+
+async function _showPerfilView() {
+  document.getElementById('est-perfil-auth').style.display = 'none';
+  document.getElementById('est-perfil-view').style.display = 'block';
+  try {
+    const res = await fetch('/api/perfiles/' + encodeURIComponent(_creatorAlias));
+    if (!res.ok) { estPerfilLogout(); return; }
+    const data = await res.json();
+    document.getElementById('est-perfil-v-nombre').textContent = data.nombre || data.alias;
+    document.getElementById('est-perfil-v-alias').textContent = '@' + data.alias;
+    document.getElementById('est-perfil-v-bio').textContent = data.bio || 'Sin bio';
+    document.getElementById('est-perfil-v-letras').textContent = data.stats.letras;
+    document.getElementById('est-perfil-v-pub').textContent = data.stats.publicadas;
+    document.getElementById('est-perfil-v-votos').textContent = data.stats.votos;
+    document.getElementById('est-perfil-edit-nombre').value = data.nombre || '';
+    document.getElementById('est-perfil-edit-bio').value = data.bio || '';
+  } catch { showToast('Error cargando perfil', 'error'); }
+}
+
+async function estPerfilUpdate() {
+  const nombre = document.getElementById('est-perfil-edit-nombre').value.trim();
+  const bio = document.getElementById('est-perfil-edit-bio').value.trim();
+  try {
+    const res = await fetch('/api/perfiles/' + encodeURIComponent(_creatorAlias), {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json', 'X-Creator-Token': _creatorToken },
+      body: JSON.stringify({ nombre, bio })
+    });
+    if (res.ok) {
+      showToast('Perfil actualizado', 'success');
+      _showPerfilView();
+    } else {
+      const data = await res.json();
+      showToast(data.error || 'Error', 'error');
+    }
+  } catch { showToast('Error de conexion', 'error'); }
+}
+
+function estPerfilLogout() {
+  _creatorToken = null;
+  _creatorAlias = null;
+  localStorage.removeItem('byflow_creator_token');
+  localStorage.removeItem('byflow_creator_alias');
+  document.getElementById('est-perfil-auth').style.display = 'block';
+  document.getElementById('est-perfil-view').style.display = 'none';
+  showToast('Sesion cerrada', 'info');
+}
+
+// View any creator's profile (from ranking)
+async function estViewCreator(alias) {
+  try {
+    const res = await fetch('/api/perfiles/' + encodeURIComponent(alias));
+    if (!res.ok) { showToast('Este creador no tiene perfil registrado', 'info'); return; }
+    const data = await res.json();
+    const letrasHtml = data.ultimasLetras.map(l =>
+      `<div style="padding:6px 0;border-bottom:1px solid var(--border);font-size:.8rem;">
+        <span style="color:var(--text);">${escapeHtml(l.titulo)}</span>
+        <span style="color:var(--sub);float:right;">&#9650; ${l.votos}</span>
+      </div>`
+    ).join('');
+    const modal = document.createElement('div');
+    modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px;';
+    modal.onclick = e => { if (e.target === modal) modal.remove(); };
+    modal.innerHTML = `
+      <div style="background:var(--bg);border:1px solid var(--border);border-radius:12px;padding:24px;max-width:400px;width:100%;max-height:80vh;overflow-y:auto;">
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px;">
+          <div style="width:50px;height:50px;border-radius:50%;background:var(--p);display:flex;align-items:center;justify-content:center;font-size:20px;color:#fff;">&#128100;</div>
+          <div>
+            <div style="font-size:1.1rem;font-weight:700;color:var(--text);">${escapeHtml(data.nombre)}</div>
+            <div style="font-size:.8rem;color:var(--sub);">@${escapeHtml(data.alias)}</div>
+          </div>
+        </div>
+        <div style="color:var(--sub);font-style:italic;margin-bottom:12px;">${escapeHtml(data.bio) || 'Sin bio'}</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-bottom:16px;">
+          <div style="text-align:center;padding:8px;background:var(--card);border-radius:6px;">
+            <div style="font-size:1.2rem;font-weight:700;color:var(--p);">${data.stats.letras}</div>
+            <div style="font-size:.65rem;color:var(--sub);">Letras</div>
+          </div>
+          <div style="text-align:center;padding:8px;background:var(--card);border-radius:6px;">
+            <div style="font-size:1.2rem;font-weight:700;color:var(--s);">${data.stats.publicadas}</div>
+            <div style="font-size:.65rem;color:var(--sub);">Publicadas</div>
+          </div>
+          <div style="text-align:center;padding:8px;background:var(--card);border-radius:6px;">
+            <div style="font-size:1.2rem;font-weight:700;color:var(--a);">${data.stats.votos}</div>
+            <div style="font-size:.65rem;color:var(--sub);">Votos</div>
+          </div>
+        </div>
+        ${data.ultimasLetras.length > 0 ? '<h5 style="color:var(--sub);margin-bottom:6px;">Ultimas letras</h5>' + letrasHtml : ''}
+        <button onclick="this.closest('div[style*=fixed]').remove()" style="margin-top:16px;width:100%;padding:8px;background:var(--border);border:none;border-radius:6px;color:var(--text);cursor:pointer;">Cerrar</button>
+      </div>
+    `;
+    document.body.appendChild(modal);
+  } catch { showToast('Error cargando perfil', 'error'); }
+}
+
+// Socket.IO: listen for activity events (real-time notifications)
+if (typeof socket !== 'undefined') {
+  socket.on('actividad', data => {
+    // Notify if someone voted on YOUR letra
+    if (data.tipo === 'letra_votada' && _creatorAlias && data.usuario.toLowerCase() === _creatorAlias.toLowerCase()) {
+      showToast('Alguien voto tu letra "' + data.titulo + '"', 'success');
+    }
+  });
 }
 
 // ── Panel Vistas (DJ Dashboard) functions ─────────────────────────────────

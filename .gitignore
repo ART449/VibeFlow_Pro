@@ -12,3 +12,7 @@ data/.license_secret
 data/.admin_secret
 data/licenses.json
 subscriptions.json
+
+# Credentials (never commit)
+docs/.credentials
+*.credentials
