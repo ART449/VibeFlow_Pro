@@ -116,13 +116,13 @@ function debouncedSave(filename, data, ms = 1000) {
 }
 
 // Graceful shutdown: flush all pending debounced saves
-process.on('SIGTERM', () => {
-  console.log('[SERVER] SIGTERM — flushing pending saves...');
+function flushPendingSaves() {
   for (const [filename, data] of Object.entries(_debouncePending)) {
     saveJSON(filename, data);
   }
-  process.exit(0);
-});
+}
+process.on('SIGTERM', () => { console.log('[SERVER] SIGTERM — flushing...'); flushPendingSaves(); process.exit(0); });
+process.on('SIGINT',  () => { console.log('[SERVER] SIGINT — flushing...');  flushPendingSaves(); process.exit(0); });
 
 // ── Sistema de Licencias ────────────────────────────────────────────────────
 function loadSecret(filename, bytes) {
@@ -184,11 +184,6 @@ function getLicenseByToken(token) {
   if (!token) return null;
   const licenses = (state.license && state.license.licenses) || [];
   return licenses.find(l => l.activated && l.userToken === token) || null;
-}
-
-function isFeatureLicensed(feature) {
-  const lic = getActiveLicense();
-  return lic && lic.features.includes(feature);
 }
 
 function isFeatureLicensedByToken(token, feature) {
@@ -459,7 +454,7 @@ setInterval(() => {
     if ((!r || r.size === 0) && now - rooms[rid].lastActive > 7200000) delete rooms[rid];
   }
   for (const ip of Object.keys(_rateLimits)) {
-    if (now - _rateLimits[ip].first > 120000) delete _rateLimits[ip];
+    if (!_rateLimits[ip].length || now - _rateLimits[ip][0] > 120000) delete _rateLimits[ip];
   }
 }, 600000);  // cada 10 min
 
@@ -491,16 +486,15 @@ app.post('/api/cola', (req, res) => {
     mesa, estado: 'esperando', timestamp: Date.now()
   };
   state.cola.push(entry);
-  saveJSON('cola.json', state.cola);
+  debouncedSave('cola.json', state.cola);
   io.emit('cola_update', state.cola);
-  // Track stats
   trackStat('cola_add', { cantante: vNombre.value, cancion, mesa });
   res.json(entry);
 });
 
 app.delete('/api/cola/:id', (req, res) => {
   state.cola = state.cola.filter(c => c.id !== req.params.id);
-  saveJSON('cola.json', state.cola);
+  debouncedSave('cola.json', state.cola);
   io.emit('cola_update', state.cola);
   res.json({ ok: true });
 });
@@ -512,7 +506,7 @@ app.patch('/api/cola/:id', (req, res) => {
   if (req.body.cantante) item.cantante = clampStr(req.body.cantante, 100);
   if (req.body.cancion !== undefined) item.cancion = clampStr(req.body.cancion, 200);
   if (req.body.mesa !== undefined) item.mesa = req.body.mesa;
-  saveJSON('cola.json', state.cola);
+  debouncedSave('cola.json', state.cola);
   io.emit('cola_update', state.cola);
   res.json(item);
 });
@@ -523,10 +517,10 @@ app.post('/api/cola/reorder', (req, res) => {
   if (!Array.isArray(order)) return res.status(400).json({ error: 'order debe ser un array de IDs' });
   const map = new Map(state.cola.map(c => [c.id, c]));
   const reordered = order.filter(id => map.has(id)).map(id => map.get(id));
-  // Agregar items no incluidos en el orden al final
-  state.cola.forEach(c => { if (!order.includes(c.id)) reordered.push(c); });
+  const orderSet = new Set(order);
+  state.cola.forEach(c => { if (!orderSet.has(c.id)) reordered.push(c); });
   state.cola = reordered;
-  saveJSON('cola.json', state.cola);
+  debouncedSave('cola.json', state.cola);
   io.emit('cola_update', state.cola);
   res.json({ ok: true });
 });
@@ -534,7 +528,7 @@ app.post('/api/cola/reorder', (req, res) => {
 // Limpiar terminados de la cola
 app.post('/api/cola/clean', (req, res) => {
   state.cola = state.cola.filter(c => c.estado !== 'terminado');
-  saveJSON('cola.json', state.cola);
+  debouncedSave('cola.json', state.cola);
   io.emit('cola_update', state.cola);
   res.json({ ok: true });
 });
@@ -576,7 +570,7 @@ app.post('/api/canciones', (req, res) => {
   if (!titulo) return res.status(400).json({ error: 'Titulo requerido' });
   const song = { id: generateId(), titulo, letra, artista, fecha: Date.now() };
   state.canciones.push(song);
-  saveJSON('canciones.json', state.canciones);
+  debouncedSave('canciones.json', state.canciones);
   res.json(song);
 });
 
@@ -586,7 +580,7 @@ app.patch('/api/canciones/:id', (req, res) => {
   if (req.body.titulo !== undefined) song.titulo = clampStr(req.body.titulo, 200).trim();
   if (req.body.letra !== undefined) song.letra = clampStr(req.body.letra, 10000).trim();
   if (req.body.artista !== undefined) song.artista = clampStr(req.body.artista, 100).trim();
-  saveJSON('canciones.json', state.canciones);
+  debouncedSave('canciones.json', state.canciones);
   res.json(song);
 });
 
@@ -594,7 +588,7 @@ app.delete('/api/canciones/:id', (req, res) => {
   const idx = state.canciones.findIndex(s => s.id === req.params.id);
   if (idx === -1) return res.status(404).json({ error: 'Canción no encontrada' });
   state.canciones.splice(idx, 1);
-  saveJSON('canciones.json', state.canciones);
+  debouncedSave('canciones.json', state.canciones);
   res.json({ ok: true });
 });
 
@@ -672,7 +666,7 @@ app.get('/api/youtube/search', async (req, res) => {
     });
     const r = await fetch(`https://www.googleapis.com/youtube/v3/search?${params}`);
     const d = await r.json();
-    if (d.error) return res.status(400).json({ error: d.error.message });
+    if (d.error) return res.status(400).json({ error: 'Error en busqueda de YouTube' });
     res.json(d);
   } catch (e) {
     res.status(500).json({ error: e.message });
@@ -932,7 +926,7 @@ app.post('/api/ai/chat', async (req, res) => {
       const msg = isBlocked
         ? 'API key bloqueada por x.ai. Genera una nueva en console.x.ai y configúrala en GROK_API_KEY.'
         : 'GFlow API error: ' + r.status;
-      return res.status(r.status).json({ error: msg, detail: err });
+      return res.status(r.status).json({ error: msg });
     }
     const data = await r.json();
     const text = data.choices?.[0]?.message?.content || 'Sin respuesta';
@@ -973,7 +967,7 @@ app.get('/api/lrclib/search', async (req, res) => {
 
 // ── Security Log API (protegida con admin key) ──────────────────────────────
 app.get('/api/security/log', (req, res) => {
-  const adminKey = req.headers['x-admin-key'] || req.query.admin;
+  const adminKey = req.headers['x-admin-key'];
   if (adminKey !== ADMIN_SECRET && adminKey !== MASTER_ADMIN) {
     return res.status(401).json({ error: 'Admin key requerida' });
   }
@@ -1009,122 +1003,6 @@ app.get('/api/health', (req, res) => res.json({
   blocked_total: securityLog.summary.total
 }));
 
-// SPA fallback
-app.get('*', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'index.html'));
-});
-
-// ── WebSocket (Socket.IO) ───────────────────────────────────────────────────
-io.on('connection', (socket) => {
-  console.log(`[WS] Cliente conectado: ${socket.id}`);
-  io.emit('online_count', io.engine.clientsCount);
-
-  let myRoom = null;
-
-  // Cliente se une a un room (DJ crea, Remote se une)
-  socket.on('join_room', (data) => {
-    const roomId = (data && data.roomId) ? String(data.roomId).substring(0, 20) : null;
-    if (!roomId) return;
-    if (myRoom) socket.leave(myRoom);
-    myRoom = roomId;
-    socket.join(roomId);
-    const room = getRoom(roomId);
-    socket.emit('room_joined', { roomId, teleprompter: room.teleprompter });
-    // Conteo de usuarios en este room
-    const roomSize = io.sockets.adapter.rooms.get(roomId)?.size || 0;
-    io.to(roomId).emit('room_count', roomSize);
-    console.log(`[WS] ${socket.id} joined room ${roomId} (${roomSize} users)`);
-  });
-
-  socket.emit('init', {
-    cola: state.cola, mesas: state.mesas,
-    teleprompter: state.teleprompter,
-    canciones: state.canciones
-  });
-
-  socket.on('tp_scroll', (data) => {
-    if (myRoom) {
-      const room = getRoom(myRoom);
-      room.teleprompter.currentWord = data.currentWord ?? room.teleprompter.currentWord;
-      room.teleprompter.isPlaying   = data.isPlaying   ?? room.teleprompter.isPlaying;
-      socket.to(myRoom).emit('tp_update', room.teleprompter);
-    } else {
-      state.teleprompter.currentWord = data.currentWord ?? state.teleprompter.currentWord;
-      state.teleprompter.isPlaying   = data.isPlaying   ?? state.teleprompter.isPlaying;
-      debouncedSave('teleprompter.json', state.teleprompter);
-      socket.broadcast.emit('tp_update', state.teleprompter);
-    }
-  });
-
-  socket.on('tp_lyrics', (data) => {
-    if (myRoom) {
-      const room = getRoom(myRoom);
-      room.teleprompter.lyrics = data.lyrics || '';
-      room.teleprompter.currentWord = -1;
-      io.to(myRoom).emit('tp_update', room.teleprompter);
-    } else {
-      state.teleprompter.lyrics = data.lyrics || '';
-      state.teleprompter.currentWord = -1;
-      saveJSON('teleprompter.json', state.teleprompter);
-      io.emit('tp_update', state.teleprompter);
-    }
-  });
-
-  socket.on('tp_speed', (data) => {
-    if (myRoom) {
-      const room = getRoom(myRoom);
-      room.teleprompter.scrollSpeed = data.speed ?? 1;
-      io.to(myRoom).emit('tp_speed_update', { speed: room.teleprompter.scrollSpeed });
-    } else {
-      state.teleprompter.scrollSpeed = data.speed ?? 1;
-      debouncedSave('teleprompter.json', state.teleprompter);
-      io.emit('tp_speed_update', { speed: state.teleprompter.scrollSpeed });
-    }
-  });
-
-  socket.on('cola_add', (data) => {
-    const vNombre = validarTextoPublico(data.cantante || 'Anonimo', 'Nombre', 100);
-    const cantante = vNombre.ok ? vNombre.value : clampStr(data.cantante || 'Anonimo', 100);
-    const entry = {
-      id: generateId(),
-      cantante,
-      cancion: clampStr(data.cancion || '', 200),
-      mesa: data.mesa || null,
-      estado: 'esperando', timestamp: Date.now()
-    };
-    if (!vNombre.ok) {
-      socket.emit('validation_error', { error: vNombre.error });
-      return;
-    }
-    state.cola.push(entry);
-    saveJSON('cola.json', state.cola);
-    io.emit('cola_update', state.cola);
-    trackStat('cola_add', { cantante, cancion: entry.cancion, mesa: entry.mesa });
-  });
-
-  socket.on('cola_next', () => {
-    const current = state.cola.find(c => c.estado === 'cantando');
-    if (current) current.estado = 'terminado';
-    const next = state.cola.find(c => c.estado === 'esperando');
-    if (next) {
-      next.estado = 'cantando';
-      trackStat('song_played', { cancion: next.cancion, cantante: next.cantante });
-    }
-    saveJSON('cola.json', state.cola);
-    io.emit('cola_update', state.cola);
-    io.emit('singer_changed', next || null);
-  });
-
-  socket.on('disconnect', () => {
-    console.log(`[WS] Cliente desconectado: ${socket.id}`);
-    if (myRoom) {
-      const roomSize = io.sockets.adapter.rooms.get(myRoom)?.size || 0;
-      io.to(myRoom).emit('room_count', roomSize);
-    }
-    io.emit('online_count', io.engine.clientsCount);
-  });
-});
-
 // ── Stripe Billing endpoints (dormidos sin STRIPE_SECRET_KEY) ────────────────
 app.post('/api/billing/checkout-session', async (req, res) => {
   if (!stripe) return res.status(503).json({ error: 'Pagos no configurados todavia' });
@@ -1148,10 +1026,11 @@ app.post('/api/billing/checkout-session', async (req, res) => {
 
 app.get('/api/billing/status', (req, res) => {
   const email = req.query.email;
+  if (!email) return res.status(400).json({ error: 'Email requerido' });
   const subs = readSubs();
-  const user = email ? subs.users[email] : null;
+  const user = subs.users[email];
   const plan = user?.plan || 'FREE';
-  res.json({ email: email||null, plan, status: user?.status||'inactive', features: featuresForPlan(plan) });
+  res.json({ email, plan, status: user?.status||'inactive', features: featuresForPlan(plan) });
 });
 
 app.post('/api/billing/customer-portal', async (req, res) => {
@@ -1165,6 +1044,128 @@ app.post('/api/billing/customer-portal', async (req, res) => {
     const session = await stripe.billingPortal.sessions.create({ customer: user.stripeCustomerId, return_url: process.env.APP_BASE_URL || 'https://byflowapp.up.railway.app' });
     res.json({ url: session.url });
   } catch (err) { console.error('[Stripe] Portal error:', err.message); res.status(500).json({ error: 'Error al abrir portal' }); }
+});
+
+// SPA fallback
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
+
+// ── WebSocket (Socket.IO) ───────────────────────────────────────────────────
+io.on('connection', (socket) => {
+  console.log(`[WS] Cliente conectado: ${socket.id}`);
+  io.emit('online_count', io.engine.clientsCount);
+
+  let myRoom = null;
+  let _roomJoins = 0;
+
+  // Cliente se une a un room (DJ crea, Remote se une)
+  socket.on('join_room', (data) => {
+    if (++_roomJoins > 10) return; // rate limit: max 10 joins per connection
+    const roomId = (data && data.roomId) ? String(data.roomId).substring(0, 20) : null;
+    if (!roomId) return;
+    if (myRoom) socket.leave(myRoom);
+    myRoom = roomId;
+    socket.join(roomId);
+    const room = getRoom(roomId);
+    socket.emit('room_joined', { roomId, teleprompter: room.teleprompter });
+    // Conteo de usuarios en este room
+    const roomSize = io.sockets.adapter.rooms.get(roomId)?.size || 0;
+    io.to(roomId).emit('room_count', roomSize);
+    console.log(`[WS] ${socket.id} joined room ${roomId} (${roomSize} users)`);
+  });
+
+  socket.emit('init', {
+    cola: state.cola, mesas: state.mesas,
+    teleprompter: state.teleprompter,
+    canciones: state.canciones
+  });
+
+  socket.on('tp_scroll', (data) => {
+    const word = typeof data.currentWord === 'number' ? data.currentWord : undefined;
+    const playing = typeof data.isPlaying === 'boolean' ? data.isPlaying : undefined;
+    if (myRoom) {
+      const room = getRoom(myRoom);
+      if (word !== undefined) room.teleprompter.currentWord = word;
+      if (playing !== undefined) room.teleprompter.isPlaying = playing;
+      socket.to(myRoom).emit('tp_update', room.teleprompter);
+    } else {
+      if (word !== undefined) state.teleprompter.currentWord = word;
+      if (playing !== undefined) state.teleprompter.isPlaying = playing;
+      debouncedSave('teleprompter.json', state.teleprompter);
+      socket.broadcast.emit('tp_update', state.teleprompter);
+    }
+  });
+
+  socket.on('tp_lyrics', (data) => {
+    const lyrics = typeof data.lyrics === 'string' ? data.lyrics.slice(0, 50000) : '';
+    if (myRoom) {
+      const room = getRoom(myRoom);
+      room.teleprompter.lyrics = lyrics;
+      room.teleprompter.currentWord = -1;
+      io.to(myRoom).emit('tp_update', room.teleprompter);
+    } else {
+      state.teleprompter.lyrics = lyrics;
+      state.teleprompter.currentWord = -1;
+      saveJSON('teleprompter.json', state.teleprompter);
+      io.emit('tp_update', state.teleprompter);
+    }
+  });
+
+  socket.on('tp_speed', (data) => {
+    const speed = Math.max(0.1, Math.min(10, Number(data.speed) || 1));
+    if (myRoom) {
+      const room = getRoom(myRoom);
+      room.teleprompter.scrollSpeed = speed;
+      io.to(myRoom).emit('tp_speed_update', { speed });
+    } else {
+      state.teleprompter.scrollSpeed = speed;
+      debouncedSave('teleprompter.json', state.teleprompter);
+      io.emit('tp_speed_update', { speed });
+    }
+  });
+
+  socket.on('cola_add', (data) => {
+    const vNombre = validarTextoPublico(data.cantante || 'Anonimo', 'Nombre', 100);
+    const cantante = vNombre.ok ? vNombre.value : clampStr(data.cantante || 'Anonimo', 100);
+    const entry = {
+      id: generateId(),
+      cantante,
+      cancion: clampStr(data.cancion || '', 200),
+      mesa: data.mesa || null,
+      estado: 'esperando', timestamp: Date.now()
+    };
+    if (!vNombre.ok) {
+      socket.emit('validation_error', { error: vNombre.error });
+      return;
+    }
+    state.cola.push(entry);
+    debouncedSave('cola.json', state.cola);
+    io.emit('cola_update', state.cola);
+    trackStat('cola_add', { cantante, cancion: entry.cancion, mesa: entry.mesa });
+  });
+
+  socket.on('cola_next', () => {
+    const current = state.cola.find(c => c.estado === 'cantando');
+    if (current) current.estado = 'terminado';
+    const next = state.cola.find(c => c.estado === 'esperando');
+    if (next) {
+      next.estado = 'cantando';
+      trackStat('song_played', { cancion: next.cancion, cantante: next.cantante });
+    }
+    debouncedSave('cola.json', state.cola);
+    io.emit('cola_update', state.cola);
+    io.emit('singer_changed', next || null);
+  });
+
+  socket.on('disconnect', () => {
+    console.log(`[WS] Cliente desconectado: ${socket.id}`);
+    if (myRoom) {
+      const roomSize = io.sockets.adapter.rooms.get(myRoom)?.size || 0;
+      io.to(myRoom).emit('room_count', roomSize);
+    }
+    io.emit('online_count', io.engine.clientsCount);
+  });
 });
 
 // ── Error handlers ──────────────────────────────────────────────────────────
