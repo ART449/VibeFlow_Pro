@@ -12,7 +12,7 @@ const path        = require('path');
 const os          = require('os');
 const fs          = require('fs');
 const crypto      = require('crypto');
-const { exec }    = require('child_process');
+// const { exec } = require('child_process');  // Removed — unused, security risk
 
 // ── Stripe (dormido hasta que se configuren env vars) ────────────────────────
 const stripe = process.env.STRIPE_SECRET_KEY
@@ -105,10 +105,24 @@ function saveJSON(filename, data) {
 }
 
 const _debounceTimers = {};
+const _debouncePending = {};  // track pending data for graceful shutdown
 function debouncedSave(filename, data, ms = 1000) {
   if (_debounceTimers[filename]) clearTimeout(_debounceTimers[filename]);
-  _debounceTimers[filename] = setTimeout(() => saveJSON(filename, data), ms);
+  _debouncePending[filename] = data;
+  _debounceTimers[filename] = setTimeout(() => {
+    saveJSON(filename, data);
+    delete _debouncePending[filename];
+  }, ms);
 }
+
+// Graceful shutdown: flush all pending debounced saves
+process.on('SIGTERM', () => {
+  console.log('[SERVER] SIGTERM — flushing pending saves...');
+  for (const [filename, data] of Object.entries(_debouncePending)) {
+    saveJSON(filename, data);
+  }
+  process.exit(0);
+});
 
 // ── Sistema de Licencias ────────────────────────────────────────────────────
 function loadSecret(filename, bytes) {
@@ -123,7 +137,7 @@ function loadSecret(filename, bytes) {
 
 const LICENSE_SECRET = loadSecret('.license_secret', 32);
 const ADMIN_SECRET  = process.env.ADMIN_SECRET || loadSecret('.admin_secret', 16);
-const MASTER_ADMIN  = 'BF-ArT-2026-IArtLabs';  // Master key fija para el dueño
+const MASTER_ADMIN  = process.env.MASTER_ADMIN || loadSecret('.master_admin', 16);
 
 function getDeviceFingerprint() {
   const hostname = os.hostname();
@@ -288,6 +302,7 @@ setInterval(() => {
 const PORT = process.env.PORT || 8080;
 const HOST = '0.0.0.0';
 const app  = express();
+app.set('trust proxy', 1);  // Railway/nginx — necesario para rate limiting correcto
 const server = http.createServer(app);
 // ── CORS & Allowed Origins ─────────────────────────────────────────────────
 const ALLOWED_ORIGINS = process.env.CORS_ORIGINS
@@ -428,11 +443,25 @@ function getRoom(roomId) {
   if (!roomId) return null;
   if (!rooms[roomId]) {
     rooms[roomId] = {
-      teleprompter: { lyrics: '', currentWord: -1, scrollSpeed: 1, isPlaying: false }
+      teleprompter: { lyrics: '', currentWord: -1, scrollSpeed: 1, isPlaying: false },
+      lastActive: Date.now()
     };
   }
+  rooms[roomId].lastActive = Date.now();
   return rooms[roomId];
 }
+
+// Cleanup: rooms inactivos > 2h, _rateLimits viejos
+setInterval(() => {
+  const now = Date.now();
+  for (const rid of Object.keys(rooms)) {
+    const r = io.sockets.adapter.rooms.get(rid);
+    if ((!r || r.size === 0) && now - rooms[rid].lastActive > 7200000) delete rooms[rid];
+  }
+  for (const ip of Object.keys(_rateLimits)) {
+    if (now - _rateLimits[ip].first > 120000) delete _rateLimits[ip];
+  }
+}, 600000);  // cada 10 min
 
 // ── API REST ────────────────────────────────────────────────────────────────
 
@@ -572,7 +601,11 @@ app.delete('/api/canciones/:id', (req, res) => {
 // ── Teleprompter state ───────────────────────────────────────────────────────
 app.get('/api/teleprompter', (req, res) => res.json(state.teleprompter));
 app.post('/api/teleprompter', (req, res) => {
-  Object.assign(state.teleprompter, req.body);
+  // Whitelist: solo campos validos del teleprompter
+  const allowed = ['lyrics', 'currentWord', 'scrollSpeed', 'isPlaying'];
+  for (const key of allowed) {
+    if (req.body[key] !== undefined) state.teleprompter[key] = req.body[key];
+  }
   debouncedSave('teleprompter.json', state.teleprompter);
   io.emit('tp_update', state.teleprompter);
   res.json(state.teleprompter);
@@ -863,11 +896,11 @@ const GROK_API_URL = 'https://api.x.ai/v1/chat/completions';
 const GROK_MODEL   = process.env.GROK_MODEL || 'grok-3-mini';
 
 app.post('/api/ai/chat', async (req, res) => {
-  // License check disabled for live demo — re-enable for production
-  // const token = req.headers['x-license-token'] || '';
-  // if (!isFeatureLicensedByToken(token, 'ollama_ai')) {
-  //   return res.status(403).json({ error: 'Requiere licencia PRO para usar IA' });
-  // }
+  // License check — PRO required for AI
+  const token = req.headers['x-license-token'] || '';
+  if (!isFeatureLicensedByToken(token, 'ollama_ai')) {
+    return res.status(403).json({ error: 'Requiere licencia PRO para usar IA' });
+  }
   const { prompt, system } = req.body;
   if (!prompt || typeof prompt !== 'string') {
     return res.status(400).json({ error: 'prompt requerido' });
@@ -1155,8 +1188,8 @@ server.listen(PORT, HOST, () => {
   console.log(`   Canciones: ${state.canciones.length} | Cola: ${state.cola.length}`);
   console.log(`   Licencia:  ${activeLic ? 'PRO activa (' + activeLic.owner + ')' : 'FREE'}`);
   console.log('  ---------------------------------------------');
-  console.log(`   ADMIN KEY: ${ADMIN_SECRET}`);
-  console.log('   (Guarda esta clave para generar licencias)');
+  console.log('   ADMIN KEY: ****** (ver .admin_secret o env ADMIN_SECRET)');
+  console.log('   MASTER:    ****** (ver .master_admin o env MASTER_ADMIN)');
   console.log('  =============================================');
   console.log('');
 });

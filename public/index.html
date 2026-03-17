@@ -1186,7 +1186,8 @@ select.inp{cursor:pointer;}
 
 /* ── Mobile ──────────────────────────────────────────────────────────── */
 @media(max-width:900px){
-  html,body{overflow:auto;overscroll-behavior:none;touch-action:manipulation;}
+  /* iOS fix: UN solo contenedor scrollable para evitar scroll atrapado */
+  html,body{overflow:hidden;overscroll-behavior:none;touch-action:manipulation;}
   .sidebar{display:none;}
   .right-panel{display:none;}
   /* iOS: disable expensive backdrop-filter on mobile */
@@ -1205,8 +1206,9 @@ select.inp{cursor:pointer;}
   .mode-switch{display:none;}
   .mobile-nav{display:block;}
   .fx-bar{display:none;}
-  .main{overflow:auto;touch-action:manipulation;}
-  .center{overflow:auto;touch-action:manipulation;}
+  /* Main y center: solo center scrollea (evita triple-scroll iOS) */
+  .main{overflow:hidden;touch-action:manipulation;}
+  .center{overflow-y:auto;-webkit-overflow-scrolling:touch;touch-action:manipulation;}
   .scrollable{-webkit-overflow-scrolling:touch;touch-action:manipulation;}
   /* Welcome screen mobile */
   .welcome-cards{grid-template-columns:1fr;max-width:360px;gap:12px;}
