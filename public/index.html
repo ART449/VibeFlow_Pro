@@ -2941,12 +2941,23 @@ async function searchLyricsOnline() {
       if (localHits.length) {
         window._lyricsSearchResults = localHits.map(l => ({ trackName: l.titulo, artistName: 'ArT-AtR', plainLyrics: l.letra }));
         results.innerHTML = '<div style="text-align:center;font-size:9px;color:var(--g);margin-bottom:8px;">📂 Encontrado en Mis Letras (ArT-AtR)</div>' +
-          localHits.map((l, i) => `
+          localHits.map((l, i) => {
+            const preview = l.letra.split('\n').slice(0, 4).join(' / ');
+            return `
           <div style="padding:10px;border:1px solid rgba(0,255,136,.2);border-radius:8px;margin-bottom:6px;background:rgba(0,255,136,.04);">
-            <div style="font-size:12px;font-weight:700;">${escHtml(l.titulo)}</div>
-            <div style="font-size:10px;color:var(--sub);">ArT-AtR &middot; ${escHtml(l.tema)}</div>
-            <button class="tp-search-lyrics-btn" style="width:100%;justify-content:center;font-size:10px;padding:6px;margin-top:8px;" onclick="loadOnlineLyrics(${i},false)">Cargar al Teleprompter</button>
-          </div>`).join('');
+            <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+              <div>
+                <div style="font-size:12px;font-weight:700;">${escHtml(l.titulo)}</div>
+                <div style="font-size:10px;color:var(--sub);">ArT-AtR &middot; ${escHtml(l.tema)}</div>
+              </div>
+              <span style="font-size:8px;background:rgba(0,255,136,.15);color:var(--g);padding:2px 6px;border-radius:4px;">LOCAL</span>
+            </div>
+            <div style="font-size:10px;color:rgba(255,255,255,.35);margin-top:6px;font-style:italic;line-height:1.4;">${escHtml(preview.substring(0, 120))}...</div>
+            <div style="display:flex;gap:6px;margin-top:8px;">
+              <button class="tp-search-lyrics-btn" style="flex:1;justify-content:center;font-size:10px;padding:6px;" onclick="loadOnlineLyrics(${i},false)">Cargar al Teleprompter</button>
+            </div>
+          </div>`;
+          }).join('');
         return;
       }
       results.innerHTML = '<div style="text-align:center;padding:30px;opacity:.4;font-size:12px;">No se encontraron letras para "' + escHtml(title) + '"<br><br>Intenta con otro titulo o artista</div>';
