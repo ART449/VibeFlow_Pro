@@ -5984,12 +5984,23 @@ function showPanelsForMode(mode) {
 
 // ── Init ──────────────────────────────────────────────────────────────────
 (async function init() {
-  // PWA Service Worker — force update on iOS
+  // PWA Service Worker — auto-update: detecta version nueva y recarga sola
   if ('serviceWorker' in navigator) {
     navigator.serviceWorker.register('/sw.js').then(r => {
       console.log('[PWA] SW registered');
-      r.update(); // force check for new SW version
+      r.update();
+      r.addEventListener('updatefound', () => {
+        const nw = r.installing;
+        if (nw) nw.addEventListener('statechange', () => {
+          if (nw.state === 'activated' && navigator.serviceWorker.controller) {
+            console.log('[PWA] Nueva version detectada, recargando...');
+            window.location.reload();
+          }
+        });
+      });
     }).catch(e => console.log('[PWA] SW failed:', e));
+    // If SW controller changes (new SW took over), reload
+    navigator.serviceWorker.addEventListener('controllerchange', () => window.location.reload());
   }
 
   // iOS viewport fix — recalculate height when address bar shows/hides

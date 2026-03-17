@@ -45,7 +45,21 @@ self.addEventListener('fetch', event => {
     return;
   }
 
-  // Assets: cache-first
+  // HTML pages: network-first (always get latest code)
+  if (url.pathname === '/' || url.pathname.endsWith('.html')) {
+    event.respondWith(
+      fetch(event.request)
+        .then(res => {
+          const clone = res.clone();
+          caches.open(CACHE_NAME).then(c => c.put(event.request, clone));
+          return res;
+        })
+        .catch(() => caches.match(event.request))
+    );
+    return;
+  }
+
+  // Other assets: cache-first
   event.respondWith(
     caches.match(event.request).then(cached => cached || fetch(event.request).then(res => {
       const clone = res.clone();
