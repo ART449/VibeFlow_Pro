@@ -894,7 +894,7 @@ app.get('/api/stats', (req, res) => {
 });
 
 // ── Grok AI proxy (protege API key en server-side) ───────────────────────
-const GROK_API_KEY = process.env.GROK_API_KEY || '';
+const GROK_API_KEY = process.env.GROK_API_KEY || process.env.GFLOW_API_KEY || '';
 const GROK_API_URL = 'https://api.x.ai/v1/chat/completions';
 const GROK_MODEL   = process.env.GROK_MODEL || 'grok-3-mini';
 
