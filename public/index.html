@@ -3316,7 +3316,7 @@ input:focus-visible,textarea:focus-visible{
 // ═══════════════════════════════════════════════════════════════════════════
 
 const SOCKET_URL = location.origin;
-let socket = null;
+var socket = null;
 
 function loadSocketIO() {
   return new Promise((resolve) => {
@@ -3428,6 +3428,8 @@ async function connectSocket() {
     }
   });
   socket.on('disconnect', () => console.log('[WS] Desconectado'));
+  // Setup deferred event listeners that depend on socket
+  if (typeof _setupEventoListeners === 'function') _setupEventoListeners();
 }
 
 // ── Teleprompter Engine v2 ────────────────────────────────────────────────
@@ -4214,7 +4216,7 @@ function setMode(mode) {
 const OEM_LS_BAR = 'byflow_bar_name';
 const OEM_LS_NUM = 'byflow_bar_mesas';
 
-let licenseState = { activated: false, features: [] };
+var licenseState = { activated: false, features: [] };
 
 function getLicenseToken() { return localStorage.getItem('byflow_license_token') || ''; }
 function setLicenseToken(t) { if(t) localStorage.setItem('byflow_license_token', t); }
@@ -4584,14 +4586,16 @@ function talentCopyQR(id) {
   navigator.clipboard.writeText(link).then(() => showToast('Link copiado: ' + link, 'success')).catch(() => showToast(link, 'info'));
 }
 
-// Auto-load eventos cuando se entra a modo Bares
-if (typeof socket !== 'undefined') {
+// Auto-load eventos cuando se entra a modo Bares (defer until socket ready)
+function _setupEventoListeners() {
+  if (!socket) return;
   socket.on('evento_update', () => talentLoadEvents());
   socket.on('evento_estado', () => talentLoadEvents());
-  socket.on('evento_voto', (data) => {
+  socket.on('evento_voto', () => {
     if (document.getElementById('talent-events')) talentLoadEvents();
   });
 }
+// Will be called after socket connects (see DOMContentLoaded)
 
 // Vista publica de votacion (acceso via QR)
 function talentCheckVoterMode() {
@@ -4666,9 +4670,9 @@ async function loadQR() {
 
 // ── IA — Grok + Ollama Integration ────────────────────────────────────────
 const OLLAMA_URL = 'http://localhost:11434';
-let iaOnline     = false;
-let iaBackend    = 'none'; // 'grok' | 'ollama' | 'none'
-let iaGrokModel  = '';
+var iaOnline     = false;
+var iaBackend    = 'none'; // 'grok' | 'ollama' | 'none'
+var iaGrokModel  = '';
 
 async function checkOllamaStatus() {
   const statusEl   = document.getElementById('ia-status');
