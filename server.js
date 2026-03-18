@@ -340,10 +340,14 @@ app.post('/api/stripe/webhook', express.raw({ type: 'application/json' }), async
         const sub = event.data.object;
         const price = sub.items?.data?.[0]?.price?.id;
         const plan = planFromPrice(price);
-        const cust = await stripe.customers.retrieve(sub.customer);
-        if (cust.email) {
-          subs.users[cust.email] = { ...(subs.users[cust.email]||{}), plan, status:sub.status, stripeCustomerId:sub.customer, stripeSubscriptionId:sub.id, currentPeriodEnd:sub.current_period_end, updatedAt:new Date().toISOString() };
-          writeSubs(subs);
+        try {
+          const cust = await stripe.customers.retrieve(sub.customer);
+          if (cust.email) {
+            subs.users[cust.email] = { ...(subs.users[cust.email]||{}), plan, status:sub.status, stripeCustomerId:sub.customer, stripeSubscriptionId:sub.id, currentPeriodEnd:sub.current_period_end, updatedAt:new Date().toISOString() };
+            writeSubs(subs);
+          }
+        } catch (custErr) {
+          console.error('[Stripe] Error retrieving customer:', custErr.message);
         }
         break;
       }
@@ -666,9 +670,10 @@ app.get('/api/youtube/search', async (req, res) => {
       part: 'snippet', type: 'video', maxResults: '12',
       q, key, ...(pageToken ? { pageToken } : {})
     });
-    const r = await fetch(`https://www.googleapis.com/youtube/v3/search?${params}`);
+    const r = await fetch(`https://www.googleapis.com/youtube/v3/search?${params}`, { signal: AbortSignal.timeout(8000) });
+    if (!r.ok) return res.status(r.status).json({ error: `YouTube API error: ${r.status}` });
     const d = await r.json();
-    if (d.error) return res.status(400).json({ error: 'Error en busqueda de YouTube' });
+    if (d.error) return res.status(d.error.code || 400).json({ error: d.error.message || 'Error en busqueda de YouTube' });
     res.json(d);
   } catch (e) {
     res.status(500).json({ error: e.message });
@@ -679,9 +684,11 @@ app.get('/api/youtube/videos', async (req, res) => {
   const { ids, key } = req.query;
   if (!ids || !key) return res.status(400).json({ error: 'Faltan ids y key' });
   try {
-    const params = new URLSearchParams({ part: 'contentDetails,snippet', id: ids, key });
-    const r = await fetch(`https://www.googleapis.com/youtube/v3/videos?${params}`);
+    const params = new URLSearchParams({ part: 'contentDetails,snippet', id: String(ids).slice(0, 500), key: String(key).slice(0, 80) });
+    const r = await fetch(`https://www.googleapis.com/youtube/v3/videos?${params}`, { signal: AbortSignal.timeout(8000) });
+    if (!r.ok) return res.status(r.status).json({ error: `YouTube API error: ${r.status}` });
     const d = await r.json();
+    if (d.error) return res.status(d.error.code || 400).json({ error: d.error.message || 'YouTube API error' });
     res.json(d);
   } catch (e) {
     res.status(500).json({ error: e.message });
@@ -1032,6 +1039,8 @@ app.put('/api/letras-beat/:id/publicar', (req, res) => {
 
 // POST — Votar (1 por IP por letra)
 const _voteTracker = new Map(); // ip -> Set<letraId>
+// Clean vote tracker every 6 hours to prevent memory leaks
+setInterval(() => { _voteTracker.clear(); }, 6 * 60 * 60 * 1000);
 app.post('/api/letras-beat/:id/voto', (req, res) => {
   const ip = req.ip || req.connection.remoteAddress || 'unknown';
   const voted = _voteTracker.get(ip) || new Set();
@@ -1209,6 +1218,17 @@ function addActividad(tipo, data) {
   writeActividad(act);
 }
 
+// Profile token store (with expiration)
+const _profileTokens = new Map(); // token -> { key, createdAt }
+// Clean expired tokens every 30 min (24h lifetime)
+setInterval(() => {
+  const now = Date.now();
+  for (const [token, data] of _profileTokens) {
+    if (typeof data === 'string') { _profileTokens.delete(token); continue; }
+    if (now - data.createdAt > 24 * 60 * 60 * 1000) _profileTokens.delete(token);
+  }
+}, 30 * 60 * 1000);
+
 // POST — Registrar perfil
 app.post('/api/perfiles/register', (req, res) => {
   const { alias, pin, nombre, bio } = req.body;
@@ -1230,12 +1250,11 @@ app.post('/api/perfiles/register', (req, res) => {
   };
   writePerfiles(perfiles);
   const token = crypto.randomBytes(16).toString('hex');
-  _profileTokens.set(token, key);
+  _profileTokens.set(token, { key, createdAt: Date.now() });
   res.status(201).json({ alias: perfiles[key].alias, nombre: perfiles[key].nombre, bio: perfiles[key].bio, token });
 });
 
 // POST — Login
-const _profileTokens = new Map(); // token -> alias_key
 app.post('/api/perfiles/login', (req, res) => {
   const { alias, pin } = req.body;
   if (!alias || !pin) return res.status(400).json({ error: 'alias y pin son requeridos' });
@@ -1249,7 +1268,7 @@ app.post('/api/perfiles/login', (req, res) => {
   if (pinHash !== perfil.pinHash) return res.status(401).json({ error: 'PIN incorrecto' });
 
   const token = crypto.randomBytes(16).toString('hex');
-  _profileTokens.set(token, key);
+  _profileTokens.set(token, { key, createdAt: Date.now() });
   res.json({ alias: perfil.alias, nombre: perfil.nombre, bio: perfil.bio, token });
 });
 
@@ -1282,7 +1301,9 @@ app.put('/api/perfiles/:alias', (req, res) => {
   if (!token || !_profileTokens.has(token)) return res.status(401).json({ error: 'No autorizado' });
 
   const key = req.params.alias.toLowerCase().trim();
-  if (_profileTokens.get(token) !== key) return res.status(403).json({ error: 'Solo puedes editar tu perfil' });
+  const tokenData = _profileTokens.get(token);
+  const tokenKey = typeof tokenData === 'string' ? tokenData : tokenData?.key;
+  if (tokenKey !== key) return res.status(403).json({ error: 'Solo puedes editar tu perfil' });
 
   const perfiles = readPerfiles();
   if (!perfiles[key]) return res.status(404).json({ error: 'Perfil no encontrado' });
@@ -1308,7 +1329,8 @@ app.get('/api/lrclib/search', async (req, res) => {
   try {
     const params = new URLSearchParams({ track_name });
     if (artist_name) params.append('artist_name', artist_name);
-    const r = await fetch(`https://lrclib.net/api/search?${params}`);
+    const r = await fetch(`https://lrclib.net/api/search?${params}`, { signal: AbortSignal.timeout(8000) });
+    if (!r.ok) return res.status(r.status).json({ error: `LRCLIB responded with ${r.status}` });
     const d = await r.json();
     res.json(d);
   } catch (e) {
@@ -1376,10 +1398,11 @@ app.post('/api/billing/checkout-session', async (req, res) => {
 });
 
 app.get('/api/billing/status', (req, res) => {
-  const email = req.query.email;
+  const email = typeof req.query.email === 'string' ? req.query.email.trim().slice(0, 200) : '';
   if (!email) return res.status(400).json({ error: 'Email requerido' });
   const subs = readSubs();
-  const user = subs.users[email];
+  if (!subs.users || typeof subs.users !== 'object') return res.json({ email, plan: 'FREE', status: 'inactive', features: featuresForPlan('FREE') });
+  const user = Object.prototype.hasOwnProperty.call(subs.users, email) ? subs.users[email] : null;
   const plan = user?.plan || 'FREE';
   res.json({ email, plan, status: user?.status||'inactive', features: featuresForPlan(plan) });
 });
@@ -1412,18 +1435,20 @@ io.on('connection', (socket) => {
 
   // Cliente se une a un room (DJ crea, Remote se une)
   socket.on('join_room', (data) => {
-    if (++_roomJoins > 10) return; // rate limit: max 10 joins per connection
-    const roomId = (data && data.roomId) ? String(data.roomId).substring(0, 20) : null;
-    if (!roomId) return;
-    if (myRoom) socket.leave(myRoom);
-    myRoom = roomId;
-    socket.join(roomId);
-    const room = getRoom(roomId);
-    socket.emit('room_joined', { roomId, teleprompter: room.teleprompter });
-    // Conteo de usuarios en este room
-    const roomSize = io.sockets.adapter.rooms.get(roomId)?.size || 0;
-    io.to(roomId).emit('room_count', roomSize);
-    console.log(`[WS] ${socket.id} joined room ${roomId} (${roomSize} users)`);
+    try {
+      if (++_roomJoins > 10) return; // rate limit: max 10 joins per connection
+      const roomId = (data && data.roomId) ? String(data.roomId).substring(0, 20) : null;
+      if (!roomId) return;
+      if (myRoom) socket.leave(myRoom);
+      myRoom = roomId;
+      socket.join(roomId);
+      const room = getRoom(roomId);
+      socket.emit('room_joined', { roomId, teleprompter: room.teleprompter });
+      const roomSize = io.sockets.adapter.rooms.get(roomId)?.size || 0;
+      io.to(roomId).emit('room_count', roomSize);
+    } catch (err) {
+      console.error(`[WS] join_room error: ${err.message}`);
+    }
   });
 
   socket.emit('init', {

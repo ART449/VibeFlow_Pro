@@ -451,6 +451,15 @@ body.mode-estudio .btn-add{background:linear-gradient(135deg,#06b6d4,#3b82f6);bo
   background:transparent;color:var(--sub);font-size:10px;cursor:pointer;transition:all .15s;
 }
 .est-filter-btn:hover,.est-filter-btn.active{background:rgba(6,182,212,.12);color:#06b6d4;border-color:#06b6d4;}
+/* Gato Flow tab accent */
+.est-tab-gflow{position:relative;}
+.est-tab-gflow::after{content:'';position:absolute;bottom:0;left:20%;right:20%;height:2px;background:linear-gradient(90deg,#ff2d78,#8b5cf6);border-radius:2px;opacity:0;transition:opacity .2s;}
+.est-tab-gflow.active::after{opacity:1;}
+/* Gato Flow estudio layout */
+.gflow-estudio{display:grid;grid-template-columns:1fr 1fr;height:100%;overflow:hidden;}
+/* Ranking author link */
+.est-ranking-author{color:var(--a);cursor:pointer;text-decoration:underline dotted;font-weight:600;}
+.est-ranking-author:hover{color:var(--p);}
 /* Estudio responsive */
 @media(max-width:900px){
   .estudio-panel{bottom:60px !important;} /* Space for mobile-nav */
@@ -1650,7 +1659,7 @@ select.inp{cursor:pointer;}
   .brand{font-size:15px;}
   .mode-switch{display:none;}
   .usearch-input{width:120px;font-size:11px;}
-  .usearch-results{width:calc(100vw - 20px);right:-40px;}
+  .usearch-results{width:calc(100vw - 20px);left:50%;transform:translateX(-50%);right:auto;}
   .gflow-estudio{grid-template-columns:1fr!important;}
   .gflow-estudio > div:last-child{max-height:200px;}
   .byflow-bar{display:none!important;}
@@ -3112,7 +3121,7 @@ input:focus-visible,textarea:focus-visible{
       <button class="est-rec-btn" id="est-rec-btn" onclick="estToggleRec()" title="Grabar voz">&#9679;</button>
     </div>
     <div class="est-disclaimer" id="est-disclaimer" style="display:none;">
-      &#127925; Beat por: <a id="est-disc-link" href="#" target="_blank" id="est-disc-name"></a> — Apoya al productor
+      &#127925; Beat por: <a id="est-disc-link" href="#" target="_blank"><span id="est-disc-name"></span></a> — Apoya al productor
     </div>
     <button class="est-save-btn" onclick="estSaveLetter()">Guardar Letra</button>
   </div>
@@ -4673,8 +4682,8 @@ async function checkOllamaStatus() {
         iaOnline = true;
         iaBackend = 'grok';
         iaGrokModel = d.grokModel || 'grok-3-mini';
-        statusEl.classList.remove('offline');
-        statusText.textContent = 'GFlow · ' + iaGrokModel;
+        if (statusEl) statusEl.classList.remove('offline');
+        if (statusText) statusText.textContent = 'GFlow · ' + iaGrokModel;
         return;
       }
     }
@@ -4686,17 +4695,17 @@ async function checkOllamaStatus() {
       const d = await r.json();
       iaOnline = true;
       iaBackend = 'ollama';
-      statusEl.classList.remove('offline');
+      if (statusEl) statusEl.classList.remove('offline');
       const models = (d.models || []).map(m => m.name.split(':')[0]);
-      statusText.textContent = models.length ? 'Ollama · ' + models[0] : 'Ollama Online';
+      if (statusText) statusText.textContent = models.length ? 'Ollama · ' + models[0] : 'Ollama Online';
       return;
     }
   } catch {}
   // 3. Offline
   iaOnline = false;
   iaBackend = 'none';
-  statusEl.classList.add('offline');
-  statusText.textContent = 'GFlow offline — Configura API key';
+  if (statusEl) statusEl.classList.add('offline');
+  if (statusText) statusText.textContent = 'GFlow offline — Configura API key';
 }
 
 async function getOllamaModels() {
@@ -7592,7 +7601,9 @@ function estSelectBeat(videoId, titulo, canal) {
   disc.style.display = 'flex';
   const link = document.getElementById('est-disc-link');
   link.href = _estBeatInfo.canalUrl;
-  link.textContent = canal;
+  const nameSpan = document.getElementById('est-disc-name');
+  if (nameSpan) nameSpan.textContent = canal;
+  else link.textContent = canal;
   // Toast
   if (typeof showToast === 'function') showToast('Beat seleccionado: ' + titulo, 'success');
 }
