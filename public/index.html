@@ -451,11 +451,11 @@ body.mode-estudio .btn-add{background:linear-gradient(135deg,#06b6d4,#3b82f6);bo
   background:transparent;color:var(--sub);font-size:10px;cursor:pointer;transition:all .15s;
 }
 .est-filter-btn:hover,.est-filter-btn.active{background:rgba(6,182,212,.12);color:#06b6d4;border-color:#06b6d4;}
-/* Gato Flow tab accent */
+/* GFlow tab accent */
 .est-tab-gflow{position:relative;}
 .est-tab-gflow::after{content:'';position:absolute;bottom:0;left:20%;right:20%;height:2px;background:linear-gradient(90deg,#ff2d78,#8b5cf6);border-radius:2px;opacity:0;transition:opacity .2s;}
 .est-tab-gflow.active::after{opacity:1;}
-/* Gato Flow estudio layout */
+/* GFlow estudio layout */
 .gflow-estudio{display:grid;grid-template-columns:1fr 1fr;height:100%;overflow:hidden;}
 /* Ranking author link */
 .est-ranking-author{color:var(--a);cursor:pointer;text-decoration:underline dotted;font-weight:600;}
@@ -2986,7 +2986,7 @@ input:focus-visible,textarea:focus-visible{
     <button class="est-tab" data-est-tab="mis" onclick="estSwitchTab('mis',this)">&#128194; Mis Letras</button>
     <button class="est-tab" data-est-tab="actividad" onclick="estSwitchTab('actividad',this)">&#128240; Actividad</button>
     <button class="est-tab" data-est-tab="perfil" onclick="estSwitchTab('perfil',this)">&#128100; Mi Perfil</button>
-    <button class="est-tab est-tab-gflow" data-est-tab="gflow" onclick="estSwitchTab('gflow',this)" style="color:#ff2d78;">&#128049; Gato Flow</button>
+    <button class="est-tab est-tab-gflow" data-est-tab="gflow" onclick="estSwitchTab('gflow',this)" style="color:#ff2d78;">&#127911; GFlow</button>
   </div>
 
   <!-- TAB: Escribir (beat search + editor) -->
@@ -3099,22 +3099,22 @@ input:focus-visible,textarea:focus-visible{
     </div>
   </div>
 
-  <!-- TAB: Gato Flow (GFlow IA dentro del Estudio) -->
+  <!-- TAB: GFlow (GFlow IA dentro del Estudio) -->
   <div class="est-tab-content" id="est-tab-gflow" style="grid-column:1/-1;">
     <div class="gflow-estudio" style="display:grid;grid-template-columns:1fr 1fr;height:100%;overflow:hidden;">
-      <!-- Left: Chat con Gato Flow -->
+      <!-- Left: Chat con GFlow -->
       <div style="display:flex;flex-direction:column;border-right:1px solid var(--border);overflow:hidden;">
         <div style="padding:12px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;">
-          <div style="width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,#ff2d78,#8b5cf6);display:flex;align-items:center;justify-content:center;font-size:18px;">🐱</div>
+          <div style="width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,#ff2d78,#8b5cf6);display:flex;align-items:center;justify-content:center;font-size:18px;">🎧</div>
           <div>
-            <div style="font-size:13px;font-weight:700;color:var(--text);">Gato Flow</div>
+            <div style="font-size:13px;font-weight:700;color:var(--text);">GFlow</div>
             <div style="font-size:10px;color:var(--sub);" id="gflow-est-status">DJ IA · <span id="gflow-est-backend">Conectando...</span></div>
           </div>
         </div>
         <div class="ia-msgs" id="gflow-est-msgs" style="flex:1;overflow-y:auto;padding:12px;">
           <div class="ia-msg">
-            <div class="ia-msg-avatar">🐱</div>
-            <div class="ia-msg-text">¡Qué onda! Soy Gato Flow, tu DJ IA. Estoy aquí en el estudio para ayudarte: genera letras, busca rimas, sugiere beats o pregúntame lo que sea. ¡Dale flow! 🎧</div>
+            <div class="ia-msg-avatar">🎧</div>
+            <div class="ia-msg-text">¡Qué onda! Soy GFlow, tu DJ IA. Estoy aquí en el estudio para ayudarte: genera letras, busca rimas, sugiere beats o pregúntame lo que sea. ¡Dale flow! 🎧</div>
           </div>
         </div>
         <div style="padding:8px 12px;display:flex;gap:4px;flex-wrap:wrap;border-top:1px solid var(--border);">
@@ -3124,7 +3124,7 @@ input:focus-visible,textarea:focus-visible{
           <span class="ia-chip" onclick="openLyricStudio()">✍️ Generador offline</span>
         </div>
         <div class="ia-input-row" style="border-top:1px solid var(--border);">
-          <input class="ia-input" id="gflow-est-input" placeholder="Pregúntale al Gato Flow..."
+          <input class="ia-input" id="gflow-est-input" placeholder="Pregúntale al GFlow..."
                  onkeypress="if(event.key==='Enter')gflowEstSend()">
           <button class="ia-send" onclick="gflowEstSend()">
             <svg viewBox="0 0 24 24" fill="currentColor"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
@@ -3135,9 +3135,9 @@ input:focus-visible,textarea:focus-visible{
       <div style="display:flex;flex-direction:column;overflow:hidden;">
         <div style="padding:12px 16px;border-bottom:1px solid var(--border);">
           <div style="font-size:13px;font-weight:700;">Tu Letra</div>
-          <div style="font-size:10px;color:var(--sub);">Escribe aquí o deja que Gato Flow genere</div>
+          <div style="font-size:10px;color:var(--sub);">Escribe aquí o deja que GFlow genere</div>
         </div>
-        <textarea class="est-letra-area" id="gflow-est-letra" placeholder="Escribe tu letra aquí o pídele al Gato Flow que genere una...&#10;&#10;Verso 1:&#10;..." style="flex:1;border:none;resize:none;"></textarea>
+        <textarea class="est-letra-area" id="gflow-est-letra" placeholder="Escribe tu letra aquí o pídele al GFlow que genere una...&#10;&#10;Verso 1:&#10;..." style="flex:1;border:none;resize:none;"></textarea>
         <div style="padding:8px 12px;border-top:1px solid var(--border);display:flex;gap:6px;">
           <button class="est-search-btn" onclick="gflowEstLoadTP()" style="flex:1;">📺 Cargar al Teleprompter</button>
           <button class="est-search-btn" onclick="gflowEstSaveLetter()" style="flex:1;background:var(--s);">💾 Guardar</button>
@@ -7228,7 +7228,7 @@ function loadSettingsState() {
   updateLicenseUI();
 }
 
-// ── Gato Flow en Estudio (reusa iaQuery internamente) ─────────────────────
+// ── GFlow en Estudio (reusa iaQuery internamente) ─────────────────────
 function gflowEstQuick(text) {
   document.getElementById('gflow-est-input').value = '';
   gflowEstAddMsg(text, 'user');
@@ -7248,7 +7248,7 @@ function gflowEstAddMsg(text, role) {
   const msgs = document.getElementById('gflow-est-msgs');
   const div = document.createElement('div');
   div.className = 'ia-msg ' + (role === 'user' ? 'user' : '');
-  div.innerHTML = '<div class="ia-msg-avatar">' + (role === 'user' ? '🎤' : '🐱') + '</div>' +
+  div.innerHTML = '<div class="ia-msg-avatar">' + (role === 'user' ? '🎤' : '🎧') + '</div>' +
     '<div class="ia-msg-text">' + escHtml(text) + '</div>';
   msgs.appendChild(div);
   msgs.scrollTop = msgs.scrollHeight;
@@ -7260,7 +7260,7 @@ async function gflowEstQuery(prompt) {
   const bubbleEl = (() => {
     const div = document.createElement('div');
     div.className = 'ia-msg';
-    div.innerHTML = '<div class="ia-msg-avatar">🐱</div><div class="ia-msg-text typing">Gato Flow pensando...</div>';
+    div.innerHTML = '<div class="ia-msg-avatar">🎧</div><div class="ia-msg-text typing">GFlow pensando...</div>';
     msgs.appendChild(div);
     msgs.scrollTop = msgs.scrollHeight;
     return div.querySelector('.ia-msg-text');
@@ -7273,10 +7273,10 @@ async function gflowEstQuery(prompt) {
     return;
   }
 
-  // Prompts del Gato Flow
-  const GFLOW_ESTUDIO_PROMPT = 'Te llamas Gato Flow, el DJ IA del Estudio de ByFlow (powered by IArtLabs, creado por ArT-AtR). Eres un asistente creativo para compositores: generas letras, sugieres rimas, das feedback sobre versos, propones temas y estructuras de canciones. Usas metricas de octosilabos, rimas consonantes AABB para estribillos. Terminologia tech-musical con metaforas de vida. Si generas una letra, usa formato con [Verso], [Coro], [Puente]. Responde corto y directo, con actitud de camarada. Responde en espanol.';
+  // Prompts del GFlow
+  const GFLOW_ESTUDIO_PROMPT = 'Te llamas GFlow, el DJ IA del Estudio de ByFlow (powered by IArtLabs, creado por ArT-AtR). Eres un asistente creativo para compositores: generas letras, sugieres rimas, das feedback sobre versos, propones temas y estructuras de canciones. Usas metricas de octosilabos, rimas consonantes AABB para estribillos. Terminologia tech-musical con metaforas de vida. Si generas una letra, usa formato con [Verso], [Coro], [Puente]. Responde corto y directo, con actitud de camarada. Responde en espanol.';
   const GFLOW_OWNER_PREFIX = 'ATENCION: Estas hablando con Arturo Torres (ArT-AtR), el creador de ByFlow y tu jefe. Habla directo, sin rodeos. Ve al grano. Puedes ser informal, usar humor, hablar como camarada. Cero discursos motivacionales. ';
-  const GFLOW_MAINT_PROMPT = 'MODO MANTENIMIENTO — Gato Flow como tecnico de diagnostico. Revisa: APIs (Grok, Ollama, LRCLIB), licencias, Socket.IO, endpoints, datos (stats.json, licenses.json), cola, catalogo. Formato: [OK] funciona, [WARN] raro, [ERROR] roto. Resumen de 1 linea al final. Habla directo, como reporte tecnico. Espanol.';
+  const GFLOW_MAINT_PROMPT = 'MODO MANTENIMIENTO — GFlow como tecnico de diagnostico. Revisa: APIs (Grok, Ollama, LRCLIB), licencias, Socket.IO, endpoints, datos (stats.json, licenses.json), cola, catalogo. Formato: [OK] funciona, [WARN] raro, [ERROR] roto. Resumen de 1 linea al final. Habla directo, como reporte tecnico. Espanol.';
 
   // Detectar owner y comandos de mantenimiento
   const isOwner = licenseState.activated && (licenseState.owner || '').toUpperCase().includes('SUPERUSER');
@@ -7352,14 +7352,14 @@ function gflowEstSaveLetter() {
   if (!text) { showToast('Escribe una letra primero'); return; }
   // Reuse estudio save if available
   const titleEl = document.getElementById('est-titulo');
-  if (titleEl && !titleEl.value.trim()) titleEl.value = 'Gato Flow - ' + new Date().toLocaleDateString();
+  if (titleEl && !titleEl.value.trim()) titleEl.value = 'GFlow - ' + new Date().toLocaleDateString();
   const areaEl = document.getElementById('est-letra-area');
   if (areaEl) areaEl.value = stampSignature(text);
   if (typeof estSaveLetter === 'function') estSaveLetter();
   else showToast('💾 Letra guardada localmente');
 }
 
-// Update Gato Flow status when entering estudio gflow tab
+// Update GFlow status when entering estudio gflow tab
 function gflowEstUpdateStatus() {
   const el = document.getElementById('gflow-est-backend');
   if (!el) return;
