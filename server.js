@@ -899,9 +899,11 @@ const GROK_API_URL = 'https://api.x.ai/v1/chat/completions';
 const GROK_MODEL   = process.env.GROK_MODEL || 'grok-3-mini';
 
 app.post('/api/ai/chat', async (req, res) => {
-  // License check — PRO required for AI
+  // License check — PRO required for AI (SUPERUSER bypass)
   const token = req.headers['x-license-token'] || '';
-  if (!isFeatureLicensedByToken(token, 'ollama_ai')) {
+  const lic = getLicenseByToken(token);
+  const isSuperuser = lic && (lic.owner || '').toUpperCase().includes('SUPERUSER');
+  if (!isSuperuser && !isFeatureLicensedByToken(token, 'ollama_ai')) {
     return res.status(403).json({ error: 'Requiere licencia PRO para usar IA' });
   }
   const { prompt, system } = req.body;
