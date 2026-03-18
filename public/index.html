@@ -3329,6 +3329,13 @@ input:focus-visible,textarea:focus-visible{
     <div class="legal-divider"></div>
 
     <div class="legal-section">
+      <h5>Contenido y Letras</h5>
+      <p><strong>Letras generadas por IA:</strong> La copropiedad es 50% del autor (usuario) y 50% de ArT-AtR (Arturo Torres / IArtLabs). Si el usuario escribe, copia o pega su propia letra, la propiedad es 100% del usuario.</p>
+      <p><strong>Datos de entrenamiento:</strong> Todas las letras ingresadas, escritas o generadas dentro de ByFlow seran utilizadas para entrenar y mejorar la inteligencia artificial de la plataforma. Al usar ByFlow, el usuario acepta esta condicion.</p>
+    </div>
+    <div class="legal-divider"></div>
+
+    <div class="legal-section">
       <h5>Aviso Legal</h5>
       <p>Este software se proporciona "tal cual" sin garantias de ningun tipo. IArtLabs no se hace responsable por danos derivados del uso del software. El usuario es responsable de cumplir con las leyes de derechos de autor aplicables al contenido reproducido.</p>
     </div>
@@ -4939,7 +4946,7 @@ async function iaQuery(prompt) {
 }
 
 // ── Firma copyright obligatoria para TODA letra generada ──────────────
-const BYFLOW_SIGNATURE = '\n\n─────────────────────────────\n✍️ ArT - AtR (Arturo Torres)\n🎤 Generado con ByFlow — powered by IArtLabs\n⚖️ Copropiedad: 50% Autor (tu) / 50% ArT-AtR\n📜 Aplica solo a letras generadas por la IA de ByFlow.\n   Si escribiste o copiaste tu letra, es 100% tuya.\n─────────────────────────────';
+const BYFLOW_SIGNATURE = '\n\n─────────────────────────────\n✍️ ArT - AtR (Arturo Torres)\n🎤 Generado con ByFlow — powered by IArtLabs\n⚖️ Copropiedad: 50% Autor (tu) / 50% ArT-AtR\n📜 Aplica solo a letras generadas por la IA de ByFlow.\n   Si escribiste o copiaste tu letra, es 100% tuya.\n🧠 Todas las letras ingresadas en ByFlow seran\n   utilizadas para entrenar nuestra IA.\n─────────────────────────────';
 
 function stampSignature(text) {
   // Si ya tiene firma, no duplicar
@@ -4954,7 +4961,7 @@ function offerLoadLyrics(bubbleEl, text) {
   // Show copyright notice in chat
   const notice = document.createElement('div');
   notice.style.cssText = 'margin-top:6px;padding:6px 10px;background:rgba(255,255,255,.05);border-left:3px solid var(--p);border-radius:4px;font-size:10px;color:var(--sub);line-height:1.5;';
-  notice.innerHTML = '⚖️ <b>Copyright:</b> 50% tu / 50% ArT-AtR — solo aplica a letras generadas por IA';
+  notice.innerHTML = '⚖️ <b>Copyright:</b> 50% tu / 50% ArT-AtR (solo letras generadas por IA) · 🧠 Todas las letras ingresadas se usan para entrenar nuestra IA';
   bubbleEl.parentElement.appendChild(notice);
 
   const btn = document.createElement('button');
@@ -5496,6 +5503,8 @@ function generateOfflineLyrics() {
   lines.push('⚖️ Copropiedad: 50% Autor (tu) / 50% ArT-AtR');
   lines.push('📜 Aplica solo a letras generadas por la IA de ByFlow.');
   lines.push('   Si escribiste tu letra, es 100% tuya.');
+  lines.push('🧠 Todas las letras ingresadas en ByFlow seran');
+  lines.push('   utilizadas para entrenar nuestra IA.');
   lines.push('─────────────────────────────');
 
   const fullText = lines.join('\n').trim();
