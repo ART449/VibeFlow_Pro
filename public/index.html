@@ -2202,6 +2202,9 @@ input:focus-visible,textarea:focus-visible{
             <button class="ctrl-btn accent-green" onclick="openLyricsSearch()" title="Buscar letra">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
             </button>
+            <button class="ctrl-btn" onclick="generateLRCManual()" title="Generar LRC sincronizado con GFlow IA (PRO)" style="color:#8b5cf6;">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 8v4l3 3"/><circle cx="12" cy="12" r="9"/></svg>
+            </button>
             <button class="ctrl-btn accent-blue" onclick="openLocalAudio()" title="Cargar audio">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
             </button>
@@ -3973,7 +3976,12 @@ async function searchLyricsOnline() {
           }).join('');
         return;
       }
-      results.innerHTML = '<div style="text-align:center;padding:30px;opacity:.4;font-size:12px;">No se encontraron letras para "' + escHtml(title) + '"<br><br>Intenta con otro titulo o artista</div>';
+      results.innerHTML = '<div style="text-align:center;padding:30px;font-size:12px;">' +
+        '<div style="opacity:.4;margin-bottom:16px;">No se encontraron letras para "' + escHtml(title) + '"</div>' +
+        (iaOnline && iaBackend === 'grok'
+          ? '<button onclick="grokWriteLyrics(\'' + escHtml(title).replace(/'/g,"\\'") + '\',\'' + escHtml(artist).replace(/'/g,"\\'") + '\')" style="padding:10px 20px;background:linear-gradient(135deg,#8b5cf6,#06b6d4);border:none;border-radius:10px;color:#fff;font-size:12px;font-weight:700;cursor:pointer;">🤖 GFlow: escribir letra + LRC</button>'
+          : '<div style="opacity:.3;">Intenta con otro titulo o artista</div>') +
+        '</div>';
       return;
     }
 
@@ -4931,7 +4939,7 @@ async function iaQuery(prompt) {
 }
 
 // ── Firma copyright obligatoria para TODA letra generada ──────────────
-const BYFLOW_SIGNATURE = '\n\n─────────────────────────────\n✍️ ArT - AtR (Arturo Torres)\n🎤 Generado con ByFlow — powered by IArtLabs\n⚖️ Propiedad intelectual: 50% ArT-AtR / 50% ByFlow\n📜 Toda letra generada por ByFlow queda sujeta a\n   copropiedad 50/50 por regla y norma.\n─────────────────────────────';
+const BYFLOW_SIGNATURE = '\n\n─────────────────────────────\n✍️ ArT - AtR (Arturo Torres)\n🎤 Generado con ByFlow — powered by IArtLabs\n⚖️ Copropiedad: 50% Autor (tu) / 50% ArT-AtR\n📜 Aplica solo a letras generadas por la IA de ByFlow.\n   Si escribiste o copiaste tu letra, es 100% tuya.\n─────────────────────────────';
 
 function stampSignature(text) {
   // Si ya tiene firma, no duplicar
@@ -4946,7 +4954,7 @@ function offerLoadLyrics(bubbleEl, text) {
   // Show copyright notice in chat
   const notice = document.createElement('div');
   notice.style.cssText = 'margin-top:6px;padding:6px 10px;background:rgba(255,255,255,.05);border-left:3px solid var(--p);border-radius:4px;font-size:10px;color:var(--sub);line-height:1.5;';
-  notice.innerHTML = '⚖️ <b>Copyright:</b> 50% ArT-AtR / 50% ByFlow — copropiedad por regla y norma';
+  notice.innerHTML = '⚖️ <b>Copyright:</b> 50% tu / 50% ArT-AtR — solo aplica a letras generadas por IA';
   bubbleEl.parentElement.appendChild(notice);
 
   const btn = document.createElement('button');
@@ -5485,9 +5493,9 @@ function generateOfflineLyrics() {
   lines.push('─────────────────────────────');
   lines.push('✍️ ArT - AtR (Arturo Torres)');
   lines.push('🎤 Generado con ByFlow — powered by IArtLabs');
-  lines.push('⚖️ Propiedad intelectual: 50% ArT-AtR / 50% ByFlow');
-  lines.push('📜 Toda letra generada por ByFlow queda sujeta a');
-  lines.push('   copropiedad 50/50 por regla y norma.');
+  lines.push('⚖️ Copropiedad: 50% Autor (tu) / 50% ArT-AtR');
+  lines.push('📜 Aplica solo a letras generadas por la IA de ByFlow.');
+  lines.push('   Si escribiste tu letra, es 100% tuya.');
   lines.push('─────────────────────────────');
 
   const fullText = lines.join('\n').trim();
@@ -6024,8 +6032,145 @@ async function ytPlayWithLyrics(videoId, title) {
     if (socket) socket.emit('tp_lyrics', { lyrics });
     const type = lrc ? 'LRC sincronizado' : 'texto';
     showToast('🎵 Letra auto-cargada (' + type + '): ' + (best.trackName || track).substring(0, 30));
+
+    // Si solo hay plain text (sin sync), intentar generar LRC con Grok
+    if (!lrc && plain && iaOnline && iaBackend === 'grok') {
+      generateLRCWithGrok(track, artist, best.plainLyrics);
+    }
     return true;
   } catch { return false; }
+}
+
+// ── Generador LRC con Grok — karaoke instantáneo ─────────────────────────
+// Grok recibe la letra plain text + info de la canción y genera timestamps LRC
+async function generateLRCWithGrok(track, artist, plainLyrics) {
+  if (!iaOnline || iaBackend !== 'grok') {
+    showToast('GFlow no disponible para generar LRC', 'warning');
+    return;
+  }
+  if (!plainLyrics || plainLyrics.trim().length < 20) return;
+
+  showToast('🤖 GFlow generando LRC sincronizado...', 'info');
+
+  const systemPrompt = 'Eres un generador de archivos LRC (Lyric Resource Compiler). ' +
+    'Tu trabajo es recibir la letra de una cancion y generar timestamps aproximados en formato LRC. ' +
+    'REGLAS ESTRICTAS:\n' +
+    '1. SOLO devuelves el archivo LRC, sin explicaciones ni comentarios\n' +
+    '2. Formato exacto por linea: [MM:SS.CC]Texto de la linea\n' +
+    '3. MM = minutos (2 digitos), SS = segundos (2 digitos), CC = centesimas (2 digitos)\n' +
+    '4. Distribuye los timestamps de forma realista para una cancion pop/urbana tipica (~3-4 min)\n' +
+    '5. Intro instrumental ~10-15 segundos antes de la primera linea\n' +
+    '6. Versos: ~2-3 segundos entre lineas\n' +
+    '7. Coros: ritmo ligeramente mas rapido\n' +
+    '8. Pausas entre secciones: ~4-6 segundos\n' +
+    '9. Si el artista canta mas rapido (rap/trap), reduce el tiempo entre lineas a ~1.5-2s\n' +
+    '10. Si es balada, aumenta a ~3-4s entre lineas\n' +
+    '11. NO incluyas lineas vacias, headers [ar:], [ti:], ni metadata — solo lineas con letra\n' +
+    '12. Mantén EXACTAMENTE el mismo texto de la letra, no cambies ni una palabra';
+
+  const prompt = 'Genera el archivo LRC para esta cancion:\n' +
+    'Artista: ' + (artist || 'Desconocido') + '\n' +
+    'Cancion: ' + track + '\n\n' +
+    'LETRA:\n' + plainLyrics.slice(0, 3000);
+
+  try {
+    const token = getLicenseToken();
+    const r = await fetch('/api/ai/chat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-License-Token': token },
+      body: JSON.stringify({ prompt, system: systemPrompt })
+    });
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    const d = await r.json();
+    var lrcText = (d.text || '').trim();
+    if (!lrcText) throw new Error('Sin respuesta');
+
+    // Validar que realmente tiene formato LRC
+    const lrcLines = lrcText.split('\n').filter(l => /^\[\d{2}:\d{2}\.\d{2,3}\]/.test(l));
+    if (lrcLines.length < 3) throw new Error('LRC invalido');
+
+    // Limpiar: solo lineas LRC validas
+    lrcText = lrcLines.join('\n');
+
+    // Cargar en teleprompter (reemplaza la letra plain que ya estaba)
+    setLyrics(lrcText);
+    if (socket) socket.emit('tp_lyrics', { lyrics: lrcText });
+    showToast('🎤 LRC generado por GFlow — ' + lrcLines.length + ' lineas sincronizadas', 'success');
+  } catch (e) {
+    console.warn('[GFlow LRC]', e.message);
+    // No mostrar error — la letra plain ya está cargada como fallback
+  }
+}
+
+// ── Grok escribe la letra completa + LRC cuando no existe en ningún lado ──
+async function grokWriteLyrics(track, artist) {
+  if (!iaOnline || iaBackend !== 'grok') { showToast('GFlow no disponible', 'warning'); return; }
+
+  const results = document.getElementById('lyrics-results');
+  if (results) results.innerHTML = '<div style="text-align:center;padding:40px;">' +
+    '<div style="font-size:2rem;margin-bottom:12px;animation:spin 1s linear infinite;">🤖</div>' +
+    '<div style="color:var(--sub);font-size:12px;">GFlow buscando la letra y generando LRC...</div></div>';
+
+  const systemPrompt = 'Eres un experto en letras de canciones y generacion de archivos LRC. ' +
+    'Tu trabajo: dado un artista y cancion, escribir la letra COMPLETA y darle timestamps LRC. ' +
+    'REGLAS:\n' +
+    '1. Devuelve SOLO el archivo LRC — nada mas\n' +
+    '2. Formato: [MM:SS.CC]Linea de la letra\n' +
+    '3. Debes conocer la letra real de la cancion — no inventes\n' +
+    '4. Si no conoces la letra exacta, escribe lo mas cercano posible\n' +
+    '5. Timestamps realistas: intro ~10s, versos ~2.5s/linea, coros ~2s/linea\n' +
+    '6. NO metadata, NO comentarios, SOLO lineas LRC';
+
+  const prompt = 'Genera el archivo LRC completo para:\nArtista: ' + (artist || 'Desconocido') + '\nCancion: ' + track;
+
+  try {
+    const token = getLicenseToken();
+    const r = await fetch('/api/ai/chat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-License-Token': token },
+      body: JSON.stringify({ prompt, system: systemPrompt })
+    });
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    const d = await r.json();
+    var lrcText = (d.text || '').trim();
+
+    // Extraer solo líneas LRC válidas
+    const lrcLines = lrcText.split('\n').filter(l => /^\[\d{2}:\d{2}\.\d{2,3}\]/.test(l));
+    if (lrcLines.length < 3) throw new Error('GFlow no pudo generar LRC valido');
+    lrcText = lrcLines.join('\n');
+
+    setLyrics(lrcText);
+    if (socket) socket.emit('tp_lyrics', { lyrics: lrcText });
+    closeLyricsSearch();
+    showToast('🎤 Letra + LRC generado por GFlow — ' + lrcLines.length + ' lineas', 'success');
+  } catch (e) {
+    if (results) results.innerHTML = '<div style="text-align:center;padding:30px;color:#ff6b6b;">' +
+      '<div style="font-size:12px;">⚠️ ' + escHtml(e.message) + '</div></div>';
+    showToast('Error generando LRC: ' + e.message, 'error');
+  }
+}
+
+// Generar LRC manualmente desde la UI (botón en búsqueda de letras)
+async function generateLRCManual() {
+  // Usar la letra que ya está cargada en el teleprompter
+  if (!tpState.rawText || tpState.rawText.trim().length < 20) {
+    showToast('Primero carga una letra en el teleprompter', 'warning');
+    return;
+  }
+  if (tpState.isLRC) {
+    showToast('Ya tienes letra sincronizada (LRC)', 'info');
+    return;
+  }
+  // Intentar extraer artista/canción del now-singing o del título del video
+  var songTitle = '';
+  var songArtist = '';
+  const nowEl = document.getElementById('now-name');
+  if (nowEl && nowEl.textContent.trim()) {
+    const parts = nowEl.textContent.split(/\s[-–—]\s/);
+    if (parts.length > 1) { songArtist = parts[0].trim(); songTitle = parts.slice(1).join(' ').trim(); }
+    else songTitle = nowEl.textContent.trim();
+  }
+  await generateLRCWithGrok(songTitle || 'cancion', songArtist, tpState.rawText);
 }
 
 function ytEmbed(videoId, title) {
