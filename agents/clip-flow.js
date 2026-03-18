@@ -63,7 +63,7 @@ Reglas:
   }
 
   getTaskValue(taskType) {
-    const values = { 'summary': 5, 'study-guide': 15, 'flashcards': 8, 'explain': 3 };
+    const values = { 'summary': 12, 'study-guide': 25, 'flashcards': 15, 'explain': 8 };
     return values[taskType] || 2.50;
   }
 }

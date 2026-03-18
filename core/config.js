@@ -19,6 +19,18 @@ const config = Object.freeze({
     baseUrl: 'https://www.alphavantage.co/query'
   }),
 
+  gemini: Object.freeze({
+    apiKey: process.env.GEMINI_API_KEY || '',
+    model: process.env.GEMINI_MODEL || 'gemini-2.0-flash',
+    baseUrl: 'https://generativelanguage.googleapis.com/v1beta'
+  }),
+
+  emergencyBrake: Object.freeze({
+    maxDailySpend: parseFloat(process.env.MAX_DAILY_SPEND) || 5.00,
+    maxTasksPerHour: parseInt(process.env.MAX_TASKS_PER_HOUR) || 100,
+    enabled: process.env.EMERGENCY_BRAKE !== 'false'
+  }),
+
   deepseek: Object.freeze({
     apiKey: process.env.DEEPSEEK_API_KEY || '',
     model: process.env.DEEPSEEK_MODEL || 'deepseek-chat',
@@ -52,8 +64,12 @@ const config = Object.freeze({
     return this.deepseek.apiKey.length > 0;
   },
 
+  isGeminiConfigured() {
+    return this.gemini.apiKey.length > 0;
+  },
+
   isAnyAIConfigured() {
-    return this.isGrokConfigured() || this.isDeepSeekConfigured();
+    return this.isGrokConfigured() || this.isGeminiConfigured() || this.isDeepSeekConfigured();
   },
 
   isAlphaVantageConfigured() {

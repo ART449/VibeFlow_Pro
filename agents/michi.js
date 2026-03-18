@@ -63,7 +63,7 @@ Reglas:
   }
 
   getTaskValue(taskType) {
-    const values = { 'contract-template': 75, 'document-review': 50, 'legal-faq': 10, 'terms-generator': 40 };
+    const values = { 'contract-template': 120, 'document-review': 80, 'legal-faq': 20, 'terms-generator': 65 };
     return values[taskType] || 2.50;
   }
 }

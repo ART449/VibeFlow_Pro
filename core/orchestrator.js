@@ -8,12 +8,16 @@ const config = require('./config');
 const { createLogger } = require('./logger');
 const log = createLogger('orchestrator');
 
+// Max parallel tasks — Ollama + Gemini = 2 slots simultáneos
+const MAX_PARALLEL = parseInt(process.env.MAX_PARALLEL_TASKS) || 2;
+
 class Orchestrator {
   constructor() {
     this.agents = new Map();
-    this.processing = false;
+    this.activeCount = 0;  // Replaces boolean `processing`
     this.jobs = [];
     this.listeners = [];
+    this.shutdownRequested = false;
   }
 
   /**
@@ -61,48 +65,60 @@ class Orchestrator {
   }
 
   /**
-   * Procesa la siguiente tarea pendiente
+   * Procesa tareas en paralelo (Ollama + Gemini simultáneo)
    */
   async processNext() {
-    if (this.processing) return;
+    if (this.activeCount >= MAX_PARALLEL || this.shutdownRequested) return;
 
     const pending = db.getPendingTasks();
-    if (pending.length === 0) {
-      this.processing = false;
-      return;
-    }
+    if (pending.length === 0) return;
 
-    this.processing = true;
     const task = pending[0];
     const agent = this.agents.get(task.agent_id);
 
     if (!agent) {
       db.updateTaskStatus(task.id, 'failed', null, 'Agente no encontrado');
-      this.processing = false;
       return this.processNext();
     }
 
-    try {
-      // Marcar como en ejecución
-      db.updateTaskStatus(task.id, 'running');
-      db.updateAgentStatus(agent.id, 'working');
-      this.emit('agent-state', { agentId: agent.id, state: 'working' });
+    // Claim this slot
+    this.activeCount++;
 
-      // Ejecutar
+    // Mark as running
+    db.updateTaskStatus(task.id, 'running');
+    db.updateAgentStatus(agent.id, 'working');
+    this.emit('agent-state', { agentId: agent.id, state: 'working' });
+
+    // Launch task WITHOUT awaiting — runs in parallel
+    this._executeTask(task, agent).finally(() => {
+      this.activeCount--;
+      // Fill the freed slot
+      if (!this.shutdownRequested) {
+        setImmediate(() => this.processNext());
+      }
+    });
+
+    // Immediately try to fill remaining slots
+    if (this.activeCount < MAX_PARALLEL && !this.shutdownRequested) {
+      setImmediate(() => this.processNext());
+    }
+  }
+
+  /**
+   * Ejecuta una tarea individual
+   */
+  async _executeTask(task, agent) {
+    try {
       const result = await agent.execute({
         type: task.type,
         params: task.params || {}
       });
 
-      // Guardar resultado
       db.updateTaskStatus(task.id, 'completed', result);
       if (result.simulated) db.markSimulated(task.id);
 
-      // Registrar ingresos
       const value = agent.getTaskValue(task.type);
       db.recordEarnings(task.id, agent.id, value);
-
-      // Actualizar estado
       db.updateAgentStatus(agent.id, 'idle');
 
       log.info('Tarea completada', {
@@ -129,19 +145,10 @@ class Orchestrator {
       this.emit('task-failed', { taskId: task.id, agentId: agent.id, error: err.message });
       this.emit('agent-state', { agentId: agent.id, state: 'error' });
 
-      // Recuperar estado después de 3 segundos
       setTimeout(() => {
         db.updateAgentStatus(agent.id, 'idle');
         this.emit('agent-state', { agentId: agent.id, state: 'idle' });
       }, 3000);
-    }
-
-    this.processing = false;
-
-    // Procesar siguiente si hay más
-    const more = db.getPendingTasks();
-    if (more.length > 0) {
-      setImmediate(() => this.processNext());
     }
   }
 
@@ -203,10 +210,19 @@ class Orchestrator {
    * Limpieza al cerrar
    */
   shutdown() {
+    this.shutdownRequested = true;
     for (const job of this.jobs) job.cancel();
     this.jobs = [];
-    db.close();
-    log.info('Orquestador cerrado');
+    // Wait for ALL active tasks to finish before closing DB
+    const closeDb = () => {
+      if (this.activeCount > 0) {
+        setTimeout(closeDb, 500);
+        return;
+      }
+      db.close();
+      log.info('Orquestador cerrado');
+    };
+    closeDb();
   }
 }
 

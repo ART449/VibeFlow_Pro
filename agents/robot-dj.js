@@ -68,7 +68,7 @@ Reglas:
   }
 
   getTaskValue(taskType) {
-    const values = { 'social-post': 15, 'ad-copy': 30, 'content-calendar': 100, 'hashtags': 8, 'email-campaign': 50 };
+    const values = { 'social-post': 25, 'ad-copy': 45, 'content-calendar': 150, 'hashtags': 15, 'email-campaign': 75 };
     return values[taskType] || 2.50;
   }
 }

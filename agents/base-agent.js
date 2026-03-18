@@ -28,7 +28,7 @@ class BaseAgent {
     this.log = createLogger(opts.id);
 
     // Flotilla de bots subordinados
-    this.fleet = new BotFleet(this.id, opts.botCount || 3, opts.color);
+    this.fleet = new BotFleet(this.id, opts.botCount || 5, opts.color);
   }
 
   /**

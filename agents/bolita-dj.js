@@ -63,7 +63,7 @@ Reglas:
   }
 
   getTaskValue(taskType) {
-    const values = { 'routine': 8, 'meditation': 12, 'nutrition': 6, 'wellness-tip': 2 };
+    const values = { 'routine': 18, 'meditation': 20, 'nutrition': 15, 'wellness-tip': 8 };
     return values[taskType] || 2.50;
   }
 }

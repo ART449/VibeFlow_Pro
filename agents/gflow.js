@@ -108,7 +108,7 @@ Reglas:
   }
 
   getTaskValue(taskType) {
-    const values = { 'market-analysis': 40, 'budget': 15, 'investment-overview': 30, 'crypto-brief': 10 };
+    const values = { 'market-analysis': 60, 'budget': 25, 'investment-overview': 45, 'crypto-brief': 20 };
     return values[taskType] || 2.50;
   }
 }

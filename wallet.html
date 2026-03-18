@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Colmena ByFlow — Wallet</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#0a0a0f;color:#fff;font-family:'Segoe UI',system-ui,sans-serif;min-height:100vh}
+.header{background:linear-gradient(135deg,#1a1a2e,#16213e);padding:24px 32px;border-bottom:1px solid #2a2a3a;display:flex;align-items:center;justify-content:space-between}
+.logo{display:flex;align-items:center;gap:12px}
+.logo span{font-size:32px}
+.logo h1{font-size:24px;font-weight:700}
+.logo h1 em{color:#ff2d78;font-style:normal}
+.status{display:flex;align-items:center;gap:8px;font-size:13px;color:#888}
+.status .dot{width:8px;height:8px;border-radius:50%;background:#00ff88;animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;padding:24px 32px}
+.card{background:#12121a;border:1px solid #2a2a3a;border-radius:16px;padding:24px;transition:border-color .3s}
+.card:hover{border-color:#00d4ff33}
+.card.wide{grid-column:span 2}
+.card.full{grid-column:span 4}
+.card h3{font-size:12px;text-transform:uppercase;letter-spacing:1px;color:#666;margin-bottom:12px}
+.big-number{font-size:48px;font-weight:800;line-height:1}
+.big-number.pink{color:#ff2d78}
+.big-number.cyan{color:#00d4ff}
+.big-number.green{color:#00ff88}
+.big-number small{font-size:20px;opacity:.6}
+.sub{font-size:13px;color:#888;margin-top:4px}
+.agents-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:12px}
+.agent{background:#1a1a25;border-radius:12px;padding:16px;text-align:center;border:1px solid #2a2a3a}
+.agent .emoji{font-size:36px;margin-bottom:8px}
+.agent .name{font-size:14px;font-weight:600;margin-bottom:4px}
+.agent .amount{font-size:22px;font-weight:700;color:#00d4ff}
+.agent .tasks{font-size:11px;color:#666}
+.bar-chart{display:flex;align-items:flex-end;gap:8px;height:120px;margin-top:12px}
+.bar{flex:1;border-radius:6px 6px 0 0;min-height:4px;position:relative;transition:height .5s}
+.bar .label{position:absolute;bottom:-20px;left:50%;transform:translateX(-50%);font-size:10px;color:#666;white-space:nowrap}
+.bar .val{position:absolute;top:-18px;left:50%;transform:translateX(-50%);font-size:11px;font-weight:600}
+.split-row{display:flex;gap:16px;margin-top:12px}
+.split-item{flex:1;background:#1a1a25;border-radius:10px;padding:14px;text-align:center}
+.split-item .pct{font-size:24px;font-weight:700}
+.split-item .who{font-size:11px;color:#888;margin-top:2px}
+.split-item .amt{font-size:16px;font-weight:600;margin-top:4px}
+.history{max-height:300px;overflow-y:auto}
+.history table{width:100%;border-collapse:collapse;font-size:13px}
+.history th{text-align:left;padding:8px;color:#666;border-bottom:1px solid #2a2a3a;position:sticky;top:0;background:#12121a}
+.history td{padding:8px;border-bottom:1px solid #1a1a25}
+.history .real{color:#00ff88}
+.history .sim{color:#ff8800}
+.cost-card{display:flex;justify-content:space-between;align-items:center}
+.cost-card .left h4{font-size:18px;margin-bottom:4px}
+.cost-card .left p{font-size:12px;color:#888}
+.cost-card .right{text-align:right}
+.cost-card .right .profit{font-size:28px;font-weight:700;color:#00ff88}
+.gpu-info{display:flex;gap:16px;align-items:center}
+.gpu-info .chip{background:#1a1a25;border-radius:8px;padding:10px 16px;font-size:13px}
+.gpu-info .chip b{color:#76ff03}
+.btn{background:linear-gradient(135deg,#ff2d78,#ff6b6b);color:#fff;border:none;padding:12px 24px;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;transition:transform .2s}
+.btn:hover{transform:scale(1.03)}
+.btn:active{transform:scale(.97)}
+.btn.secondary{background:linear-gradient(135deg,#00d4ff,#0088ff)}
+.actions{padding:16px 32px;display:flex;gap:12px}
+footer{text-align:center;padding:24px;font-size:11px;color:#444}
+#refresh-timer{font-size:11px;color:#555}
+/* Resource monitor */
+.res-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.res-item{background:#1a1a25;border-radius:10px;padding:14px;text-align:center}
+.res-item .icon{font-size:20px;margin-bottom:6px}
+.res-item .label{font-size:10px;color:#666;text-transform:uppercase}
+.res-item .value{font-size:18px;font-weight:700;margin:4px 0}
+.res-item .sub{font-size:11px;color:#555}
+.progress-bar{height:6px;background:#1a1a25;border-radius:3px;overflow:hidden;margin-top:6px}
+.progress-bar .fill{height:100%;border-radius:3px;transition:width .5s}
+/* Chat */
+.chat-box{position:fixed;bottom:0;left:0;right:0;background:#12121a;border-top:1px solid #2a2a3a;z-index:100;padding:12px 32px;display:flex;gap:12px;align-items:center}
+.chat-box input{flex:1;background:#1a1a25;border:1px solid #2a2a3a;border-radius:12px;padding:12px 16px;color:#fff;font-size:14px;outline:none}
+.chat-box input:focus{border-color:#ff2d78}
+.chat-box input::placeholder{color:#444}
+.chat-box button{background:linear-gradient(135deg,#ff2d78,#ff6b6b);color:#fff;border:none;padding:12px 20px;border-radius:12px;font-size:14px;font-weight:600;cursor:pointer}
+.chat-response{position:fixed;bottom:60px;left:32px;right:32px;background:#1a1a25;border:1px solid #2a2a3a;border-radius:12px;padding:16px;max-height:200px;overflow-y:auto;font-size:13px;line-height:1.5;display:none;z-index:99}
+.chat-response .from{font-size:11px;color:#ff2d78;font-weight:600;margin-bottom:4px}
+.chat-response pre{white-space:pre-wrap;color:#ccc}
+body{padding-bottom:70px}
+@media(max-width:900px){.grid{grid-template-columns:1fr 1fr}.card.full{grid-column:span 2}.agents-grid{grid-template-columns:repeat(3,1fr)}.res-grid{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:600px){.grid{grid-template-columns:1fr}.card.wide,.card.full{grid-column:span 1}.agents-grid{grid-template-columns:1fr 1fr}.res-grid{grid-template-columns:1fr 1fr}}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="logo">
+    <span>🐝</span>
+    <h1>Colmena <em>ByFlow</em> — Wallet</h1>
+  </div>
+  <div class="status">
+    <div class="dot" id="statusDot"></div>
+    <span id="statusText">Cargando...</span>
+    <span id="refresh-timer"></span>
+  </div>
+</div>
+
+<div class="actions">
+  <button class="btn" onclick="runAgents()">🚀 Correr Agentes</button>
+  <button class="btn secondary" onclick="loadData()">🔄 Actualizar</button>
+</div>
+
+<div class="grid" id="dashboard">
+  <!-- Populated by JS -->
+</div>
+
+<footer>
+  Colmena ByFlow v1.0 — powered by IArtLabs — hecho por Arturo Torres (ArT<i>. en el arte de rimarte,</i>)
+</footer>
+
+<!-- Chat Response Bubble -->
+<div class="chat-response" id="chatResponse">
+  <div class="from">🎧 GFlow</div>
+  <pre id="chatText"></pre>
+</div>
+
+<!-- Chat Bar -->
+<div class="chat-box">
+  <span style="font-size:20px">🎧</span>
+  <input type="text" id="chatInput" placeholder="Preguntale algo a GFlow..." onkeydown="if(event.key==='Enter')sendChat()">
+  <button onclick="sendChat()">Enviar</button>
+</div>
+
+<script>
+let autoRefresh;
+
+async function apiFetch(endpoint) {
+  try {
+    const res = await fetch(endpoint);
+    if (res.redirected || res.status === 302 || res.status === 401) { window.location = '/login'; return null; }
+    if (!res.ok) return null;
+    return await res.json();
+  } catch(e) {
+    console.error('API error:', endpoint, e);
+    return null;
+  }
+}
+
+async function loadData() {
+  try {
+  const [totals, byAgent, history] = await Promise.all([
+    apiFetch('/api/summary'),
+    apiFetch('/api/agents'),
+    apiFetch('/api/history?limit=30')
+  ]);
+
+  if (!totals) return;
+
+  const recentTasks = history || [];
+  const estimatedCost = totals.tareas * 0.003;
+  const netProfit = totals.bruto - estimatedCost;
+
+  // Agent emojis/colors
+  const agentMeta = {
+    'clip-flow': {emoji:'🔷',color:'#4488ff',name:'Clip Flow'},
+    'bolita-dj': {emoji:'🟡',color:'#ffcc00',name:'Bolita DJ'},
+    'gflow':     {emoji:'🎧',color:'#8844ff',name:'GFlow'},
+    'michi':     {emoji:'🤖',color:'#888888',name:'Michi'},
+    'robot-dj':  {emoji:'🎧',color:'#ff8800',name:'Robot DJ'}
+  };
+
+  const maxAgent = byAgent.length ? Math.max(...byAgent.map(a=>a.total)) : 1;
+
+  // Build dashboard
+  document.getElementById('dashboard').innerHTML = `
+    <!-- Row 1: Key metrics -->
+    <div class="card">
+      <h3>Bruto Total</h3>
+      <div class="big-number pink">$${totals.bruto.toFixed(0)}<small>.${(totals.bruto%1*100).toFixed(0).padStart(2,'0')}</small></div>
+      <div class="sub">${totals.tareas} tareas completadas</div>
+    </div>
+    <div class="card">
+      <h3>Tu Parte (70%)</h3>
+      <div class="big-number green">$${totals.arturo.toFixed(2)}</div>
+      <div class="sub">ArT-AtR</div>
+    </div>
+    <div class="card">
+      <h3>Hoy</h3>
+      <div class="big-number cyan">$${(totals.today || 0).toFixed(2)}</div>
+      <div class="sub">${new Date().toLocaleDateString('es-MX')}</div>
+    </div>
+    <div class="card">
+      <h3>Rentabilidad</h3>
+      <div class="cost-card">
+        <div class="left">
+          <h4>Costo API: ~$${estimatedCost.toFixed(3)}</h4>
+          <p>Grok-3-mini @ ~$0.003/tarea</p>
+        </div>
+        <div class="right">
+          <div class="profit">+$${netProfit.toFixed(2)}</div>
+          <div class="sub">Profit neto</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Row 2: Agents -->
+    <div class="card full">
+      <h3>Agentes</h3>
+      <div class="agents-grid">
+        ${byAgent.map(a => {
+          const m = agentMeta[a.id] || {emoji:'❓',name:a.id,color:'#888'};
+          return `<div class="agent">
+            <div class="emoji">${m.emoji}</div>
+            <div class="name">${m.name}</div>
+            <div class="amount">$${a.total}</div>
+            <div class="tasks">${a.tareas} tareas</div>
+          </div>`;
+        }).join('')}
+      </div>
+    </div>
+
+    <!-- Row 3: Chart + Split -->
+    <div class="card wide">
+      <h3>Ingresos por Agente</h3>
+      <div class="bar-chart">
+        ${byAgent.map(a => {
+          const m = agentMeta[a.id] || {color:'#888',name:a.id};
+          const h = Math.max(8, (a.total / maxAgent) * 100);
+          return `<div class="bar" style="height:${h}%;background:${m.color}">
+            <div class="val" style="color:${m.color}">$${a.total}</div>
+            <div class="label">${m.name}</div>
+          </div>`;
+        }).join('')}
+      </div>
+    </div>
+    <div class="card wide">
+      <h3>Distribución 70/20/10</h3>
+      <div class="split-row">
+        <div class="split-item">
+          <div class="pct" style="color:#00ff88">70%</div>
+          <div class="who">ArT-AtR</div>
+          <div class="amt" style="color:#00ff88">$${totals.arturo.toFixed(2)}</div>
+        </div>
+        <div class="split-item">
+          <div class="pct" style="color:#00d4ff">20%</div>
+          <div class="who">IArtLabs</div>
+          <div class="amt" style="color:#00d4ff">$${totals.iartlabs.toFixed(2)}</div>
+        </div>
+        <div class="split-item">
+          <div class="pct" style="color:#ff8800">10%</div>
+          <div class="who">Operativo</div>
+          <div class="amt" style="color:#ff8800">$${totals.operativo.toFixed(2)}</div>
+        </div>
+      </div>
+      <div style="margin-top:16px">
+        <div class="gpu-info">
+          <div class="chip">🖥️ GPU: <b>RTX 3050 6GB</b></div>
+          <div class="chip">🤖 Ollama: <b>gpt-oss:120b</b></div>
+          <div class="chip">💎 Gemini</div>
+          <div class="chip">☁️ Grok: <b>grok-3-mini</b></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Row 4: History -->
+    <div class="card full">
+      <h3>Historial de Tareas (Ultimas 30)</h3>
+      <div class="history">
+        <table>
+          <tr><th>#</th><th>Agente</th><th>Tipo</th><th>Ganado</th><th>Modo</th><th>Fecha</th></tr>
+          ${recentTasks.map(t => `<tr>
+            <td>${t.id}</td>
+            <td>${(agentMeta[t.agent]||{emoji:'❓'}).emoji} ${t.agent}</td>
+            <td>${t.type}</td>
+            <td>$${(t.amount||0)}</td>
+            <td class="${t.simulated ? 'sim' : 'real'}">${t.simulated ? 'SIM' : 'REAL'}</td>
+            <td>${t.date||''}</td>
+          </tr>`).join('')}
+        </table>
+      </div>
+    </div>
+  `;
+
+  // Update status
+  document.getElementById('statusText').textContent = `${totals.realTasks} tareas reales · $${totals.bruto.toFixed(0)} bruto · Activo`;
+  document.getElementById('statusDot').style.background = '#00ff88';
+} catch(err) {
+  console.error('loadData error:', err);
+  document.getElementById('statusText').textContent = 'Error cargando datos';
+  document.getElementById('statusDot').style.background = '#ff4444';
+}
+}
+
+function runAgents() {
+  alert('Ejecuta en terminal:\\n\\ncd C:\\\\BYFLOW\\\\Colmena && node run-agents.js\\n\\nO usa el auto-runner:\\nnode auto-runner.js');
+}
+
+// Chat
+async function sendChat() {
+  const input = document.getElementById('chatInput');
+  const msg = input.value.trim();
+  if (!msg) return;
+  input.value = '';
+  const resp = document.getElementById('chatResponse');
+  const text = document.getElementById('chatText');
+  resp.style.display = 'block';
+  text.textContent = 'Pensando...';
+
+  try {
+    const res = await fetch('/api/chat', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({message: msg})
+    });
+    const data = await res.json();
+    text.textContent = data.reply || 'Sin respuesta';
+  } catch(e) {
+    text.textContent = 'Error: ' + e.message;
+  }
+
+  // Auto-hide after 30s
+  setTimeout(() => { resp.style.display = 'none'; }, 30000);
+}
+
+// Resources
+async function loadResources() {
+  try {
+    const res = await fetch('/api/resources');
+    const r = await res.json();
+
+    const cpuColor = r.cpu.usage > 80 ? '#ff4444' : r.cpu.usage > 50 ? '#ffaa00' : '#00ff88';
+    const ramPct = parseInt(r.ram.usedPct);
+    const ramColor = ramPct > 80 ? '#ff4444' : ramPct > 60 ? '#ffaa00' : '#00d4ff';
+    const diskPct = parseInt(r.disk.usedPct || 0);
+    const diskColor = diskPct > 80 ? '#ff4444' : diskPct > 60 ? '#ffaa00' : '#76ff03';
+    const gpuUtil = r.gpu.available ? parseInt(r.gpu.util) : 0;
+    const gpuColor = gpuUtil > 80 ? '#ff4444' : gpuUtil > 50 ? '#ffaa00' : '#aa66ff';
+
+    return `
+      <div class="res-grid">
+        <div class="res-item">
+          <div class="icon">🖥️</div>
+          <div class="label">CPU</div>
+          <div class="value" style="color:${cpuColor}">${r.cpu.usage}%</div>
+          <div class="sub">${r.cpu.cores} cores</div>
+          <div class="progress-bar"><div class="fill" style="width:${r.cpu.usage}%;background:${cpuColor}"></div></div>
+        </div>
+        <div class="res-item">
+          <div class="icon">💾</div>
+          <div class="label">RAM</div>
+          <div class="value" style="color:${ramColor}">${r.ram.used}</div>
+          <div class="sub">de ${r.ram.total} (${r.ram.usedPct}%)</div>
+          <div class="progress-bar"><div class="fill" style="width:${r.ram.usedPct}%;background:${ramColor}"></div></div>
+        </div>
+        <div class="res-item">
+          <div class="icon">🎮</div>
+          <div class="label">GPU RTX 3050</div>
+          <div class="value" style="color:${gpuColor}">${r.gpu.available ? r.gpu.util : 'N/A'}</div>
+          <div class="sub">${r.gpu.available ? r.gpu.memUsed+' / '+r.gpu.memTotal+' · '+r.gpu.temp : 'No detectada'}</div>
+          <div class="progress-bar"><div class="fill" style="width:${gpuUtil}%;background:${gpuColor}"></div></div>
+        </div>
+        <div class="res-item">
+          <div class="icon">💿</div>
+          <div class="label">Disco C:</div>
+          <div class="value" style="color:${diskColor}">${r.disk.free || '?'}</div>
+          <div class="sub">libre de ${r.disk.total || '?'} · ⏱️ ${r.uptime}</div>
+          <div class="progress-bar"><div class="fill" style="width:${diskPct}%;background:${diskColor}"></div></div>
+        </div>
+      </div>`;
+  } catch(e) {
+    return '<div style="color:#666;text-align:center;padding:12px">Error cargando recursos</div>';
+  }
+}
+
+// Override loadData to include resources
+const _origLoadData = loadData;
+loadData = async function() {
+  await _origLoadData();
+  // Inject resources card after agents
+  const resHtml = await loadResources();
+  const dashboard = document.getElementById('dashboard');
+  // Find or create resources card
+  let resCard = document.getElementById('resources-card');
+  if (!resCard) {
+    resCard = document.createElement('div');
+    resCard.id = 'resources-card';
+    resCard.className = 'card full';
+    dashboard.appendChild(resCard);
+  }
+  resCard.innerHTML = '<h3>RECURSOS DEL SISTEMA</h3>' + resHtml;
+  // Move it before history
+  const cards = dashboard.querySelectorAll('.card.full');
+  if (cards.length >= 2) {
+    dashboard.insertBefore(resCard, cards[cards.length - 1]);
+  }
+};
+
+// Load on start
+loadData();
+// Auto refresh every 15s
+autoRefresh = setInterval(loadData, 15000);
+</script>
+</body>
+</html>
