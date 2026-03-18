@@ -4594,6 +4594,11 @@ function _setupEventoListeners() {
   socket.on('evento_voto', () => {
     if (document.getElementById('talent-events')) talentLoadEvents();
   });
+  socket.on('actividad', data => {
+    if (data.tipo === 'letra_votada' && typeof _creatorAlias !== 'undefined' && _creatorAlias && data.usuario.toLowerCase() === _creatorAlias.toLowerCase()) {
+      showToast('Alguien voto tu letra "' + data.titulo + '"', 'success');
+    }
+  });
 }
 // Will be called after socket connects (see DOMContentLoaded)
 
@@ -7910,8 +7915,8 @@ function _timeAgo(dateStr) {
 }
 
 // ── Perfiles de Creador (FASE 2.5) ───────────────────────────────────────
-let _creatorToken = localStorage.getItem('byflow_creator_token') || null;
-let _creatorAlias = localStorage.getItem('byflow_creator_alias') || null;
+var _creatorToken = localStorage.getItem('byflow_creator_token') || null;
+var _creatorAlias = localStorage.getItem('byflow_creator_alias') || null;
 
 function estLoadPerfil() {
   if (_creatorToken && _creatorAlias) {
@@ -8064,14 +8069,7 @@ async function estViewCreator(alias) {
 }
 
 // Socket.IO: listen for activity events (real-time notifications)
-if (typeof socket !== 'undefined') {
-  socket.on('actividad', data => {
-    // Notify if someone voted on YOUR letra
-    if (data.tipo === 'letra_votada' && _creatorAlias && data.usuario.toLowerCase() === _creatorAlias.toLowerCase()) {
-      showToast('Alguien voto tu letra "' + data.titulo + '"', 'success');
-    }
-  });
-}
+// Deferred — added to _setupEventoListeners which runs after socket connects
 
 // ── Panel Vistas (DJ Dashboard) functions ─────────────────────────────────
 function vpRefresh() {
