@@ -1,0 +1,36 @@
+{
+  "name": "colmena-byflow",
+  "version": "1.0.0",
+  "description": "Sistema multi-agente autónomo con dashboard 3D — powered by IArtLabs",
+  "main": "main/main.js",
+  "scripts": {
+    "start": "electron .",
+    "dev": "cross-env NODE_ENV=development electron .",
+    "build": "electron-builder",
+    "test": "jest"
+  },
+  "author": "Arturo Torres (ArT-AtR) — IArtLabs",
+  "license": "MIT",
+  "dependencies": {
+    "sql.js": "^1.11.0",
+    "dotenv": "^16.4.7",
+    "node-schedule": "^2.1.1",
+    "three": "^0.170.0"
+  },
+  "devDependencies": {
+    "cross-env": "^7.0.3",
+    "electron": "^33.3.1",
+    "electron-builder": "^25.1.8"
+  },
+  "build": {
+    "appId": "com.iartlabs.colmena",
+    "productName": "Colmena ByFlow",
+    "directories": {
+      "output": "dist"
+    },
+    "win": {
+      "target": "nsis",
+      "icon": "assets/icon.png"
+    }
+  }
+}

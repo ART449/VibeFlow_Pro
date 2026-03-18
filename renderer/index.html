@@ -1,0 +1,554 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Colmena ByFlow</title>
+  <link rel="stylesheet" href="styles/main.css">
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js",
+      "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"
+    }
+  }
+  </script>
+</head>
+<body>
+
+  <!-- Title Bar -->
+  <div class="titlebar-drag">
+    🐝 <span style="margin-left:8px;color:#ff2d78;font-weight:600">COLMENA</span>
+    <span style="margin-left:4px;color:#666">ByFlow</span>
+    <span style="margin-left:auto;margin-right:140px;color:#333;font-size:10px" id="statusLabel">Inicializando...</span>
+  </div>
+
+  <!-- 3D Canvas -->
+  <div id="canvas-container">
+    <div class="hud-overlay">
+      <div class="hud-stat">
+        <div class="label">Ingresos Hoy</div>
+        <div class="value" style="color:#22c55e" id="hudEarningsToday">$0.00</div>
+      </div>
+      <div class="hud-stat">
+        <div class="label">Total</div>
+        <div class="value" style="color:#00d4ff" id="hudEarningsTotal">$0.00</div>
+      </div>
+      <div class="hud-stat">
+        <div class="label">Tareas</div>
+        <div class="value" style="color:#ff2d78" id="hudTaskCount">0</div>
+      </div>
+      <div class="hud-stat">
+        <div class="label">Agentes</div>
+        <div class="value" id="hudAgentCount">5</div>
+      </div>
+      <div class="hud-stat">
+        <div class="label">Grok</div>
+        <div class="value" id="hudGrokStatus" style="font-size:14px">⏳</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Side Panel -->
+  <div class="side-panel">
+    <div class="panel-header">
+      <span>🐝 Colmena</span>
+      <span style="font-size:10px;color:#666" id="panelClock"></span>
+    </div>
+
+    <div class="panel-tabs">
+      <button class="panel-tab active" data-tab="agents" onclick="switchTab('agents')">Agentes</button>
+      <button class="panel-tab" data-tab="tasks" onclick="switchTab('tasks')">Tareas</button>
+      <button class="panel-tab" data-tab="earnings" onclick="switchTab('earnings')">💰</button>
+    </div>
+
+    <!-- Tab: Agents -->
+    <div class="panel-content" id="tab-agents"></div>
+
+    <!-- Tab: Tasks -->
+    <div class="panel-content" id="tab-tasks" style="display:none">
+      <div id="taskHistory"></div>
+    </div>
+
+    <!-- Tab: Earnings -->
+    <div class="panel-content" id="tab-earnings" style="display:none">
+      <div id="earningsPanel"></div>
+    </div>
+
+    <!-- Task Form -->
+    <div class="task-form" id="taskForm">
+      <select id="taskAgent">
+        <option value="">Selecciona agente...</option>
+        <option value="clip-flow">🔷 Clip Flow — Educación</option>
+        <option value="bolita-dj">🟡 Bolita DJ — Salud</option>
+        <option value="gflow">🎧 GFlow — Finanzas</option>
+        <option value="michi">🤖 Michi — Legal</option>
+        <option value="robot-dj">🎧 Robot DJ — Marketing</option>
+      </select>
+      <select id="taskType" disabled>
+        <option value="">Tipo de tarea...</option>
+      </select>
+      <input type="text" id="taskTopic" placeholder="Tema / Parámetro principal..." disabled>
+      <button class="btn-submit" id="btnSubmit" disabled onclick="submitTask()">
+        ▶ Ejecutar Tarea
+      </button>
+    </div>
+
+    <div class="footer-credit">
+      hecho por Arturo Torres (ART<i>. en el arte de rimarte,</i>) — powered by IArtLabs
+    </div>
+  </div>
+
+  <!-- Three.js Scene (ESM) -->
+  <script type="module">
+    import * as THREE from 'three';
+    import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+    // ===== AGENT CONFIGS =====
+    const AGENT_CONFIGS = [
+      { id: 'clip-flow', name: 'Clip Flow', color: 0x4488ff, accentColor: 0x2266cc, emoji: '🔷', accessory: 'glasses', position: { x: -3, z: 0 }, botCount: 3 },
+      { id: 'bolita-dj', name: 'Bolita DJ', color: 0xffcc00, accentColor: 0xdd9900, emoji: '🟡', accessory: 'cap', position: { x: -1.5, z: 0 }, botCount: 3 },
+      { id: 'gflow', name: 'GFlow', color: 0x8b5cf6, accentColor: 0x6d28d9, emoji: '🎧', accessory: 'headphones', position: { x: 0, z: 0 }, botCount: 4 },
+      { id: 'michi', name: 'Michi', color: 0x888888, accentColor: 0x555555, emoji: '🤖', accessory: 'hat', position: { x: 1.5, z: 0 }, botCount: 3 },
+      { id: 'robot-dj', name: 'Robot DJ', color: 0xff8800, accentColor: 0xcc6600, emoji: '🎧', accessory: 'antenna', position: { x: 3, z: 0 }, botCount: 3 }
+    ];
+
+    // ===== VOXEL CHARACTER GENERATOR =====
+    const VS = 0.12; // voxel size
+
+    function voxel(color, x, y, z, size = VS) {
+      const m = new THREE.Mesh(
+        new THREE.BoxGeometry(size, size, size),
+        new THREE.MeshStandardMaterial({ color, roughness: 0.6, metalness: 0.1 })
+      );
+      m.position.set(x * VS, y * VS, z * VS);
+      m.castShadow = true;
+      return m;
+    }
+
+    function block(color, w, h, d, ox = 0, oy = 0, oz = 0) {
+      const g = new THREE.Group();
+      for (let x = 0; x < w; x++)
+        for (let y = 0; y < h; y++)
+          for (let z = 0; z < d; z++)
+            if (x === 0 || x === w-1 || y === 0 || y === h-1 || z === 0 || z === d-1)
+              g.add(voxel(color, x + ox, y + oy, z + oz));
+      return g;
+    }
+
+    function createCharacter(cfg) {
+      const c = new THREE.Group();
+      const { color, accentColor, accessory } = cfg;
+
+      // Head
+      c.add(block(color, 3, 3, 3, -1, 8, -1));
+      // Eyes
+      c.add(voxel(0xffffff, -0.7, 9, 1.5)); c.add(voxel(0xffffff, 0.7, 9, 1.5));
+      // Body
+      c.add(block(color, 3, 4, 2, -1, 4, 0));
+
+      // Arms with pivot
+      const la = new THREE.Group(); la.position.set(-2*VS, 7*VS, 0.5*VS); la.name = 'leftArm';
+      la.add(block(color, 1, 3, 1, 0, -3, 0)); c.add(la);
+      const ra = new THREE.Group(); ra.position.set(2*VS, 7*VS, 0.5*VS); ra.name = 'rightArm';
+      ra.add(block(color, 1, 3, 1, 0, -3, 0)); c.add(ra);
+
+      // Legs
+      const ll = new THREE.Group(); ll.position.set(-0.5*VS, 4*VS, 0.5*VS); ll.name = 'leftLeg';
+      ll.add(block(accentColor||0x333333, 1, 3, 1, 0, -3, 0)); c.add(ll);
+      const rl = new THREE.Group(); rl.position.set(0.5*VS, 4*VS, 0.5*VS); rl.name = 'rightLeg';
+      rl.add(block(accentColor||0x333333, 1, 3, 1, 0, -3, 0)); c.add(rl);
+
+      // Accessories
+      if (accessory === 'glasses') {
+        c.add(voxel(0xaaddff, -0.8, 9.3, 2, VS*0.7));
+        c.add(voxel(0xaaddff, 0.8, 9.3, 2, VS*0.7));
+      } else if (accessory === 'headphones') {
+        c.add(voxel(accentColor, -1.5, 10, 0, VS*1.2));
+        c.add(voxel(accentColor, 1.5, 10, 0, VS*1.2));
+        c.add(block(0x444444, 4, 1, 1, -1.5, 11, 0));
+      } else if (accessory === 'hat') {
+        c.add(block(0x444444, 5, 1, 5, -2, 11, -2));
+        c.add(block(0x555555, 3, 2, 3, -1, 12, -1));
+      } else if (accessory === 'cap') {
+        c.add(block(accentColor, 4, 1, 3, -1.5, 11, -1));
+        c.add(block(accentColor, 3, 1, 1, -1, 10.5, 2));
+      } else if (accessory === 'antenna') {
+        c.add(block(0xcccccc, 1, 3, 1, 0, 11, 0));
+        c.add(voxel(0xff0000, 0, 14, 0, VS*0.8));
+      }
+
+      // Platform
+      const plat = new THREE.Mesh(
+        new THREE.CylinderGeometry(0.35, 0.4, 0.06, 16),
+        new THREE.MeshStandardMaterial({ color, roughness: 0.3, metalness: 0.5, transparent: true, opacity: 0.4 })
+      );
+      plat.position.y = VS * 0.5; plat.receiveShadow = true;
+      c.add(plat);
+
+      c.scale.setScalar(0.8);
+      return c;
+    }
+
+    function createBot(color, index) {
+      const bot = new THREE.Group();
+      const s = VS * 0.5;
+      for (let x = 0; x < 2; x++)
+        for (let y = 0; y < 2; y++)
+          for (let z = 0; z < 2; z++) {
+            const m = new THREE.Mesh(
+              new THREE.BoxGeometry(s, s, s),
+              new THREE.MeshStandardMaterial({ color, roughness: 0.5, metalness: 0.2, transparent: true, opacity: 0.75 })
+            );
+            m.position.set(x*s, y*s, z*s); m.castShadow = true; bot.add(m);
+          }
+      // Eye
+      const eye = new THREE.Mesh(
+        new THREE.BoxGeometry(s*0.4, s*0.4, s*0.2),
+        new THREE.MeshStandardMaterial({ color: 0xffffff, emissive: 0xffffff, emissiveIntensity: 0.5 })
+      );
+      eye.position.set(s*0.5, s*1.2, s*1.1); bot.add(eye);
+      bot.scale.setScalar(0.45);
+      bot.userData = { botIndex: index, orbitAngle: (index/3)*Math.PI*2, orbitSpeed: 0.5+Math.random()*0.5 };
+      return bot;
+    }
+
+    function createLabel(text, color) {
+      const canvas = document.createElement('canvas');
+      canvas.width = 256; canvas.height = 64;
+      const ctx = canvas.getContext('2d');
+      ctx.font = 'bold 24px "Segoe UI", sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillStyle = '#' + new THREE.Color(color).getHexString();
+      ctx.fillText(text, 128, 40);
+      const tex = new THREE.CanvasTexture(canvas);
+      const sp = new THREE.Sprite(new THREE.SpriteMaterial({ map: tex, transparent: true, opacity: 0.8 }));
+      sp.scale.set(1.2, 0.3, 1);
+      return sp;
+    }
+
+    // ===== SCENE SETUP =====
+    const container = document.getElementById('canvas-container');
+    const clock = new THREE.Clock();
+
+    const scene = new THREE.Scene();
+    scene.background = new THREE.Color(0x0a0a0f);
+    scene.fog = new THREE.Fog(0x0a0a0f, 8, 18);
+
+    const camera = new THREE.PerspectiveCamera(50, container.clientWidth / container.clientHeight, 0.1, 100);
+    camera.position.set(0, 3, 7);
+
+    const renderer = new THREE.WebGLRenderer({ antialias: true });
+    renderer.setSize(container.clientWidth, container.clientHeight);
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.shadowMap.enabled = true;
+    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+    renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    renderer.toneMappingExposure = 1.2;
+    container.insertBefore(renderer.domElement, container.firstChild);
+
+    const controls = new OrbitControls(camera, renderer.domElement);
+    controls.enableDamping = true; controls.dampingFactor = 0.05;
+    controls.maxPolarAngle = Math.PI * 0.6;
+    controls.minDistance = 3; controls.maxDistance = 12;
+    controls.target.set(0, 1, 0);
+
+    // Lights
+    scene.add(new THREE.AmbientLight(0x404060, 0.6));
+    const sun = new THREE.DirectionalLight(0xffffff, 1.2);
+    sun.position.set(5, 8, 5); sun.castShadow = true;
+    sun.shadow.mapSize.set(1024, 1024);
+    sun.shadow.camera.near = 0.5; sun.shadow.camera.far = 20;
+    sun.shadow.camera.left = -6; sun.shadow.camera.right = 6;
+    sun.shadow.camera.top = 6; sun.shadow.camera.bottom = -6;
+    sun.shadow.bias = -0.001;
+    scene.add(sun);
+    scene.add(new THREE.DirectionalLight(0x00d4ff, 0.3).translateOnAxis(new THREE.Vector3(-3,4,-5).normalize(), 1));
+    const pink = new THREE.PointLight(0xff2d78, 0.4, 10); pink.position.set(3, 2, 3); scene.add(pink);
+
+    // Floor
+    scene.add(new THREE.GridHelper(12, 24, 0x1a1a25, 0x111118));
+    const floor = new THREE.Mesh(
+      new THREE.PlaneGeometry(12, 12),
+      new THREE.MeshStandardMaterial({ color: 0x0a0a0f, roughness: 1 })
+    );
+    floor.rotation.x = -Math.PI/2; floor.receiveShadow = true; scene.add(floor);
+
+    // Create characters + bots
+    const characters = {};
+    for (const cfg of AGENT_CONFIGS) {
+      const char = createCharacter(cfg);
+      char.position.set(cfg.position.x, 0, cfg.position.z);
+      scene.add(char);
+
+      const bots = [];
+      for (let i = 0; i < (cfg.botCount || 3); i++) {
+        const bot = createBot(cfg.color, i);
+        bot.position.set(cfg.position.x, 0.3, cfg.position.z);
+        scene.add(bot);
+        bots.push(bot);
+      }
+
+      const label = createLabel(cfg.name, cfg.color);
+      label.position.set(cfg.position.x, 2.2, cfg.position.z);
+      scene.add(label);
+
+      characters[cfg.id] = { group: char, bots, state: 'idle', cfg };
+    }
+
+    // Resize
+    window.addEventListener('resize', () => {
+      camera.aspect = container.clientWidth / container.clientHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(container.clientWidth, container.clientHeight);
+    });
+
+    // Animation loop
+    function animate() {
+      requestAnimationFrame(animate);
+      const t = clock.getElapsedTime();
+      controls.update();
+
+      for (const [id, ch] of Object.entries(characters)) {
+        const { group, bots, state } = ch;
+        // Idle float
+        if (state === 'idle') {
+          group.position.y = Math.sin(t*1.5 + group.position.x) * 0.05;
+          group.rotation.y = Math.sin(t*0.3 + group.position.x*2) * 0.1;
+        }
+        // Working
+        if (state === 'working') {
+          group.position.y = Math.sin(t*3) * 0.08;
+          group.rotation.y += 0.02;
+          const la = group.getObjectByName('leftArm'), ra = group.getObjectByName('rightArm');
+          if (la) la.rotation.x = Math.sin(t*4) * 0.5;
+          if (ra) ra.rotation.x = Math.sin(t*4+Math.PI) * 0.5;
+        }
+        // Error flash
+        group.visible = state === 'error' ? Math.floor(t*6) % 2 === 0 : true;
+
+        // Bot orbits
+        for (const bot of bots) {
+          const { orbitAngle, orbitSpeed, botIndex } = bot.userData;
+          const r = 0.6 + botIndex * 0.15;
+          const a = orbitAngle + t * orbitSpeed;
+          bot.position.x = ch.cfg.position.x + Math.cos(a) * r;
+          bot.position.z = ch.cfg.position.z + Math.sin(a) * r;
+          bot.position.y = 0.3 + Math.sin(t*2+botIndex) * 0.08;
+          bot.rotation.y = a + Math.PI;
+          bot.scale.setScalar(state === 'working' ? 0.5 + Math.sin(t*5+botIndex)*0.05 : 0.45);
+        }
+      }
+
+      renderer.render(scene, camera);
+    }
+    animate();
+
+    // Export setAgentState to global
+    window._setAgentState = (id, s) => { if (characters[id]) characters[id].state = s; };
+    window._AGENT_CONFIGS = AGENT_CONFIGS;
+  </script>
+
+  <!-- App Logic (non-module, accesses window.colmena) -->
+  <script>
+    // ===== TASK TYPES =====
+    const TASK_TYPES = {
+      'clip-flow': [
+        { value: 'summary', label: 'Resumen' },
+        { value: 'study-guide', label: 'Guía de Estudio' },
+        { value: 'flashcards', label: 'Flashcards' },
+        { value: 'explain', label: 'Explicar Concepto' }
+      ],
+      'bolita-dj': [
+        { value: 'routine', label: 'Rutina de Ejercicio' },
+        { value: 'meditation', label: 'Meditación' },
+        { value: 'nutrition', label: 'Nutrición' },
+        { value: 'wellness-tip', label: 'Tip de Bienestar' }
+      ],
+      'gflow': [
+        { value: 'market-analysis', label: 'Análisis de Mercado' },
+        { value: 'budget', label: 'Presupuesto' },
+        { value: 'investment-overview', label: 'Overview Inversión' },
+        { value: 'crypto-brief', label: 'Crypto Brief' }
+      ],
+      'michi': [
+        { value: 'contract-template', label: 'Template Contrato' },
+        { value: 'document-review', label: 'Revisión Documento' },
+        { value: 'legal-faq', label: 'FAQ Legal' },
+        { value: 'terms-generator', label: 'Términos y Condiciones' }
+      ],
+      'robot-dj': [
+        { value: 'social-post', label: 'Post Social' },
+        { value: 'ad-copy', label: 'Copy Anuncio' },
+        { value: 'content-calendar', label: 'Calendario Contenido' },
+        { value: 'hashtags', label: 'Hashtags' },
+        { value: 'email-campaign', label: 'Campaña Email' }
+      ]
+    };
+
+    // Clock
+    setInterval(() => {
+      const el = document.getElementById('panelClock');
+      if (el) el.textContent = new Date().toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' });
+    }, 1000);
+
+    // ===== TABS =====
+    function switchTab(tabId) {
+      document.querySelectorAll('.panel-tab').forEach(t => t.classList.remove('active'));
+      document.querySelector(`[data-tab="${tabId}"]`).classList.add('active');
+      document.querySelectorAll('.panel-content').forEach(c => c.style.display = 'none');
+      document.getElementById(`tab-${tabId}`).style.display = '';
+      if (tabId === 'tasks') loadHistory();
+      if (tabId === 'earnings') loadEarnings();
+    }
+
+    // ===== AGENT CARDS =====
+    function renderAgentCards(agents) {
+      const el = document.getElementById('tab-agents');
+      if (!el) return;
+      el.innerHTML = agents.map(a => {
+        const hex = typeof a.color === 'number'
+          ? '#' + a.color.toString(16).padStart(6, '0')
+          : (a.color || '#888');
+        const bc = a.botCount || 3;
+        const dots = Array.from({length: bc}, () =>
+          `<div class="bot-dot ${a.state === 'working' ? 'active' : ''}" style="background:${hex}"></div>`
+        ).join('');
+        return `
+          <div class="agent-card" onclick="selectAgent('${a.id}')">
+            <div class="agent-header">
+              <div class="agent-avatar" style="background:${hex}20;border:1px solid ${hex}">${a.emoji}</div>
+              <div><div class="agent-name">${a.name}</div><div class="agent-domain">${a.domain}</div></div>
+              <div class="state-dot state-${a.state||'idle'}" style="margin-left:auto" title="${a.state||'idle'}"></div>
+            </div>
+            <div class="agent-stats">
+              <span>✅ ${a.tasksCompleted||0} tareas</span>
+              <span>💰 $${(a.totalEarnings||0).toFixed(2)}</span>
+            </div>
+            <div class="agent-bots" title="Flotilla: ${bc} bots">${dots}</div>
+          </div>`;
+      }).join('');
+    }
+
+    // ===== TASK FORM =====
+    const agentSel = document.getElementById('taskAgent');
+    const typeSel = document.getElementById('taskType');
+    const topicIn = document.getElementById('taskTopic');
+    const btnSub = document.getElementById('btnSubmit');
+
+    agentSel.addEventListener('change', () => {
+      const id = agentSel.value;
+      typeSel.innerHTML = '<option value="">Tipo de tarea...</option>';
+      if (id && TASK_TYPES[id]) {
+        TASK_TYPES[id].forEach(t => { typeSel.innerHTML += `<option value="${t.value}">${t.label}</option>`; });
+        typeSel.disabled = false; topicIn.disabled = false;
+      } else { typeSel.disabled = true; topicIn.disabled = true; }
+      btnSub.disabled = true;
+    });
+
+    typeSel.addEventListener('change', () => { btnSub.disabled = !typeSel.value; });
+
+    function selectAgent(id) { agentSel.value = id; agentSel.dispatchEvent(new Event('change')); }
+
+    async function submitTask() {
+      const agentId = agentSel.value, type = typeSel.value, topic = topicIn.value.trim();
+      if (!agentId || !type) return;
+      btnSub.disabled = true; btnSub.textContent = '⏳ Procesando...';
+
+      const params = { topic: topic || undefined };
+      if (type === 'market-analysis' && topic) params.symbol = topic;
+      if (type === 'budget' && topic) params.amount = topic;
+
+      try {
+        const r = await window.colmena.submitTask(agentId, type, params);
+        btnSub.textContent = r.ok ? '✅ Enviada!' : '❌ Error';
+        if (r.ok) topicIn.value = '';
+      } catch (e) { btnSub.textContent = '❌ Error'; console.error(e); }
+      setTimeout(() => { btnSub.disabled = false; btnSub.textContent = '▶ Ejecutar Tarea'; }, 2000);
+    }
+
+    // ===== HISTORY =====
+    async function loadHistory() {
+      try {
+        const r = await window.colmena.getHistory(null, 20);
+        if (!r.ok) return;
+        document.getElementById('taskHistory').innerHTML = r.data.map(t => {
+          const txt = t.result?.content || t.error || 'Sin resultado';
+          const sim = t.simulated ? ' <span style="color:#fbbf24;font-size:9px">[SIM]</span>' : '';
+          return `<div class="task-item"><div class="task-meta"><span>${t.agent_id} → ${t.type}${sim}</span><span>${t.status}</span></div><div class="task-result">${escHtml(txt)}</div></div>`;
+        }).join('') || '<div style="color:#666;text-align:center;padding:40px">Sin tareas aún</div>';
+      } catch {}
+    }
+
+    // ===== EARNINGS =====
+    async function loadEarnings() {
+      try {
+        const r = await window.colmena.getStatus();
+        if (!r.ok) return;
+        const { earnings } = r.data;
+        const tot = earnings.totals.total || 1;
+        document.getElementById('earningsPanel').innerHTML = `
+          <div style="padding:8px">
+            <h3 style="font-size:14px;margin-bottom:12px">Distribución 70/20/10</h3>
+            <div class="earnings-bar">
+              <div class="bar-artist" style="width:${(earnings.totals.artist/tot*100).toFixed(0)}%"></div>
+              <div class="bar-platform" style="width:${(earnings.totals.platform/tot*100).toFixed(0)}%"></div>
+              <div class="bar-agent" style="width:${(earnings.totals.agent_cost/tot*100).toFixed(0)}%"></div>
+            </div>
+            <div style="display:flex;justify-content:space-between;font-size:11px;margin-bottom:16px">
+              <span style="color:#ff2d78">🎤 ArT-AtR: $${earnings.totals.artist.toFixed(2)}</span>
+              <span style="color:#00d4ff">🏢 IArtLabs: $${earnings.totals.platform.toFixed(2)}</span>
+              <span style="color:#8b5cf6">⚙️ Ops: $${earnings.totals.agent_cost.toFixed(2)}</span>
+            </div>
+            <h4 style="font-size:12px;color:#666;margin-bottom:8px">Por Agente</h4>
+            ${earnings.byAgent.map(a => `
+              <div style="display:flex;justify-content:space-between;padding:4px 0;font-size:12px;border-bottom:1px solid #1a1a25">
+                <span>${a.agent_id}</span><span>${a.tasks} tareas</span><span style="color:#22c55e">$${a.total.toFixed(2)}</span>
+              </div>`).join('') || '<div style="color:#666">Sin ingresos aún</div>'}
+          </div>`;
+      } catch {}
+    }
+
+    // ===== STATUS REFRESH =====
+    async function refreshStatus() {
+      try {
+        const r = await window.colmena.getStatus();
+        if (!r.ok) return;
+        const { agents, earnings, grokConfigured } = r.data;
+
+        document.getElementById('hudEarningsToday').textContent = `$${earnings.today.toFixed(2)}`;
+        document.getElementById('hudEarningsTotal').textContent = `$${earnings.totals.total.toFixed(2)}`;
+        document.getElementById('hudGrokStatus').textContent = grokConfigured ? '🟢' : '🔴 SIM';
+        document.getElementById('statusLabel').textContent = grokConfigured ? 'Grok API ✓' : 'Modo Simulación';
+
+        let total = 0;
+        agents.forEach(a => total += (a.tasksCompleted || 0));
+        document.getElementById('hudTaskCount').textContent = total;
+
+        // Map configs for UI
+        const cfgs = window._AGENT_CONFIGS || [];
+        const mapped = agents.map(a => {
+          const cfg = cfgs.find(c => c.id === a.id);
+          return { ...a, botCount: cfg?.botCount || 3, color: cfg?.color || 0x888888 };
+        });
+        renderAgentCards(mapped);
+
+        // 3D states
+        if (window._setAgentState) agents.forEach(a => window._setAgentState(a.id, a.state || 'idle'));
+      } catch (e) { console.error('Status error:', e); }
+    }
+
+    // IPC listeners
+    if (window.colmena) {
+      window.colmena.onTaskComplete(() => refreshStatus());
+      window.colmena.onAgentState((d) => { if (window._setAgentState) window._setAgentState(d.agentId, d.state); });
+    }
+
+    // Polling + initial
+    setTimeout(refreshStatus, 500);
+    setInterval(refreshStatus, 5000);
+
+    function escHtml(s) { const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
+  </script>
+</body>
+</html>
