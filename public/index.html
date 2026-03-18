@@ -636,6 +636,24 @@ select.inp{cursor:pointer;}
 }
 .tp-lrc-badge.manual{background:rgba(131,56,236,.1);color:var(--s);border-color:rgba(131,56,236,.2);}
 
+/* ── Sync offset controls ──────────────────────────────────────────── */
+.tp-sync-controls{
+  display:inline-flex;align-items:center;gap:4px;margin-left:8px;vertical-align:middle;
+}
+.tp-sync-btn{
+  width:26px;height:26px;border-radius:6px;border:1px solid var(--border);
+  background:rgba(255,255,255,.06);color:var(--sub);font-size:14px;font-weight:700;
+  cursor:pointer;display:flex;align-items:center;justify-content:center;
+  transition:all .15s;line-height:1;padding:0;
+}
+.tp-sync-btn:hover{background:rgba(255,255,255,.15);color:#fff;}
+.tp-sync-label{
+  font-size:10px;color:var(--sub);font-weight:600;min-width:42px;text-align:center;
+  font-variant-numeric:tabular-nums;
+}
+.tp-sync-label.negative{color:#ff6b6b;}
+.tp-sync-label.positive{color:#51cf66;}
+
 /* ── Search lyrics button ────────────────────────────────────────────── */
 .tp-search-lyrics-btn{
   padding:8px 14px;border:1px solid rgba(0,245,160,.2);border-radius:8px;
@@ -2115,6 +2133,12 @@ input:focus-visible,textarea:focus-visible{
         </div>
       </div>
       <span id="tp-mode-badge" class="tp-lrc-badge manual" title="Tipo de letra cargada: LRC sincronizado o modo manual (scroll libre)" style="display:inline-block;font-size:11px;padding:2px 8px;border-radius:8px;background:rgba(255,255,255,.08);color:var(--sub);margin:4px 0 0 8px;"></span>
+      <span class="tp-sync-controls" id="tp-sync-controls" title="Ajuste de sincronizacion: adelantar o retrasar la letra respecto al audio">
+        <button class="tp-sync-btn" onclick="tpSyncNudge(-0.5)" title="Retrasar letra 0.5s">−</button>
+        <span class="tp-sync-label" id="tp-sync-label" title="Offset de sincronizacion en segundos">0.0s</span>
+        <button class="tp-sync-btn" onclick="tpSyncNudge(0.5)" title="Adelantar letra 0.5s">+</button>
+        <button class="tp-sync-btn" onclick="tpSyncReset()" title="Resetear offset a 0" style="font-size:10px;width:auto;padding:0 6px;">↺</button>
+      </span>
 
       <!-- Effects -->
       <div class="fx-bar">
@@ -3449,7 +3473,27 @@ const tpState = {
   lrcTimerId: null,
   startTime: 0,     // for LRC playback
   pauseOffset: 0,   // accumulated pause time for LRC
+  syncOffset: 0,    // user-adjustable offset in seconds (+ = lyrics earlier, - = lyrics later)
 };
+
+// ── Sync offset controls ─────────────────────────────────────────────
+function tpSyncNudge(delta) {
+  tpState.syncOffset = Math.round((tpState.syncOffset + delta) * 10) / 10;
+  // Clamp to ±30s
+  tpState.syncOffset = Math.max(-30, Math.min(30, tpState.syncOffset));
+  _updateSyncLabel();
+}
+function tpSyncReset() {
+  tpState.syncOffset = 0;
+  _updateSyncLabel();
+}
+function _updateSyncLabel() {
+  const el = document.getElementById('tp-sync-label');
+  if (!el) return;
+  const v = tpState.syncOffset;
+  el.textContent = (v >= 0 ? '+' : '') + v.toFixed(1) + 's';
+  el.className = 'tp-sync-label' + (v < 0 ? ' negative' : v > 0 ? ' positive' : '');
+}
 
 // ── Parse LRC format ─────────────────────────────────────────────────────
 function parseLRC(text) {
@@ -3479,6 +3523,8 @@ function setLyrics(text) {
   tpState.lrcData = null;
   tpState.isLRC = false;
   tpState.pauseOffset = 0;
+  tpState.syncOffset = 0;
+  _updateSyncLabel();
 
   const el = document.getElementById('tp-display');
   const welcome = document.getElementById('tp-welcome');
@@ -3522,7 +3568,7 @@ function buildLRCDisplay(lrcLines, el) {
       lineObj.words.push({ text: w, globalIdx });
       tpState.words.push(w);
       _wordToLine[globalIdx] = lineObj.lineIdx;
-      const h = '<span id="tw-' + globalIdx + '" class="tp-word" onclick="highlightWord(' + globalIdx + ')">' + escHtml(w) + '</span>';
+      const h = '<span id="tw-' + globalIdx + '" class="tp-word" onclick="tpClickWord(' + globalIdx + ')">' + escHtml(w) + '</span>';
       globalIdx++;
       return h;
     }).join(' ');
@@ -3557,7 +3603,7 @@ function buildPlainDisplay(text, el) {
       lineObj.words.push({ text: w, globalIdx });
       tpState.words.push(w);
       _wordToLine[globalIdx] = lineObj.lineIdx;
-      const h = '<span id="tw-' + globalIdx + '" class="tp-word" onclick="highlightWord(' + globalIdx + ')">' + escHtml(w) + '</span>';
+      const h = '<span id="tw-' + globalIdx + '" class="tp-word" onclick="tpClickWord(' + globalIdx + ')">' + escHtml(w) + '</span>';
       globalIdx++;
       return h;
     }).join(' ');
@@ -3573,6 +3619,33 @@ function buildPlainDisplay(text, el) {
 let _wordToLine = {}; // globalIdx → lineIndex
 
 // ── Highlight a word + update line states ─────────────────────────────────
+// ── Click on word: in LRC+Gemelo mode, adjust sync offset ────────────
+function tpClickWord(idx) {
+  // In LRC + Gemelo mode, clicking a word adjusts the sync offset
+  if (tpState.isLRC && tpState.lrcData && _twinMode && _activePlayerType) {
+    const lineIdx = _wordToLine[idx];
+    if (lineIdx !== undefined && tpState.lrcData[lineIdx]) {
+      // Get current player time
+      let playerTime = null;
+      if (_activePlayerType === 'youtube' && _ytPlayer && typeof _ytPlayer.getCurrentTime === 'function') {
+        try { playerTime = _ytPlayer.getCurrentTime(); } catch {}
+      } else if (_activePlayerType === 'local' && typeof localAudio !== 'undefined' && localAudio) {
+        playerTime = localAudio.currentTime;
+      }
+      if (playerTime !== null) {
+        // User clicked this line = "this line should be playing NOW"
+        // So offset = lrcTime - playerTime (how much to shift lyrics)
+        const lrcTime = tpState.lrcData[lineIdx].time;
+        tpState.syncOffset = Math.round((playerTime - lrcTime) * 10) / 10;
+        tpState.syncOffset = Math.max(-30, Math.min(30, tpState.syncOffset));
+        _updateSyncLabel();
+        showToast('Sync ajustado: ' + (tpState.syncOffset >= 0 ? '+' : '') + tpState.syncOffset.toFixed(1) + 's', 'success');
+      }
+    }
+  }
+  highlightWord(idx);
+}
+
 function highlightWord(idx) {
   if (idx < 0 || idx >= tpState.words.length) return;
 
@@ -3760,7 +3833,7 @@ function startLRCPlayback() {
   }
 
   tpState.lrcTimerId = setInterval(() => {
-    const elapsed = ((performance.now() - tpState.startTime) / 1000) * tpState.speed;
+    const elapsed = ((performance.now() - tpState.startTime) / 1000) * tpState.speed + tpState.syncOffset;
     let activeLine = -1;
     for (let i = tpState.lrcData.length - 1; i >= 0; i--) {
       if (elapsed >= tpState.lrcData[i].time) { activeLine = i; break; }
@@ -4892,12 +4965,14 @@ function getFallbackResponse(prompt) {
 
 // ── Lyric Studio — Offline Generator ──────────────────────────────────────
 function openLyricStudio() {
-  document.getElementById('lyric-studio-overlay').style.display = 'flex';
+  const el = document.getElementById('lyric-studio-overlay');
+  if (el) { el.classList.add('open'); el.style.display = 'flex'; }
   lsRenderMisLetras();
   lsRenderSuno();
 }
 function closeLyricStudio() {
-  document.getElementById('lyric-studio-overlay').style.display = 'none';
+  const el = document.getElementById('lyric-studio-overlay');
+  if (el) { el.classList.remove('open'); el.style.display = 'none'; }
 }
 
 // ── Lyric Studio Tabs ──────────────────────────────────────────────────────
@@ -5741,7 +5816,7 @@ function _stopTwinSync() {
 function _feedTimeToLRC(currentTimeSec) {
   // Solo avanza si el teleprompter está activo y tiene LRC
   if (!tpState.isLRC || !tpState.lrcData || !tpState.autoScrolling) return;
-  const elapsed = currentTimeSec; // Tiempo real del player, sin multiplicar por speed
+  const elapsed = currentTimeSec + tpState.syncOffset; // Apply user sync offset
   let activeLine = -1;
   for (let i = tpState.lrcData.length - 1; i >= 0; i--) {
     if (elapsed >= tpState.lrcData[i].time) { activeLine = i; break; }
@@ -6219,6 +6294,9 @@ document.addEventListener('keydown', (e) => {
       break;
     case 'PageDown':   e.preventDefault(); tpNextLine(); break;
     case 'PageUp':     e.preventDefault(); tpPrevLine(); break;
+    case '[':          tpSyncNudge(-0.5); showToast('Sync: ' + (tpState.syncOffset >= 0 ? '+' : '') + tpState.syncOffset.toFixed(1) + 's', 'info'); break;
+    case ']':          tpSyncNudge(0.5);  showToast('Sync: ' + (tpState.syncOffset >= 0 ? '+' : '') + tpState.syncOffset.toFixed(1) + 's', 'info'); break;
+    case '\\':         tpSyncReset();     showToast('Sync reset', 'info'); break;
   }
 });
 
@@ -6525,7 +6603,7 @@ function mobileSetMode(mode, btn) {
 
 // Close overlays on escape
 document.addEventListener('keydown', (e) => {
-  if (e.key === 'Escape') { closeCatalog(); closeLegalModal(); }
+  if (e.key === 'Escape') { closeCatalog(); closeLegalModal(); closeLyricsSearch(); closeColaModal(); closeLyricStudio(); }
 }, true);
 
 // ── Legal Modal ───────────────────────────────────────────────────────────
@@ -7198,8 +7276,10 @@ function uPlayYoutube(videoId, title) {
 }
 
 function uSearchClose() {
-  document.getElementById('usearch-results').style.display = 'none';
-  document.getElementById('usearch-close').style.display = 'none';
+  const results = document.getElementById('usearch-results');
+  const closeBtn = document.getElementById('usearch-close');
+  if (results) results.style.display = 'none';
+  if (closeBtn) closeBtn.style.display = 'none';
 }
 
 // Cerrar resultados al hacer click fuera
