@@ -2875,9 +2875,14 @@ input:focus-visible,textarea:focus-visible{
         </div>
       </div>
       <input class="catalog-search" id="ls-custom" placeholder="Prompt extra: ej. 'metaforas del mar', 'dedicada a mi padre'..." style="width:100%;margin-bottom:8px;">
-      <button class="tp-search-lyrics-btn" onclick="generateOfflineLyrics()" style="margin-top:4px;width:100%;justify-content:center;background:linear-gradient(135deg,var(--p),var(--a));">
-        ✨ Generar Letra
-      </button>
+      <div style="display:flex;gap:8px;margin-top:4px;">
+        <button class="tp-search-lyrics-btn" onclick="generateOfflineLyrics()" style="flex:1;justify-content:center;background:linear-gradient(135deg,var(--p),var(--a));">
+          ✨ Generar Offline
+        </button>
+        <button class="tp-search-lyrics-btn" id="ls-grok-btn" onclick="generateGrokLyrics()" style="flex:1;justify-content:center;background:linear-gradient(135deg,#8b5cf6,#06b6d4);opacity:.5;cursor:not-allowed;" disabled title="Requiere GFlow online (PRO)">
+          🤖 GFlow PRO
+        </button>
+      </div>
       </div>
 
       <!-- TAB: Mis Letras -->
@@ -4766,6 +4771,7 @@ async function checkOllamaStatus() {
         iaGrokModel = d.grokModel || 'grok-3-mini';
         if (statusEl) statusEl.classList.remove('offline');
         if (statusText) statusText.textContent = 'GFlow · ' + iaGrokModel;
+        _updateGrokLyricBtn();
         return;
       }
     }
@@ -4780,6 +4786,7 @@ async function checkOllamaStatus() {
       if (statusEl) statusEl.classList.remove('offline');
       const models = (d.models || []).map(m => m.name.split(':')[0]);
       if (statusText) statusText.textContent = models.length ? 'Ollama · ' + models[0] : 'Ollama Online';
+      _updateGrokLyricBtn();
       return;
     }
   } catch {}
@@ -4788,6 +4795,7 @@ async function checkOllamaStatus() {
   iaBackend = 'none';
   if (statusEl) statusEl.classList.add('offline');
   if (statusText) statusText.textContent = 'GFlow offline — Configura API key';
+  _updateGrokLyricBtn();
 }
 
 async function getOllamaModels() {
@@ -5499,6 +5507,110 @@ function generateOfflineLyrics() {
       '<button onclick="lsCopyLyrics()" style="flex:1;padding:8px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.15);border-radius:8px;color:var(--text);font-size:12px;font-weight:700;cursor:pointer;">📋 Copiar</button>' +
       '<button onclick="generateOfflineLyrics()" style="padding:8px 14px;background:var(--p);border:none;border-radius:8px;color:#fff;font-size:12px;font-weight:700;cursor:pointer;">🔄</button>' +
     '</div>';
+}
+
+// ── Generar letra con GFlow/Grok (PRO) ──────────────────────────────────
+async function generateGrokLyrics() {
+  if (!iaOnline || iaBackend !== 'grok') {
+    showToast('GFlow no disponible — usa el generador offline', 'warning');
+    return;
+  }
+  const theme     = document.getElementById('ls-theme').value;
+  const style     = document.getElementById('ls-style').value;
+  const structure = document.getElementById('ls-structure').value;
+  const stanzas   = parseInt(document.getElementById('ls-stanzas').value);
+  const custom    = document.getElementById('ls-custom').value.trim();
+  const output    = document.getElementById('ls-output');
+
+  const themeNames = { amor:'amor y romance', desamor:'desamor y traicion', superacion:'superacion personal',
+    calle:'calle y barrio', tech:'tecnologia y hacking', redencion:'redencion y familia',
+    fiesta:'fiesta y celebracion', melanc:'melancolia y nostalgia' };
+  const styleNames = { rap:'rap consciente', trap:'trap latino', reggaeton:'reggaeton', balada:'balada romantica', rock:'rock', pop:'pop' };
+  const structNames = { 'verse-chorus':'verso-coro-verso con coro repetido', aabb:'rima pareada AABB', abab:'rima alterna ABAB', free:'freestyle libre' };
+
+  const prompt = 'Escribe una letra de cancion en español con estas especificaciones:\n' +
+    '- Tema: ' + (themeNames[theme] || theme) + '\n' +
+    '- Estilo musical: ' + (styleNames[style] || style) + '\n' +
+    '- Estructura: ' + (structNames[structure] || structure) + '\n' +
+    '- Estrofas/secciones: ' + stanzas + '\n' +
+    (custom ? '- Indicacion extra del usuario: ' + custom + '\n' : '') +
+    '\nREGLAS OBLIGATORIAS:\n' +
+    '1. Usa metrica de octosilabos (8 silabas por verso)\n' +
+    '2. Rimas consonantes pareadas (AABB) en los coros\n' +
+    '3. Cada seccion marcada con [VERSO 1], [CORO], [PUENTE], etc.\n' +
+    '4. 4 lineas por estrofa minimo\n' +
+    '5. Incluye metaforas originales, evita cliches\n' +
+    '6. Estilo lirico de ArT-AtR: tecnico-sentimental, mezcla crudeza de calle con precision tecnologica\n' +
+    '7. Solo devuelve la letra, sin explicaciones ni comentarios\n';
+
+  // Show loading
+  output.innerHTML = '<div style="text-align:center;padding:40px;">' +
+    '<div style="font-size:2rem;margin-bottom:12px;animation:spin 1s linear infinite;">🤖</div>' +
+    '<div style="color:var(--sub);font-size:12px;">GFlow escribiendo tu letra...</div>' +
+    '<style>@keyframes spin{to{transform:rotate(360deg)}}</style></div>';
+
+  const systemPrompt = 'Eres GFlow Lyricist, el motor lirico de ByFlow creado por ArT-AtR (Arturo Torres). ' +
+    'Escribes letras de canciones en español con maestria. Tu estilo base es tecnico-sentimental: ' +
+    'metricas de octosilabos, rimas consonantes pareadas AABB para estribillos, terminologia de software ' +
+    'con metaforas de vida y superacion. Adaptas el tono al genero pedido pero siempre mantienes calidad lirica alta. ' +
+    'Solo devuelves la letra, sin explicaciones ni comentarios previos ni posteriores.';
+
+  try {
+    const token = getLicenseToken();
+    const r = await fetch('/api/ai/chat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-License-Token': token },
+      body: JSON.stringify({ prompt, system: systemPrompt })
+    });
+    if (!r.ok) {
+      const err = await r.json().catch(() => ({}));
+      throw new Error(err.error || 'HTTP ' + r.status);
+    }
+    const d = await r.json();
+    var grokLyric = (d.text || '').trim();
+    if (!grokLyric) throw new Error('GFlow no devolvio texto');
+
+    // Stamp signature
+    grokLyric = stampSignature(grokLyric);
+
+    const styleEmoji = { rap:'🎤', trap:'🔥', reggaeton:'💃', balada:'💖', rock:'🎸', pop:'🎵' };
+    const themeEmoji = { amor:'❤️', desamor:'💔', superacion:'🚀', calle:'🏙️', tech:'💻', redencion:'🙏', fiesta:'🎉', melanc:'🌧️' };
+
+    output.innerHTML = '<div style="margin-bottom:12px;">' +
+      '<span style="font-size:11px;background:linear-gradient(135deg,#8b5cf6,#06b6d4);color:#fff;padding:2px 8px;border-radius:4px;margin-right:5px;">🤖 GFlow PRO</span>' +
+      '<span style="font-size:11px;background:var(--p);color:#fff;padding:2px 8px;border-radius:4px;margin-right:5px;">' + (themeEmoji[theme]||'') + ' ' + theme + '</span>' +
+      '<span style="font-size:11px;background:var(--a);color:#fff;padding:2px 8px;border-radius:4px;">' + (styleEmoji[style]||'') + ' ' + style + '</span>' +
+      '</div>' +
+      '<pre style="white-space:pre-wrap;font-family:inherit;font-size:13px;line-height:1.8;color:var(--text);margin:0;">' + escHtml(grokLyric) + '</pre>' +
+      '<div style="display:flex;gap:8px;margin-top:14px;">' +
+        '<button onclick="lsLoadToTeleprompter()" style="flex:1;padding:8px;background:var(--g);border:none;border-radius:8px;color:#fff;font-size:12px;font-weight:700;cursor:pointer;">📝 Cargar en Teleprompter</button>' +
+        '<button onclick="lsCopyLyrics()" style="flex:1;padding:8px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.15);border-radius:8px;color:var(--text);font-size:12px;font-weight:700;cursor:pointer;">📋 Copiar</button>' +
+        '<button onclick="generateGrokLyrics()" style="padding:8px 14px;background:linear-gradient(135deg,#8b5cf6,#06b6d4);border:none;border-radius:8px;color:#fff;font-size:12px;font-weight:700;cursor:pointer;">🔄</button>' +
+      '</div>';
+  } catch (e) {
+    output.innerHTML = '<div style="text-align:center;padding:30px;color:#ff6b6b;">' +
+      '<div style="font-size:1.5rem;margin-bottom:8px;">⚠️</div>' +
+      '<div style="font-size:12px;">Error: ' + escHtml(e.message) + '</div>' +
+      '<button onclick="generateOfflineLyrics()" style="margin-top:12px;padding:8px 16px;background:var(--p);border:none;border-radius:8px;color:#fff;font-size:12px;cursor:pointer;">Usar generador offline</button>' +
+      '</div>';
+  }
+}
+
+// Update GFlow button state when IA comes online
+function _updateGrokLyricBtn() {
+  const btn = document.getElementById('ls-grok-btn');
+  if (!btn) return;
+  if (iaOnline && iaBackend === 'grok') {
+    btn.disabled = false;
+    btn.style.opacity = '1';
+    btn.style.cursor = 'pointer';
+    btn.title = 'Generar letra con GFlow IA (PRO)';
+  } else {
+    btn.disabled = true;
+    btn.style.opacity = '.5';
+    btn.style.cursor = 'not-allowed';
+    btn.title = 'Requiere GFlow online (PRO)';
+  }
 }
 
 function lsLoadToTeleprompter() {

@@ -914,7 +914,7 @@ app.post('/api/ai/chat', async (req, res) => {
   try {
     const messages = [];
     if (system) messages.push({ role: 'system', content: system });
-    messages.push({ role: 'user', content: prompt.slice(0, 2000) });
+    messages.push({ role: 'user', content: prompt.slice(0, 4000) });
 
     const r = await fetch(GROK_API_URL, {
       method: 'POST',
