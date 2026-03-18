@@ -1123,6 +1123,49 @@ select.inp{cursor:pointer;}
 .boi-del svg{width:10px;height:10px;}
 .boi-del:hover{background:rgba(255,60,60,.25);}
 
+/* Menu del Establecimiento */
+.menu-tabs{display:flex;gap:4px;margin-bottom:8px;flex-wrap:wrap;}
+.menu-tab{
+  padding:5px 10px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;
+  background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:6px;
+  color:var(--sub);cursor:pointer;transition:all .18s;
+}
+.menu-tab:hover{background:rgba(255,255,255,.08);}
+.menu-tab.active{background:rgba(245,158,11,.12);border-color:rgba(245,158,11,.3);color:#f59e0b;}
+.menu-items-grid{display:grid;grid-template-columns:1fr 1fr;gap:5px;}
+.menu-item-card{
+  padding:8px 10px;background:rgba(255,255,255,.025);border:1px solid var(--border);
+  border-radius:8px;transition:all .18s;position:relative;
+}
+.menu-item-card:hover{background:rgba(255,255,255,.05);}
+.menu-item-name{font-size:11px;font-weight:700;color:var(--text);line-height:1.2;}
+.menu-item-desc{font-size:9px;color:var(--sub);margin-top:2px;line-height:1.2;}
+.menu-item-price{font-size:12px;font-weight:900;color:#f59e0b;margin-top:3px;}
+.menu-item-del{
+  position:absolute;top:4px;right:4px;width:16px;height:16px;border:none;border-radius:4px;
+  background:rgba(255,60,60,.1);color:#f87171;font-size:10px;cursor:pointer;
+  display:none;align-items:center;justify-content:center;line-height:1;
+}
+.menu-edit-mode .menu-item-del{display:flex;}
+.menu-edit-row{display:none;gap:4px;margin-top:6px;flex-wrap:wrap;}
+.menu-edit-mode .menu-edit-row{display:flex;}
+.menu-edit-inp{
+  flex:1;min-width:60px;padding:5px 8px;font-size:11px;
+  background:rgba(255,255,255,.04);border:1px solid var(--border);
+  border-radius:6px;color:var(--text);outline:none;
+}
+.menu-edit-inp:focus{border-color:#f59e0b;}
+.menu-toolbar{display:flex;gap:4px;margin-top:6px;align-items:center;}
+.menu-toolbar-btn{
+  padding:5px 10px;font-size:10px;font-weight:600;border:none;border-radius:6px;
+  cursor:pointer;transition:all .15s;
+}
+.menu-toolbar-btn.edit{background:rgba(255,255,255,.06);color:var(--sub);}
+.menu-toolbar-btn.edit:hover{background:rgba(255,255,255,.1);}
+.menu-toolbar-btn.edit.active{background:rgba(245,158,11,.15);color:#f59e0b;}
+.menu-toolbar-btn.add-cat{background:rgba(52,211,153,.1);color:#34d399;}
+.menu-toolbar-btn.add-cat:hover{background:rgba(52,211,153,.2);}
+
 /* Reset license link */
 .oem-reset{
   display:block;text-align:center;font-size:10px;
@@ -2486,6 +2529,28 @@ input:focus-visible,textarea:focus-visible{
             </div>
             <div id="bares-orders-list">
               <div style="text-align:center;padding:18px;opacity:.3;font-size:12px;">Sin órdenes activas</div>
+            </div>
+          </div>
+
+          <!-- Menú del Establecimiento -->
+          <div class="bares-section" id="bares-menu-section">
+            <div class="bares-section-title">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3h18v4H3z"/><path d="M3 9h18v12H3z"/><line x1="7" y1="13" x2="17" y2="13"/><line x1="7" y1="17" x2="13" y2="17"/></svg>
+              Menú del Establecimiento
+            </div>
+            <div class="menu-tabs" id="menu-tabs"></div>
+            <div class="menu-items-grid" id="menu-items-grid"></div>
+            <div class="menu-edit-row" id="menu-add-item-row">
+              <input class="menu-edit-inp" id="menu-new-name" placeholder="Nombre" style="min-width:80px;">
+              <input class="menu-edit-inp" id="menu-new-price" placeholder="$" type="number" min="0" style="width:55px;flex:none;">
+              <input class="menu-edit-inp" id="menu-new-desc" placeholder="Desc. (opc)" style="min-width:60px;">
+              <button class="bar-add-btn" style="width:28px;height:28px;font-size:14px;" onclick="menuAddItem()">+</button>
+            </div>
+            <div class="menu-toolbar">
+              <button class="menu-toolbar-btn edit" id="menu-edit-toggle" onclick="menuToggleEdit()">Editar</button>
+              <button class="menu-toolbar-btn add-cat" style="display:none;" id="menu-add-cat-btn" onclick="menuAddCategory()">+ Categoría</button>
+              <span style="flex:1;"></span>
+              <span style="font-size:9px;color:var(--sub);">Visible en QR remoto</span>
             </div>
           </div>
 
@@ -4483,6 +4548,7 @@ function baresShowContent(key) {
   baresRenderGrid();
   baresUpdateStats();
   baresRenderOrders();
+  menuInit();
   talentLoadEvents();
 }
 
@@ -4577,6 +4643,176 @@ function baresRenderOrders() {
 
 // Actualizar tiempos de órdenes cada minuto
 setInterval(() => { if (baresState.orders.length) baresRenderOrders(); }, 60000);
+
+// ── Menú del Establecimiento ──────────────────────────────────────────────
+const MENU_LS_KEY = 'byflow_bar_menu';
+const MENU_DEFAULT = [
+  { id: 1, name: 'Bebidas', items: [
+    { id: 101, name: 'Cerveza Nacional', price: 45, desc: 'Corona, Victoria, Modelo' },
+    { id: 102, name: 'Cerveza Importada', price: 65, desc: 'Heineken, Stella, Blue Moon' },
+    { id: 103, name: 'Michelada', price: 70, desc: 'Preparada con clamato y chamoy' },
+    { id: 104, name: 'Mezcal Shot', price: 55, desc: 'Oaxaqueño con naranja y sal de gusano' },
+    { id: 105, name: 'Cuba Libre', price: 80, desc: 'Ron, coca-cola y limón' }
+  ]},
+  { id: 2, name: 'Snacks', items: [
+    { id: 201, name: 'Nachos con Queso', price: 90, desc: 'Totopos, queso fundido, jalapeño' },
+    { id: 202, name: 'Alitas BBQ', price: 120, desc: '8 piezas con salsa BBQ o búfalo' },
+    { id: 203, name: 'Esquites', price: 50, desc: 'Con mayonesa, queso y chile' },
+    { id: 204, name: 'Papas a la Francesa', price: 65, desc: 'Con cátsup y aderezo ranch' }
+  ]},
+  { id: 3, name: 'Especiales', items: [
+    { id: 301, name: 'Tabla de Quesos', price: 180, desc: 'Selección de quesos con uvas y nueces' },
+    { id: 302, name: 'Hamburguesa ByFlow', price: 140, desc: 'Angus, tocino, queso cheddar' },
+    { id: 303, name: 'Tacos de Pastor', price: 95, desc: '4 tacos con piña, cebolla y cilantro' }
+  ]}
+];
+
+let _menuEditMode = false;
+let _menuActiveCategory = 0;
+
+function menuLoad() {
+  try {
+    const stored = localStorage.getItem(MENU_LS_KEY);
+    if (stored) {
+      const parsed = JSON.parse(stored);
+      if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+    }
+  } catch (e) { /* ignore corrupt data */ }
+  return JSON.parse(JSON.stringify(MENU_DEFAULT));
+}
+
+function menuSave(menu) {
+  localStorage.setItem(MENU_LS_KEY, JSON.stringify(menu));
+}
+
+function menuGetAll() {
+  return menuLoad();
+}
+
+function menuRender() {
+  const menu = menuGetAll();
+  const tabsEl = document.getElementById('menu-tabs');
+  const gridEl = document.getElementById('menu-items-grid');
+  if (!tabsEl || !gridEl) return;
+
+  if (_menuActiveCategory >= menu.length) _menuActiveCategory = 0;
+
+  tabsEl.innerHTML = menu.map((cat, i) =>
+    `<div class="menu-tab${i === _menuActiveCategory ? ' active' : ''}" onclick="menuSelectTab(${i})">${escHtml(cat.name)}${_menuEditMode ? ' <span class="menu-item-del" style="display:inline;position:static;width:auto;height:auto;background:none;color:#f87171;font-size:10px;cursor:pointer;margin-left:2px;" onclick="event.stopPropagation();menuDeleteCategory(${i})">✕</span>' : ''}</div>`
+  ).join('');
+
+  const cat = menu[_menuActiveCategory];
+  if (!cat || !cat.items || cat.items.length === 0) {
+    gridEl.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:14px;opacity:.3;font-size:11px;">Sin items en esta categoría</div>';
+    return;
+  }
+  gridEl.innerHTML = cat.items.map((item, idx) =>
+    `<div class="menu-item-card">
+      <button class="menu-item-del" onclick="menuDeleteItem(${_menuActiveCategory},${idx})">✕</button>
+      <div class="menu-item-name">${escHtml(item.name)}</div>
+      ${item.desc ? '<div class="menu-item-desc">' + escHtml(item.desc) + '</div>' : ''}
+      <div class="menu-item-price">$${Number(item.price).toFixed(0)} MXN</div>
+    </div>`
+  ).join('');
+}
+
+function menuSelectTab(idx) {
+  _menuActiveCategory = idx;
+  menuRender();
+}
+
+function menuToggleEdit() {
+  _menuEditMode = !_menuEditMode;
+  const section = document.getElementById('bares-menu-section');
+  const btn = document.getElementById('menu-edit-toggle');
+  const addCatBtn = document.getElementById('menu-add-cat-btn');
+  if (section) section.classList.toggle('menu-edit-mode', _menuEditMode);
+  if (btn) {
+    btn.classList.toggle('active', _menuEditMode);
+    btn.textContent = _menuEditMode ? 'Listo' : 'Editar';
+  }
+  if (addCatBtn) addCatBtn.style.display = _menuEditMode ? '' : 'none';
+  menuRender();
+}
+
+function menuAddItem() {
+  const nameEl = document.getElementById('menu-new-name');
+  const priceEl = document.getElementById('menu-new-price');
+  const descEl = document.getElementById('menu-new-desc');
+  const name = (nameEl ? nameEl.value.trim() : '');
+  const price = (priceEl ? parseFloat(priceEl.value) : 0);
+  const desc = (descEl ? descEl.value.trim() : '');
+  if (!name || isNaN(price) || price <= 0) { showToast('Nombre y precio son requeridos'); return; }
+  const menu = menuGetAll();
+  if (menu.length === 0) { showToast('Primero crea una categoría'); return; }
+  const newItem = { id: Date.now(), name, price, desc: desc || undefined };
+  const updatedCat = Object.assign({}, menu[_menuActiveCategory], {
+    items: [].concat(menu[_menuActiveCategory].items, [newItem])
+  });
+  const updatedMenu = menu.map(function(cat, i) { return i === _menuActiveCategory ? updatedCat : cat; });
+  menuSave(updatedMenu);
+  if (nameEl) nameEl.value = '';
+  if (priceEl) priceEl.value = '';
+  if (descEl) descEl.value = '';
+  showToast('Agregado: ' + name);
+  menuRender();
+}
+
+function menuDeleteItem(catIdx, itemIdx) {
+  const menu = menuGetAll();
+  const cat = menu[catIdx];
+  if (!cat) return;
+  const updatedItems = cat.items.filter(function(_, i) { return i !== itemIdx; });
+  const updatedCat = Object.assign({}, cat, { items: updatedItems });
+  const updatedMenu = menu.map(function(c, i) { return i === catIdx ? updatedCat : c; });
+  menuSave(updatedMenu);
+  showToast('Item eliminado');
+  menuRender();
+}
+
+function menuAddCategory() {
+  const name = prompt('Nombre de la nueva categoría:');
+  if (!name || !name.trim()) return;
+  const menu = menuGetAll();
+  const newCat = { id: Date.now(), name: name.trim(), items: [] };
+  const updatedMenu = [].concat(menu, [newCat]);
+  menuSave(updatedMenu);
+  _menuActiveCategory = updatedMenu.length - 1;
+  showToast('Categoría creada: ' + name.trim());
+  menuRender();
+}
+
+function menuDeleteCategory(catIdx) {
+  const menu = menuGetAll();
+  if (menu.length <= 1) { showToast('Debe haber al menos una categoría'); return; }
+  if (!confirm('¿Eliminar categoría "' + menu[catIdx].name + '" y todos sus items?')) return;
+  const updatedMenu = menu.filter(function(_, i) { return i !== catIdx; });
+  menuSave(updatedMenu);
+  if (_menuActiveCategory >= updatedMenu.length) _menuActiveCategory = 0;
+  showToast('Categoría eliminada');
+  menuRender();
+}
+
+// Public API for Remote/QR mode
+function menuGetPublicData() {
+  return menuGetAll().map(function(cat) {
+    return {
+      name: cat.name,
+      items: cat.items.map(function(item) {
+        return { name: item.name, price: item.price, desc: item.desc || '' };
+      })
+    };
+  });
+}
+
+// Initialize menu when bares mode loads
+function menuInit() {
+  const menu = menuGetAll();
+  if (!localStorage.getItem(MENU_LS_KEY)) {
+    menuSave(menu);
+  }
+  menuRender();
+}
 
 // ── Noches de Talento (FASE 3) ────────────────────────────────────────────
 async function talentCreateEvent() {
