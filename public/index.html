@@ -8458,9 +8458,24 @@ function vpRefresh() {
   const vpTp = document.getElementById('vp-tp');
   if (vpTp && tpDisplay) {
     const text = tpDisplay.textContent.trim();
-    if (text && text !== 'Buscar letra en internet') {
-      vpTp.innerHTML = tpDisplay.innerHTML;
-      vpTp.style.fontSize = '1.8rem';
+    if (text && text !== 'Buscar letra en internet' && text !== 'Vive Cantando con ByFlow') {
+      // Render clean lines — no copiar HTML con spans individuales
+      const lines = tpState.lines || [];
+      if (lines.length > 0) {
+        const currentLine = tpState.currentLine >= 0 ? tpState.currentLine : 0;
+        vpTp.innerHTML = lines.map((l, i) => {
+          const cls = i < currentLine ? 'vp-line-done' : i === currentLine ? 'vp-line-active' : '';
+          return '<div class="' + cls + '" style="margin-bottom:8px;' +
+            (i < currentLine ? 'opacity:.2;' : i === currentLine ? 'opacity:1;color:var(--p);font-weight:800;' : 'opacity:.4;') +
+            '">' + escHtml(l.text) + '</div>';
+        }).join('');
+        // Auto-scroll to current line
+        const activeEl = vpTp.querySelector('.vp-line-active');
+        if (activeEl) activeEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      } else {
+        vpTp.textContent = text;
+      }
+      vpTp.style.fontSize = '1.6rem';
     } else {
       vpTp.innerHTML = '<div class="vp-tp-empty">Selecciona una cancion para ver la letra aqui</div>';
       vpTp.style.fontSize = '';
