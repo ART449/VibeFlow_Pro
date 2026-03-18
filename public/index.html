@@ -6912,8 +6912,19 @@ async function gflowEstQuery(prompt) {
     return;
   }
 
-  // Reuse the same backend as iaQuery but with Estudio context
+  // Prompts del Gato Flow
   const GFLOW_ESTUDIO_PROMPT = 'Te llamas Gato Flow, el DJ IA del Estudio de ByFlow (powered by IArtLabs, creado por ArT-AtR). Eres un asistente creativo para compositores: generas letras, sugieres rimas, das feedback sobre versos, propones temas y estructuras de canciones. Usas metricas de octosilabos, rimas consonantes AABB para estribillos. Terminologia tech-musical con metaforas de vida. Si generas una letra, usa formato con [Verso], [Coro], [Puente]. Responde corto y directo, con actitud de camarada. Responde en espanol.';
+  const GFLOW_OWNER_PREFIX = 'ATENCION: Estas hablando con Arturo Torres (ArT-AtR), el creador de ByFlow y tu jefe. Habla directo, sin rodeos. Ve al grano. Puedes ser informal, usar humor, hablar como camarada. Cero discursos motivacionales. ';
+  const GFLOW_MAINT_PROMPT = 'MODO MANTENIMIENTO — Gato Flow como tecnico de diagnostico. Revisa: APIs (Grok, Ollama, LRCLIB), licencias, Socket.IO, endpoints, datos (stats.json, licenses.json), cola, catalogo. Formato: [OK] funciona, [WARN] raro, [ERROR] roto. Resumen de 1 linea al final. Habla directo, como reporte tecnico. Espanol.';
+
+  // Detectar owner y comandos de mantenimiento
+  const isOwner = licenseState.activated && (licenseState.owner || '').toUpperCase().includes('SUPERUSER');
+  const isMaint = prompt.toLowerCase().match(/mantenimiento|\/check|\/diag|diagnostico|revisa la app|status check/);
+
+  let systemPrompt;
+  if (isOwner && isMaint) systemPrompt = GFLOW_MAINT_PROMPT;
+  else if (isOwner) systemPrompt = GFLOW_OWNER_PREFIX + GFLOW_ESTUDIO_PROMPT;
+  else systemPrompt = GFLOW_ESTUDIO_PROMPT;
 
   try {
     let full = '';
@@ -6922,7 +6933,7 @@ async function gflowEstQuery(prompt) {
       const r = await fetch('/api/ai/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'X-License-Token': token },
-        body: JSON.stringify({ prompt, system: GFLOW_ESTUDIO_PROMPT })
+        body: JSON.stringify({ prompt, system: systemPrompt })
       });
       if (!r.ok) { const err = await r.json().catch(() => ({})); throw new Error(err.error || 'HTTP ' + r.status); }
       const d = await r.json();
@@ -6935,7 +6946,7 @@ async function gflowEstQuery(prompt) {
       const r = await fetch(OLLAMA_URL + '/api/generate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ model, prompt, system: GFLOW_ESTUDIO_PROMPT, stream: true })
+        body: JSON.stringify({ model, prompt, system: systemPrompt, stream: true })
       });
       if (!r.ok) throw new Error('HTTP ' + r.status);
       const reader = r.body.getReader();
