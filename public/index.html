@@ -3060,12 +3060,35 @@ input:focus-visible,textarea:focus-visible{
       <div class="wc-glow"></div>
       <div class="wc-icon ia">&#x2728;</div>
       <div class="wc-title">IA Studio</div>
-      <div class="wc-desc">GFlow DJ IA — genera letras, sugiere canciones y crea sets</div>
+      <div class="wc-desc">GFlow DJ IA — sugiere canciones y crea sets</div>
       <span class="wc-tag pro">PRO</span>
+    </div>
+    <div class="welcome-card" data-mode="estudio" onclick="welcomeSelect('estudio')">
+      <div class="wc-glow"></div>
+      <div class="wc-icon karaoke" style="background:linear-gradient(135deg,#06b6d4,#8b5cf6);">&#x1F3B6;</div>
+      <div class="wc-title">Estudio</div>
+      <div class="wc-desc">Escucha beats, escribe letras y genera rimas con el Motor ARTATR</div>
+      <span class="wc-tag free">GRATIS</span>
     </div>
   </div>
 
   <div class="welcome-footer">
+    <!-- Social Login -->
+    <div style="display:flex;gap:10px;align-items:center;margin-bottom:12px;flex-wrap:wrap;justify-content:center;">
+      <button onclick="socialLogin('google')" style="display:flex;align-items:center;gap:6px;padding:8px 16px;border-radius:8px;border:1px solid rgba(255,255,255,.15);background:rgba(255,255,255,.05);color:#fff;font-size:11px;cursor:pointer;transition:all .2s;" onmouseover="this.style.background='rgba(255,255,255,.12)'" onmouseout="this.style.background='rgba(255,255,255,.05)'">
+        <svg width="14" height="14" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+        Google
+      </button>
+      <button onclick="socialLogin('facebook')" style="display:flex;align-items:center;gap:6px;padding:8px 16px;border-radius:8px;border:1px solid rgba(255,255,255,.15);background:rgba(255,255,255,.05);color:#fff;font-size:11px;cursor:pointer;transition:all .2s;" onmouseover="this.style.background='rgba(66,103,178,.3)'" onmouseout="this.style.background='rgba(255,255,255,.05)'">
+        <svg width="14" height="14" viewBox="0 0 24 24"><path fill="#1877F2" d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+        Facebook
+      </button>
+      <button onclick="socialLogin('tiktok')" style="display:flex;align-items:center;gap:6px;padding:8px 16px;border-radius:8px;border:1px solid rgba(255,255,255,.15);background:rgba(255,255,255,.05);color:#fff;font-size:11px;cursor:pointer;transition:all .2s;" onmouseover="this.style.background='rgba(255,0,80,.2)'" onmouseout="this.style.background='rgba(255,255,255,.05)'">
+        <svg width="14" height="14" viewBox="0 0 24 24"><path fill="#ff0050" d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-2.88 2.5 2.89 2.89 0 0 1 0-5.78 2.92 2.92 0 0 1 .88.13V9.4a6.84 6.84 0 0 0-1-.05A6.33 6.33 0 0 0 3 15.57 6.33 6.33 0 0 0 9.37 22a6.33 6.33 0 0 0 6.33-6.33V9.17a8.16 8.16 0 0 0 3.89.98V6.69z"/></svg>
+        TikTok
+      </button>
+    </div>
+    <div style="font-size:9px;color:rgba(255,255,255,.25);margin-bottom:8px;">o entra sin cuenta:</div>
     <div style="display:flex;gap:12px;align-items:center;margin-bottom:4px;">
       <span style="font-size:10px;color:var(--a);cursor:pointer;" onclick="welcomeSelect('remote')">&#x1F4F1; Control Remoto</span>
     </div>
@@ -8200,6 +8223,19 @@ function welcomeSelect(mode) {
     setTimeout(() => ripple.remove(), 500);
   }
   setTimeout(() => { dismissWelcome(); setMode(mode); }, 150);
+}
+
+function socialLogin(provider) {
+  // Placeholder — muestra toast con info y entra como invitado
+  const names = { google: 'Google', facebook: 'Facebook', tiktok: 'TikTok' };
+  const user = prompt('Ingresa tu nombre para ' + names[provider] + ':');
+  if (user && user.trim()) {
+    localStorage.setItem('byflow_user_name', user.trim());
+    localStorage.setItem('byflow_user_provider', provider);
+    showToast('Bienvenido, ' + user.trim() + ' via ' + names[provider]);
+    dismissWelcome();
+    setMode('karaoke');
+  }
 }
 
 function dismissWelcome() {
