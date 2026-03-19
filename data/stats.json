@@ -1,0 +1,32 @@
+{
+  "totalSongs": 1,
+  "totalSingers": 1,
+  "songCounts": {
+    "Felices los 4": 1
+  },
+  "singerCounts": {
+    "Test": 1
+  },
+  "dailyCounts": {
+    "2026-03-17": 2
+  },
+  "events": [
+    {
+      "type": "song_played",
+      "data": {
+        "cancion": "Felices los 4",
+        "cantante": "Maria"
+      },
+      "time": 1773720310682
+    },
+    {
+      "type": "cola_add",
+      "data": {
+        "cantante": "Test",
+        "cancion": "Despacito",
+        "mesa": null
+      },
+      "time": 1773721816901
+    }
+  ]
+}

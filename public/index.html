@@ -708,21 +708,40 @@ select.inp{cursor:pointer;}
 
 /* Player bar */
 .player-bar{
-  background:rgba(7,7,13,.95);
-  backdrop-filter:blur(24px);
-  border-top:1px solid rgba(255,255,255,.06);
-  padding:12px 20px 10px;flex-shrink:0;z-index:10;
+  background:rgba(7,7,13,.97);
+  backdrop-filter:blur(30px);
+  border-top:1px solid rgba(0,229,255,.12);
+  padding:8px 20px;flex-shrink:0;z-index:10;
   position:relative;
   transition:all .3s cubic-bezier(.4,0,.2,1);
   overflow:hidden;
+  display:flex;align-items:center;gap:16px;
+  min-height:72px;
 }
 .player-bar.collapsed{
   padding:0;max-height:0;border-top-color:transparent;opacity:0;pointer-events:none;
 }
 .player-bar::before{
   content:'';position:absolute;top:0;left:10%;right:10%;height:1px;
-  background:linear-gradient(90deg,transparent,rgba(255,0,110,.3),rgba(131,56,236,.3),transparent);
+  background:linear-gradient(90deg,transparent,rgba(0,229,255,.4),rgba(0,184,212,.4),transparent);
 }
+/* Now Playing Info — left zone */
+.now-playing-info{display:flex;align-items:center;gap:10px;min-width:180px;flex-shrink:0;}
+.now-playing-cover{width:44px;height:44px;border-radius:50%;background:linear-gradient(135deg,#00e5ff,#00b8d4);display:flex;align-items:center;justify-content:center;overflow:hidden;box-shadow:0 0 16px rgba(0,229,255,.25);flex-shrink:0;}
+.now-playing-cover svg{width:20px;height:20px;color:#fff;}
+.now-playing-cover img{width:100%;height:100%;object-fit:cover;}
+.now-playing-text{display:flex;flex-direction:column;gap:2px;overflow:hidden;}
+.now-playing-title{font-size:13px;font-weight:600;color:#f0f0f0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:140px;}
+.now-playing-artist{font-size:11px;color:rgba(0,229,255,.6);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:140px;}
+/* Progress/Waveform — center zone */
+.player-progress-zone{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;min-width:0;}
+.player-waveform-wrap{width:100%;height:32px;position:relative;cursor:pointer;border-radius:4px;overflow:hidden;}
+.player-waveform-wrap canvas{width:100%;height:100%;display:block;}
+.player-progress-track{width:100%;height:3px;background:rgba(255,255,255,.08);border-radius:2px;position:relative;overflow:hidden;cursor:pointer;}
+.player-progress-fill{height:100%;background:linear-gradient(90deg,#00e5ff,#00b8d4);border-radius:2px;width:0%;transition:width .1s linear;box-shadow:0 0 8px rgba(0,229,255,.4);}
+.player-time-row{display:flex;justify-content:space-between;width:100%;padding:0 2px;}
+.player-time{font-size:10px;color:rgba(255,255,255,.35);font-variant-numeric:tabular-nums;font-family:monospace;}
+/* Controls — right zone */
 .player-bar-toggle{
   width:40px;height:16px;border-radius:8px 8px 0 0;margin:0 auto;display:flex;
   background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.06);border-bottom:none;
@@ -730,7 +749,7 @@ select.inp{cursor:pointer;}
   align-items:center;justify-content:center;transition:all .2s;flex-shrink:0;
 }
 .player-bar-toggle:hover{color:#fff;background:rgba(255,255,255,.1);}
-.player-controls{display:flex;align-items:center;justify-content:center;gap:6px;}
+.player-controls{display:flex;align-items:center;justify-content:center;gap:4px;flex-shrink:0;}
 .ctrl-group{display:flex;align-items:center;gap:4px;padding:0 6px;position:relative;}
 .ctrl-group+.ctrl-group::before{
   content:'';position:absolute;left:0;top:20%;height:60%;width:1px;
@@ -758,15 +777,15 @@ select.inp{cursor:pointer;}
 .ctrl-btn.accent-blue{color:rgba(58,134,255,.7);border-color:rgba(58,134,255,.12);background:rgba(58,134,255,.05);}
 .ctrl-btn.accent-blue:hover{color:#3a86ff;border-color:rgba(58,134,255,.3);background:rgba(58,134,255,.12);box-shadow:0 4px 20px rgba(58,134,255,.15);}
 .ctrl-btn.play{
-  background:linear-gradient(135deg,var(--p),var(--s));
+  background:linear-gradient(135deg,#00e5ff,#00b8d4);
   border:none;color:#fff;
-  width:52px;height:52px;border-radius:16px;
-  box-shadow:0 4px 20px var(--glow-p);
+  width:46px;height:46px;border-radius:50%;
+  box-shadow:0 4px 20px rgba(0,229,255,.3);
   transform:none;
 }
-.ctrl-btn.play:hover{transform:translateY(-2px) scale(1.05);box-shadow:0 8px 32px var(--glow-p);}
+.ctrl-btn.play:hover{transform:translateY(-2px) scale(1.05);box-shadow:0 8px 32px rgba(0,229,255,.4);}
 .ctrl-btn.play:active{transform:translateY(0) scale(.95);}
-.ctrl-btn.play svg{width:22px;height:22px;}
+.ctrl-btn.play svg{width:20px;height:20px;}
 .speed-display{
   font-size:11px;color:rgba(255,255,255,.35);min-width:36px;text-align:center;
   font-variant-numeric:tabular-nums;font-weight:700;letter-spacing:.3px;
@@ -2177,6 +2196,7 @@ input:focus-visible,textarea:focus-visible{
           <div id="tp-welcome" style="opacity:.5;font-size:1rem;max-width:500px;text-align:center;line-height:2;">
             <div style="font-size:4rem;margin-bottom:12px;opacity:.4;">&#x1F3A4;</div>
             <div style="font-size:1.1rem;color:rgba(255,255,255,.5);font-weight:600;margin-bottom:8px;">Vive Cantando con ByFlow</div>
+            <div style="font-size:.7rem;color:rgba(0,229,255,.4);font-style:italic;margin-bottom:12px;letter-spacing:.5px;">"ART en el arte de rimarte — quien se encasilla en un genero es por tibio"</div>
             <div style="font-size:.85rem;color:var(--sub);margin-bottom:16px;">Agrega un cantante en la cola o selecciona una cancion del catalogo</div>
             <button class="tp-search-lyrics-btn" onclick="openLyricsSearch()" style="margin:0 auto;">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
@@ -2223,6 +2243,30 @@ input:focus-visible,textarea:focus-visible{
       <!-- Player -->
       <button class="player-bar-toggle" id="player-bar-toggle" onclick="togglePlayerBar()" title="Mostrar/ocultar controles">&#x25BC;</button>
       <div class="player-bar" id="player-bar-main">
+        <!-- Left: Now Playing Info -->
+        <div class="now-playing-info" id="now-playing-info">
+          <div class="now-playing-cover" id="now-playing-cover">
+            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55C7.79 13 6 14.79 6 17s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/></svg>
+          </div>
+          <div class="now-playing-text">
+            <div class="now-playing-title" id="np-title">ByFlow</div>
+            <div class="now-playing-artist" id="np-artist">Vive Cantando</div>
+          </div>
+        </div>
+        <!-- Center: Waveform + Progress -->
+        <div class="player-progress-zone">
+          <div class="player-waveform-wrap" id="waveform-wrap">
+            <canvas id="waveform-canvas"></canvas>
+          </div>
+          <div class="player-progress-track" id="player-progress" onclick="seekPlayerProgress(event)">
+            <div class="player-progress-fill" id="player-progress-fill"></div>
+          </div>
+          <div class="player-time-row">
+            <span class="player-time" id="player-time-current">0:00</span>
+            <span class="player-time" id="player-time-total">--:--</span>
+          </div>
+        </div>
+        <!-- Right: Controls -->
         <div class="player-controls">
           <div class="ctrl-group">
             <button class="ctrl-btn" onclick="tpPrev()" title="Retroceder">
@@ -2286,9 +2330,9 @@ input:focus-visible,textarea:focus-visible{
       <div class="ia-header">
         <div class="ia-title">
           <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14H9V8h2v8zm4 0h-2V8h2v8z" fill="var(--s)"/></svg>
-          GFlow
+          GFlow DJ
         </div>
-        <div class="ia-subtitle">DJ IA Multigénero — powered by IArtLabs</div>
+        <div class="ia-subtitle">DJ IA Multigenero — Solo mezcla, cero rimas — powered by IArtLabs</div>
         <div class="ia-status offline" id="ia-status">
           <div class="ia-status-dot"></div>
           <span id="ia-status-text">Conectando...</span>
@@ -2900,8 +2944,9 @@ input:focus-visible,textarea:focus-visible{
     <button class="catalog-close" onclick="closeLyricStudio()">&times;</button>
     <div class="catalog-top">
       <h3 style="background:linear-gradient(135deg,var(--p),var(--a));-webkit-background-clip:text;-webkit-text-fill-color:transparent;">
-        ✍️ Estudio de Letras — ArT-AtR Engine
+        ✍️ Estudio de Letras — ARTATR
       </h3>
+      <div style="font-size:9px;color:rgba(0,229,255,.5);font-style:italic;margin-bottom:8px;">ART: que suene bonito | ATR: que tenga metrica perfecta — El arte de rimarte</div>
       <!-- Tabs -->
       <div style="display:flex;gap:3px;margin-bottom:12px;background:rgba(255,255,255,.04);padding:3px;border-radius:10px;">
         <button onclick="lsTab('gen')" id="ls-tab-gen" class="mode-btn active" style="flex:1;padding:6px 10px;font-size:11px;border:none;border-radius:8px;">✨ Generar</button>
@@ -2911,7 +2956,7 @@ input:focus-visible,textarea:focus-visible{
 
       <!-- TAB: Generar -->
       <div id="ls-panel-gen">
-      <div style="font-size:10px;color:var(--sub);margin-bottom:12px;">Genera letras offline con rimas en español. Sin IA, funciona siempre.</div>
+      <div style="font-size:10px;color:var(--sub);margin-bottom:12px;">Motor ARTATR v3 — Letras 100% puras de ArT-AtR. Procedural, sin contaminacion. Funciona offline siempre.</div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px;">
         <div>
           <label style="font-size:10px;color:var(--sub);display:block;margin-bottom:3px;">Tema</label>
@@ -5392,302 +5437,423 @@ function lsRenderSuno(filter) {
 
 function lsFilterSuno(val) { lsRenderSuno(val); }
 
-// ── Lyric Engine v2: frases completas con metaforas, no solo palabras sueltas ──
-// Cada tema tiene FRASES ENTERAS pre-escritas con {slots} para variacion.
-// El motor NUNCA repite una frase en la misma cancion.
+// Motor ArT-AtR v3 — "El Arte de Rimarte"
+// Filosofia: ART en el arte de rimarte, porque esa es mi pasion
+// Cada rima, cada metrica, cada firma — todo es ArT-AtR puro
+// CERO contenido externo. Firma ART/ATR variable. Doble tempo con rima interna.
 
-const _lsLines = {
-  amor: [
-    'Tu mirada enciende lo que el tiempo apago',
-    'Soy adicto a tu voz, no encuentro la salida',
-    'Me tiembla el pecho cuando dices mi nombre',
-    'Tus labios son el fuego que me quema despacio',
-    'Cada noche sin ti es un desierto infinito',
-    'Me pierdo entre tus ojos como estrella fugaz',
-    'Eres la melodia que mi alma necesita',
-    'Contigo el mundo calla y solo suena tu risa',
-    'Tu piel es mi refugio en medio de la tormenta',
-    'El destino nos junto, no fue casualidad',
-    'Latimos al compas como un solo instrumento',
-    'Quisiera ser el aire que respiras cada dia',
-    'Me vuelvo loco cuando siento tu calor',
-    'Tu nombre es la cancion que no dejo de cantar',
-    'Sin ti no hay partitura, solo ruido y soledad',
-    'Prometo amarte hasta que el sol se niegue a salir',
-    'Tu amor es la frecuencia que sintonizo en mi',
-    'Cuando te fuiste el cielo se quedo sin color',
-    'Me enredo en tus palabras como hiedra en la pared',
-    'Eres el verso libre que le faltaba a mi estrofa',
-    'Tu corazon y el mio hablan el mismo idioma',
-    'Somos dos notas graves en una misma cancion',
-    'Te busco en cada acorde, en cada amanecer',
-    'Mi mundo gira solo cuando tu estas presente',
+// ── Catalogo completo: versos extraidos de las 11 canciones originales ──
+const _artVersos = {
+  familia: [
+    'Mire jefita yo no soy el culpable de esos detalles',
+    'Pues en la escuela el profe no me pone atencion',
+    'Yo creo que no me quiere dar educacion',
+    'Pero jefita no me pegue porfavor',
+    'Yo le estoy diciendo la verdad',
+    'No se si al profe yo le caiga mal',
+    'Le juro que me he intentado comportar',
+    'Pero me ganan mis ansias de verdad',
+    'Por eso suelo caminar o me pongo a platicar',
+    'O sino me empiezo a sentir mal',
+    'Siempre me dejan sentado hasta atras',
+    'En ese tiempo no sabian que existia el TDHA ni la HIPERACTIVIDAD',
+    'Pero si sere invencible',
+    'Voy a venir a callar a todos esos insensibles',
+    'Que me decian tu no sirves',
+    'Jefita mucho tiempo he estado ocultando mis sentimientos',
+    'Por hacer el intento de ser alguien normal',
+    'Para ser el hijo que tu tanto anhelabas',
+    'Por eso yo lloraba todas esas madrugadas',
+    'Por no poder darle a mi madre todo lo que de mi esperaba',
+    'Metiendole un chingo de carino a todas las palabras que yo rimo',
+    'Con pasion Art se las dice con amor',
+    'Quiero contarle a la gente todas tus experiencias',
+    'De todas tus vivencias',
+    'De lo que has pasado todo lo que has madurado',
+    'Sin percatarse que el tiempo ha pasado',
+    'Quiero dejarte viva con todas tus anecdotas',
+    'Tu estas apunto de irte de mi lado',
+    'Por eso quiero plasmarlo para dejarlo bien claro',
+    'Gracias mama Juana por dejarme evidenciar lo que en tu vida ha pasado',
+    'Es tu nieta una de las que mas te ha amado',
+    'Lo unico que me motiva es ver esa sonrisita de mi nina',
+    'Es la que me alegra todo dia',
+    'Por eso sigo con valentia',
+    'Sin ella no se donde yo estaria',
   ],
   desamor: [
-    'Me dejaste el alma en visto como un mensaje mas',
-    'Fingiste tanto amor que hasta tu sombra mintio',
-    'Tu silencio me rompe mas que cualquier palabra',
-    'Me usaste de escalon pa subir a donde querias',
-    'Cada cicatriz que dejaste cuenta tu historia',
-    'Me prometiste cielo y me enterraste en el suelo',
-    'Tus besos eran veneno disfrazado de miel',
-    'Fui tu plan B mientras buscabas algo mejor',
-    'Me arrancaste el corazon y lo dejaste tirado',
-    'La mascara se cayo y vi quien eras de verdad',
-    'Confundi tu interes con algo que era real',
-    'Me engañaste mirándome a los ojos sin temblar',
-    'Tus te quiero caducaron antes que la madrugada',
-    'Ahora tu recuerdo es solo ceniza que piso',
-    'Me curaste la inocencia, ya no creo en nadie',
-    'Fui el unico que amaba en esta relacion fantasma',
-    'Tu amor era un virus que se comio mi sistema',
-    'Me borraste como archivo que ya no necesitas',
-    'La traicion vino de adentro, no tuve que buscarla',
-    'Eres la herida que no cierra y no quiero curar',
-    'Prefiero este vacio a seguir creyendo en tu farsa',
-    'Me dejaste hablando solo mientras tu ya te ibas',
-    'El espejo se rompio pero no fui yo quien cayo',
-    'Cada noche reescribo el final que me inventaste',
-  ],
-  superacion: [
-    'Me levanto cada vez que el mundo me derriba',
-    'El dolor fue mi maestro y ahora yo doy clases',
-    'No naci con corona pero la estoy forjando',
-    'Cada golpe en la cara me hizo mas despierto',
-    'Vine desde el fondo y ahora miro desde arriba',
-    'Mi hambre no se sacia con migajas de nadie',
-    'Transforme mis heridas en la tinta de mis versos',
-    'El que dijo imposible no me conocia a mi',
-    'Soy la prueba viviente de que el barrio si levanta',
-    'Donde otros ven fracaso yo veo el primer paso',
-    'La vida me pego duro pero no me tiro al piso',
-    'Construyo mi camino con las piedras que me tiran',
-    'El fuego que me quema es el mismo que me alumbra',
-    'Mi meta no es el dinero, es que mi madre sonria',
-    'Cada dia es una guerra y yo no pierdo batallas',
-    'Me dijeron que no podia, ahora no pueden pararme',
-    'Mi sudor riega el camino que mis hijos van a pisar',
-    'Soy la version mejorada de todo lo que perdi',
-    'No pido permiso pa brillar, ya me lo gane',
-    'El exito sabe mejor cuando vienes de la nada',
-    'Mi historia no la escribe nadie mas que estas manos',
-    'Convierto la presion en diamantes, eso hago',
-    'La cumbre esta cerca y mis piernas no se rinden',
-    'Soy el algoritmo que se reescribe cada noche',
+    'Mirame mirame solo mirame',
+    'Quiero verte a los ojos solo mirame',
+    'No se que ha pasado ni como sucedio',
+    'Por favor ya dame una explicacion',
+    'Intenta hacerlo sin danar tanto a mi corazon',
+    'Yo me culpo por haberte idealizado',
+    'Por haber pensado que tu eras la chica perfecta',
+    'Pero no tuve en cuenta que tu no eras tan recta',
+    'Tu ya sabias la receta para repartir amor',
+    'Pero no fuiste concreta solo me causaste mas dolor',
+    'Dejaste a mi vida sin color',
+    'Por ti yo hacia todo lo que me pedias',
+    'Tambien te complacia con toda clase de tonterias',
+    'Pensaba que asi cederias pero puras fantasias',
+    'Ya algo me decia que tu me mentias',
+    'Pero yo seguia muy ilusionado y muy enamorado',
+    'Estaba cegado te lo digo con dolor',
+    'Pensaba que contigo habia encontrado un verdadero amor',
+    'Te lo agradezco de antemano tu me has dado el mejor regalo',
+    'Eso no puedo negarlo es lo mejor que me ha pasado',
+    'Tu bien sabes que es de lo que yo te hablo',
+    'Lo lamento lo nuestro ya es pasado',
+    'Tu forma de tratarme y el tiempo de eso se han encargado',
+    'Mi memoria ha intentado olvidarse de los mejores momentos a tu lado',
+    'No lo niego fui feliz por un tiempo no te miento',
+    'Ya sabia de todos tus sentimientos',
+    'Cada vez que tu llorabas le pedias palabras vacias al viento',
+    'Yo veia todo tu sufrimiento',
+    'Vaya que dolia el momento yo te seguia en tu lamento',
+    'Quien se queda contento cuando ve que este supuesto amor',
+    'Busca cualquier pretexto para tener otro encuentro',
+    'Yo nunca te habia fallado',
+    'Pero en la carrera de la traicion tu primero habias empezado',
+    'Solo que yo si te habia perdonado',
+    'Aun asi que tu lo tuvieras bien planeado para poder volver a mi lado',
+    'Meses esperando donde te estuve rogando que volvieras a mi lado',
+    'Solo me la pasaba llorando y suplicando',
+    'Fue cuando la vida me dio un golpe de realidad vi la claridad',
+    'Porque yo vivia en una fantasia que realmente no existia',
+    'El amor que yo sentia era de mentira',
+    'Me hago el valiente ella me ve de frente',
+    'Recuerdo el presente soy mas elocuente',
+    'Aunque lo cuente quien lo cuente',
+    'No importa el pasado ya esta acabado',
+    'Sigo sintiendo y es que la verdad por ti estoy muriendo',
+    'Este sentimiento ya no lo quito con nada',
+    'Lo he tratado de borrar durante varias madrugadas y no ha resultado nada',
+    'Ya quiero olvidarme de ti y de todo el tiempo que te di',
+    'Bastante ya perdi por intentar hacerte feliz',
+    'No me ruegues que me quede si tu ni siquiera realmente me quieres',
+    'Solo lo haces pa mantener la facha',
+    'No caere de nuevo en tu juego',
+    'Solo me quieres pa conseguirte de lo mas caro de lo mas bueno',
+    'Conmigo realmente no quieres compartir tu amor ni tu tiempo',
+    'Pa que nos hacemos tontos tu a mi me enganas con otro',
+    'Me dejaste el cora todo roto',
+    'Pa que me dejas vivo solo y sin ningun motivo para seguir sufriendo',
+    'Por un amor que me olvido',
+    'Ya entendi comprendi que tu no eres para mi',
+    'Yo solo era un chiste para ti',
+    'Tu con otro ya eras feliz mientras te escondias de mi',
   ],
   calle: [
-    'Las esquinas tienen ojos y las paredes memoria',
-    'Mi flow es cemento armado, no lo quiebra nadie',
-    'El barrio me enseno mas que cualquier universidad',
-    'Escupo versos reales, aqui no caben mentiras',
-    'La noche huele a humo y a historias sin contar',
-    'Cada rima es una bala que disparo al silencio',
-    'El asfalto es mi estudio, el micro mi confesion',
-    'Camino entre sombras pero mi verso alumbra',
-    'El ritmo de la calle corre por estas venas',
-    'No rapeo pa famosos, rapeo pa los que sienten',
-    'Mi bloque es mi trinchera, la rima es mi bandera',
-    'El reloj no para y yo tampoco, sigo fluyendo',
-    'Cada verso que suelto deja marca en el cemento',
-    'No busco la corona, busco que el barrio me escuche',
-    'El humo sube lento como mis palabras al cielo',
-    'Soy hijo del asfalto y nieto de la resistencia',
-    'Mi flow no es de laboratorio, es callejero y crudo',
-    'Las calles me criaron cuando la casa no alcanzaba',
-    'Escupo fuego y hielo segun lo pida la noche',
-    'El beat es la calle y yo soy el que la camina',
-    'Mis rimas son nocturnas como el lobo solitario',
-    'No me hice en un estudio, me hice en la vida real',
-    'Cada barra que suelto es un pedazo de mi historia',
-    'El micro tiembla cuando le pongo verdad encima',
+    'Como es cruel esta vida',
+    'Se ha llevado a varios compas por estar en la movida',
+    'Compas que he conocido pero que por menos de un puto gramo me han vendido',
+    'A varios de esos he conocido',
+    'Esos que les das la mano y te han vendido',
+    'Empece a usar sustancias nocivas para mi salud',
+    'Tambien que robaron parte de mi juventud',
+    'Para no sentir esta pena tan amarga cada madrugada',
+    'Le doy una jalada al porro con lentitud esta va a su salud',
+    'Porque ya estoy en mi plenitud',
+    'Mientras mas embrutecido por todo lo que he fumado y he bebido mejor me he sentido',
+    'Si todo lo tenias conmigo',
+    'Solo lo haces pa seguir fumando de mi bacha',
   ],
-  tech: [
-    'Mi mente es un server que nunca entra en reposo',
-    'Hackeo la realidad, la reescribo en mi version',
-    'El sistema parpadea pero el codigo no miente',
-    'Soy un glitch en la matrix que nadie puede parchear',
-    'Mi flow es encriptado, no lo descifras facil',
-    'Cada verso es un commit que no se puede borrar',
-    'Debuggeo mis demonios linea por linea despacio',
-    'La pantalla brilla a las tres, sigo compilando suenos',
-    'Mi data no se vende, mi frecuencia es privada',
-    'Error 404: la persona que fui ya no existe',
-    'Proceso emociones como un buffer desbordado',
-    'Mi algoritmo convierte el dolor en melodia',
-    'Ejecuto mi destino en modo administrador',
-    'La red se cae pero mi verso sigue en pie',
-    'Soy binario: cero miedo, uno de los que resisten',
-    'Cada pixel de mi historia tiene un color diferente',
-    'Mi virus favorito es la verdad, infecta todo',
-    'El firewall no frena lo que sale del corazon',
-    'Streameando realidad desde un cuarto sin ventanas',
-    'Mi serial es unico, no existen copias de mi',
-    'Cargo mis memorias como archivos comprimidos',
-    'El ping de la nostalgia tiene latencia infinita',
-    'Reinicio cada manana con un parche de esperanza',
-    'Mi codigo fuente esta escrito con sangre y con tinta',
+  superacion: [
+    'Les doy gracias por sus criticas me han llevado al camino que ahora estoy',
+    'Gracias a ustedes yo he aprendido',
+    'La experiencia es lo que he adquirido',
+    'Gracias por todo lo vivido',
+    'Se los dice este bato enloquecido',
+    'Le agradezco a todos con los que he crecido',
+    'Me pongo a pensar y aunque no se porque he renacido',
+    'De este mundo enloquecido',
+    'Voy superando cada dia a mi pasado',
+    'Voy eligiendo caminos para poder llegar a mi destino',
+    'Porque uno es el que va haciendo su propio camino',
+    'Por eso he elegido mi talento consentido',
+    'Este talento con el que tanto tiempo llevo invertido',
+    'Claro que se acabo todo termino',
+    'Lo que nos mantenia unidos se fue rompiendo sin dejar ningun residuo',
+    'Fallas gritos decepciones siempre fue lo mismo',
+    'Me aferre a mi egoismo de seguir donde ya habia un abismo',
+    'No me encontraba conmigo mismo',
+    'Todo se volvio un maldito espejismo',
+    'Sigo solo contra todos mis demonios',
+    'No se ni como pude salir pa delante',
+    'Besos caricias y abrazos ya quedaron en el pasado',
+    'Ahora solo es ignorarnos olvidarnos',
+    'Hacer como que no paso aunque la neta yo todavia te extrano',
+    'Mi depresion no me domina dia a dia lo voy superando',
   ],
-  redencion: [
-    'Papa, cada arruga tuya es un mapa de sacrificio',
-    'Aprendi mas de tus silencios que de mil discursos',
-    'La sangre de mi sangre me enseno a no rendirme',
-    'Mama, tus oraciones fueron el firewall de mi vida',
-    'Perdono porque cargar rencor pesa mas que el mundo',
-    'Mis raices son profundas, por eso no me tumba el viento',
-    'El legado no es dinero, es lo que enseñas con ejemplo',
-    'Regreso a casa humilde porque ahi esta mi verdad',
-    'Tus manos trabajadas son mi mayor inspiracion',
-    'Prometo honrar tu nombre con cada paso que doy',
-    'La calle me enseno vicios, tu me ensenaste el camino',
-    'Cada lagrima que ahorraste yo la convierto en verso',
-    'El hogar no es un lugar, es donde estan los tuyos',
-    'Agradezco cada golpe porque me hizo quien soy hoy',
-    'Tu sacrificio silencioso grita mas que mis canciones',
-    'Perdone al que me fallo porque yo tambien he fallado',
-    'Mi oracion es este verso, mi templo es este micro',
-    'Las promesas que te hice las cumplo una por una',
-    'Tu ejemplo es la brujula que me guia en lo oscuro',
-    'La redencion no es borrar el pasado, es superarlo',
-    'Cargo tu legado como armadura contra todo',
-    'De la sativa al verso, del remordimiento al perdon',
-    'Hoy canto para sanar lo que ayer rompi callando',
-    'Mi sangre es tu sangre y en cada gota hay fe',
-  ],
-  fiesta: [
-    'Que nadie pare el ritmo, esta noche es pa gozar',
-    'El DJ sube el bajo y la pista se vuelve loca',
-    'Levanta esa copa que la vida es una sola',
-    'Hoy brindo por los que estan y por los que ya no estan',
-    'El beat se mete en el cuerpo y no pide permiso',
-    'Esta noche no hay manana, solo musica y calor',
-    'La energia de esta gente puede encender mil ciudades',
-    'Que suba el volumen, que baje la preocupacion',
-    'Cada paso en la pista es una letra que escribo',
-    'El bass retumba fuerte como el latido de un barrio',
-    'No pares de moverte que el ritmo no perdona',
-    'Esta noche somos libres, manana Dios dira',
-    'Prendo la fiesta como quien enciende una hoguera',
-    'El ambiente esta brutal, lo sientes en la piel',
-    'Gozar es la medicina que no receta el doctor',
-    'La noche es joven y nosotros somos eternos',
-    'Vibra el piso, vibra el alma, vibra todo el lugar',
-    'Un trago mas por cada sueno que aun sigue de pie',
-    'El ritmo tropical se mete en cada hueso',
-    'No necesito fama, solo el micro y esta gente',
-    'La pista de baile es el unico lugar sin problemas',
-    'Celebro estar vivo con cada paso que doy',
-    'El DJ lo sabe: una buena noche no tiene fin',
-    'Brindo por los locos que convierten la noche en arte',
-  ],
-  melanc: [
-    'La lluvia en la ventana cuenta historias que callamos',
-    'Soy un eco de lo que fui, rebotando entre paredes',
-    'El silencio pesa mas cuando sabes lo que perdiste',
-    'Tu ausencia es una silla vacia en mi mesa de siempre',
-    'Me quedo viendo el reloj como si fuera a traerte',
-    'La nostalgia es un perfume que no puedo quitarme',
-    'El otoño y yo tenemos algo en comun: dejamos ir',
-    'Camino entre la bruma buscando algo que ya no existe',
-    'Cada recuerdo tuyo es un cristal que se me clava',
-    'El espejo me devuelve alguien que ya no reconozco',
-    'Las noches grises saben a cafe frio y a tu nombre',
-    'Mi sombra es la unica que no me ha abandonado aun',
-    'Suspiro y el humo dibuja tu silueta en el aire',
-    'El gris de este cielo combina con mi estado de animo',
-    'Extraño cosas que ni siquiera llegaron a pasar',
-    'La melancolía es mi companera mas fiel y mas cruel',
-    'Me marchito en silencio como flor sin primavera',
-    'Cada cancion triste suena como si la hubiera escrito yo',
-    'El vacio no duele, lo que duele es recordar lo lleno',
-    'Soy un reloj parado en la hora que te fuiste',
-    'La ventana esta cerrada pero el frio entra igual',
-    'Guardo tus palabras en un frasco que ya no abro',
-    'El eco de tu risa es lo unico que me queda',
-    'Aprendi que la soledad tambien tiene su melodia',
+  filosofia: [
+    'Mira tus alrededores veras a los perdedores',
+    'A los que se inventan sus rumores',
+    'Aquellos que solo son consumidores',
+    'De personajes con millones de seguidores',
+    'Pero vacios en sus emociones',
+    'Aquellos que son falsos en todas sus producciones',
+    'Los que fingen un falso amor solo para producir millones',
+    'Les faltan eones para que puedan entender',
+    'Lo que a este mundo venimos a hacer',
+    'Muchos en los anos han pensado que pueda ser aquello que todos siguen buscando',
+    'Pero no van a poder',
+    'Es algo tan sutil que cuando lo tienen no lo tardaran en perder',
+    'Pero yace en cada uno y en su propio ser',
+    'Para unos es amor para otros es poder envejecer',
+    'Compartir todo lo que han vivido con todos sus seres queridos',
+    'Pero ellos asi lo han decidido',
+    'Como para otros es la droga y el vino',
+    'Para que te hago reconocer los errores humanos',
+    'Los humanos somos los mismos que seguimos pagando',
+    'En esa vida nacemos credulos',
   ]
 };
 
-// Rhyme pairs database: each entry is [wordA, wordB] that rhyme
-const _lsRhymePairs = [
-  ['corazon','cancion'],['pasion','ilusion'],['razon','traicion'],['dolor','amor'],['calor','color'],
-  ['vida','herida'],['salida','perdida'],['querida','partida'],['caida','medida'],['escondida','seguida'],
-  ['noche','derroche'],['coche','reproche'],['broche','medianoche'],
-  ['cielo','suelo'],['vuelo','anhelo'],['hielo','consuelo'],['desvelo','modelo'],['duelo','abuelo'],
-  ['alma','calma'],['palma','salma'],
-  ['fuego','juego'],['ciego','ruego'],['sosiego','luego'],
-  ['camino','destino'],['divino','vecino'],['asesino','vino'],['peregrino','latino'],
-  ['momento','sentimiento'],['pensamiento','aliento'],['sufrimiento','movimiento'],['instrumento','argumento'],
-  ['historia','memoria'],['gloria','victoria'],['escoria','noria'],
-  ['verdad','soledad'],['libertad','realidad'],['oscuridad','ciudad'],['eternidad','mitad'],
-  ['locura','aventura'],['altura','escritura'],['armadura','amargura'],['ternura','ruptura'],
-  ['silencio','ausencia'],['presencia','paciencia'],['conciencia','frecuencia'],['sentencia','violencia'],
-  ['pantalla','batalla'],['muralla','medalla'],['calla','falla'],
-  ['sistema','problema'],['esquema','poema'],['tema','dilema'],
-  ['codigo','prodigo'],['melodico','metodico'],
-  ['mundo','profundo'],['segundo','rotundo'],['fecundo','vagabundo'],
-  ['gente','diferente'],['presente','valiente'],['caliente','ardiente'],['consciente','corriente'],
-  ['pecho','derecho'],['techo','hecho'],['provecho','estrecho'],
-  ['ojos','rojos'],['despojos','enojos'],
-  ['manos','hermanos'],['humanos','lejanos'],['tempranos','arcanos'],
-  ['sangre','hambre'],
-  ['nada','madrugada'],['mirada','callada'],['espada','jugada'],['pasada','quemada'],
-  ['piso','aviso'],['riso','compromiso'],['preciso','paraiso'],
+// ── Pares de rima REALES extraidos del catalogo ArT-AtR ──
+// Palabras que ArT-AtR REALMENTE rima en sus canciones
+const _artRhymePairs = [
+  // JEFITA ENTIENDA
+  ['verdad','mal'],['comportar','verdad'],['platicar','mal'],['sentar','mirar'],
+  ['invencible','insensibles'],['sirves','insensibles'],
+  ['sentimientos','intento'],['anhelabas','madrugadas'],['esperaba','madrugadas'],
+  ['salud','juventud'],['plenitud','salud'],['rimo','carino'],
+  // MIRA TUS ALREDEDORES
+  ['perdedores','rumores'],['consumidores','seguidores'],['emociones','producciones'],
+  ['millones','eones'],['entender','poder'],['perder','ser'],
+  ['queridos','decidido'],['vino','pagando'],
+  // MIRAME
+  ['explicacion','corazon'],['idealizado','pensado'],['perfecta','receta'],['recta','concreta'],
+  ['amor','dolor'],['color','dolor'],['pedias','tonterias'],['fantasias','mentias'],
+  ['cederias','fantasias'],['enamorado','cegado'],
+  // GRACIAS A USTEDES
+  ['aprendido','adquirido'],['vivido','enloquecido'],['crecido','renacido'],
+  ['pasado','destino'],['camino','destino'],['consentido','invertido'],
+  // LETRA TIPO CORRIDO
+  ['antemano','regalo'],['negarlo','pasado'],['hablo','pasado'],
+  ['encargado','lado'],['miento','sentimientos'],
+  ['viento','sufrimiento'],['momento','lamento'],['contento','pretexto'],['encuentro','esto'],
+  ['fallado','empezado'],['perdonado','planeado'],['lado','rogando'],
+  ['llorando','suplicando'],['claridad','realidad'],['existia','mentira'],
+  // ME HAGO EL VALIENTE
+  ['frente','elocuente'],['cuente','valiente'],['pasado','acabado'],
+  // CLARO QUE SE ACABO
+  ['termino','residuo'],['mismo','egoismo'],['abismo','espejismo'],
+  ['demonios','delante'],['nina','dia'],['valentia','estaria'],
+  ['pasado','olvidarnos'],['extrano','paso'],
+  // PERRO
+  ['muriendo','sentimiento'],['nada','madrugadas'],['fumado','bebido'],['sentido','motivo'],
+  ['ti','di'],['perdi','feliz'],['quieres','facha'],
+  ['juego','bueno'],['tiempo','amor'],['otro','roto'],
+  ['vivo','motivo'],['sufriendo','olvido'],
+  ['mi','ti'],['feliz','mi'],
+  // COMO ES CRUEL
+  ['vida','movida'],['conocido','vendido'],
 ];
 
-function _lsPick(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
+// ── Todas las lineas planas para modo libre ──
+const _artAllLines = Object.values(_artVersos).flat();
 
-// Shuffle array in place (Fisher-Yates)
+// ── Utilidades del motor ──
+function _lsPick(arr) { return arr.length ? arr[Math.floor(Math.random() * arr.length)] : ''; }
+
 function _lsShuffle(arr) {
-  for (let i = arr.length - 1; i > 0; i--) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
-    [arr[i], arr[j]] = [arr[j], arr[i]];
+    [a[i], a[j]] = [a[j], a[i]];
   }
-  return arr;
+  return a;
 }
 
-// Pick a rhyme pair, returns [lineA, lineB] from the theme's line pool
-// that end with words from the pair, OR injects the rhyme word at the end
-function _lsPickRhymingPair(themeLines, usedSet) {
-  const pair = _lsPick(_lsRhymePairs);
-  const [rA, rB] = Math.random() > 0.5 ? pair : [pair[1], pair[0]];
+// Normaliza palabra final para comparacion de rima
+function _artNorm(w) {
+  return w.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z]/g,'');
+}
 
-  // Try to find lines that naturally end with these rhyme words
-  let lineA = null, lineB = null;
-  for (const l of themeLines) {
+// Extrae la ultima palabra significativa de una linea
+function _artLastWord(line) {
+  const words = line.trim().split(/\s+/);
+  for (let i = words.length - 1; i >= 0; i--) {
+    const w = _artNorm(words[i]);
+    if (w.length > 1) return w;
+  }
+  return _artNorm(words[words.length - 1] || '');
+}
+
+// Busca lineas cuya ultima palabra rime con la target (misma terminacion 2+ chars)
+function _artFindRhyming(pool, targetWord, usedSet, count) {
+  const suffix2 = targetWord.slice(-2);
+  const suffix3 = targetWord.length > 2 ? targetWord.slice(-3) : suffix2;
+  const results = [];
+  // Primero intenta match exacto de rima (3+ chars)
+  for (const l of pool) {
     if (usedSet.has(l)) continue;
-    const last = l.split(' ').pop().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
-    if (!lineA && last === rA) lineA = l;
-    else if (!lineB && last === rB) lineB = l;
-    if (lineA && lineB) break;
-  }
-
-  // If we couldn't find natural matches, pick unused lines and swap their last word
-  if (!lineA) {
-    const pool = themeLines.filter(l => !usedSet.has(l));
-    if (pool.length) {
-      lineA = pool[Math.floor(Math.random() * pool.length)];
-      const words = lineA.split(' ');
-      words[words.length - 1] = rA;
-      lineA = words.join(' ');
+    const lw = _artLastWord(l);
+    if (lw !== targetWord && lw.slice(-3) === suffix3) {
+      results.push(l);
+      if (results.length >= count) return results;
     }
   }
-  if (!lineB) {
-    const pool = themeLines.filter(l => !usedSet.has(l) && l !== lineA);
-    if (pool.length) {
-      lineB = pool[Math.floor(Math.random() * pool.length)];
-      const words = lineB.split(' ');
-      words[words.length - 1] = rB;
-      lineB = words.join(' ');
+  // Fallback: 2 chars
+  for (const l of pool) {
+    if (usedSet.has(l) || results.includes(l)) continue;
+    const lw = _artLastWord(l);
+    if (lw !== targetWord && lw.slice(-2) === suffix2) {
+      results.push(l);
+      if (results.length >= count) return results;
     }
   }
-
-  // Absolute fallback: just pick two random unused lines
-  if (!lineA) lineA = _lsPick(themeLines.filter(l => !usedSet.has(l))) || _lsPick(themeLines);
-  if (!lineB) lineB = _lsPick(themeLines.filter(l => !usedSet.has(l) && l !== lineA)) || _lsPick(themeLines);
-
-  return [lineA, lineB];
+  return results;
 }
 
+// Selecciona un par de lineas que rimen (AABB) del pool
+function _artPickRhymingPair(pool, usedSet) {
+  // Intento 1: usar un par de rima real de ArT-AtR
+  const shuffledPairs = _lsShuffle([..._artRhymePairs]);
+  for (const [rA, rB] of shuffledPairs) {
+    const nA = _artNorm(rA), nB = _artNorm(rB);
+    let lineA = null, lineB = null;
+    for (const l of pool) {
+      if (usedSet.has(l)) continue;
+      const lw = _artLastWord(l);
+      if (!lineA && lw === nA) lineA = l;
+      else if (!lineB && lw === nB) lineB = l;
+      if (lineA && lineB) return [lineA, lineB];
+    }
+  }
+
+  // Intento 2: buscar cualquier par de lineas que rimen naturalmente
+  const shuffled = _lsShuffle(pool.filter(l => !usedSet.has(l)));
+  for (const candidate of shuffled) {
+    const tw = _artLastWord(candidate);
+    const matches = _artFindRhyming(shuffled, tw, new Set([...usedSet, candidate]), 1);
+    if (matches.length) return [candidate, matches[0]];
+  }
+
+  // Fallback: dos lineas random no usadas
+  const unused = pool.filter(l => !usedSet.has(l));
+  if (unused.length >= 2) return [unused[0], unused[1]];
+  return [_lsPick(pool) || 'Las palabras fluyen como el rio de la verdad', _lsPick(pool) || 'Y este verso es mio porque nacio de mi realidad'];
+}
+
+// ── Mapeo de temas UI a categorias del catalogo ──
+const _artThemeMap = {
+  amor:       ['desamor','familia'],
+  desamor:    ['desamor'],
+  superacion: ['superacion','familia'],
+  calle:      ['calle','filosofia'],
+  tech:       ['filosofia','superacion'],
+  redencion:  ['familia','superacion'],
+  fiesta:     ['calle','superacion'],
+  melanc:     ['desamor','calle']
+};
+
+function _artGetThemePool(theme) {
+  const cats = _artThemeMap[theme] || ['desamor','superacion'];
+  let pool = [];
+  for (const c of cats) {
+    pool = pool.concat(_artVersos[c] || []);
+  }
+  // Siempre agregar unas lineas de otras categorias para variedad
+  const extras = _lsShuffle(_artAllLines.filter(l => !pool.includes(l))).slice(0, 6);
+  return _lsShuffle([...pool, ...extras]);
+}
+
+// ══════════════════════════════════════════════════════════════
+// ── Firma ART/ATR variable — siempre presente, nunca igual ──
+const _artFirmas = {
+  inicio: [
+    'ART en el arte de rimarte porque esa es mi pasion es todo el amor que le meto a cada rima cada cancion que yo le escribo le meto tanta metrica y chingos de talento que te demuestro yo soy lo que yo escribo y doy',
+    'ART en el arte de rimarte porque esa es mi pasion',
+    'Es todo el amor que le meto a cada rima cada metrica que yo soy',
+    'ArT te lo dice con pasion',
+    'ArT-AtR a todo ritmo perro',
+    'ART en el arte de rimarte dejame contarte todo lo que tengo para poder rimarte bro',
+    'A todo ritmo ArT-AtR te lo cuenta',
+    'ArT arranca esto sin pedirte permiso'
+  ],
+  medio: [
+    'se los dice ArT con amor',
+    'como solo ArT-AtR lo sabe hacer',
+    'a todo ritmo ATR sin parar',
+    'ArT te lo rima sin pensar',
+    'con el estilo que ArT-AtR te da',
+    'porque ArT siempre la va a rifar'
+  ],
+  final: [
+    'con pasion, ArT',
+    'a todo ritmo, ATR',
+    'ArT-AtR, el arte de rimarte',
+    'esto es ART, perro',
+    'se los dejo, ArT',
+    'ATR a todo ritmo hasta el final',
+    'ArT'
+  ],
+  integrado: [
+    'Es el ARTe de rimARTe, ATR',
+    'Con el ART que llevo dentro y el ATR que me mantiene',
+    'ArT en cada verso, AtR en cada rima',
+    'Yo soy ART y esto es a todo ritmo'
+  ]
+};
+
+function _artInsertFirma(lines, position) {
+  // position: 'inicio', 'medio', 'final', 'random'
+  if (position === 'random') {
+    const opciones = ['inicio', 'medio', 'final', 'integrado'];
+    position = opciones[Math.floor(Math.random() * opciones.length)];
+  }
+  const firmas = _artFirmas[position];
+  const firma = firmas[Math.floor(Math.random() * firmas.length)];
+
+  if (position === 'inicio') {
+    lines.splice(1, 0, firma); // despues del tag [VERSO]
+  } else if (position === 'final') {
+    lines.push(firma);
+  } else if (position === 'medio') {
+    const mid = Math.floor(lines.length / 2);
+    lines.splice(mid, 0, firma);
+  } else {
+    // integrado: reemplaza una linea random con la firma
+    const idx = 1 + Math.floor(Math.random() * (lines.length - 2));
+    lines[idx] = firma;
+  }
+  return lines;
+}
+
+// ── Rima interna para doble tempo ──
+// "solamente mi MENTE parece consCIENTE dentro de todo lo que me MIENTE"
+const _artRimasInternas = [
+  ['mente', 'consciente', 'miente', 'siente', 'frente'],
+  ['pasado', 'acabado', 'olvidado', 'amado', 'planeado'],
+  ['amor', 'dolor', 'color', 'valor', 'favor'],
+  ['vida', 'movida', 'herida', 'perdida', 'querida'],
+  ['sentimiento', 'momento', 'lamento', 'intento', 'viento'],
+  ['verdad', 'realidad', 'claridad', 'soledad', 'felicidad'],
+  ['corazon', 'razon', 'pasion', 'cancion', 'traicion'],
+  ['camino', 'destino', 'consentido', 'invertido', 'enloquecido'],
+  ['madrugada', 'nada', 'pasada', 'planeada', 'amarga'],
+  ['criticas', 'palabras', 'fantasias', 'tonterias', 'mentiras']
+];
+
+function _artGenerarDoubleTempo(tema) {
+  // Genera una linea con rima interna estilo ArT doble tempo
+  const grupo = _artRimasInternas[Math.floor(Math.random() * _artRimasInternas.length)];
+  const shuffled = _lsShuffle([...grupo]);
+  const plantillas = [
+    `Solamente mi ${shuffled[0]} parece ${shuffled[1]} dentro de todo lo que me ${shuffled[2]}`,
+    `Ya no ${shuffled[0]} lo que ${shuffled[1]} porque este ${shuffled[2]} ya no se ${shuffled[3]}`,
+    `Cada ${shuffled[0]} que pasa es ${shuffled[1]} pero yo sigo con ${shuffled[2]}`,
+    `No me importa tu ${shuffled[0]} ni tu falso ${shuffled[1]} yo sigo en mi ${shuffled[2]}`,
+    `De ${shuffled[0]} en ${shuffled[1]} voy buscando ${shuffled[2]} sin encontrar ${shuffled[3]}`
+  ];
+  return plantillas[Math.floor(Math.random() * plantillas.length)];
+}
+
+// generateOfflineLyrics — Motor ArT-AtR v3 — "El Arte de Rimarte"
+// Filosofia: No mezcla cachitos. Genera con identidad, metrica y firma.
+// ══════════════════════════════════════════════════════════════
 function generateOfflineLyrics() {
   const theme     = document.getElementById('ls-theme').value;
   const style     = document.getElementById('ls-style').value;
@@ -5696,24 +5862,17 @@ function generateOfflineLyrics() {
   const custom    = document.getElementById('ls-custom').value.trim();
   const output    = document.getElementById('ls-output');
 
-  // Get shuffled theme lines — never same order twice
-  const themePool = _lsShuffle([...(_lsLines[theme] || _lsLines.amor)]);
-  // Cross-pollinate: mix in a few lines from related themes for variety
-  const related = { amor:'melanc', desamor:'calle', superacion:'redencion', calle:'tech',
-                    tech:'superacion', redencion:'amor', fiesta:'calle', melanc:'desamor' };
-  const extraPool = _lsShuffle([...(_lsLines[related[theme]] || [])]).slice(0, 4);
-  const allLines = _lsShuffle([...themePool, ...extraPool]);
-
+  const pool = _artGetThemePool(theme);
   const usedLines = new Set();
   const lines = [];
   const hasChorus = (structure === 'verse-chorus');
 
-  // Build chorus (reusable)
+  // ── Construir CORO (4 lineas AABB, reutilizable) ──
   let chorus = [];
   if (hasChorus) {
-    const [c1, c2] = _lsPickRhymingPair(allLines, usedLines);
+    const [c1, c2] = _artPickRhymingPair(pool, usedLines);
     usedLines.add(c1); usedLines.add(c2);
-    const [c3, c4] = _lsPickRhymingPair(allLines, usedLines);
+    const [c3, c4] = _artPickRhymingPair(pool, usedLines);
     usedLines.add(c3); usedLines.add(c4);
     chorus = [c1, c2, c3, c4];
   }
@@ -5726,17 +5885,45 @@ function generateOfflineLyrics() {
       chorus.forEach(l => lines.push(l));
     } else {
       lines.push(hasChorus ? '[VERSO ' + (Math.ceil((s+1)/2)) + ']' : '[ESTROFA ' + (s+1) + ']');
-      // 4 lines per stanza, in rhyming pairs
-      const [a1, a2] = _lsPickRhymingPair(allLines, usedLines);
-      usedLines.add(a1); usedLines.add(a2);
-      const [b1, b2] = _lsPickRhymingPair(allLines, usedLines);
-      usedLines.add(b1); usedLines.add(b2);
-      lines.push(a1); lines.push(a2); lines.push(b1); lines.push(b2);
+      // Estructura depende del estilo de rima seleccionado
+      if (structure === 'aabb' || structure === 'verse-chorus') {
+        const [a1, a2] = _artPickRhymingPair(pool, usedLines);
+        usedLines.add(a1); usedLines.add(a2);
+        const [b1, b2] = _artPickRhymingPair(pool, usedLines);
+        usedLines.add(b1); usedLines.add(b2);
+        lines.push(a1, a2, b1, b2);
+      } else if (structure === 'abab') {
+        // ABAB: intercalar rimas
+        const [a1, a2] = _artPickRhymingPair(pool, usedLines);
+        usedLines.add(a1); usedLines.add(a2);
+        const [b1, b2] = _artPickRhymingPair(pool, usedLines);
+        usedLines.add(b1); usedLines.add(b2);
+        lines.push(a1, b1, a2, b2);
+      } else {
+        // Free: 4-6 lineas aleatorias del catalogo
+        const count = 4 + Math.floor(Math.random() * 3);
+        const avail = _lsShuffle(pool.filter(l => !usedLines.has(l)));
+        for (let i = 0; i < count && i < avail.length; i++) {
+          lines.push(avail[i]);
+          usedLines.add(avail[i]);
+        }
+      }
     }
     lines.push('');
   }
 
-  // Add final chorus
+  // ── Insertar linea de doble tempo random ──
+  if (lines.length > 4) {
+    const dtLine = _artGenerarDoubleTempo(theme);
+    const insertAt = 2 + Math.floor(Math.random() * (lines.length - 3));
+    lines.splice(insertAt, 0, dtLine);
+  }
+
+  // ── Firma ART/ATR variable (siempre presente, nunca igual) ──
+  const firmaPos = ['inicio', 'medio', 'final', 'integrado', 'random'];
+  _artInsertFirma(lines, firmaPos[Math.floor(Math.random() * firmaPos.length)]);
+
+  // ── Coro final ──
   if (hasChorus && chorus.length) {
     lines.push('[CORO FINAL]');
     chorus.forEach(l => lines.push(l));
@@ -5762,6 +5949,7 @@ function generateOfflineLyrics() {
     '<span style="font-size:11px;background:var(--p);color:#fff;padding:2px 8px;border-radius:4px;margin-right:5px;">' + (themeEmoji[theme]||'') + ' ' + theme + '</span>' +
     '<span style="font-size:11px;background:var(--a);color:#fff;padding:2px 8px;border-radius:4px;margin-right:5px;">' + (styleEmoji[style]||'') + ' ' + style + '</span>' +
     '<span style="font-size:11px;background:rgba(255,255,255,.1);color:var(--sub);padding:2px 8px;border-radius:4px;">' + structure + '</span>' +
+    '<span style="font-size:9px;background:rgba(255,215,0,.15);color:#ffd700;padding:2px 6px;border-radius:4px;margin-left:5px;">100% ArT-AtR</span>' +
     '</div>' +
     '<pre style="white-space:pre-wrap;font-family:inherit;font-size:13px;line-height:1.8;color:var(--text);margin:0;">' + escHtml(fullText) + '</pre>' +
     '<div style="display:flex;gap:8px;margin-top:14px;">' +
@@ -8062,6 +8250,63 @@ if (localStorage.getItem('byflow_player_hidden') === '1') {
   if (fx) fx.style.display = 'none';
   const btn = document.getElementById('player-bar-toggle');
   if (btn) btn.innerHTML = '&#x25B2;';
+}
+
+// ── Waveform Visualization (Producer.ai style) ───────────────────────────
+(function initWaveform() {
+  const canvas = document.getElementById('waveform-canvas');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  const bars = 80;
+  let heights = Array.from({length: bars}, () => Math.random() * 0.3 + 0.1);
+  let animId = null;
+  let isPlaying = false;
+
+  function resize() {
+    const wrap = canvas.parentElement;
+    canvas.width = wrap.offsetWidth * 2;
+    canvas.height = wrap.offsetHeight * 2;
+  }
+  resize();
+  window.addEventListener('resize', resize);
+
+  function draw() {
+    const w = canvas.width, h = canvas.height;
+    ctx.clearRect(0, 0, w, h);
+    const barW = w / bars;
+    const gap = 2;
+    for (let i = 0; i < bars; i++) {
+      if (isPlaying) heights[i] += (Math.random() - 0.5) * 0.08;
+      heights[i] = Math.max(0.05, Math.min(1, heights[i]));
+      const barH = heights[i] * h * 0.85;
+      const x = i * barW + gap / 2;
+      const gradient = ctx.createLinearGradient(0, h - barH, 0, h);
+      gradient.addColorStop(0, 'rgba(0,229,255,0.8)');
+      gradient.addColorStop(1, 'rgba(0,184,212,0.3)');
+      ctx.fillStyle = gradient;
+      ctx.fillRect(x, h - barH, barW - gap, barH);
+    }
+    animId = requestAnimationFrame(draw);
+  }
+  draw();
+
+  window._waveformSetPlaying = function(playing) {
+    isPlaying = playing;
+  };
+  window._waveformUpdateNowPlaying = function(title, artist) {
+    const t = document.getElementById('np-title');
+    const a = document.getElementById('np-artist');
+    if (t) t.textContent = title || 'ByFlow';
+    if (a) a.textContent = artist || 'Vive Cantando';
+  };
+})();
+
+function seekPlayerProgress(e) {
+  const track = e.currentTarget;
+  const rect = track.getBoundingClientRect();
+  const pct = ((e.clientX - rect.left) / rect.width) * 100;
+  const fill = document.getElementById('player-progress-fill');
+  if (fill) fill.style.width = pct + '%';
 }
 
 // ── Sidebar / Right Panel Toggle ──────────────────────────────────────────

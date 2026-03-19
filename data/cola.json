@@ -4,7 +4,7 @@
     "cantante": "Carlos",
     "cancion": "Despacito",
     "mesa": "3",
-    "estado": "esperando",
+    "estado": "terminado",
     "timestamp": 1773393122658
   },
   {
@@ -12,7 +12,7 @@
     "cantante": "Maria",
     "cancion": "Felices los 4",
     "mesa": "7",
-    "estado": "esperando",
+    "estado": "terminado",
     "timestamp": 1773393145948
   },
   {
@@ -20,7 +20,15 @@
     "cantante": "Pedro",
     "cancion": "La Bamba",
     "mesa": "3",
-    "estado": "esperando",
+    "estado": "cantando",
     "timestamp": 1773393145952
+  },
+  {
+    "id": "mmu4691gfwghrxywu05",
+    "cantante": "Test",
+    "cancion": "Despacito",
+    "mesa": null,
+    "estado": "cantando",
+    "timestamp": 1773721816900
   }
 ]
