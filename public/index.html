@@ -339,6 +339,13 @@ body.mode-estudio .btn-add{background:linear-gradient(135deg,#06b6d4,#3b82f6);bo
   white-space:nowrap;
 }
 .est-result-use:hover{opacity:.9;}
+.est-like-btn{background:none;border:none;font-size:18px;cursor:pointer;padding:4px;transition:transform .2s;filter:grayscale(1);opacity:.5;}
+.est-like-btn:hover{transform:scale(1.2);opacity:.8;}
+.est-like-btn.liked{filter:none;opacity:1;animation:est-pop .3s ease;}
+@keyframes est-pop{0%{transform:scale(1);}50%{transform:scale(1.4);}100%{transform:scale(1);}}
+.est-favs-toggle{display:flex;gap:4px;margin-top:6px;}
+.est-favs-toggle button{flex:1;padding:5px;border-radius:6px;border:1px solid var(--border);background:transparent;color:var(--sub);cursor:pointer;font-size:10px;font-weight:600;transition:all .15s;}
+.est-favs-toggle button.active{background:rgba(6,182,212,.15);color:#06b6d4;border-color:#06b6d4;}
 /* Letra editor (right) */
 .est-editor{display:flex;flex-direction:column;overflow:hidden;}
 .est-editor-head{padding:12px;border-bottom:1px solid var(--border);}
@@ -3172,6 +3179,10 @@ input:focus-visible,textarea:focus-visible{
           <button class="est-genre-btn" onclick="estGenreSearch(this,'lo-fi beat')">Lo-Fi</button>
           <button class="est-genre-btn" onclick="estGenreSearch(this,'drill type beat')">Drill</button>
           <button class="est-genre-btn" onclick="estGenreSearch(this,'latin trap beat')">Latin</button>
+        </div>
+        <div class="est-favs-toggle">
+          <button class="active" id="est-tab-search" onclick="estShowSearch()">🔍 Buscar</button>
+          <button id="est-tab-favs" onclick="estShowFavs()">❤️ Favoritos</button>
         </div>
       </div>
       <div class="est-results" id="est-results">
@@ -8587,12 +8598,14 @@ async function estSearchBeats() {
       const thumb = item.snippet.thumbnails.default.url;
       const div = document.createElement('div');
       div.className = 'est-result-item';
+      const isLiked = estIsLiked(vid);
       div.innerHTML = `
         <img class="est-result-thumb" src="${thumb}" alt="" loading="lazy">
         <div class="est-result-info">
           <div class="est-result-title" title="${title}">${title}</div>
           <div class="est-result-channel">&#127908; ${channel}</div>
         </div>
+        <button class="est-like-btn ${isLiked ? 'liked' : ''}" onclick="estToggleLike(event,'${vid}',\`${title.replace(/`/g,"'")}\`,'${channel}','${thumb}')" title="${isLiked ? 'Quitar de favoritos' : 'Agregar a favoritos'}">❤️</button>
         <button class="est-result-use" onclick="estSelectBeat('${vid}',\`${title.replace(/`/g,"'")}\`,'${channel}')">Usar Beat</button>
       `;
       container.appendChild(div);
@@ -8600,6 +8613,75 @@ async function estSearchBeats() {
   } catch (e) {
     container.innerHTML = '<div class="est-empty">Error buscando. Revisa tu API key en Ajustes.</div>';
   }
+}
+
+// ── Beat Likes / Favoritos ────────────────────────────────────────────────
+function _estGetLikedBeats() {
+  try { return JSON.parse(localStorage.getItem('byflow_liked_beats') || '[]'); }
+  catch { return []; }
+}
+function _estSaveLikedBeats(beats) {
+  localStorage.setItem('byflow_liked_beats', JSON.stringify(beats));
+}
+function estIsLiked(videoId) {
+  return _estGetLikedBeats().some(b => b.videoId === videoId);
+}
+function estToggleLike(event, videoId, title, channel, thumb) {
+  event.stopPropagation();
+  const beats = _estGetLikedBeats();
+  const idx = beats.findIndex(b => b.videoId === videoId);
+  const btn = event.currentTarget;
+  if (idx >= 0) {
+    const updated = [...beats.slice(0, idx), ...beats.slice(idx + 1)];
+    _estSaveLikedBeats(updated);
+    btn.classList.remove('liked');
+    btn.title = 'Agregar a favoritos';
+    showToast('💔 Beat removido de favoritos');
+  } else {
+    const newBeat = { videoId, title, channel, thumb, likedAt: Date.now() };
+    _estSaveLikedBeats([newBeat, ...beats]);
+    btn.classList.add('liked');
+    btn.title = 'Quitar de favoritos';
+    showToast('❤️ Beat guardado en favoritos');
+  }
+}
+function estShowSearch() {
+  document.getElementById('est-tab-search').classList.add('active');
+  document.getElementById('est-tab-favs').classList.remove('active');
+  document.getElementById('est-results').innerHTML = '<div class="est-empty">Busca un beat para empezar a escribir tu letra</div>';
+}
+function estShowFavs() {
+  document.getElementById('est-tab-favs').classList.add('active');
+  document.getElementById('est-tab-search').classList.remove('active');
+  const beats = _estGetLikedBeats();
+  const container = document.getElementById('est-results');
+  if (beats.length === 0) {
+    container.innerHTML = '<div class="est-empty">No tienes beats favoritos aun. Dale ❤️ a un beat para guardarlo.</div>';
+    return;
+  }
+  container.innerHTML = '';
+  beats.forEach(b => {
+    const div = document.createElement('div');
+    div.className = 'est-result-item';
+    div.innerHTML = `
+      <img class="est-result-thumb" src="${b.thumb}" alt="" loading="lazy">
+      <div class="est-result-info">
+        <div class="est-result-title" title="${b.title}">${b.title}</div>
+        <div class="est-result-channel">🎙 ${b.channel}</div>
+      </div>
+      <button class="est-like-btn liked" onclick="estToggleLikeFav(event,'${b.videoId}')" title="Quitar de favoritos">❤️</button>
+      <button class="est-result-use" onclick="estSelectBeat('${b.videoId}',\`${b.title.replace(/`/g,"'")}\`,'${b.channel}')">Usar Beat</button>
+    `;
+    container.appendChild(div);
+  });
+}
+function estToggleLikeFav(event, videoId) {
+  event.stopPropagation();
+  const beats = _estGetLikedBeats();
+  const updated = beats.filter(b => b.videoId !== videoId);
+  _estSaveLikedBeats(updated);
+  showToast('💔 Beat removido de favoritos');
+  estShowFavs(); // refresh list
 }
 
 function estGenreSearch(btn, query) {
