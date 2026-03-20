@@ -244,11 +244,16 @@ Ver `PLAN_MAESTRO_v4.md` para el plan completo con 4 fases.
 - [ ] Plan PRO Productor ($149 MXN)
 - [ ] Limites por plan (3 beats/dia gratis, ilimitado PRO)
 
+## COMPLETADO EN SESION 2026-03-19
+
+### Mantenimiento
+- [x] **Backup v3** — OneDrive\Backup-ByFlow\VibeFlow_Pro_backup_2026-03-19.zip
+- [x] **Verificacion produccion** — byflowapp.up.railway.app carga OK, sin errores
+- [x] **Redes sociales en landing** — Footer con iconos SVG (Facebook, Instagram, TikTok, YouTube, Email) + hover effects + responsive
+
 ### Pendientes generales
 - [ ] Test e2e licencias en produccion
-- [ ] Backup v3 a OneDrive
-- [ ] Redes sociales + email en landing
-- [ ] MASTER_ADMIN env var en Railway
+- [ ] MASTER_ADMIN env var en Railway (configurar en Railway Dashboard)
 - [ ] Sesion QR mesa sin registro
 
 ---
