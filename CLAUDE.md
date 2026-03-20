@@ -38,9 +38,18 @@
 - `IDEAS_PARA_LANZAR.md` — Ideas que requieren investigacion
 
 ## Al iniciar sesion
-1. Leer ESTADO_PROYECTO.md para saber donde quedamos
-2. Preguntar al usuario que quiere priorizar hoy
-3. Verificar si hay algo roto en produccion antes de agregar features
+1. **PRIMERO** leer el briefing de ArT Assistant: `C:\Users\art44\.claude\projects\C--BYFLOW-VibeFlow-Pro\context-briefing.md` — tiene estado de produccion, commits recientes, preguntas pendientes y resumen de la Colmena
+2. Leer la cola de preguntas: `C:\BYFLOW\ArT-Assistant\data\claude-queue.json` — preguntas que Arturo mando desde ArT Assistant para que yo resuelva
+3. Leer ESTADO_PROYECTO.md para contexto adicional
+4. Mostrar resumen rapido de lo que encontre y preguntar que quiere priorizar
+5. Verificar si hay algo roto en produccion antes de agregar features
+
+## ArT Assistant (junior AI)
+- **Ubicacion:** `C:\BYFLOW\ArT-Assistant\`
+- **Que hace:** Monitorea produccion, coordina la Colmena, prepara contexto para mi
+- **Cola de preguntas:** `data/claude-queue.json` — las que Arturo manda con `/claude`
+- **Briefing:** Se auto-genera en `context-briefing.md` antes de cada sesion
+- **Lenguaje:** Arturo habla español mexicano informal (typos, jerga, voice-to-text). ArT Assistant traduce. "haslo"=hazlo, "simon"=si, "truena"=falla, "lana"=dinero
 
 ## Reglas del proyecto
 - **CERO descargas de musica** — Solo streaming embebido (YouTube/SoundCloud/Jamendo)
