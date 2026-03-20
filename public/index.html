@@ -216,7 +216,7 @@ input,textarea,select{font-family:inherit;}
   background:linear-gradient(135deg,rgba(255,0,110,.08),rgba(131,56,236,.06));
   border-top:1px solid rgba(255,0,110,.12);
 }
-.vp-now-pulse{width:8px;height:8px;border-radius:50%;background:var(--p);box-shadow:0 0 8px var(--glow-p);animation:pulse 1.5s infinite;flex-shrink:0;will-change:opacity;}
+.vp-now-pulse{width:8px;height:8px;border-radius:50%;background:var(--p);box-shadow:0 0 8px var(--glow-p);animation:pulse 1.5s infinite;flex-shrink:0;}
 .vp-now-info{flex:1;min-width:0;}
 .vp-now-name{font-size:12px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .vp-now-song{font-size:10px;color:var(--sub);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
@@ -610,20 +610,23 @@ select.inp{cursor:pointer;}
 
 /* ── Fullscreen teleprompter ─────────────────────────────────────────── */
 .center.tp-fullscreen{
-  position:fixed;inset:0;z-index:999;background:var(--bg);
+  position:fixed;inset:0;z-index:9999;background:var(--bg);
 }
-body.tp-fs-active .player-bar,
-body.tp-fs-active .mobile-nav,
-body.tp-fs-active .topbar,
-body.tp-fs-active .left-sidebar,
-body.tp-fs-active #audio-bar{display:none!important;visibility:hidden!important;height:0!important;overflow:hidden!important;pointer-events:none!important;}
+/* Ocultar TODOS los elementos fijos cuando el teleprompter está fullscreen */
+body:has(.center.tp-fullscreen) .player-bar,
+body:has(.center.tp-fullscreen) .mobile-nav,
+body:has(.center.tp-fullscreen) .topbar,
+body:has(.center.tp-fullscreen) .left-sidebar,
+body:has(.center.tp-fullscreen) #audio-bar{
+  display:none!important;opacity:0!important;pointer-events:none!important;
+}
 .center.tp-fullscreen .fx-bar{display:none;}
 .center.tp-fullscreen .now-singing{
   position:fixed;top:0;left:0;right:0;z-index:1000;
 }
 .center.tp-fullscreen #tp-display{font-size:6rem;max-width:1400px;}
 .tp-fullscreen-btn{
-  position:absolute;top:10px;right:14px;z-index:1002;
+  position:absolute;top:10px;right:14px;z-index:15;
   width:34px;height:34px;border:1px solid var(--border);border-radius:8px;
   background:rgba(0,0,0,.5);backdrop-filter:blur(8px);
   color:var(--sub);display:flex;align-items:center;justify-content:center;
@@ -845,7 +848,7 @@ body.tp-fs-active #audio-bar{display:none!important;visibility:hidden!important;
   background:rgba(0,245,160,.1);color:var(--g);
   border:1px solid rgba(0,245,160,.2);margin-top:6px;
 }
-.ia-status-dot{width:5px;height:5px;border-radius:50%;background:var(--g);animation:pulse 2s infinite;will-change:opacity;}
+.ia-status-dot{width:5px;height:5px;border-radius:50%;background:var(--g);animation:pulse 2s infinite;}
 @keyframes pulse{0%,100%{opacity:1;}50%{opacity:.3;}}
 .ia-status.offline{background:rgba(255,100,100,.1);color:#ff6b6b;border-color:rgba(255,100,100,.2);}
 .ia-status.offline .ia-status-dot{background:#ff6b6b;animation:none;}
@@ -1351,8 +1354,8 @@ body.tp-fs-active #audio-bar{display:none!important;visibility:hidden!important;
 .mobile-nav-inner{display:flex;justify-content:space-around;}
 .mnav-btn{
   display:flex;flex-direction:column;align-items:center;gap:2px;
-  background:none;border:none;color:var(--sub);padding:8px 6px;
-  border-radius:10px;transition:all .2s;min-width:44px;min-height:44px;
+  background:none;border:none;color:var(--sub);padding:6px 6px;
+  border-radius:10px;transition:all .2s;min-width:44px;
 }
 .mnav-btn svg{width:20px;height:20px;}
 .mnav-btn span{font-size:9px;font-weight:700;letter-spacing:.3px;}
@@ -1741,19 +1744,22 @@ body.tp-fs-active #audio-bar{display:none!important;visibility:hidden!important;
   .topbar,.fx-bar,.player-bar,.mobile-nav{-webkit-backdrop-filter:none!important;backdrop-filter:none!important;}
   /* Panels: fijos entre topbar y player+nav */
   .ia-panel{display:none;}
-  .ia-panel.active{display:flex!important;position:fixed;top:54px;left:0;right:0;bottom:calc(131px + env(safe-area-inset-bottom, 0px));width:100%;z-index:90;border-left:none;overflow-y:auto;-webkit-overflow-scrolling:touch;}
+  .ia-panel.active{display:flex!important;position:fixed;top:54px;left:0;right:0;bottom:148px;width:100%;z-index:90;border-left:none;overflow-y:auto;-webkit-overflow-scrolling:touch;}
   .bares-panel{display:none;}
-  .bares-panel.active{display:flex!important;position:fixed;top:54px;left:0;right:0;bottom:calc(131px + env(safe-area-inset-bottom, 0px));width:100%;z-index:90;border-left:none;overflow-y:auto;-webkit-overflow-scrolling:touch;}
+  .bares-panel.active{display:flex!important;position:fixed;top:54px;left:0;right:0;bottom:148px;width:100%;z-index:90;border-left:none;overflow-y:auto;-webkit-overflow-scrolling:touch;}
   .yt-panel{display:none;}
-  .yt-panel.active{display:flex!important;position:fixed;top:54px;left:0;right:0;bottom:calc(131px + env(safe-area-inset-bottom, 0px));width:100%;z-index:90;border-left:none;overflow-y:auto;-webkit-overflow-scrolling:touch;}
+  .yt-panel.active{display:flex!important;position:fixed;top:54px;left:0;right:0;bottom:148px;width:100%;z-index:90;border-left:none;overflow-y:auto;-webkit-overflow-scrolling:touch;}
   .settings-panel{display:none!important;}
-  .settings-panel.active{display:flex!important;position:fixed;top:54px;left:0;right:0;bottom:calc(131px + env(safe-area-inset-bottom, 0px));width:100%;z-index:90;border-left:none;overflow-y:auto;-webkit-overflow-scrolling:touch;}
+  .settings-panel.active{display:flex!important;position:fixed;top:54px;left:0;right:0;bottom:148px;width:100%;z-index:90;border-left:none;overflow-y:auto;-webkit-overflow-scrolling:touch;}
   #tp-display{font-size:2rem;}
-  .topbar{padding:0 10px;}
-  .brand{font-size:15px;}
+  .topbar{padding:0 8px;height:44px;gap:6px;overflow:hidden;}
+  .brand{font-size:14px;}
+  .brand-sub{font-size:7px;letter-spacing:1px;}
+  .brand-wrap > div:last-child{display:none!important;} /* Ocultar credito ArT en mobile */
   .mode-switch{display:none;}
-  .usearch-input{width:120px;font-size:11px;}
-  .usearch-results{width:calc(100vw - 20px);left:50%;transform:translateX(-50%);right:auto;max-height:60vh;overflow-y:auto;-webkit-overflow-scrolling:touch;}
+  .usearch-input{width:90px;font-size:11px;}
+  .usearch-wrap{flex:1;min-width:0;}
+  .usearch-results{width:calc(100vw - 20px);left:50%;transform:translateX(-50%);right:auto;}
   .gflow-estudio{grid-template-columns:1fr!important;}
   .gflow-estudio > div:last-child{max-height:200px;}
   .byflow-bar{display:none!important;}
@@ -1768,7 +1774,7 @@ body.tp-fs-active #audio-bar{display:none!important;visibility:hidden!important;
   .mnav-btn[data-mode="remote"]{display:none!important;}
   /* Layout: center scrollea, con padding para player+nav fijos */
   .main{overflow:hidden;touch-action:manipulation;}
-  .center{overflow-y:auto;-webkit-overflow-scrolling:touch;touch-action:manipulation;padding-bottom:calc(180px + env(safe-area-inset-bottom, 0px));}
+  .center{overflow-y:auto;-webkit-overflow-scrolling:touch;touch-action:manipulation;padding-bottom:180px;}
   .scrollable{-webkit-overflow-scrolling:touch;touch-action:manipulation;}
   /* Welcome screen mobile */
   .welcome-cards{grid-template-columns:1fr;max-width:360px;gap:12px;}
@@ -1786,8 +1792,8 @@ body.tp-fs-active #audio-bar{display:none!important;visibility:hidden!important;
   .player-controls{gap:2px;flex-wrap:nowrap;overflow-x:auto;justify-content:flex-start;padding-bottom:0;}
   .ctrl-group{padding:0 3px;}
   .ctrl-group+.ctrl-group::before{display:none;}
-  .ctrl-btn{width:38px;height:38px;flex-shrink:0;border-radius:10px;}
-  .ctrl-btn.play{width:44px;height:44px;flex-shrink:0;border-radius:12px;}
+  .ctrl-btn{width:34px;height:34px;flex-shrink:0;border-radius:10px;}
+  .ctrl-btn.play{width:42px;height:42px;flex-shrink:0;border-radius:12px;}
   .tp-lrc-badge{display:none!important;}
   /* Hide FX sliders on small mobile */
   .player-bar .fx-sliders{display:none;}
@@ -4062,27 +4068,22 @@ function updateWordCounter() {
 // ── Fullscreen ───────────────────────────────────────────────────────────
 function tpToggleFullscreen() {
   const center = document.querySelector('.center');
-  center.classList.toggle('tp-fullscreen');
-  document.body.classList.toggle('tp-fs-active');
+  const isFS = center.classList.toggle('tp-fullscreen');
+  // Ocultar/mostrar barras fijas (mobile-nav, player-bar, audio-bar)
+  const hideEls = ['.player-bar', '.mobile-nav', '#audio-bar', '.topbar'];
+  hideEls.forEach(sel => {
+    const el = document.querySelector(sel);
+    if (el) el.style.display = isFS ? 'none' : '';
+  });
+  // Update button icon
   const btn = document.querySelector('.tp-fullscreen-btn');
-  if (center.classList.contains('tp-fullscreen')) {
+  if (isFS) {
     btn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 14h6v6m10-10h-6V4M4 10h6V4m10 10h-6v6"/></svg>';
-    // Botón más grande en fullscreen para fácil tap en mobile
-    btn.style.width = '44px';
-    btn.style.height = '44px';
-    showToast('Pantalla completa — toca X para salir');
+    showToast('Pantalla completa — ESC para salir');
   } else {
     btn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>';
-    btn.style.width = '';
-    btn.style.height = '';
   }
 }
-// ESC key para salir de fullscreen (mobile keyboards + desktop)
-document.addEventListener('keydown', (e) => {
-  if (e.key === 'Escape' && document.body.classList.contains('tp-fs-active')) {
-    tpToggleFullscreen();
-  }
-});
 
 // ── LRCLib Lyrics Search ─────────────────────────────────────────────────
 function openLyricsSearch() {
@@ -6375,8 +6376,6 @@ let _autoQueueEnabled = localStorage.getItem('byflow_autoqueue') !== '0';
 function addToHistory(title, artist, source) {
   const entry = { title, artist: artist || '', source, time: new Date().toLocaleTimeString() };
   _sessionHistory.push(entry);
-  // Limitar historial a 100 entradas para evitar acumulación
-  if (_sessionHistory.length > 100) _sessionHistory = _sessionHistory.slice(-100);
   sessionStorage.setItem('bf_history', JSON.stringify(_sessionHistory));
   renderSessionHistory();
 }
@@ -6400,7 +6399,7 @@ function renderSessionHistory() {
 function _startTwinSync() {
   _stopTwinSync();
   _playerSyncInterval = setInterval(() => {
-    if (!tpState.autoScrolling) return;
+    if (!tpState.autoScrolling) return; // No avanzar si está pausado
     if (_activePlayerType === 'youtube' && _ytPlayer && typeof _ytPlayer.getCurrentTime === 'function') {
       try { _feedTimeToLRC(_ytPlayer.getCurrentTime()); } catch {}
     } else if (_activePlayerType === 'soundcloud' && _scWidget) {
@@ -6408,7 +6407,8 @@ function _startTwinSync() {
     } else if (_activePlayerType === 'local' && localAudio && !localAudio.paused) {
       _feedTimeToLRC(localAudio.currentTime);
     }
-  }, 150); // 150ms es suficiente para LRC sync (antes era 50ms = lag)
+    // Jamendo usa timeupdate event directo, no necesita polling
+  }, 50);
 }
 
 function _stopTwinSync() {
@@ -6693,14 +6693,6 @@ if (!window.SC) {
 
 function scEmbed(trackUrl, title) {
   _playerEndIsCleanup = true; onPlayerEnd(_activePlayerType); _playerEndIsCleanup = false;
-  // Cleanup: unbind widget anterior para evitar memory leak
-  if (_scWidget) {
-    try {
-      _scWidget.unbind(SC.Widget.Events.PLAY);
-      _scWidget.unbind(SC.Widget.Events.PAUSE);
-      _scWidget.unbind(SC.Widget.Events.FINISH);
-    } catch {}
-  }
   _scWidget = null;
   const container = document.getElementById('embed-container');
   const player = document.getElementById('music-player-embed');
@@ -6727,14 +6719,6 @@ function scEmbed(trackUrl, title) {
 function closeEmbed() {
   stopPlayerSync();
   if (_ytPlayer) { try { _ytPlayer.destroy(); } catch {} _ytPlayer = null; }
-  // Cleanup SoundCloud widget listeners
-  if (_scWidget) {
-    try {
-      _scWidget.unbind(SC.Widget.Events.PLAY);
-      _scWidget.unbind(SC.Widget.Events.PAUSE);
-      _scWidget.unbind(SC.Widget.Events.FINISH);
-    } catch {}
-  }
   _scWidget = null;
   const container = document.getElementById('embed-container');
   const player = document.getElementById('music-player-embed');
@@ -7214,26 +7198,8 @@ renderCola = function(cola) {
 // ── Audio Player Bar ──────────────────────────────────────────────────
 let abAudio = null;
 
-// Named handlers para poder removerlos (evitar memory leak)
-function _abOnTimeUpdate() {
-  if (!abAudio || !abAudio.duration) return;
-  const pct = (abAudio.currentTime / abAudio.duration) * 100;
-  document.getElementById('ab-fill').style.width = pct + '%';
-  document.getElementById('ab-time').textContent = fmtTime(abAudio.currentTime) + ' / ' + fmtTime(abAudio.duration);
-}
-function _abOnEnded() {
-  document.getElementById('ab-ico-play').style.display = 'block';
-  document.getElementById('ab-ico-pause').style.display = 'none';
-}
-
 function abPlay(url, filename) {
-  // Cleanup anterior: remover listeners + revocar blob URL
-  if (abAudio) {
-    abAudio.removeEventListener('timeupdate', _abOnTimeUpdate);
-    abAudio.removeEventListener('ended', _abOnEnded);
-    abAudio.pause();
-    if (abAudio._blobUrl) URL.revokeObjectURL(abAudio._blobUrl);
-  }
+  if (abAudio) { abAudio.pause(); }
   abAudio = new Audio(url);
   abAudio.play().catch(e => showToast('Error: ' + e.message));
   const name = filename.replace(/\.[^.]+$/, '');
@@ -7241,8 +7207,16 @@ function abPlay(url, filename) {
   document.getElementById('audio-bar').classList.add('active');
   document.getElementById('ab-ico-play').style.display = 'none';
   document.getElementById('ab-ico-pause').style.display = 'block';
-  abAudio.addEventListener('timeupdate', _abOnTimeUpdate);
-  abAudio.addEventListener('ended', _abOnEnded);
+  abAudio.addEventListener('timeupdate', () => {
+    if (!abAudio || !abAudio.duration) return;
+    const pct = (abAudio.currentTime / abAudio.duration) * 100;
+    document.getElementById('ab-fill').style.width = pct + '%';
+    document.getElementById('ab-time').textContent = fmtTime(abAudio.currentTime) + ' / ' + fmtTime(abAudio.duration);
+  });
+  abAudio.addEventListener('ended', () => {
+    document.getElementById('ab-ico-play').style.display = 'block';
+    document.getElementById('ab-ico-pause').style.display = 'none';
+  });
 }
 
 function abToggle() {
@@ -8094,10 +8068,9 @@ function djPlay(sfxName) {
 
   const cached = djSfxCache[sfxName];
   if (cached) {
-    // Reusar el audio en vez de clonar (evitar memory leak)
-    cached.currentTime = 0;
-    cached.volume = djSfxVolume;
-    cached.play().catch(() => {});
+    const clone = cached.cloneNode();
+    clone.volume = djSfxVolume;
+    clone.play().catch(() => {});
     return;
   }
 
@@ -8105,7 +8078,6 @@ function djPlay(sfxName) {
   if (url) {
     const audio = new Audio(url);
     audio.volume = djSfxVolume;
-    djSfxCache[sfxName] = audio; // Cachear para reusar
     audio.play().catch(() => {});
   } else {
     showToast('SFX: ' + sfxName);
@@ -8192,68 +8164,61 @@ function openLocalAudio() {
   document.getElementById('local-audio-input').click();
 }
 
-// Named handlers para local audio (evitar memory leak)
-function _localOnPlay() {
-  onPlayerPlay('local');
-  document.getElementById('ab-ico-play').style.display = 'none';
-  document.getElementById('ab-ico-pause').style.display = 'block';
-}
-function _localOnPause() {
-  onPlayerPause('local');
-  document.getElementById('ab-ico-play').style.display = 'block';
-  document.getElementById('ab-ico-pause').style.display = 'none';
-}
-function _localOnEnded() {
-  onPlayerEnd('local');
-  document.getElementById('ab-ico-play').style.display = 'block';
-  document.getElementById('ab-ico-pause').style.display = 'none';
-}
-function _localOnTimeUpdate() {
-  if (!localAudio || !localAudio.duration) return;
-  const pct = (localAudio.currentTime / localAudio.duration) * 100;
-  document.getElementById('ab-fill').style.width = pct + '%';
-  document.getElementById('ab-time').textContent = fmtTime(localAudio.currentTime) + ' / ' + fmtTime(localAudio.duration);
-  if (_twinMode && tpState.isLRC && tpState.autoScrolling) {
-    _feedTimeToLRC(localAudio.currentTime);
-  }
-}
-
 function handleLocalAudio(input) {
   const file = input.files && input.files[0];
   if (!file) return;
-  // Cleanup anterior: remover listeners + revocar blob URL
-  if (localAudio) {
-    localAudio.removeEventListener('play', _localOnPlay);
-    localAudio.removeEventListener('pause', _localOnPause);
-    localAudio.removeEventListener('ended', _localOnEnded);
-    localAudio.removeEventListener('timeupdate', _localOnTimeUpdate);
-    localAudio.pause();
-    if (localAudio._blobUrl) URL.revokeObjectURL(localAudio._blobUrl);
-    localAudio = null;
-  }
+  // Clean up previous
+  if (localAudio) { localAudio.pause(); localAudio = null; }
   _playerEndIsCleanup = true; onPlayerEnd(_activePlayerType); _playerEndIsCleanup = false;
 
   const url = URL.createObjectURL(file);
   localAudio = new Audio(url);
-  localAudio._blobUrl = url; // Guardar para revocar después
   const filename = file.name.replace(/\.[^.]+$/, '');
 
+  // Show in audio bar
   document.getElementById('ab-name').textContent = filename;
   document.getElementById('audio-bar').classList.add('active');
   document.getElementById('ab-ico-play').style.display = 'none';
   document.getElementById('ab-ico-pause').style.display = 'block';
 
+  // Connect to Web Audio FX engine
   try { connectAudioToFX(localAudio); } catch (e) { console.warn('[LocalAudio] FX:', e.message); }
 
-  // Named listeners — se remueven limpio en el próximo handleLocalAudio
-  localAudio.addEventListener('play', _localOnPlay);
-  localAudio.addEventListener('pause', _localOnPause);
-  localAudio.addEventListener('ended', _localOnEnded);
-  localAudio.addEventListener('timeupdate', _localOnTimeUpdate);
+  // Twin player bridge — sync with teleprompter
+  localAudio.addEventListener('play', () => {
+    onPlayerPlay('local');
+    document.getElementById('ab-ico-play').style.display = 'none';
+    document.getElementById('ab-ico-pause').style.display = 'block';
+  });
+  localAudio.addEventListener('pause', () => {
+    onPlayerPause('local');
+    document.getElementById('ab-ico-play').style.display = 'block';
+    document.getElementById('ab-ico-pause').style.display = 'none';
+  });
+  localAudio.addEventListener('ended', () => {
+    onPlayerEnd('local');
+    document.getElementById('ab-ico-play').style.display = 'block';
+    document.getElementById('ab-ico-pause').style.display = 'none';
+  });
+  localAudio.addEventListener('timeupdate', () => {
+    if (!localAudio || !localAudio.duration) return;
+    const pct = (localAudio.currentTime / localAudio.duration) * 100;
+    document.getElementById('ab-fill').style.width = pct + '%';
+    document.getElementById('ab-time').textContent = fmtTime(localAudio.currentTime) + ' / ' + fmtTime(localAudio.duration);
+    // Feed time to LRC if twin mode
+    if (_twinMode && tpState.isLRC && tpState.autoScrolling) {
+      _feedTimeToLRC(localAudio.currentTime);
+    }
+  });
 
+  // Wire audio bar controls to local audio
   abAudio = localAudio;
+
+  // Start playing
   localAudio.play().catch(e => showToast('Error: ' + e.message));
   showToast('🎵 ' + filename);
+
+  // Reset file input so same file can be re-selected
   input.value = '';
 }
 
