@@ -1,3 +1,14 @@
+<!--
+  ByFlow — "Vive Cantando con ByFlow"
+  Copyright (c) 2024-2026 Arturo Torres (ArT-AtR) / IArtLabs
+  Todos los derechos reservados.
+
+  Este codigo fuente es propiedad exclusiva de Arturo Torres.
+  Queda prohibida su copia, distribucion, modificacion o uso
+  sin autorizacion expresa por escrito del propietario.
+
+  Contacto: elricondelgeekdearturo@gmail.com
+-->
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -610,7 +621,15 @@ select.inp{cursor:pointer;}
 
 /* ── Fullscreen teleprompter ─────────────────────────────────────────── */
 .center.tp-fullscreen{
-  position:fixed;inset:0;z-index:999;background:var(--bg);
+  position:fixed;inset:0;z-index:9999;background:var(--bg);
+}
+/* Ocultar TODOS los elementos fijos cuando el teleprompter está fullscreen */
+body:has(.center.tp-fullscreen) .player-bar,
+body:has(.center.tp-fullscreen) .mobile-nav,
+body:has(.center.tp-fullscreen) .topbar,
+body:has(.center.tp-fullscreen) .left-sidebar,
+body:has(.center.tp-fullscreen) #audio-bar{
+  display:none!important;opacity:0!important;pointer-events:none!important;
 }
 .center.tp-fullscreen .fx-bar{display:none;}
 .center.tp-fullscreen .now-singing{
@@ -1744,10 +1763,13 @@ select.inp{cursor:pointer;}
   .settings-panel{display:none!important;}
   .settings-panel.active{display:flex!important;position:fixed;top:54px;left:0;right:0;bottom:148px;width:100%;z-index:90;border-left:none;overflow-y:auto;-webkit-overflow-scrolling:touch;}
   #tp-display{font-size:2rem;}
-  .topbar{padding:0 10px;}
-  .brand{font-size:15px;}
+  .topbar{padding:0 8px;height:44px;gap:6px;overflow:hidden;}
+  .brand{font-size:14px;}
+  .brand-sub{font-size:7px;letter-spacing:1px;}
+  .brand-wrap > div:last-child{display:none!important;} /* Ocultar credito ArT en mobile */
   .mode-switch{display:none;}
-  .usearch-input{width:120px;font-size:11px;}
+  .usearch-input{width:90px;font-size:11px;}
+  .usearch-wrap{flex:1;min-width:0;}
   .usearch-results{width:calc(100vw - 20px);left:50%;transform:translateX(-50%);right:auto;}
   .gflow-estudio{grid-template-columns:1fr!important;}
   .gflow-estudio > div:last-child{max-height:200px;}
@@ -3474,7 +3496,7 @@ input:focus-visible,textarea:focus-visible{
 
     <div class="legal-section">
       <h5>Contenido y Letras</h5>
-      <p><strong>Letras generadas por IA:</strong> La copropiedad es 50% del autor (usuario) y 50% de ArT-AtR (Arturo Torres / IArtLabs). Si el usuario escribe, copia o pega su propia letra, la propiedad es 100% del usuario.</p>
+      <p><strong>Letras generadas por IA:</strong> Todas las letras generadas con ByFlow son propiedad 100% del usuario que las creo. ByFlow es solo la herramienta utilizada. <strong>Clausula comercial:</strong> Si una letra generada con ByFlow produce ingresos comerciales (ventas, streaming, licencias, sync, etc.), aplica un 15% de regalias a favor de IArtLabs como creador de la herramienta y el modelo de IA utilizado. Las letras contienen una marca de agua digital invisible que certifica su origen.</p>
       <p><strong>Datos de entrenamiento:</strong> Todas las letras ingresadas, escritas o generadas dentro de ByFlow seran utilizadas para entrenar y mejorar la inteligencia artificial de la plataforma. Al usar ByFlow, el usuario acepta esta condicion.</p>
     </div>
     <div class="legal-divider"></div>
@@ -4057,10 +4079,16 @@ function updateWordCounter() {
 // ── Fullscreen ───────────────────────────────────────────────────────────
 function tpToggleFullscreen() {
   const center = document.querySelector('.center');
-  center.classList.toggle('tp-fullscreen');
+  const isFS = center.classList.toggle('tp-fullscreen');
+  // Ocultar/mostrar barras fijas (mobile-nav, player-bar, audio-bar)
+  const hideEls = ['.player-bar', '.mobile-nav', '#audio-bar', '.topbar'];
+  hideEls.forEach(sel => {
+    const el = document.querySelector(sel);
+    if (el) el.style.display = isFS ? 'none' : '';
+  });
   // Update button icon
   const btn = document.querySelector('.tp-fullscreen-btn');
-  if (center.classList.contains('tp-fullscreen')) {
+  if (isFS) {
     btn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 14h6v6m10-10h-6V4M4 10h6V4m10 10h-6v6"/></svg>';
     showToast('Pantalla completa — ESC para salir');
   } else {
@@ -5260,13 +5288,78 @@ async function iaQuery(prompt) {
   }
 }
 
-// ── Firma copyright obligatoria para TODA letra generada ──────────────
-const BYFLOW_SIGNATURE = '\n\n─────────────────────────────\n✍️ ArT - AtR (Arturo Torres)\n🎤 Generado con ByFlow — powered by IArtLabs\n⚖️ Copropiedad: 50% Autor (tu) / 50% ArT-AtR\n📜 Aplica solo a letras generadas por la IA de ByFlow.\n   Si escribiste o copiaste tu letra, es 100% tuya.\n─────────────────────────────';
+// ── Firma visible + watermark invisible para TODA letra generada ──────
+const BYFLOW_SIGNATURE = '\n\n─────────────────────────────\n🎤 Generado con ByFlow — powered by IArtLabs\n📜 Propiedad intelectual: 100% del autor.\n💰 Clausula comercial: Si esta letra genera ingresos,\n   aplica un 15% de regalias a IArtLabs.\n─────────────────────────────';
+
+// ── Watermark invisible con zero-width characters ──
+// Codifica metadata en caracteres invisibles que sobreviven copy-paste
+// U+200B = 0, U+200C = 1 (binario). Invisible al ojo humano.
+const _ZW0 = '\u200B'; // zero-width space = bit 0
+const _ZW1 = '\u200C'; // zero-width non-joiner = bit 1
+const _ZWS = '\u200D'; // zero-width joiner = separador
+const _ZWM = '\uFEFF'; // BOM = marcador inicio/fin del watermark
+
+function _bfEncode(str) {
+  // Convierte string a binario usando zero-width chars
+  let bits = '';
+  for (let i = 0; i < str.length; i++) {
+    const bin = str.charCodeAt(i).toString(2).padStart(8, '0');
+    for (let b = 0; b < bin.length; b++) bits += bin[b] === '0' ? _ZW0 : _ZW1;
+    if (i < str.length - 1) bits += _ZWS;
+  }
+  return _ZWM + bits + _ZWM;
+}
+
+function _bfDecode(text) {
+  // Extrae y decodifica watermark de un texto
+  const start = text.indexOf(_ZWM);
+  const end = text.indexOf(_ZWM, start + 1);
+  if (start === -1 || end === -1) return null;
+  const encoded = text.substring(start + 1, end);
+  const chars = encoded.split(_ZWS);
+  let result = '';
+  for (const c of chars) {
+    let bin = '';
+    for (let i = 0; i < c.length; i++) {
+      if (c[i] === _ZW0) bin += '0';
+      else if (c[i] === _ZW1) bin += '1';
+    }
+    if (bin.length === 8) result += String.fromCharCode(parseInt(bin, 2));
+  }
+  return result;
+}
+
+function _bfWatermark(text, type) {
+  // type: 'GEN' = generada por IA (15% royalty), 'OG' = original ArT-AtR (100% suya), 'SUNO' = Suno track
+  const ts = Date.now().toString(36);
+  const t = type || 'GEN';
+  let meta;
+  if (t === 'OG') meta = 'BF|' + ts + '|ARTATR-OG|R0|ART';
+  else if (t === 'SUNO') meta = 'BF|' + ts + '|SUNO|R0|ART';
+  else meta = 'BF|' + ts + '|ARTATR|R15';
+  const wm = _bfEncode(meta);
+  // Insertar watermark invisible despues del primer salto de linea
+  const idx = text.indexOf('\n');
+  if (idx === -1) return text + wm;
+  return text.substring(0, idx) + wm + text.substring(idx);
+}
+
+function bfDetectWatermark(text) {
+  // Detecta si una letra tiene watermark de ByFlow
+  const data = _bfDecode(text);
+  if (!data || !data.startsWith('BF|')) return null;
+  const parts = data.split('|');
+  const royalty = parts[3] ? parseInt(parts[3].replace('R','')) : 0;
+  const owner = parts[4] || (royalty === 0 ? 'ArT-AtR' : 'user');
+  return { origin: 'ByFlow', timestamp: parseInt(parts[1], 36), motor: parts[2] || 'unknown', royalty: royalty, owner: owner };
+}
 
 function stampSignature(text) {
   // Si ya tiene firma, no duplicar
-  if (text.includes('ArT - AtR') && text.includes('50/50')) return text;
-  return text + BYFLOW_SIGNATURE;
+  if (text.includes('Generado con ByFlow')) return text;
+  // Aplicar watermark invisible + firma visible
+  const watermarked = _bfWatermark(text);
+  return watermarked + BYFLOW_SIGNATURE;
 }
 
 function offerLoadLyrics(bubbleEl, text) {
@@ -5276,7 +5369,7 @@ function offerLoadLyrics(bubbleEl, text) {
   // Show copyright notice in chat
   const notice = document.createElement('div');
   notice.style.cssText = 'margin-top:6px;padding:6px 10px;background:rgba(255,255,255,.05);border-left:3px solid var(--p);border-radius:4px;font-size:10px;color:var(--sub);line-height:1.5;';
-  notice.innerHTML = '⚖️ <b>Copyright:</b> 50% tu / 50% ArT-AtR (solo letras generadas por IA)';
+  notice.innerHTML = '📜 <b>Propiedad:</b> 100% tuya. 💰 Si genera ingresos, 15% regalias IArtLabs.';
   bubbleEl.parentElement.appendChild(notice);
 
   const btn = document.createElement('button');
@@ -5409,7 +5502,9 @@ function lsShowLetra(id) {
   const l = _artLetras.find(x => x.id === id);
   if (!l) return;
   const output = document.getElementById('ls-output');
-  const fullText = l.letra + '\n\n' + BYFLOW_SIGNATURE.trim();
+  const wmType = l.fuente === 'Suno' ? 'SUNO' : 'OG';
+  const ogSig = '\n\n─────────────────────────────\n✍️ ArT - AtR (Arturo Torres)\n📜 Letra original — Propiedad 100% de Arturo Torres / IArtLabs\n🔒 Protegida con marca de agua digital\n─────────────────────────────';
+  const fullText = _bfWatermark(l.letra, wmType) + ogSig;
   output.innerHTML =
     '<div style="margin-bottom:10px;">' +
       '<div style="font-size:14px;font-weight:800;margin-bottom:4px;">' + escHtml(l.titulo) + '</div>' +
@@ -5426,7 +5521,8 @@ function lsShowLetra(id) {
 function lsLoadLetraToTp(id) {
   const l = _artLetras.find(x => x.id === id);
   if (!l) return;
-  setLyrics(l.letra);
+  const wmType = l.fuente === 'Suno' ? 'SUNO' : 'OG';
+  setLyrics(_bfWatermark(l.letra, wmType));
   if (socket) socket.emit('tp_lyrics', { lyrics: l.letra });
   showToast('✅ "' + l.titulo + '" cargada en teleprompter');
   closeLyricStudio();
@@ -5952,17 +6048,18 @@ function generateOfflineLyrics() {
     chorus.forEach(l => lines.push(l));
   }
 
-  // ── Firma obligatoria ArT-AtR + Copyright 50/50 ──
+  // ── Firma ByFlow + clausula comercial 15% ──
   lines.push('');
   lines.push('─────────────────────────────');
-  lines.push('✍️ ArT - AtR (Arturo Torres)');
   lines.push('🎤 Generado con ByFlow — powered by IArtLabs');
-  lines.push('⚖️ Copropiedad: 50% Autor (tu) / 50% ArT-AtR');
-  lines.push('📜 Aplica solo a letras generadas por la IA de ByFlow.');
-  lines.push('   Si escribiste tu letra, es 100% tuya.');
+  lines.push('📜 Propiedad intelectual: 100% del autor.');
+  lines.push('💰 Clausula comercial: Si esta letra genera ingresos,');
+  lines.push('   aplica un 15% de regalias a IArtLabs.');
   lines.push('─────────────────────────────');
 
-  const fullText = lines.join('\n').trim();
+  // Aplicar watermark invisible antes de unir
+  const rawText = lines.join('\n').trim();
+  const fullText = _bfWatermark(rawText);
 
   // Display
   const styleEmoji = { rap:'🎤', trap:'🔥', reggaeton:'💃', balada:'💖', rock:'🎸', pop:'🎵' };

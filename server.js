@@ -1,6 +1,13 @@
 // ═══════════════════════════════════════════════════════════════════════════
-// BYFLOW — Vive Cantando (powered by IArtLabs) - Server (Node.js + Express + Socket.IO)
-// Persistencia JSON + CRUD completo + Error handling
+// ByFlow — "Vive Cantando con ByFlow"
+// Copyright (c) 2024-2026 Arturo Torres (ArT-AtR) / IArtLabs
+// Todos los derechos reservados.
+//
+// Este codigo fuente es propiedad exclusiva de Arturo Torres.
+// Queda prohibida su copia, distribucion, modificacion o uso
+// sin autorizacion expresa por escrito del propietario.
+//
+// Contacto: elricondelgeekdearturo@gmail.com
 // ═══════════════════════════════════════════════════════════════════════════
 require('dotenv').config({ quiet: true });
 

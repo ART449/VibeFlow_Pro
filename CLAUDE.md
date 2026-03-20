@@ -51,12 +51,12 @@
 - **Deploy:** git push a GitHub → Railway auto-deploy
 
 ## Politica de propiedad intelectual
-- **Solo aplica a letras generadas con el Motor ARTATR** (modelo entrenado con las letras de ArT-AtR)
-- **Copropiedad 50/50** — 50% ArT-AtR (por el modelo/estilo) + 50% el usuario que guio la IA
-- **Letras 100% escritas por el usuario** = 100% del usuario, ByFlow no reclama nada
-- **Letras 100% escritas por ArT-AtR** = 100% ArT-AtR
-- La firma ByFlow indica la herramienta usada, NO reclama propiedad
-- Implementado en: `offerLoadLyrics()`, `generateOfflineLyrics()`, constante `BYFLOW_SIGNATURE`
+- **Letras generadas con ByFlow** = 100% propiedad del usuario que las creo
+- **Clausula comercial:** Si la letra genera ingresos, 15% regalias para IArtLabs
+- **Watermark invisible:** Cada letra generada lleva marca de agua zero-width con metadata (origen, timestamp, motor, royalty%)
+- **Letras de ArT-AtR** (hardcodeadas en _artLetras) = 100% ArT-AtR
+- La firma ByFlow indica la herramienta usada + clausula comercial
+- Implementado en: `stampSignature()`, `_bfWatermark()`, `bfDetectWatermark()`, `generateOfflineLyrics()`
 
 ## Letras originales de ArT-AtR (referencia)
 - `data/letras_art_atr.txt` — **CATALOGO MAESTRO** con 41 canciones de 4 fuentes (OneNote, Google Photos, archivo local, Suno). 11 letras transcritas completas + 30 canciones Suno catalogadas.
