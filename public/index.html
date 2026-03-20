@@ -7951,13 +7951,56 @@ async function uSearch() {
 
   let html = '';
 
-  // Letras
-  if (lyricsData.length) {
+  // ── Recomendados: parear videos con letras cuando coinciden ──
+  const paired = [];
+  if (ytData.length && lyricsData.length) {
+    ytData.slice(0, 5).forEach(v => {
+      const vTitle = (v.snippet?.title || '').toLowerCase();
+      const match = lyricsData.find(l => {
+        const lTitle = (l.trackName || l.titulo || '').toLowerCase();
+        const lArtist = (l.artistName || '').toLowerCase();
+        return vTitle.includes(lTitle) || lTitle.includes(vTitle.split('-')[0].trim()) ||
+               (lArtist && vTitle.includes(lArtist));
+      });
+      if (match) paired.push({ video: v, lyrics: match, lyricsIdx: lyricsData.indexOf(match) });
+    });
+  }
+
+  if (paired.length) {
+    html += '<div class="usearch-group"><div class="usearch-group-title">⭐ Recomendados · Video + Letra</div>';
+    html += paired.slice(0, 3).map(p => {
+      const v = p.video;
+      const l = p.lyrics;
+      const thumb = v.snippet?.thumbnails?.default?.url || '';
+      const title = v.snippet?.title || 'Video';
+      const ch = v.snippet?.channelTitle || '';
+      const vid = v.id?.videoId || v.id;
+      const preview = (l.plainLyrics || '').split('\n').slice(0, 2).join(' / ').substring(0, 60);
+      return `<div class="usearch-item" style="flex-wrap:wrap;gap:6px;padding:10px 14px;background:rgba(255,0,110,.04);border:1px solid rgba(255,0,110,.15);border-radius:10px;margin:4px 8px;">
+        <img class="usearch-item-img" src="${escHtml(thumb)}" alt="" loading="lazy" style="border-radius:8px;">
+        <div class="usearch-item-info">
+          <div class="usearch-item-title">${escHtml(title)}</div>
+          <div class="usearch-item-sub">${escHtml(ch)}</div>
+          <div class="usearch-item-sub" style="opacity:.5;font-style:italic;">${escHtml(preview)}...</div>
+        </div>
+        <div style="display:flex;gap:4px;">
+          <button class="usearch-item-action" onclick="uPlayYoutube('${vid}','${escHtml(title.replace(/'/g,''))}');uLoadLyrics(${p.lyricsIdx})" style="background:var(--p);color:#fff;border-color:var(--p);">▶ Play + Letra</button>
+        </div>
+      </div>`;
+    }).join('');
+    html += '</div>';
+  }
+
+  // Letras (excluir las ya pareadas)
+  const pairedLyricIdxs = paired.map(p => p.lyricsIdx);
+  const remainingLyrics = lyricsData.filter((_, i) => !pairedLyricIdxs.includes(i));
+  if (remainingLyrics.length) {
     html += '<div class="usearch-group"><div class="usearch-group-title">📝 Letras</div>';
-    html += lyricsData.slice(0, 5).map((l, i) => {
+    html += remainingLyrics.slice(0, 5).map((l) => {
+      const origIdx = lyricsData.indexOf(l);
       const preview = (l.plainLyrics || '').split('\n').slice(0, 2).join(' / ').substring(0, 80);
       const isLocal = l._local;
-      return `<div class="usearch-item" onclick="uLoadLyrics(${i})">
+      return `<div class="usearch-item" onclick="uLoadLyrics(${origIdx})">
         <div class="usearch-item-img" style="display:flex;align-items:center;justify-content:center;font-size:18px;">${isLocal ? '📂' : '🎵'}</div>
         <div class="usearch-item-info">
           <div class="usearch-item-title">${escHtml(l.trackName || l.titulo || '')}</div>
@@ -7970,10 +8013,12 @@ async function uSearch() {
     html += '</div>';
   }
 
-  // YouTube
-  if (ytData.length) {
+  // YouTube (excluir los ya pareados)
+  const pairedVids = paired.map(p => p.video.id?.videoId || p.video.id);
+  const remainingYt = ytData.filter(v => !pairedVids.includes(v.id?.videoId || v.id));
+  if (remainingYt.length) {
     html += '<div class="usearch-group"><div class="usearch-group-title">▶️ YouTube</div>';
-    html += ytData.slice(0, 5).map((v) => {
+    html += remainingYt.slice(0, 5).map((v) => {
       const thumb = v.snippet?.thumbnails?.default?.url || '';
       const title = v.snippet?.title || 'Video';
       const ch    = v.snippet?.channelTitle || '';
