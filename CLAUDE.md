@@ -50,11 +50,12 @@
 - **Idioma UI:** Español
 - **Deploy:** git push a GitHub → Railway auto-deploy
 
-## Politica de propiedad intelectual (OBLIGATORIA)
-- **TODA letra generada por ByFlow** (ya sea por IA o por el generador offline) lleva firma obligatoria de ArT-AtR
-- **Copropiedad 50/50** — La propiedad intelectual de cualquier letra generada queda: 50% ArT-AtR (Arturo Torres) / 50% ByFlow (IArtLabs)
-- **Esto es por regla y norma, sin excepcion**
-- La firma incluye: autor (ArT-AtR), herramienta (ByFlow), y aviso de copropiedad 50/50
+## Politica de propiedad intelectual
+- **Solo aplica a letras generadas con el Motor ARTATR** (modelo entrenado con las letras de ArT-AtR)
+- **Copropiedad 50/50** — 50% ArT-AtR (por el modelo/estilo) + 50% el usuario que guio la IA
+- **Letras 100% escritas por el usuario** = 100% del usuario, ByFlow no reclama nada
+- **Letras 100% escritas por ArT-AtR** = 100% ArT-AtR
+- La firma ByFlow indica la herramienta usada, NO reclama propiedad
 - Implementado en: `offerLoadLyrics()`, `generateOfflineLyrics()`, constante `BYFLOW_SIGNATURE`
 
 ## Letras originales de ArT-AtR (referencia)
