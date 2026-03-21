@@ -3160,8 +3160,7 @@ input:focus-visible,textarea:focus-visible{
   <!-- Footer compacto -->
   <div class="welcome-footer">
     <div style="display:flex;gap:16px;align-items:center;">
-      <button class="welcome-skip" onclick="dismissWelcome()" style="font-size:11px;">Entrar sin cuenta</button>
-      <span style="font-size:10px;color:var(--a);cursor:pointer;" onclick="welcomeSelect('remote')">&#x1F4F1; Remoto</span>
+      <span style="font-size:10px;color:var(--a);cursor:pointer;" onclick="welcomeSelect('remote')">&#x1F4F1; Control Remoto</span>
     </div>
     <div style="font-size:7px;color:rgba(255,255,255,.1);margin-top:8px;max-width:380px;line-height:1.4;text-align:center;">Al usar ByFlow aceptas nuestros <span style="text-decoration:underline;cursor:pointer;" onclick="openLegalModal();dismissWelcome();">terminos de servicio</span>. Letras IA: 50/50 autor/ArT-AtR. Letras propias: 100% autor. &copy; 2024-2026 IArtLabs</div>
   </div>
@@ -4417,8 +4416,25 @@ async function agregarCancion() {
 // ── Mode Switch ───────────────────────────────────────────────────────────
 let currentMode = 'karaoke';
 function setMode(mode) {
+  // Bloquear si no hay login (excepto settings y remote)
+  const noAuthModes = ['settings', 'remote'];
+  if (!noAuthModes.includes(mode)) {
+    const uid = localStorage.getItem('byflow_user_uid');
+    if (!uid && !_fbUser) {
+      showToast('Inicia sesion primero', 'warning');
+      return;
+    }
+  }
+
+  // Bloquear PRO sin licencia
+  const proModes = ['youtube', 'bares', 'ia'];
+  if (proModes.includes(mode) && typeof isPremium === 'function' && !isPremium()) {
+    showToast('Modo PRO — Necesitas licencia activa', 'warning');
+    return;
+  }
+
   currentMode = mode;
-  localStorage.setItem('byflow_last_mode', mode); // Persistir modo para restore on refresh
+  localStorage.setItem('byflow_last_mode', mode);
   document.querySelectorAll('.mode-btn').forEach(b => b.classList.toggle('active', b.dataset.mode === mode));
 
   // Mode-based body class for accent colors (v7.1 design system)
@@ -8402,6 +8418,36 @@ function handleLocalAudio(input) {
 const _origAgregarCola = typeof agregarCola === 'function' ? agregarCola : null;
 
 function welcomeSelect(mode) {
+  // Remote mode no necesita login
+  if (mode === 'remote') {
+    dismissWelcome();
+    setMode(mode);
+    return;
+  }
+
+  // Verificar login — obligatorio para entrar
+  const uid = localStorage.getItem('byflow_user_uid');
+  if (!uid && !_fbUser) {
+    showToast('Inicia sesion para usar ByFlow', 'warning');
+    // Highlight el boton de Google
+    const googleBtn = document.querySelector('.welcome-overlay button[onclick*="socialLogin"]');
+    if (googleBtn) {
+      googleBtn.style.animation = 'none';
+      googleBtn.offsetHeight; // trigger reflow
+      googleBtn.style.animation = 'est-pop .4s ease';
+      googleBtn.style.border = '1px solid rgba(66,133,244,.6)';
+      setTimeout(() => { googleBtn.style.border = ''; }, 2000);
+    }
+    return;
+  }
+
+  // PRO modes — necesitan licencia
+  const proModes = ['youtube', 'bares', 'ia'];
+  if (proModes.includes(mode) && !isPremium()) {
+    showToast('Modo PRO — Necesitas licencia activa', 'warning');
+    return;
+  }
+
   // Ripple effect on the clicked card
   const card = document.querySelector(`.welcome-card[data-mode="${mode}"]`);
   if (card) {
@@ -8539,14 +8585,19 @@ _fbAuth.onAuthStateChanged((user) => {
 });
 
 function dismissWelcome() {
+  // No dejar saltar sin login
+  const uid = localStorage.getItem('byflow_user_uid');
+  if (!uid && !_fbUser) {
+    showToast('Inicia sesion para usar ByFlow', 'warning');
+    return;
+  }
   const ov = document.getElementById('welcome-overlay');
   if (ov) {
     ov.style.opacity = '0';
     ov.style.transition = 'opacity .4s';
     setTimeout(() => ov.classList.add('hidden'), 400);
   }
-  window._byflowWelcomed = true; // Solo en memoria — se resetea con F5
-  // Show sidebar for karaoke mode
+  window._byflowWelcomed = true;
   showPanelsForMode(currentMode || 'karaoke');
 }
 
@@ -9509,11 +9560,19 @@ window.addEventListener('appinstalled', () => {
   loadSettingsState();
   await connectSocket();
 
-  // SECURITY: SIEMPRE mostrar welcome en cada carga de página.
-  // La variable _byflowWelcomed solo vive en memoria (window),
-  // se resetea con F5/refresh. No hay forma de saltarse el welcome.
-  document.querySelector('.sidebar').classList.add('panel-hidden');
-  document.querySelector('.right-panel').classList.add('panel-hidden');
+  // Si ya tiene sesion Firebase, saltar welcome e ir directo
+  const _savedUid = localStorage.getItem('byflow_user_uid');
+  if (_savedUid) {
+    const ov = document.getElementById('welcome-overlay');
+    if (ov) ov.classList.add('hidden');
+    window._byflowWelcomed = true;
+    const lastMode = localStorage.getItem('byflow_last_mode') || 'karaoke';
+    setMode(lastMode);
+  } else {
+    // No hay sesion — mostrar welcome, obligar login
+    document.querySelector('.sidebar').classList.add('panel-hidden');
+    document.querySelector('.right-panel').classList.add('panel-hidden');
+  }
 
   // Check if voter mode (QR link to event)
   if (typeof talentCheckVoterMode === 'function') talentCheckVoterMode();
