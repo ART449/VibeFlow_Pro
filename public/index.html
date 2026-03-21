@@ -2105,15 +2105,15 @@ input:focus-visible,textarea:focus-visible{
       <div style="font-size:7px;color:rgba(255,255,255,.18);letter-spacing:.5px;margin-top:1px;">hecho por Arturo Torres (ART<i>. en el arte de rimarte,</i>)</div>
     </div>
     <div class="mode-switch">
-      <button class="mode-btn active" data-mode="karaoke" onclick="setMode('karaoke')" title="Teleprompter con letras y controles de karaoke">
+      <button class="mode-btn active" data-mode="karaoke" onclick="toggleMode('karaoke')" title="Teleprompter con letras y controles de karaoke">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
         Karaoke
       </button>
-      <button class="mode-btn yt-btn" data-mode="youtube" onclick="setMode('youtube')" style="color:#ff4444;" title="Busca musica en YouTube, SoundCloud y Jamendo">
+      <button class="mode-btn yt-btn" data-mode="youtube" onclick="toggleMode('youtube')" style="color:#ff4444;" title="Busca musica en YouTube, SoundCloud y Jamendo">
         <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/></svg>
         Musica
       </button>
-      <button class="mode-btn bares-btn" data-mode="bares" onclick="setMode('bares')" title="Gestion de mesas, promos y soundboard DJ">
+      <button class="mode-btn bares-btn" data-mode="bares" onclick="toggleMode('bares')" title="Gestion de mesas, promos y soundboard DJ">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M3 7h18M3 7l2 13h14l2-13M3 7l1-3h16l1 3"/><line x1="10" y1="12" x2="10" y2="17"/><line x1="14" y1="12" x2="14" y2="17"/></svg>
         Bares
       </button>
@@ -2123,19 +2123,19 @@ input:focus-visible,textarea:focus-visible{
           Mas
         </button>
         <div class="mode-dropdown" id="mode-dropdown">
-          <button class="mode-btn estudio-btn" data-mode="estudio" onclick="setMode('estudio');closeModeMore()" title="Escribe letras sobre beats de YouTube">
+          <button class="mode-btn estudio-btn" data-mode="estudio" onclick="toggleMode('estudio');closeModeMore()" title="Escribe letras sobre beats de YouTube">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M11 5H6a2 2 0 0 0-2 2v11a2 2 0 0 0 2 2h11a2 2 0 0 0 2-2v-5"/><path d="M18 2l4 4-10 10H8v-4L18 2z"/></svg>
             Estudio
           </button>
-          <button class="mode-btn ia-btn" data-mode="ia" onclick="setMode('ia');closeModeMore()" title="GFlow — DJ IA para letras y sets">
+          <button class="mode-btn ia-btn" data-mode="ia" onclick="toggleMode('ia');closeModeMore()" title="GFlow — DJ IA para letras y sets">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 2a9 9 0 0 1 9 9c0 4.56-2.87 8.5-7 9.7V22h-4v-1.3C5.87 19.5 3 15.56 3 11a9 9 0 0 1 9-9z"/><circle cx="9" cy="11" r="1" fill="currentColor"/><circle cx="15" cy="11" r="1" fill="currentColor"/></svg>
             IA Studio
           </button>
-          <button class="mode-btn vistas-btn" data-mode="vistas" onclick="setMode('vistas');closeModeMore()" title="Dashboard DJ multi-panel">
+          <button class="mode-btn vistas-btn" data-mode="vistas" onclick="toggleMode('vistas');closeModeMore()" title="Dashboard DJ multi-panel">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
             Panel Vistas
           </button>
-          <button class="mode-btn" data-mode="remote" onclick="setMode('remote');closeModeMore()" title="Vista publica para pantalla remota">
+          <button class="mode-btn" data-mode="remote" onclick="toggleMode('remote');closeModeMore()" title="Vista publica para pantalla remota">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="5" y="2" width="14" height="20" rx="2"/><circle cx="12" cy="17" r="1"/></svg>
             Remoto
           </button>
@@ -2160,14 +2160,14 @@ input:focus-visible,textarea:focus-visible{
       <div id="datetime">--</div>
     </div>
     <!-- User avatar / login -->
-    <img id="bf-user-photo" src="/icon-192.svg" style="display:none;width:28px;height:28px;border-radius:50%;object-fit:cover;border:2px solid rgba(255,255,255,.15);cursor:pointer;" onclick="setMode('settings')" title="Mi perfil">
+    <img id="bf-user-photo" src="/icon-192.svg" style="display:none;width:28px;height:28px;border-radius:50%;object-fit:cover;border:2px solid rgba(255,255,255,.15);cursor:pointer;" onclick="toggleMode('settings')" title="Mi perfil">
     <span id="bf-user-name" style="font-size:10px;color:var(--sub);max-width:80px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;"></span>
     <button id="bf-login-btn" onclick="socialLogin('google')" style="display:inline-flex;align-items:center;gap:4px;padding:5px 10px;border-radius:8px;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.05);color:rgba(255,255,255,.6);font-size:9px;cursor:pointer;" title="Iniciar sesion">
       <svg width="10" height="10" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
       Login
     </button>
     <button id="bf-logout-btn" onclick="bfLogout()" style="display:none;align-items:center;padding:5px 8px;border-radius:8px;border:1px solid rgba(255,255,255,.08);background:transparent;color:rgba(255,255,255,.3);font-size:8px;cursor:pointer;" title="Cerrar sesion">Salir</button>
-    <button class="topbar-settings" onclick="setMode('settings')" title="Configuracion y perfil">
+    <button class="topbar-settings" onclick="toggleMode('settings')" title="Configuracion y perfil">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
     </button>
     <div class="byflow-bar" style="cursor:pointer;" onclick="openLegalModal()">Powered by <span>IArtLabs</span></div>
@@ -4415,6 +4415,16 @@ async function agregarCancion() {
 
 // ── Mode Switch ───────────────────────────────────────────────────────────
 let currentMode = 'karaoke';
+// Toggle — si ya estas en ese modo, vuelve al anterior
+let _previousMode = 'karaoke';
+function toggleMode(mode) {
+  if (currentMode === mode) {
+    setMode(_previousMode || 'karaoke');
+  } else {
+    setMode(mode);
+  }
+}
+
 function setMode(mode) {
   // Bloquear si no hay login (excepto settings y remote)
   const noAuthModes = ['settings', 'remote'];
@@ -4433,6 +4443,7 @@ function setMode(mode) {
     return;
   }
 
+  if (currentMode && currentMode !== mode) _previousMode = currentMode;
   currentMode = mode;
   localStorage.setItem('byflow_last_mode', mode);
   document.querySelectorAll('.mode-btn').forEach(b => b.classList.toggle('active', b.dataset.mode === mode));
