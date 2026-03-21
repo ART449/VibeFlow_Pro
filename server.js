@@ -187,7 +187,7 @@ function getActiveLicense() {
   return licenses.find(l => l.activated && l.deviceFingerprint === fp) || null;
 }
 
-// Per-user license lookup by token
+// Per-user license lookup by token (returns entry even if expired — caller checks)
 function getLicenseByToken(token) {
   if (!token) return null;
   const licenses = (state.license && state.license.licenses) || [];
@@ -606,15 +606,26 @@ app.delete('/api/canciones/:id', (req, res) => {
 });
 
 // ── Teleprompter state ───────────────────────────────────────────────────────
+// NOTE: Global teleprompter state is DEPRECATED for user-facing use.
+// Each user's teleprompter is local. This endpoint remains for admin/debug only.
 app.get('/api/teleprompter', (req, res) => res.json(state.teleprompter));
 app.post('/api/teleprompter', (req, res) => {
-  // Whitelist: solo campos validos del teleprompter
+  // Only used by admin/DJ room setups — no global broadcast
+  const roomId = req.body.roomId;
   const allowed = ['lyrics', 'currentWord', 'scrollSpeed', 'isPlaying'];
+  if (roomId) {
+    const room = getRoom(roomId);
+    for (const key of allowed) {
+      if (req.body[key] !== undefined) room.teleprompter[key] = req.body[key];
+    }
+    io.to(roomId).emit('tp_update', room.teleprompter);
+    return res.json(room.teleprompter);
+  }
+  // Fallback: update global state but do NOT broadcast to all users
   for (const key of allowed) {
     if (req.body[key] !== undefined) state.teleprompter[key] = req.body[key];
   }
   debouncedSave('teleprompter.json', state.teleprompter);
-  io.emit('tp_update', state.teleprompter);
   res.json(state.teleprompter);
 });
 
@@ -714,11 +725,17 @@ app.get('/api/license/status', (req, res) => {
   if (token) {
     const lic = getLicenseByToken(token);
     if (lic) {
+      // Check expiry
+      if (lic.expiresAt && new Date(lic.expiresAt) < new Date()) {
+        return res.json({ activated: false, features: [], expired: true, expiresAt: lic.expiresAt });
+      }
       return res.json({
         activated: true,
         features: lic.features,
         owner: lic.owner || '',
-        keyFragment: lic.key.slice(-9)
+        keyFragment: lic.key.slice(-9),
+        expiresAt: lic.expiresAt || null,
+        promo: lic.promo || false
       });
     }
   }
@@ -789,6 +806,34 @@ app.post('/api/license/admin/generate', (req, res) => {
   state.license.licenses.push(entry);
   saveJSON('licenses.json', state.license);
   res.json({ key, owner, features });
+});
+
+// ── Bulk promo: genera N licencias con expiry ────────────────────────────
+app.post('/api/license/admin/promo', (req, res) => {
+  const adminKey = req.headers['x-admin-key'];
+  if (adminKey !== ADMIN_SECRET && adminKey !== MASTER_ADMIN) {
+    return res.status(401).json({ error: 'Admin key inválida' });
+  }
+  const count = Math.min(parseInt(req.body.count) || 10, 100);
+  const days = parseInt(req.body.days) || 30;
+  const label = (req.body.label || 'Promo').trim();
+  const features = Array.isArray(req.body.features) ? req.body.features : ['bares', 'music_streaming', 'ollama_ai'];
+  const expiresAt = new Date(Date.now() + days * 86400000).toISOString();
+  const keys = [];
+  for (let i = 0; i < count; i++) {
+    const key = generateLicenseKey();
+    const entry = {
+      key, owner: `${label} #${i + 1}`, features,
+      created: new Date().toISOString(),
+      activated: false, activatedAt: null,
+      deviceFingerprint: null, userToken: null,
+      promo: true, expiresAt
+    };
+    state.license.licenses.push(entry);
+    keys.push(key);
+  }
+  saveJSON('licenses.json', state.license);
+  res.json({ count: keys.length, expiresAt, label, keys });
 });
 
 app.get('/api/license/admin/list', (req, res) => {
@@ -1456,9 +1501,9 @@ io.on('connection', (socket) => {
     }
   });
 
+  // Init: cola/mesas/canciones are shared; teleprompter is per-session (NOT global)
   socket.emit('init', {
     cola: state.cola, mesas: state.mesas,
-    teleprompter: state.teleprompter,
     canciones: state.canciones
   });
 
@@ -1466,44 +1511,36 @@ io.on('connection', (socket) => {
     const word = typeof data.currentWord === 'number' ? data.currentWord : undefined;
     const playing = typeof data.isPlaying === 'boolean' ? data.isPlaying : undefined;
     if (myRoom) {
+      // In a room: share with room members (DJ → Remote screen)
       const room = getRoom(myRoom);
       if (word !== undefined) room.teleprompter.currentWord = word;
       if (playing !== undefined) room.teleprompter.isPlaying = playing;
       socket.to(myRoom).emit('tp_update', room.teleprompter);
-    } else {
-      if (word !== undefined) state.teleprompter.currentWord = word;
-      if (playing !== undefined) state.teleprompter.isPlaying = playing;
-      debouncedSave('teleprompter.json', state.teleprompter);
-      socket.broadcast.emit('tp_update', state.teleprompter);
     }
+    // Without room: teleprompter is local-only, no broadcast needed
   });
 
   socket.on('tp_lyrics', (data) => {
     const lyrics = typeof data.lyrics === 'string' ? data.lyrics.slice(0, 50000) : '';
     if (myRoom) {
+      // In a room: share lyrics with all room members
       const room = getRoom(myRoom);
       room.teleprompter.lyrics = lyrics;
       room.teleprompter.currentWord = -1;
       io.to(myRoom).emit('tp_update', room.teleprompter);
-    } else {
-      state.teleprompter.lyrics = lyrics;
-      state.teleprompter.currentWord = -1;
-      saveJSON('teleprompter.json', state.teleprompter);
-      io.emit('tp_update', state.teleprompter);
     }
+    // Without room: lyrics are local-only (client handles its own state)
   });
 
   socket.on('tp_speed', (data) => {
     const speed = Math.max(0.1, Math.min(10, Number(data.speed) || 1));
     if (myRoom) {
+      // In a room: share speed with room members
       const room = getRoom(myRoom);
       room.teleprompter.scrollSpeed = speed;
       io.to(myRoom).emit('tp_speed_update', { speed });
-    } else {
-      state.teleprompter.scrollSpeed = speed;
-      debouncedSave('teleprompter.json', state.teleprompter);
-      io.emit('tp_speed_update', { speed });
     }
+    // Without room: speed is local-only
   });
 
   socket.on('cola_add', (data) => {

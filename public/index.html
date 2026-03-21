@@ -759,8 +759,9 @@ body:has(.center.tp-fullscreen) #audio-bar{
   min-height:72px;
 }
 .player-bar.collapsed{
-  padding:0;max-height:0;border-top-color:transparent;opacity:0;pointer-events:none;
+  padding:0;max-height:0;min-height:0;height:0;border-top-color:transparent;opacity:0;pointer-events:none;
 }
+.player-bar.collapsed::before{display:none;}
 .player-bar::before{
   content:'';position:absolute;top:0;left:10%;right:10%;height:1px;
   background:linear-gradient(90deg,transparent,rgba(0,229,255,.4),rgba(0,184,212,.4),transparent);
@@ -1784,31 +1785,69 @@ body:has(.center.tp-fullscreen) #audio-bar{
   .settings-panel{display:none!important;}
   .settings-panel.active{display:flex!important;position:fixed;top:54px;left:0;right:0;bottom:148px;width:100%;z-index:90;border-left:none;overflow-y:auto;-webkit-overflow-scrolling:touch;}
   #tp-display{font-size:2rem;}
-  .topbar{padding:0 8px;height:44px;gap:6px;overflow:hidden;}
-  .brand{font-size:14px;}
-  .brand-sub{font-size:7px;letter-spacing:1px;}
+  /* ─── Topbar: limpio y espacioso ─── */
+  .topbar{padding:0 10px;height:48px;gap:8px;overflow:hidden;}
+  .brand{font-size:15px;}
+  .brand-sub{display:none;} /* Ocultar "VIVE CANTANDO" en mobile */
   .brand-wrap > div:last-child{display:none!important;} /* Ocultar credito ArT en mobile */
   .mode-switch{display:none;}
-  .usearch-input{width:90px;font-size:11px;}
-  .usearch-wrap{flex:1;min-width:0;}
+  /* Buscador: compacto pero funcional */
+  .usearch-wrap{flex:1;min-width:0;margin-left:4px;}
+  .usearch-input{width:100%;font-size:12px;}
+  .usearch-bar{height:32px;}
   .usearch-results{width:calc(100vw - 20px);left:50%;transform:translateX(-50%);right:auto;}
-  .gflow-estudio{grid-template-columns:1fr!important;}
-  .gflow-estudio > div:last-child{max-height:200px;}
+  /* Ocultar elementos no esenciales */
   .byflow-bar{display:none!important;}
   .panel-toggle{display:none!important;}
   .player-bar-toggle{display:none!important;}
-  /* Mobile-nav y player-bar fijos en bottom */
+  #datetime{display:none!important;} /* Reloj: no esencial en mobile */
+  #online-count{display:none!important;}
+  #room-badge{display:none!important;}
+  #bf-user-name{display:none!important;} /* Nombre: la foto basta */
+  .topbar-settings{display:none!important;} /* Settings esta en mobile nav */
+  /* User photo/login: mas grande para touch */
+  #bf-user-photo{width:30px!important;height:30px!important;}
+  #bf-login-btn{padding:6px 12px!important;font-size:10px!important;}
+  #bf-logout-btn{padding:4px 6px!important;font-size:7px!important;}
+  .gflow-estudio{grid-template-columns:1fr!important;}
+  .gflow-estudio > div:last-child{max-height:200px;}
+  /* ─── Mobile nav: fijo abajo ─── */
   .mobile-nav{display:block;position:fixed;bottom:0;left:0;right:0;z-index:200;}
-  .player-bar{position:fixed;bottom:59px;left:0;right:0;z-index:199;overflow-x:auto;}
-  .fx-bar{display:none;}
-  /* Vistas y Remoto: ocultos en mobile nav (acceso desde topbar desktop) */
+  .mnav-btn{padding:4px 2px;min-width:0;}
+  .mnav-btn svg{width:18px;height:18px;}
+  .mnav-btn span{font-size:8px;letter-spacing:0;}
+  /* Vistas y Remoto: ocultos (acceso desde modo mas en desktop) */
   .mnav-btn[data-mode="vistas"]{display:none!important;}
   .mnav-btn[data-mode="remote"]{display:none!important;}
-  /* Layout: center scrollea, con padding para player+nav fijos */
+  /* ─── Player bar: fijo arriba del nav, compacto ─── */
+  .player-bar{position:fixed;bottom:56px;left:0;right:0;z-index:199;min-height:48px;padding:4px 8px;gap:6px;}
+  .player-bar .now-playing-info{min-width:auto;gap:6px;}
+  .player-bar .now-playing-title{max-width:70px;font-size:10px;}
+  .player-bar .now-playing-artist{display:none;} /* Ocultar artista en mobile */
+  .player-bar .now-playing-cover{width:32px;height:32px;}
+  .player-bar .now-playing-cover svg{width:14px;height:14px;}
+  .player-bar .player-progress-zone{display:none;} /* Barra progreso: ocultar en mobile */
+  .player-bar .player-controls{gap:0;flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch;}
+  .player-bar .ctrl-group{padding:0 1px;}
+  .player-bar .ctrl-btn{width:34px;height:34px;}
+  .player-bar .ctrl-btn.play{width:40px;height:40px;}
+  .player-bar .player-time-row{display:none;}
+  .fx-bar{display:none;}
+  /* ─── Paneles: entre topbar y player+nav ─── */
+  .ia-panel{display:none;}
+  .ia-panel.active{display:flex!important;position:fixed;top:48px;left:0;right:0;bottom:116px;width:100%;z-index:90;border-left:none;overflow-y:auto;-webkit-overflow-scrolling:touch;}
+  .bares-panel{display:none;}
+  .bares-panel.active{display:flex!important;position:fixed;top:48px;left:0;right:0;bottom:116px;width:100%;z-index:90;border-left:none;overflow-y:auto;-webkit-overflow-scrolling:touch;}
+  .yt-panel{display:none;}
+  .yt-panel.active{display:flex!important;position:fixed;top:48px;left:0;right:0;bottom:116px;width:100%;z-index:90;border-left:none;overflow-y:auto;-webkit-overflow-scrolling:touch;}
+  .settings-panel{display:none!important;}
+  .settings-panel.active{display:flex!important;position:fixed;top:48px;left:0;right:0;bottom:116px;width:100%;z-index:90;border-left:none;overflow-y:auto;-webkit-overflow-scrolling:touch;}
+  #tp-display{font-size:2rem;}
+  /* ─── Layout: center scrollea ─── */
   .main{overflow:hidden;touch-action:manipulation;}
-  .center{overflow-y:auto;-webkit-overflow-scrolling:touch;touch-action:manipulation;padding-bottom:180px;}
+  .center{overflow-y:auto;-webkit-overflow-scrolling:touch;touch-action:manipulation;padding-bottom:140px;}
   .scrollable{-webkit-overflow-scrolling:touch;touch-action:manipulation;}
-  /* Welcome screen mobile */
+  /* ─── Welcome screen mobile ─── */
   .welcome-cards{grid-template-columns:1fr;max-width:360px;gap:12px;}
   .welcome-card{padding:18px 16px;flex-direction:row;gap:14px;text-align:left;}
   .welcome-card .wc-glow{display:none;}
@@ -1820,17 +1859,26 @@ body:has(.center.tp-fullscreen) #audio-bar{
   .welcome-footer{margin-top:16px;gap:6px;}
 }
 @media(max-width:600px){
-  .player-bar{padding:4px 6px 2px;}
-  .player-controls{gap:2px;flex-wrap:nowrap;overflow-x:auto;justify-content:flex-start;padding-bottom:0;}
-  .ctrl-group{padding:0 3px;}
+  .topbar{height:44px;padding:0 8px;gap:6px;}
+  .brand{font-size:13px;}
+  #bf-login-btn{padding:5px 8px!important;font-size:9px!important;}
+  .player-bar{padding:4px 6px;min-height:48px;bottom:54px;}
+  .player-controls{gap:1px;flex-wrap:nowrap;overflow-x:auto;justify-content:flex-start;}
+  .ctrl-group{padding:0 2px;}
   .ctrl-group+.ctrl-group::before{display:none;}
-  .ctrl-btn{width:34px;height:34px;flex-shrink:0;border-radius:10px;}
-  .ctrl-btn.play{width:42px;height:42px;flex-shrink:0;border-radius:12px;}
+  .ctrl-btn{width:32px;height:32px;flex-shrink:0;border-radius:10px;}
+  .ctrl-btn.play{width:40px;height:40px;flex-shrink:0;border-radius:12px;}
   .tp-lrc-badge{display:none!important;}
-  /* Hide FX sliders on small mobile */
   .player-bar .fx-sliders{display:none;}
-  #tp-display{font-size:1.8rem;}
+  #tp-display{font-size:1.6rem;}
   .catalog-modal{width:96%;max-height:90vh;border-radius:12px;}
+  /* Panels: adjust for smaller topbar */
+  .ia-panel.active,.bares-panel.active,.yt-panel.active,.settings-panel.active{top:44px!important;bottom:106px!important;}
+  /* Mobile nav: tighter */
+  .mobile-nav{padding:4px 4px calc(env(safe-area-inset-bottom, 2px) + 4px);}
+  .mnav-btn span{font-size:7px;}
+  .mnav-btn svg{width:16px;height:16px;}
+  /* Welcome */
   .welcome-logo{font-size:2rem;}
   .welcome-cards{max-width:300px;gap:8px;}
   .welcome-card{padding:10px 12px;}
@@ -4490,7 +4538,7 @@ function setMode(mode) {
   const centerEl = document.querySelector('.center');
   if (nsNext) nsNext.style.display = '';
   if (fsBtn) fsBtn.style.display = '';
-  if (embed) embed.style.display = '';
+  // embed (music-player-embed) only shown in youtube mode — not restored here
   if (tpWelcome) tpWelcome.style.display = '';
   if (mobileNavEl) mobileNavEl.style.display = '';
   if (centerEl) centerEl.style.paddingBottom = '';
@@ -8638,9 +8686,10 @@ function togglePlayerBar() {
   const fx = document.querySelector('.fx-bar');
   const btn = document.getElementById('player-bar-toggle');
   pb.classList.toggle('collapsed');
-  if (fx) fx.style.display = pb.classList.contains('collapsed') ? 'none' : '';
-  btn.innerHTML = pb.classList.contains('collapsed') ? '&#x25B2;' : '&#x25BC;';
-  localStorage.setItem('byflow_player_hidden', pb.classList.contains('collapsed') ? '1' : '');
+  const isCollapsed = pb.classList.contains('collapsed');
+  if (fx) fx.style.display = isCollapsed ? 'none' : '';
+  if (btn) btn.innerHTML = isCollapsed ? '&#x25B2;' : '&#x25BC;';
+  localStorage.setItem('byflow_player_hidden', isCollapsed ? '1' : '');
 }
 if (localStorage.getItem('byflow_player_hidden') === '1') {
   document.getElementById('player-bar-main')?.classList.add('collapsed');
