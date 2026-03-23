@@ -39,7 +39,7 @@
 :root{
   --bg:#07070d;--card:#0e0e18;--card2:#13131f;--border:rgba(255,255,255,.07);
   --p:#ff006e;--s:#8338ec;--a:#3a86ff;--g:#00f5a0;
-  --text:#f0f0f0;--sub:rgba(255,255,255,.4);
+  --text:#f0f0f0;--sub:rgba(255,255,255,.55);
   --glow-p:rgba(255,0,110,.25);--glow-s:rgba(131,56,236,.25);
 }
 /* Light theme override */
@@ -208,7 +208,7 @@ input,textarea,select{font-family:inherit;}
   background:linear-gradient(135deg,var(--a),var(--g));
   -webkit-background-clip:text;-webkit-text-fill-color:transparent;
 }
-.vp-header-badge{font-size:9px;color:var(--g);background:rgba(0,245,160,.1);border:1px solid rgba(0,245,160,.2);padding:2px 8px;border-radius:8px;font-weight:700;}
+.vp-header-badge{font-size:10px;color:var(--g);background:rgba(0,245,160,.1);border:1px solid rgba(0,245,160,.2);padding:2px 8px;border-radius:8px;font-weight:700;}
 .vp-cola{
   grid-row:2;overflow-y:auto;background:var(--card);border-right:1px solid var(--border);
   display:flex;flex-direction:column;
@@ -222,11 +222,11 @@ input,textarea,select{font-family:inherit;}
 }
 .vp-cola-item:hover{background:rgba(255,255,255,.06);border-color:rgba(255,255,255,.12);}
 .vp-cola-item.singing{border-color:var(--p);background:rgba(255,0,110,.07);}
-.vp-cola-num{width:20px;height:20px;border-radius:50%;background:var(--card2);display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:800;flex-shrink:0;}
+.vp-cola-num{width:20px;height:20px;border-radius:50%;background:var(--card2);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;flex-shrink:0;}
 .vp-cola-item.singing .vp-cola-num{background:var(--p);color:#fff;}
 .vp-cola-info{flex:1;min-width:0;}
 .vp-cola-name{font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-.vp-cola-song{font-size:9px;color:var(--sub);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.vp-cola-song{font-size:10px;color:var(--sub);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .vp-center{
   grid-row:2;display:flex;flex-direction:column;overflow:hidden;
 }
@@ -313,7 +313,7 @@ body.mode-estudio .btn-add{background:linear-gradient(135deg,#06b6d4,#3b82f6);bo
   font-size:14px;font-weight:700;
   background:linear-gradient(135deg,#06b6d4,#3b82f6);-webkit-background-clip:text;-webkit-text-fill-color:transparent;
 }
-.est-header-badge{font-size:9px;color:var(--sub);text-transform:uppercase;letter-spacing:1.5px;opacity:.7;}
+.est-header-badge{font-size:10px;color:var(--sub);text-transform:uppercase;letter-spacing:1.5px;opacity:.7;}
 /* Beat search (left) */
 .est-beats{
   border-right:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden;
@@ -500,7 +500,7 @@ body.mode-estudio .btn-add{background:linear-gradient(135deg,#06b6d4,#3b82f6);bo
   .est-beats{max-height:45vh;border-right:none;border-bottom:1px solid var(--border);}
   .est-beat-embed{width:160px;}
   .est-result-item{padding:8px 4px;}
-  .est-result-use{padding:5px 8px;font-size:9px;}
+  .est-result-use{padding:5px 8px;font-size:10px;}
   .est-search-btn{padding:8px 10px;font-size:11px;}
   .est-footer{flex-wrap:wrap;gap:8px;padding:8px 12px;}
   .est-disclaimer{max-width:100%;margin-left:0;}
@@ -542,10 +542,10 @@ select.inp{cursor:pointer;}
 
 /* Queue items */
 .queue-item{
-  padding:9px 11px;
+  padding:8px 12px;
   background:rgba(255,255,255,.025);
   border:1px solid var(--border);border-radius:10px;
-  margin-bottom:5px;display:flex;align-items:center;gap:9px;
+  margin-bottom:4px;display:flex;align-items:center;gap:8px;
   transition:all .2s;
 }
 .queue-item:hover{background:rgba(255,255,255,.05);border-color:rgba(255,255,255,.12);}
@@ -583,7 +583,7 @@ select.inp{cursor:pointer;}
 .mesa-cell.libre:hover{background:rgba(255,255,255,.06);border-color:rgba(255,255,255,.15);}
 .mesa-cell.ocupada{background:rgba(131,56,236,.12);border-color:rgba(131,56,236,.4);}
 .mesa-num{font-weight:800;font-size:13px;}
-.mesa-label{font-size:8px;color:var(--sub);margin-top:1px;text-transform:uppercase;letter-spacing:.5px;}
+.mesa-label{font-size:10px;color:var(--sub);margin-top:1px;text-transform:uppercase;letter-spacing:.5px;}
 .mesa-cell.ocupada .mesa-label{color:rgba(131,56,236,.9);}
 
 /* ── Center ──────────────────────────────────────────────────────────── */
@@ -1092,7 +1092,7 @@ body:has(.center.tp-fullscreen) #audio-bar{
 .bares-subtitle{font-size:10px;color:var(--sub);margin-top:3px;}
 .bares-license-tag{
   display:inline-flex;align-items:center;gap:4px;margin-top:5px;
-  font-size:9px;padding:2px 8px;border-radius:10px;
+  font-size:10px;padding:2px 8px;border-radius:10px;
   background:rgba(245,158,11,.1);color:#f59e0b;
   border:1px solid rgba(245,158,11,.2);font-weight:700;letter-spacing:.5px;
 }
@@ -1114,7 +1114,7 @@ body:has(.center.tp-fullscreen) #audio-bar{
   border-radius:10px;text-align:center;
 }
 .bstat-val{font-size:22px;font-weight:900;line-height:1;}
-.bstat-lbl{font-size:9px;color:var(--sub);margin-top:3px;text-transform:uppercase;letter-spacing:.8px;font-weight:600;}
+.bstat-lbl{font-size:10px;color:var(--sub);margin-top:3px;text-transform:uppercase;letter-spacing:.8px;font-weight:600;}
 .bstat.amber .bstat-val{color:#f59e0b;}
 .bstat.rose .bstat-val{color:#f87171;}
 .bstat.green .bstat-val{color:#34d399;}
@@ -1134,7 +1134,7 @@ body:has(.center.tp-fullscreen) #audio-bar{
 .bt-cell.vip{background:rgba(239,68,68,.1);border-color:rgba(239,68,68,.3);}
 .bt-cell.vip:hover{background:rgba(239,68,68,.18);}
 .bt-num{font-weight:900;font-size:14px;}
-.bt-label{font-size:8px;text-transform:uppercase;letter-spacing:.5px;color:var(--sub);margin-top:2px;}
+.bt-label{font-size:10px;text-transform:uppercase;letter-spacing:.5px;color:var(--sub);margin-top:2px;}
 .bt-cell.ocupada .bt-label{color:rgba(245,158,11,.9);}
 .bt-cell.vip .bt-label{color:rgba(239,68,68,.9);}
 .bt-dot{
@@ -1173,7 +1173,7 @@ body:has(.center.tp-fullscreen) #audio-bar{
 }
 .boi-info{flex:1;min-width:0;}
 .boi-text{font-size:12px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-.boi-time{font-size:9px;color:var(--sub);margin-top:1px;}
+.boi-time{font-size:10px;color:var(--sub);margin-top:1px;}
 .boi-del{
   width:36px;height:36px;border:none;border-radius:6px;
   background:rgba(255,60,60,.1);color:#f87171;
@@ -1199,7 +1199,7 @@ body:has(.center.tp-fullscreen) #audio-bar{
 }
 .menu-item-card:hover{background:rgba(255,255,255,.05);}
 .menu-item-name{font-size:11px;font-weight:700;color:var(--text);line-height:1.2;}
-.menu-item-desc{font-size:9px;color:var(--sub);margin-top:2px;line-height:1.2;}
+.menu-item-desc{font-size:10px;color:var(--sub);margin-top:2px;line-height:1.2;}
 .menu-item-price{font-size:12px;font-weight:900;color:#f59e0b;margin-top:3px;}
 .menu-item-del{
   position:absolute;top:4px;right:4px;width:16px;height:16px;border:none;border-radius:4px;
@@ -1280,7 +1280,7 @@ body:has(.center.tp-fullscreen) #audio-bar{
 #toast.t-info{--toast-clr:var(--p);border-color:rgba(255,0,110,.3);}
 
 /* ── Empty state ─────────────────────────────────────────────────────── */
-.empty-state{display:flex;flex-direction:column;align-items:center;gap:8px;padding:32px;opacity:.3;}
+.empty-state{display:flex;flex-direction:column;align-items:center;gap:8px;padding:32px;opacity:.5;}
 .empty-state span{font-size:36px;}
 .empty-state p{font-size:12px;color:var(--sub);}
 
@@ -1334,7 +1334,7 @@ body:has(.center.tp-fullscreen) #audio-bar{
 .ci-btn.load:hover{box-shadow:0 4px 14px var(--glow-p);transform:translateY(-1px);}
 .ci-btn.del{background:rgba(255,60,60,.15);color:#f87171;}
 .ci-btn.del:hover{background:rgba(255,60,60,.3);}
-.catalog-empty{text-align:center;padding:40px 20px;opacity:.3;font-size:13px;line-height:2;}
+.catalog-empty{text-align:center;padding:40px 20px;opacity:.5;font-size:13px;line-height:2;}
 .catalog-close{
   position:absolute;top:14px;right:16px;background:rgba(255,255,255,.06);
   border:1px solid var(--border);border-radius:8px;color:#fff;
@@ -1391,7 +1391,7 @@ body:has(.center.tp-fullscreen) #audio-bar{
   border-radius:10px;transition:all .2s;min-width:44px;
 }
 .mnav-btn svg{width:20px;height:20px;}
-.mnav-btn span{font-size:9px;font-weight:700;letter-spacing:.3px;}
+.mnav-btn span{font-size:10px;font-weight:700;letter-spacing:.3px;}
 .mnav-btn.active{color:var(--p);}
 .mnav-btn:active{transform:scale(.92);}
 
@@ -1565,7 +1565,7 @@ body:has(.center.tp-fullscreen) #audio-bar{
 .welcome-card .wc-title{font-size:14px;font-weight:800;color:#fff;position:relative;z-index:2;}
 .welcome-card .wc-desc{font-size:11px;color:var(--sub);line-height:1.5;position:relative;z-index:2;}
 .welcome-card .wc-tag{
-  font-size:8px;padding:2px 8px;border-radius:10px;font-weight:800;letter-spacing:.5px;position:relative;z-index:2;
+  font-size:10px;padding:2px 8px;border-radius:10px;font-weight:800;letter-spacing:.5px;position:relative;z-index:2;
 }
 .welcome-card .wc-tag.free{background:rgba(0,245,160,.1);color:var(--g);border:1px solid rgba(0,245,160,.2);}
 .welcome-card .wc-tag.pro{background:rgba(245,158,11,.1);color:#f59e0b;border:1px solid rgba(245,158,11,.2);}
@@ -1751,7 +1751,7 @@ body:has(.center.tp-fullscreen) #audio-bar{
 }
 @keyframes djPulse{0%{box-shadow:0 0 0 0 var(--glow-p);}100%{box-shadow:0 0 16px var(--glow-p);}}
 .dj-pad-icon{font-size:22px;}
-.dj-pad-label{font-size:9px;color:var(--sub);font-weight:700;letter-spacing:.5px;text-transform:uppercase;}
+.dj-pad-label{font-size:10px;color:var(--sub);font-weight:700;letter-spacing:.5px;text-transform:uppercase;}
 .dj-vol-row{display:flex;align-items:center;gap:8px;margin-top:10px;}
 .dj-vol-row label{font-size:10px;color:var(--sub);white-space:nowrap;font-weight:600;}
 .dj-vol-row input[type=range]{flex:1;height:3px;-webkit-appearance:none;appearance:none;background:rgba(255,255,255,.1);border-radius:4px;outline:none;cursor:pointer;}
@@ -1798,15 +1798,15 @@ body:has(.center.tp-fullscreen) #audio-bar{
   .topbar-settings{display:none!important;}
   /* User photo/login: touch-friendly */
   #bf-user-photo{width:28px!important;height:28px!important;flex-shrink:0;}
-  #bf-login-btn{padding:5px 10px!important;font-size:9px!important;flex-shrink:0;white-space:nowrap;}
-  #bf-logout-btn{padding:3px 6px!important;font-size:7px!important;flex-shrink:0;}
+  #bf-login-btn{padding:5px 10px!important;font-size:10px!important;flex-shrink:0;white-space:nowrap;}
+  #bf-logout-btn{padding:4px 6px!important;font-size:10px!important;flex-shrink:0;}
   .gflow-estudio{grid-template-columns:1fr!important;}
   .gflow-estudio > div:last-child{max-height:200px;}
   /* ─── Mobile nav: fijo abajo ─── */
   .mobile-nav{display:block;position:fixed;bottom:0;left:0;right:0;z-index:200;}
-  .mnav-btn{padding:4px 2px;min-width:0;}
+  .mnav-btn{padding:6px 4px;min-width:0;}
   .mnav-btn svg{width:18px;height:18px;}
-  .mnav-btn span{font-size:8px;letter-spacing:0;}
+  .mnav-btn span{font-size:10px;letter-spacing:0;}
   .mnav-btn[data-mode="vistas"]{display:none!important;}
   .mnav-btn[data-mode="remote"]{display:none!important;}
   /* ─── Player bar: fijo arriba del nav, compacto ─── */
@@ -1850,21 +1850,21 @@ body:has(.center.tp-fullscreen) #audio-bar{
 }
 @media(max-width:600px){
   /* Topbar aun mas compacto para Pixel/iPhone SE */
-  .topbar{height:42px;padding:0 6px;gap:4px;}
-  .brand-wrap{max-width:60px;}
+  .topbar{height:48px;padding:0 8px;gap:4px;}
+  .brand-wrap{max-width:75px;}
   .brand{font-size:12px;}
-  #bf-login-btn{padding:4px 8px!important;font-size:8px!important;}
+  #bf-login-btn{padding:4px 8px!important;font-size:10px!important;}
   #bf-user-photo{width:26px!important;height:26px!important;}
   .usearch-bar{height:28px;border-radius:8px;}
   .usearch-input{font-size:11px;}
   .usearch-icon{width:12px;height:12px;}
   /* Player bar mas compacto */
-  .player-bar{padding:3px 6px;min-height:40px;bottom:52px;gap:2px;}
+  .player-bar{padding:4px 8px;min-height:48px;bottom:52px;gap:4px;}
   .player-bar .now-playing-cover{width:28px;height:28px;}
-  .player-bar .now-playing-title{max-width:50px;font-size:9px;}
-  .player-bar .ctrl-btn{width:30px;height:30px;flex-shrink:0;border-radius:10px;}
+  .player-bar .now-playing-title{max-width:50px;font-size:10px;}
+  .player-bar .ctrl-btn{width:36px;height:36px;flex-shrink:0;border-radius:10px;padding:4px;}
   .player-bar .ctrl-btn.play{width:36px;height:36px;flex-shrink:0;border-radius:12px;}
-  .player-controls{gap:0;flex-wrap:nowrap;overflow-x:auto;justify-content:flex-start;}
+  .player-controls{gap:0;flex-wrap:nowrap;overflow-x:auto;justify-content:flex-start;padding-right:8px;}
   .ctrl-group{padding:0 1px;}
   .ctrl-group+.ctrl-group::before{display:none;}
   .tp-lrc-badge{display:none!important;}
@@ -1872,12 +1872,12 @@ body:has(.center.tp-fullscreen) #audio-bar{
   #tp-display{font-size:1.6rem;}
   .catalog-modal{width:96%;max-height:90vh;border-radius:12px;}
   /* Paneles: topbar(42px) + player(40px) + nav(52px) */
-  .ia-panel.active,.bares-panel.active,.yt-panel.active,.settings-panel.active{top:42px!important;bottom:92px!important;}
+  .ia-panel.active,.bares-panel.active,.yt-panel.active,.settings-panel.active{top:48px!important;bottom:100px!important;}
   /* Mobile nav: tighter */
-  .mobile-nav{padding:3px 4px calc(env(safe-area-inset-bottom, 2px) + 3px);}
-  .mnav-btn{padding:3px 2px;}
-  .mnav-btn span{font-size:7px;}
-  .mnav-btn svg{width:16px;height:16px;}
+  .mobile-nav{padding:4px 4px calc(env(safe-area-inset-bottom, 4px) + 4px);}
+  .mnav-btn{padding:6px 4px;}
+  .mnav-btn span{font-size:10px;}
+  .mnav-btn svg{width:20px;height:20px;}
   /* Welcome */
   .welcome-logo{font-size:2rem;}
   .welcome-cards{max-width:300px;gap:8px;}
@@ -2123,6 +2123,23 @@ input:focus-visible,textarea:focus-visible{
   transition:transform .08s;
 }
 
+/* ── Pricing Plans ──────────────────────────────────────────────────── */
+.pricing-wrap{margin-top:20px;border-top:1px solid rgba(255,255,255,.08);padding-top:16px;}
+.pricing-title{text-align:center;font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:2px;color:var(--sub);margin-bottom:12px;}
+.pricing-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;}
+.pricing-card{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:12px 8px;text-align:center;}
+.pricing-card.pro-creator{background:linear-gradient(135deg,rgba(255,0,110,.08),rgba(131,56,236,.08));border-color:rgba(255,0,110,.25);position:relative;}
+.pricing-card.pro-venue{background:linear-gradient(135deg,rgba(251,146,60,.08),rgba(255,0,110,.08));border-color:rgba(251,146,60,.25);}
+.pricing-badge{position:absolute;top:-8px;left:50%;transform:translateX(-50%);background:linear-gradient(135deg,#ff006e,#8338ec);color:#fff;font-size:10px;font-weight:800;padding:2px 8px;border-radius:10px;text-transform:uppercase;letter-spacing:1px;}
+.pricing-plan-name{font-size:10px;text-transform:uppercase;letter-spacing:1px;color:var(--sub);}
+.pricing-card.pro-creator .pricing-plan-name{color:var(--p);}
+.pricing-card.pro-venue .pricing-plan-name{color:#fb923c;}
+.pricing-price{font-size:22px;font-weight:900;color:#fff;margin:4px 0;}
+.pricing-period{font-size:10px;color:var(--sub);margin-bottom:8px;}
+.pricing-features{font-size:10px;color:var(--sub);text-align:left;line-height:1.6;}
+.pricing-features .disabled{opacity:.4;}
+.pricing-footer{text-align:center;margin-top:10px;font-size:10px;color:rgba(255,255,255,.25);}
+
 /* 17. Mesa cells subtle animation */
 .mesa-cell{
   transition:all .2s cubic-bezier(.25,.46,.45,.94);
@@ -2150,7 +2167,6 @@ input:focus-visible,textarea:focus-visible{
       <button id="mobile-back-btn" onclick="mobileSetMode('karaoke',document.querySelector('.mnav-btn[data-mode=karaoke]'))" style="display:none;background:none;border:none;color:var(--p);font-size:18px;padding:4px 8px 4px 0;cursor:pointer;" title="Volver a Karaoke" aria-label="Volver a Karaoke">&#x25C0;</button>
       <div class="brand">ByFlow</div>
       <div class="brand-sub">VIVE CANTANDO</div>
-      <div style="font-size:7px;color:rgba(255,255,255,.18);letter-spacing:.5px;margin-top:1px;">hecho por Arturo Torres (ART<i>. en el arte de rimarte,</i>)</div>
     </div>
     <div class="mode-switch">
       <button class="mode-btn active" data-mode="karaoke" onclick="toggleMode('karaoke')" title="Teleprompter con letras y controles de karaoke">
@@ -2196,8 +2212,8 @@ input:focus-visible,textarea:focus-visible{
         <svg class="usearch-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
         <input class="usearch-input" id="usearch-input" placeholder="Buscar letras, musica, beats..."
                onkeydown="if(event.key==='Enter')uSearch()" autocomplete="off">
-        <button class="usearch-btn" onclick="uSearch()" title="Buscar">⏎</button>
-        <button class="usearch-close" id="usearch-close" onclick="uSearchClose()" style="display:none;" title="Cerrar">✕</button>
+        <button class="usearch-btn" onclick="uSearch()" title="Buscar" aria-label="Buscar">⏎</button>
+        <button class="usearch-close" id="usearch-close" onclick="uSearchClose()" style="display:none;" title="Cerrar" aria-label="Cerrar busqueda">✕</button>
       </div>
       <div class="usearch-results" id="usearch-results" style="display:none;"></div>
     </div>
@@ -2208,14 +2224,14 @@ input:focus-visible,textarea:focus-visible{
       <div id="datetime">--</div>
     </div>
     <!-- User avatar / login -->
-    <img id="bf-user-photo" src="/icon-192.svg" style="display:none;width:28px;height:28px;border-radius:50%;object-fit:cover;border:2px solid rgba(255,255,255,.15);cursor:pointer;" onclick="toggleMode('settings')" title="Mi perfil">
+    <img id="bf-user-photo" src="/icon-192.svg" alt="Foto de perfil" style="display:none;width:28px;height:28px;border-radius:50%;object-fit:cover;border:2px solid rgba(255,255,255,.15);cursor:pointer;" onclick="toggleMode('settings')" title="Mi perfil">
     <span id="bf-user-name" style="font-size:10px;color:var(--sub);max-width:80px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;"></span>
-    <button id="bf-login-btn" onclick="socialLogin('google')" style="display:inline-flex;align-items:center;gap:4px;padding:5px 10px;border-radius:8px;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.05);color:rgba(255,255,255,.6);font-size:9px;cursor:pointer;" title="Iniciar sesion">
+    <button id="bf-login-btn" onclick="socialLogin('google')" style="display:inline-flex;align-items:center;gap:4px;padding:5px 10px;border-radius:8px;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.05);color:rgba(255,255,255,.6);font-size:10px;cursor:pointer;" title="Iniciar sesion" aria-label="Iniciar sesion">
       <svg width="10" height="10" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
       Login
     </button>
-    <button id="bf-logout-btn" onclick="bfLogout()" style="display:none;align-items:center;padding:5px 8px;border-radius:8px;border:1px solid rgba(255,255,255,.08);background:transparent;color:rgba(255,255,255,.3);font-size:8px;cursor:pointer;" title="Cerrar sesion">Salir</button>
-    <button class="topbar-settings" onclick="toggleMode('settings')" title="Configuracion y perfil">
+    <button id="bf-logout-btn" onclick="bfLogout()" style="display:none;align-items:center;padding:5px 8px;border-radius:8px;border:1px solid rgba(255,255,255,.08);background:transparent;color:rgba(255,255,255,.3);font-size:10px;cursor:pointer;" title="Cerrar sesion" aria-label="Cerrar sesion">Salir</button>
+    <button class="topbar-settings" onclick="toggleMode('settings')" title="Configuracion y perfil" aria-label="Configuracion y perfil">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
     </button>
     <div class="byflow-bar" style="cursor:pointer;" onclick="openLegalModal()">Powered by <span>IArtLabs</span></div>
@@ -2224,7 +2240,7 @@ input:focus-visible,textarea:focus-visible{
   <div class="main">
 
     <!-- ═══ SIDEBAR: Cola + Mesas ═══ -->
-    <button class="panel-toggle panel-toggle-left" id="toggle-sidebar" onclick="toggleSidebar()" title="Esconder/mostrar cola">&#x25C0;</button>
+    <button class="panel-toggle panel-toggle-left" id="toggle-sidebar" onclick="toggleSidebar()" title="Esconder/mostrar cola" aria-label="Esconder/mostrar cola">&#x25C0;</button>
     <div class="sidebar">
       <div class="sidebar-head">
         <h3 title="Agrega cantantes a la cola para organizar el orden del karaoke">Cola de Cantantes</h3>
@@ -2292,7 +2308,7 @@ input:focus-visible,textarea:focus-visible{
       <!-- Progress bar -->
       <div class="tp-progress"><div class="tp-progress-fill" id="tp-progress-fill"></div></div>
       <!-- Fullscreen toggle -->
-      <button class="tp-fullscreen-btn" onclick="tpToggleFullscreen()" title="Pantalla completa">
+      <button class="tp-fullscreen-btn" onclick="tpToggleFullscreen()" title="Pantalla completa" aria-label="Pantalla completa">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>
       </button>
       <div class="tp-area" id="tp-area">
@@ -2311,10 +2327,10 @@ input:focus-visible,textarea:focus-visible{
       </div>
       <span id="tp-mode-badge" class="tp-lrc-badge manual" title="Tipo de letra cargada: LRC sincronizado o modo manual (scroll libre)" style="display:inline-block;font-size:11px;padding:2px 8px;border-radius:8px;background:rgba(255,255,255,.08);color:var(--sub);margin:4px 0 0 8px;"></span>
       <span class="tp-sync-controls" id="tp-sync-controls" title="Ajuste de sincronizacion: adelantar o retrasar la letra respecto al audio">
-        <button class="tp-sync-btn" onclick="tpSyncNudge(-0.5)" title="Retrasar letra 0.5s">−</button>
+        <button class="tp-sync-btn" onclick="tpSyncNudge(-0.5)" title="Retrasar letra 0.5s" aria-label="Retrasar letra 0.5s">−</button>
         <span class="tp-sync-label" id="tp-sync-label" title="Offset de sincronizacion en segundos">0.0s</span>
-        <button class="tp-sync-btn" onclick="tpSyncNudge(0.5)" title="Adelantar letra 0.5s">+</button>
-        <button class="tp-sync-btn" onclick="tpSyncReset()" title="Resetear offset a 0" style="font-size:10px;width:auto;padding:0 6px;">↺</button>
+        <button class="tp-sync-btn" onclick="tpSyncNudge(0.5)" title="Adelantar letra 0.5s" aria-label="Adelantar letra 0.5s">+</button>
+        <button class="tp-sync-btn" onclick="tpSyncReset()" title="Resetear offset a 0" aria-label="Resetear offset a 0" style="font-size:10px;width:auto;padding:0 6px;">↺</button>
       </span>
 
       <!-- Effects -->
@@ -2328,7 +2344,7 @@ input:focus-visible,textarea:focus-visible{
 
       <!-- Audio Player Bar -->
       <div class="audio-bar" id="audio-bar">
-        <button class="ab-btn" id="ab-playpause" onclick="abToggle()">
+        <button class="ab-btn" id="ab-playpause" onclick="abToggle()" aria-label="Reproducir / Pausa audio">
           <svg id="ab-ico-play" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
           <svg id="ab-ico-pause" viewBox="0 0 24 24" fill="currentColor" style="display:none"><path d="M6 19h4V5H6zm8-14v14h4V5z"/></svg>
         </button>
@@ -2339,13 +2355,13 @@ input:focus-visible,textarea:focus-visible{
           </div>
         </div>
         <div class="ab-time" id="ab-time">0:00 / 0:00</div>
-        <button class="ab-close" onclick="abClose()" title="Cerrar">
+        <button class="ab-close" onclick="abClose()" title="Cerrar" aria-label="Cerrar reproductor de audio">
           <svg viewBox="0 0 24 24" fill="currentColor"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
         </button>
       </div>
 
       <!-- Player -->
-      <button class="player-bar-toggle" id="player-bar-toggle" onclick="togglePlayerBar()" title="Mostrar/ocultar controles">&#x25BC;</button>
+      <button class="player-bar-toggle" id="player-bar-toggle" onclick="togglePlayerBar()" title="Mostrar/ocultar controles" aria-label="Mostrar/ocultar controles">&#x25BC;</button>
       <div class="player-bar" id="player-bar-main">
         <!-- Left: Now Playing Info -->
         <div class="now-playing-info" id="now-playing-info">
@@ -2373,40 +2389,40 @@ input:focus-visible,textarea:focus-visible{
         <!-- Right: Controls -->
         <div class="player-controls">
           <div class="ctrl-group">
-            <button class="ctrl-btn" onclick="tpPrev()" title="Retroceder">
+            <button class="ctrl-btn" onclick="tpPrev()" title="Retroceder" aria-label="Retroceder">
               <svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 6h2v12H6zm3.5 6l8.5 6V6z"/></svg>
             </button>
-            <button class="ctrl-btn" onclick="tpSpeedDown()" title="Mas lento">
+            <button class="ctrl-btn" onclick="tpSpeedDown()" title="Mas lento" aria-label="Mas lento">
               <svg viewBox="0 0 24 24" fill="currentColor"><path d="M11 18V6l-8.5 6zm.5-6l8.5 6V6z"/></svg>
             </button>
             <span class="speed-display" id="speed-label" title="Velocidad">1.0x</span>
           </div>
           <div class="ctrl-group">
-            <button class="ctrl-btn play" id="btn-play" onclick="toggleAutoScroll(); this.blur();" title="Reproducir / Pausa">
+            <button class="ctrl-btn play" id="btn-play" onclick="toggleAutoScroll(); this.blur();" title="Reproducir / Pausa" aria-label="Reproducir / Pausa">
               <svg id="ico-play" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
               <svg id="ico-pause" viewBox="0 0 24 24" fill="currentColor" style="display:none"><path d="M6 19h4V5H6zm8-14v14h4V5z"/></svg>
             </button>
           </div>
           <div class="ctrl-group">
             <span class="speed-display" id="word-counter" title="Palabras">0/0</span>
-            <button class="ctrl-btn" onclick="tpSpeedUp()" title="Mas rapido">
+            <button class="ctrl-btn" onclick="tpSpeedUp()" title="Mas rapido" aria-label="Mas rapido">
               <svg viewBox="0 0 24 24" fill="currentColor"><path d="M4 18l8.5-6L4 6zm9-12v12l8.5-6z"/></svg>
             </button>
-            <button class="ctrl-btn" onclick="tpNext()" title="Avanzar">
+            <button class="ctrl-btn" onclick="tpNext()" title="Avanzar" aria-label="Avanzar">
               <svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 18l8.5-6L6 6zm8.5 0H17V6h-2.5z"/></svg>
             </button>
           </div>
           <div class="ctrl-group">
-            <button class="ctrl-btn" onclick="tpReset()" title="Parar">
+            <button class="ctrl-btn" onclick="tpReset()" title="Parar" aria-label="Parar">
               <svg viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="6" width="12" height="12" rx="2"/></svg>
             </button>
-            <button class="ctrl-btn accent-green" onclick="openLyricsSearch()" title="Buscar letra">
+            <button class="ctrl-btn accent-green" onclick="openLyricsSearch()" title="Buscar letra" aria-label="Buscar letra">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
             </button>
-            <button class="ctrl-btn" onclick="generateLRCManual()" title="Generar LRC sincronizado con GFlow IA (PRO)" style="color:#8b5cf6;">
+            <button class="ctrl-btn" onclick="generateLRCManual()" title="Generar LRC sincronizado con GFlow IA (PRO)" aria-label="Generar LRC sincronizado" style="color:#8b5cf6;">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 8v4l3 3"/><circle cx="12" cy="12" r="9"/></svg>
             </button>
-            <button class="ctrl-btn accent-blue" onclick="openLocalAudio()" title="Cargar audio">
+            <button class="ctrl-btn accent-blue" onclick="openLocalAudio()" title="Cargar audio" aria-label="Cargar audio">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
             </button>
           </div>
@@ -2416,7 +2432,7 @@ input:focus-visible,textarea:focus-visible{
     </div>
 
     <!-- ═══ RIGHT PANEL: QR + Agregar Canción ═══ -->
-    <button class="panel-toggle panel-toggle-right" id="toggle-right" onclick="toggleRightPanel()" title="Esconder/mostrar panel derecho">&#x25B6;</button>
+    <button class="panel-toggle panel-toggle-right" id="toggle-right" onclick="toggleRightPanel()" title="Esconder/mostrar panel derecho" aria-label="Esconder/mostrar panel derecho">&#x25B6;</button>
     <div class="right-panel">
       <h4 title="Escanea este QR desde otro celular para controlar el karaoke remotamente">Control Remoto (QR)</h4>
       <img id="qr-img" alt="Codigo QR para control remoto de ByFlow" title="Escanea con la camara de tu celular para conectarte">
@@ -2458,7 +2474,7 @@ input:focus-visible,textarea:focus-visible{
       <div class="ia-input-row">
         <input class="ia-input" id="ia-input" placeholder="Pregúntame algo..."
                onkeypress="if(event.key==='Enter')iaSend()">
-        <button class="ia-send" onclick="iaSend()">
+        <button class="ia-send" onclick="iaSend()" aria-label="Enviar mensaje">
           <svg viewBox="0 0 24 24" fill="currentColor"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
         </button>
       </div>
@@ -2527,7 +2543,7 @@ input:focus-visible,textarea:focus-visible{
         <div id="embed-container"></div>
         <button onclick="closeEmbed()" style="margin-top:6px;padding:4px 12px;border-radius:4px;border:1px solid var(--border);background:var(--card);color:var(--text);cursor:pointer;font-size:.75rem;">✕ Cerrar reproductor</button>
       </div>
-      <div style="padding:8px;text-align:center;font-size:.65rem;color:var(--sub);opacity:.6;">
+      <div style="padding:8px;text-align:center;font-size:.7rem;color:var(--sub);opacity:.6;">
         ByFlow no descarga musica. Todo se reproduce via streaming respetando derechos de autor.
       </div>
     </div>
@@ -2558,49 +2574,49 @@ input:focus-visible,textarea:focus-visible{
         <span class="oem-reset" onclick="licenseDeactivate()" title="Desactivar licencia">&#x27F3; desactivar</span>
 
         <!-- ── Planes y Precios ── -->
-        <div style="margin-top:20px;border-top:1px solid rgba(255,255,255,.08);padding-top:16px;">
-          <div style="text-align:center;font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:2px;color:var(--sub);margin-bottom:12px;">Planes ByFlow</div>
-          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;">
+        <div class="pricing-wrap">
+          <div class="pricing-title">Planes ByFlow</div>
+          <div class="pricing-grid">
 
             <!-- FREE -->
-            <div style="background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:12px 8px;text-align:center;">
-              <div style="font-size:9px;text-transform:uppercase;letter-spacing:1px;color:var(--sub);">Gratis</div>
-              <div style="font-size:22px;font-weight:900;color:#fff;margin:4px 0;">$0</div>
-              <div style="font-size:8px;color:var(--sub);margin-bottom:8px;">para siempre</div>
-              <div style="font-size:9px;color:var(--sub);text-align:left;line-height:1.6;">
+            <div class="pricing-card">
+              <div class="pricing-plan-name">Gratis</div>
+              <div class="pricing-price">$0</div>
+              <div class="pricing-period">para siempre</div>
+              <div class="pricing-features">
                 ✓ Karaoke completo<br>
                 ✓ Teleprompter<br>
                 ✓ Cola de cantantes<br>
                 ✓ Letras LRC sync<br>
-                ✗ <span style="opacity:.4">Streaming musica</span><br>
-                ✗ <span style="opacity:.4">Gestion bares</span><br>
-                ✗ <span style="opacity:.4">IA Studio</span>
+                ✗ <span class="disabled">Streaming musica</span><br>
+                ✗ <span class="disabled">Gestion bares</span><br>
+                ✗ <span class="disabled">IA Studio</span>
               </div>
             </div>
 
             <!-- PRO CREATOR -->
-            <div style="background:linear-gradient(135deg,rgba(255,0,110,.08),rgba(131,56,236,.08));border:1px solid rgba(255,0,110,.25);border-radius:12px;padding:12px 8px;text-align:center;position:relative;">
-              <div style="position:absolute;top:-8px;left:50%;transform:translateX(-50%);background:linear-gradient(135deg,#ff006e,#8338ec);color:#fff;font-size:7px;font-weight:800;padding:2px 8px;border-radius:10px;text-transform:uppercase;letter-spacing:1px;">Popular</div>
-              <div style="font-size:9px;text-transform:uppercase;letter-spacing:1px;color:var(--p);">PRO Creator</div>
-              <div style="font-size:22px;font-weight:900;color:#fff;margin:4px 0;">$199</div>
-              <div style="font-size:8px;color:var(--sub);margin-bottom:8px;">MXN/mes · 3 dispositivos</div>
-              <div style="font-size:9px;color:var(--sub);text-align:left;line-height:1.6;">
+            <div class="pricing-card pro-creator">
+              <div class="pricing-badge">Popular</div>
+              <div class="pricing-plan-name">PRO Creator</div>
+              <div class="pricing-price">$199</div>
+              <div class="pricing-period">MXN/mes · 3 dispositivos</div>
+              <div class="pricing-features">
                 ✓ Todo lo gratis<br>
                 ✓ YouTube streaming<br>
                 ✓ SoundCloud embed<br>
                 ✓ Jamendo musica CC<br>
                 ✓ IA Studio (Ollama)<br>
                 ✓ Control remoto QR<br>
-                ✗ <span style="opacity:.4">Gestion bares</span>
+                ✗ <span class="disabled">Gestion bares</span>
               </div>
             </div>
 
             <!-- PRO BAR -->
-            <div style="background:linear-gradient(135deg,rgba(251,146,60,.08),rgba(255,0,110,.08));border:1px solid rgba(251,146,60,.25);border-radius:12px;padding:12px 8px;text-align:center;">
-              <div style="font-size:9px;text-transform:uppercase;letter-spacing:1px;color:#fb923c;">PRO Venue</div>
-              <div style="font-size:22px;font-weight:900;color:#fff;margin:4px 0;">$799</div>
-              <div style="font-size:8px;color:var(--sub);margin-bottom:8px;">MXN/mes · 5 dispositivos</div>
-              <div style="font-size:9px;color:var(--sub);text-align:left;line-height:1.6;">
+            <div class="pricing-card pro-venue">
+              <div class="pricing-plan-name">PRO Venue</div>
+              <div class="pricing-price">$799</div>
+              <div class="pricing-period">MXN/mes · 5 dispositivos</div>
+              <div class="pricing-features">
                 ✓ Todo lo PRO<br>
                 ✓ Gestion de bares<br>
                 ✓ Mesas y peticiones<br>
@@ -2612,7 +2628,7 @@ input:focus-visible,textarea:focus-visible{
             </div>
 
           </div>
-          <div style="text-align:center;margin-top:10px;font-size:8px;color:rgba(255,255,255,.2);">
+          <div class="pricing-footer">
             Precios en pesos mexicanos (MXN) · IVA incluido · Cancela cuando quieras<br>
             Licencia perpetua disponible: PRO Creator $1,499 MXN · PRO Venue $4,999 MXN
           </div>
@@ -2676,7 +2692,7 @@ input:focus-visible,textarea:focus-visible{
               <button class="bar-add-btn" onclick="baresAddOrder()">+</button>
             </div>
             <div id="bares-orders-list">
-              <div style="text-align:center;padding:18px;opacity:.3;font-size:12px;">Sin órdenes activas</div>
+              <div style="text-align:center;padding:18px;opacity:.5;font-size:12px;">Sin órdenes activas</div>
             </div>
           </div>
 
@@ -3006,7 +3022,7 @@ input:focus-visible,textarea:focus-visible{
               <div><span style="color:#ff6b6b;">Suno</span> &mdash; Musica original ArT-AtR, 100+ tracks</div>
             </div>
 
-            <div style="margin-top:12px;font-size:8px;color:rgba(255,255,255,.12);font-style:italic;">
+            <div style="margin-top:12px;font-size:10px;color:rgba(255,255,255,.15);font-style:italic;">
               "El sistema parpadea, pero el codigo no miente" &mdash; ArT-AtR
             </div>
           </div>
@@ -3021,7 +3037,7 @@ input:focus-visible,textarea:focus-visible{
 <!-- ═══ LYRICS SEARCH MODAL ═══ -->
 <div class="catalog-overlay" id="lyrics-overlay" onclick="if(event.target===this)closeLyricsSearch()">
   <div class="catalog-modal" style="position:relative;max-width:560px;">
-    <button class="catalog-close" onclick="closeLyricsSearch()">&times;</button>
+    <button class="catalog-close" onclick="closeLyricsSearch()" aria-label="Cerrar busqueda de letras">&times;</button>
     <div class="catalog-top">
       <h3 style="background:linear-gradient(135deg,var(--g),var(--a));-webkit-background-clip:text;-webkit-text-fill-color:transparent;">Buscar Letra en Internet</h3>
       <div style="font-size:10px;color:var(--sub);margin-bottom:10px;">Busca letras sincronizadas (LRC) o texto plano desde LRCLib (gratuito)</div>
@@ -3037,7 +3053,7 @@ input:focus-visible,textarea:focus-visible{
       </button>
     </div>
     <div id="lyrics-results" style="padding:12px;max-height:400px;overflow-y:auto;">
-      <div style="text-align:center;padding:30px;opacity:.3;font-size:12px;">Escribe el titulo y artista para buscar letras</div>
+      <div style="text-align:center;padding:30px;opacity:.5;font-size:12px;">Escribe el titulo y artista para buscar letras</div>
     </div>
   </div>
 </div>
@@ -3045,7 +3061,7 @@ input:focus-visible,textarea:focus-visible{
 <!-- ═══ LYRIC STUDIO (Offline Generator) ═══ -->
 <div class="catalog-overlay" id="lyric-studio-overlay" onclick="if(event.target===this)closeLyricStudio()">
   <div class="catalog-modal" style="position:relative;max-width:620px;">
-    <button class="catalog-close" onclick="closeLyricStudio()">&times;</button>
+    <button class="catalog-close" onclick="closeLyricStudio()" aria-label="Cerrar estudio de letras">&times;</button>
     <div class="catalog-top">
       <h3 style="background:linear-gradient(135deg,var(--p),var(--a));-webkit-background-clip:text;-webkit-text-fill-color:transparent;">
         ✍️ Estudio de Letras — ARTATR
@@ -3127,7 +3143,7 @@ input:focus-visible,textarea:focus-visible{
       </div>
     </div>
     <div id="ls-output" style="padding:14px;max-height:420px;overflow-y:auto;">
-      <div style="text-align:center;padding:30px;opacity:.3;font-size:12px;">Configura el tema y estilo, luego genera tu letra</div>
+      <div style="text-align:center;padding:30px;opacity:.5;font-size:12px;">Configura el tema y estilo, luego genera tu letra</div>
     </div>
   </div>
 </div>
@@ -3210,14 +3226,14 @@ input:focus-visible,textarea:focus-visible{
     <div style="display:flex;gap:16px;align-items:center;">
       <span style="font-size:10px;color:var(--a);cursor:pointer;" onclick="welcomeSelect('remote')">&#x1F4F1; Control Remoto</span>
     </div>
-    <div style="font-size:7px;color:rgba(255,255,255,.1);margin-top:8px;max-width:380px;line-height:1.4;text-align:center;">Al usar ByFlow aceptas nuestros <span style="text-decoration:underline;cursor:pointer;" onclick="openLegalModal();dismissWelcome();">terminos de servicio</span>. Letras IA: 50/50 autor/ArT-AtR. Letras propias: 100% autor. &copy; 2024-2026 IArtLabs</div>
+    <div style="font-size:10px;color:rgba(255,255,255,.15);margin-top:8px;max-width:380px;line-height:1.4;text-align:center;">Al usar ByFlow aceptas nuestros <span style="text-decoration:underline;cursor:pointer;" onclick="openLegalModal();dismissWelcome();">terminos de servicio</span>. Letras IA: 50/50 autor/ArT-AtR. Letras propias: 100% autor. &copy; 2024-2026 IArtLabs</div>
   </div>
 </div>
 
 <!-- ═══ SONG CATALOG MODAL ═══ -->
 <div class="catalog-overlay" id="catalog-overlay" onclick="if(event.target===this)closeCatalog()">
   <div class="catalog-modal" style="position:relative;">
-    <button class="catalog-close" onclick="closeCatalog()">&times;</button>
+    <button class="catalog-close" onclick="closeCatalog()" aria-label="Cerrar catalogo">&times;</button>
     <div class="catalog-top">
       <h3>Catálogo de Canciones</h3>
       <input class="catalog-search" id="catalog-search" placeholder="Buscar por título o artista..."
@@ -3470,7 +3486,7 @@ input:focus-visible,textarea:focus-visible{
   <div class="cola-modal">
     <div class="cola-modal-head">
       <h3>Cola de Cantantes</h3>
-      <button class="cola-modal-close" onclick="closeColaModal()">&times;</button>
+      <button class="cola-modal-close" onclick="closeColaModal()" aria-label="Cerrar cola">&times;</button>
     </div>
     <div class="cola-modal-body" id="cola-modal-list"></div>
     <div class="cola-modal-add">
@@ -3557,7 +3573,7 @@ input:focus-visible,textarea:focus-visible{
 <!-- ═══ LEGAL MODAL ═══ -->
 <div class="legal-overlay" id="legal-overlay" onclick="if(event.target===this)closeLegalModal()">
   <div class="legal-modal">
-    <button class="legal-close" onclick="closeLegalModal()">&times;</button>
+    <button class="legal-close" onclick="closeLegalModal()" aria-label="Cerrar informacion legal">&times;</button>
     <div class="legal-logo">ByFlow</div>
     <div class="legal-brand-sub">POWERED BY IARTLABS</div>
 
@@ -3611,7 +3627,7 @@ input:focus-visible,textarea:focus-visible{
   </div>
 </div>
 
-<div id="toast"></div>
+<div id="toast" role="status" aria-live="polite"></div>
 
 <script>
 // ═══════════════════════════════════════════════════════════════════════════
@@ -4243,7 +4259,7 @@ async function searchLyricsOnline() {
                 <div style="font-size:12px;font-weight:700;">${escHtml(l.titulo)}</div>
                 <div style="font-size:10px;color:var(--sub);">ArT-AtR &middot; ${escHtml(l.tema)}</div>
               </div>
-              <span style="font-size:8px;background:rgba(0,255,136,.15);color:var(--g);padding:2px 6px;border-radius:4px;">LOCAL</span>
+              <span style="font-size:10px;background:rgba(0,255,136,.15);color:var(--g);padding:2px 6px;border-radius:4px;">LOCAL</span>
             </div>
             <div style="font-size:10px;color:rgba(255,255,255,.35);margin-top:6px;font-style:italic;line-height:1.4;">${escHtml(preview.substring(0, 120))}...</div>
             <div style="display:flex;gap:6px;margin-top:8px;">
@@ -4257,7 +4273,7 @@ async function searchLyricsOnline() {
         '<div style="opacity:.4;margin-bottom:16px;">No se encontraron letras para "' + escHtml(title) + '"</div>' +
         (iaOnline && iaBackend === 'grok'
           ? '<button onclick="grokWriteLyrics(\'' + escHtml(title).replace(/'/g,"\\'") + '\',\'' + escHtml(artist).replace(/'/g,"\\'") + '\')" style="padding:10px 20px;background:linear-gradient(135deg,#8b5cf6,#06b6d4);border:none;border-radius:10px;color:#fff;font-size:12px;font-weight:700;cursor:pointer;">🤖 GFlow: escribir letra + LRC</button>'
-          : '<div style="opacity:.3;">Intenta con otro titulo o artista</div>') +
+          : '<div style="opacity:.5;">Intenta con otro titulo o artista</div>') +
         '</div>';
       return;
     }
@@ -4274,8 +4290,8 @@ async function searchLyricsOnline() {
               <div style="font-size:10px;color:var(--sub);">${escHtml(item.artistName || artist || 'Artista')}${duration ? ' &middot; ' + duration : ''}</div>
             </div>
             <div style="display:flex;gap:4px;">
-              ${hasLRC ? '<span class="tp-lrc-badge" style="font-size:8px;">LRC</span>' : ''}
-              ${hasPlain ? '<span class="tp-lrc-badge manual" style="font-size:8px;">TXT</span>' : ''}
+              ${hasLRC ? '<span class="tp-lrc-badge" style="font-size:10px;">LRC</span>' : ''}
+              ${hasPlain ? '<span class="tp-lrc-badge manual" style="font-size:10px;">TXT</span>' : ''}
             </div>
           </div>
           <div style="display:flex;gap:6px;margin-top:8px;">
@@ -4662,7 +4678,7 @@ function updatePremiumUI() {
       const badge = document.createElement('span');
       badge.className = 'pro-badge';
       badge.textContent = 'PRO';
-      badge.style.cssText = 'font-size:8px;background:linear-gradient(135deg,#f59e0b,#ef4444);padding:1px 5px;border-radius:4px;color:#fff;font-weight:800;margin-left:4px;';
+      badge.style.cssText = 'font-size:10px;background:linear-gradient(135deg,#f59e0b,#ef4444);padding:1px 5px;border-radius:4px;color:#fff;font-weight:800;margin-left:4px;';
       btn.appendChild(badge);
     }
   });
@@ -4844,7 +4860,7 @@ function baresRenderOrders() {
   const el = document.getElementById('bares-orders-list');
   if (!el) return;
   if (!baresState.orders.length) {
-    el.innerHTML = '<div style="text-align:center;padding:18px;opacity:.3;font-size:12px;">Sin órdenes activas</div>';
+    el.innerHTML = '<div style="text-align:center;padding:18px;opacity:.5;font-size:12px;">Sin órdenes activas</div>';
     return;
   }
   el.innerHTML = baresState.orders.map(o => {
@@ -4925,7 +4941,7 @@ function menuRender() {
 
   const cat = menu[_menuActiveCategory];
   if (!cat || !cat.items || cat.items.length === 0) {
-    gridEl.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:14px;opacity:.3;font-size:11px;">Sin items en esta categoría</div>';
+    gridEl.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:14px;opacity:.5;font-size:11px;">Sin items en esta categoría</div>';
     return;
   }
   gridEl.innerHTML = cat.items.map((item, idx) =>
@@ -5619,7 +5635,7 @@ function lsRenderMisLetras(filter) {
         '<span style="opacity:.5;">' + escHtml(l.fuente) + '</span>' +
       '</div>' +
     '</div>'
-  ).join('') || '<div style="text-align:center;padding:20px;opacity:.3;font-size:11px;">No se encontraron letras</div>';
+  ).join('') || '<div style="text-align:center;padding:20px;opacity:.5;font-size:11px;">No se encontraron letras</div>';
 }
 
 function lsFilterMisLetras(val) { lsRenderMisLetras(val); }
@@ -5677,7 +5693,7 @@ function lsRenderSuno(filter) {
         (t.nota ? '<span style="opacity:.5;">' + escHtml(t.nota) + '</span>' : '') +
       '</div>' +
     '</div>'
-  ).join('') || '<div style="text-align:center;padding:20px;opacity:.3;font-size:11px;">No se encontraron canciones</div>';
+  ).join('') || '<div style="text-align:center;padding:20px;opacity:.5;font-size:11px;">No se encontraron canciones</div>';
 }
 
 function lsFilterSuno(val) { lsRenderSuno(val); }
@@ -7003,7 +7019,7 @@ async function jmSearch() {
         <div style="flex:1;min-width:0;">
           <div style="font-size:.8rem;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${escHtml(t.name)}</div>
           <div style="font-size:.7rem;color:var(--sub);">${escHtml(t.artist_name)} · ${Math.floor(t.duration/60)}:${String(t.duration%60).padStart(2,'0')}</div>
-          <div style="font-size:.6rem;color:#2dd4bf;opacity:.7;">♫ Licencia libre</div>
+          <div style="font-size:.7rem;color:#2dd4bf;opacity:.7;">♫ Licencia libre</div>
         </div>
         <button onclick="jmPlay('${escHtml(t.audio)}','${escHtml(t.name.replace(/'/g,''))}','${escHtml(t.artist_name.replace(/'/g,''))}','${t.id}')"
           style="padding:6px 12px;border-radius:6px;border:1px solid var(--border);background:var(--accent);color:#fff;cursor:pointer;font-size:.75rem;white-space:nowrap;">
@@ -7033,7 +7049,7 @@ function jmPlay(audioUrl, title, artist, trackId) {
     <div style="font-size:.8rem;font-weight:600;margin-bottom:4px;">${escHtml(title)}</div>
     <div style="font-size:.7rem;color:var(--sub);margin-bottom:8px;">por ${escHtml(artist || 'Artista')}</div>
     <audio id="jm-audio-player" controls autoplay style="width:100%;border-radius:6px;" src="${escHtml(audioUrl)}"></audio>
-    <div style="font-size:.6rem;color:#2dd4bf;margin-top:6px;">
+    <div style="font-size:.7rem;color:#2dd4bf;margin-top:6px;">
       ♫ Musica libre via <a href="${jmLink}" target="_blank" rel="noopener" style="color:#2dd4bf;text-decoration:underline;">Jamendo</a> · Licencia CC
     </div>
   </div>`;
@@ -8365,7 +8381,7 @@ async function loadStats() {
         '<span style="color:var(--p);font-weight:700;">' + s.count + 'x</span></div>'
       ).join('');
     } else {
-      topSongsEl.innerHTML = '<div style="opacity:.3;">Sin datos aun</div>';
+      topSongsEl.innerHTML = '<div style="opacity:.5;">Sin datos aun</div>';
     }
 
     // Top cantantes
@@ -8377,7 +8393,7 @@ async function loadStats() {
         '<span style="color:var(--s);font-weight:700;">' + s.count + 'x</span></div>'
       ).join('');
     } else {
-      topSingersEl.innerHTML = '<div style="opacity:.3;">Sin datos aun</div>';
+      topSingersEl.innerHTML = '<div style="opacity:.5;">Sin datos aun</div>';
     }
 
     // Mini chart últimos 7 días
@@ -8390,13 +8406,13 @@ async function loadStats() {
         const h = Math.max(4, (count / max) * 46);
         const day = days[new Date(date + 'T12:00:00').getDay()];
         return '<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;">' +
-          '<div style="font-size:8px;color:var(--p);font-weight:700;">' + (count || '') + '</div>' +
+          '<div style="font-size:10px;color:var(--p);font-weight:700;">' + (count || '') + '</div>' +
           '<div style="width:100%;height:' + h + 'px;background:linear-gradient(180deg,var(--p),var(--s));border-radius:3px;"></div>' +
-          '<div style="font-size:7px;color:var(--sub);">' + day + '</div></div>';
+          '<div style="font-size:10px;color:var(--sub);">' + day + '</div></div>';
       }).join('');
     }
   } catch {
-    document.getElementById('stat-top-songs').innerHTML = '<div style="opacity:.3;">Error cargando</div>';
+    document.getElementById('stat-top-songs').innerHTML = '<div style="opacity:.5;">Error cargando</div>';
   }
 }
 
@@ -9403,15 +9419,15 @@ async function estViewCreator(alias) {
         <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-bottom:16px;">
           <div style="text-align:center;padding:8px;background:var(--card);border-radius:6px;">
             <div style="font-size:1.2rem;font-weight:700;color:var(--p);">${data.stats.letras}</div>
-            <div style="font-size:.65rem;color:var(--sub);">Letras</div>
+            <div style="font-size:.7rem;color:var(--sub);">Letras</div>
           </div>
           <div style="text-align:center;padding:8px;background:var(--card);border-radius:6px;">
             <div style="font-size:1.2rem;font-weight:700;color:var(--s);">${data.stats.publicadas}</div>
-            <div style="font-size:.65rem;color:var(--sub);">Publicadas</div>
+            <div style="font-size:.7rem;color:var(--sub);">Publicadas</div>
           </div>
           <div style="text-align:center;padding:8px;background:var(--card);border-radius:6px;">
             <div style="font-size:1.2rem;font-weight:700;color:var(--a);">${data.stats.votos}</div>
-            <div style="font-size:.65rem;color:var(--sub);">Votos</div>
+            <div style="font-size:.7rem;color:var(--sub);">Votos</div>
           </div>
         </div>
         ${data.ultimasLetras.length > 0 ? '<h5 style="color:var(--sub);margin-bottom:6px;">Ultimas letras</h5>' + letrasHtml : ''}
