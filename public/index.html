@@ -278,6 +278,7 @@ input,textarea,select{font-family:inherit;}
 .vp-footer-stat{display:flex;align-items:center;gap:4px;}
 .vp-footer-stat .dot{width:6px;height:6px;border-radius:50%;}
 @media(max-width:900px){
+  .vistas-panel{top:46px!important;bottom:100px!important;}
   .vistas-panel.active{grid-template-columns:1fr;grid-template-rows:auto auto 1fr auto auto;}
   .vp-cola{grid-row:auto;max-height:160px;border-right:none;border-bottom:1px solid var(--border);}
   .vp-right{grid-row:auto;max-height:200px;border-left:none;border-top:1px solid var(--border);}
@@ -494,7 +495,7 @@ body.mode-estudio .btn-add{background:linear-gradient(135deg,#06b6d4,#3b82f6);bo
 .est-ranking-author:hover{color:var(--p);}
 /* Estudio responsive */
 @media(max-width:900px){
-  .estudio-panel{bottom:60px !important;} /* Space for mobile-nav */
+  .estudio-panel{top:46px!important;bottom:100px !important;} /* Space for player-bar + mobile-nav */
   .estudio-panel.active{grid-template-columns:1fr;grid-template-rows:auto auto 1fr auto;}
   #est-tab-escribir.active{grid-template-columns:1fr !important;}
   .est-beats{max-height:45vh;border-right:none;border-bottom:1px solid var(--border);}
@@ -1586,8 +1587,8 @@ body:has(.center.tp-fullscreen) #audio-bar{
 .welcome-skip:hover{border-color:var(--p);color:#fff;}
 
 /* ── Hideable Panels ─────────────────────────────────────────────── */
-.sidebar.panel-hidden{width:0;min-width:0;padding:0;overflow:hidden;border:none;opacity:0;transition:all .3s;}
-.right-panel.panel-hidden{width:0;min-width:0;padding:0;overflow:hidden;border:none;opacity:0;transition:all .3s;}
+.sidebar.panel-hidden{width:0;min-width:0;padding:0;overflow:hidden;border:none;opacity:0;pointer-events:none;transition:all .3s;}
+.right-panel.panel-hidden{width:0;min-width:0;padding:0;overflow:hidden;border:none;opacity:0;pointer-events:none;transition:all .3s;}
 .sidebar{transition:all .3s;}
 .right-panel{transition:all .3s;}
 .panel-toggle{
@@ -1873,6 +1874,8 @@ body:has(.center.tp-fullscreen) #audio-bar{
   .catalog-modal{width:96%;max-height:90vh;border-radius:12px;}
   /* Paneles: topbar(42px) + player(40px) + nav(52px) */
   .ia-panel.active,.bares-panel.active,.yt-panel.active,.settings-panel.active{top:48px!important;bottom:100px!important;}
+  .estudio-panel{top:48px!important;bottom:100px!important;}
+  .vistas-panel{top:48px!important;bottom:100px!important;}
   /* Mobile nav: tighter */
   .mobile-nav{padding:4px 4px calc(env(safe-area-inset-bottom, 4px) + 4px);}
   .mnav-btn{padding:6px 4px;}
@@ -2163,8 +2166,8 @@ input:focus-visible,textarea:focus-visible{
 
   <!-- ═══ TOPBAR ═══ -->
   <div class="topbar">
+    <button id="mobile-back-btn" onclick="mobileSetMode('karaoke',document.querySelector('.mnav-btn[data-mode=karaoke]'))" style="display:none;background:none;border:none;color:var(--p);font-size:18px;padding:4px 4px;cursor:pointer;flex-shrink:0;" title="Volver a Karaoke" aria-label="Volver a Karaoke">&#x25C0;</button>
     <div class="brand-wrap">
-      <button id="mobile-back-btn" onclick="mobileSetMode('karaoke',document.querySelector('.mnav-btn[data-mode=karaoke]'))" style="display:none;background:none;border:none;color:var(--p);font-size:18px;padding:4px 8px 4px 0;cursor:pointer;" title="Volver a Karaoke" aria-label="Volver a Karaoke">&#x25C0;</button>
       <div class="brand">ByFlow</div>
       <div class="brand-sub">VIVE CANTANDO</div>
     </div>
@@ -7524,6 +7527,7 @@ function mobileSetMode(mode, btn) {
   // Botón de regreso: mostrar si no es karaoke
   const backBtn = document.getElementById('mobile-back-btn');
   if (backBtn) backBtn.style.display = (mode === 'karaoke') ? 'none' : '';
+
   // Reset all panels first
   const sidebar = document.querySelector('.sidebar');
   const rightPanel = document.querySelector('.right-panel');
@@ -7531,11 +7535,22 @@ function mobileSetMode(mode, btn) {
   const ytPanel    = document.getElementById('yt-panel');
   const baresPanel = document.getElementById('bares-panel');
   const settingsPanel = document.getElementById('settings-panel');
-  if (sidebar)    sidebar.style.cssText = '';
-  if (rightPanel) rightPanel.style.cssText = '';
-  [iaPanel, ytPanel, baresPanel, settingsPanel].forEach(p => {
+  const estudioPanel = document.getElementById('estudio-panel');
+  const vistasPanel = document.getElementById('vistas-panel');
+  const mainEl = document.querySelector('.main');
+
+  if (sidebar)    { sidebar.style.cssText = ''; sidebar.classList.add('panel-hidden'); }
+  if (rightPanel) { rightPanel.style.cssText = ''; rightPanel.classList.add('panel-hidden'); }
+  [iaPanel, ytPanel, baresPanel, settingsPanel, estudioPanel, vistasPanel].forEach(p => {
     if (p) { p.classList.remove('active'); p.style.cssText = ''; }
   });
+  // Restore .main for non-overlay modes
+  if (mainEl) mainEl.style.display = '';
+
+  // Update body class for mode-based accent colors
+  document.body.className = document.body.className.replace(/mode-\S+/g, '').trim();
+  document.body.classList.add('mode-' + mode);
+
   // Panel modes — activate panel (CSS .active rule handles fullscreen on mobile)
   if (mode === 'youtube' && ytPanel) {
     ytPanel.classList.add('active'); ytPanel.style.display = 'flex';
@@ -7552,14 +7567,26 @@ function mobileSetMode(mode, btn) {
     settingsPanel.classList.add('active'); settingsPanel.style.display = 'flex';
     currentMode = 'settings';
     loadStats();
+  } else if (mode === 'estudio' && estudioPanel) {
+    if (mainEl) mainEl.style.display = 'none';
+    estudioPanel.classList.add('active'); estudioPanel.style.display = 'grid';
+    currentMode = 'estudio';
+  } else if (mode === 'vistas' && vistasPanel) {
+    if (mainEl) mainEl.style.display = 'none';
+    vistasPanel.classList.add('active'); vistasPanel.style.display = 'grid';
+    currentMode = 'vistas';
+    vpRefresh();
   } else if (mode === 'cola' && sidebar) {
-    sidebar.style.cssText = 'display:flex!important;position:fixed;inset:0;top:54px;bottom:60px;width:100%;z-index:90;background:var(--card);';
+    sidebar.classList.remove('panel-hidden');
+    sidebar.style.cssText = 'display:flex!important;position:fixed;inset:0;top:46px;bottom:100px;width:100%;z-index:90;background:var(--card);opacity:1;pointer-events:auto;';
+    currentMode = 'cola';
   } else if (mode === 'remote') {
     setMode('remote');
     return;
   } else if (mode === 'karaoke') {
     currentMode = 'karaoke';
   }
+  localStorage.setItem('byflow_last_mode', mode);
 }
 
 // Close overlays on escape
