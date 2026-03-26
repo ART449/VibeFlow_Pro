@@ -443,6 +443,20 @@ const state = {
   globalPromo:  loadJSON('global_promo.json', { active: false, features: [], expiresAt: null, label: '' })
 };
 
+// ── Auto-activar promo de lanzamiento si no hay promo activa ─────────────────
+if (!state.globalPromo.active) {
+  const LAUNCH_DAYS = 7;
+  state.globalPromo = {
+    active: true,
+    features: ['bares', 'music_streaming', 'ollama_ai'],
+    expiresAt: new Date(Date.now() + LAUNCH_DAYS * 86400000).toISOString(),
+    label: 'Semana PRO Gratis - Lanzamiento ByFlow',
+    activatedAt: new Date().toISOString()
+  };
+  saveJSON('global_promo.json', state.globalPromo);
+  console.log(`[PROMO] Semana PRO gratis activada automaticamente — expira ${state.globalPromo.expiresAt}`);
+}
+
 // ── Rooms (aislamiento por sesion) ──────────────────────────────────────────
 // Cada DJ tiene su room. Remote viewers se unen al room del DJ.
 // El teleprompter es POR ROOM, la cola/mesas son globales (del venue).
