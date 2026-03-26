@@ -439,7 +439,8 @@ const state = {
   teleprompter: loadJSON('teleprompter.json', {
     lyrics: '', currentWord: -1, scrollSpeed: 1, isPlaying: false
   }),
-  license:      loadJSON('licenses.json', { licenses: [] })
+  license:      loadJSON('licenses.json', { licenses: [] }),
+  globalPromo:  loadJSON('global_promo.json', { active: false, features: [], expiresAt: null, label: '' })
 };
 
 // ── Rooms (aislamiento por sesion) ──────────────────────────────────────────
@@ -720,6 +721,26 @@ app.get('/api/youtube/videos', async (req, res) => {
 
 // ── Licencias (por usuario con token) ─────────────────────────────────────────
 app.get('/api/license/status', (req, res) => {
+  // ── Global Promo: si está activo, TODOS tienen PRO gratis ──
+  const gp = state.globalPromo;
+  if (gp && gp.active) {
+    // Check if promo expired
+    if (gp.expiresAt && new Date(gp.expiresAt) < new Date()) {
+      gp.active = false;
+      saveJSON('global_promo.json', state.globalPromo);
+    } else {
+      return res.json({
+        activated: true,
+        features: gp.features,
+        owner: gp.label || 'Promo Global',
+        keyFragment: 'PROMO-FREE',
+        expiresAt: gp.expiresAt,
+        promo: true,
+        globalPromo: true
+      });
+    }
+  }
+
   // Per-user: client sends token via header or query
   const token = req.headers['x-license-token'] || req.query.token || '';
   if (token) {
@@ -886,6 +907,38 @@ app.post('/api/license/admin/superuser', (req, res) => {
     key, owner: entry.owner, features: allFeatures,
     token: userToken
   });
+});
+
+// ── Global Promo: PRO gratis para TODOS por N dias ──────────────────────────
+app.post('/api/license/admin/global-promo', (req, res) => {
+  const adminKey = req.headers['x-admin-key'];
+  if (adminKey !== ADMIN_SECRET && adminKey !== MASTER_ADMIN) {
+    return res.status(401).json({ error: 'Admin key inválida' });
+  }
+  const action = (req.body.action || 'activate').toLowerCase();
+  if (action === 'deactivate' || action === 'off') {
+    state.globalPromo = { active: false, features: [], expiresAt: null, label: '' };
+    saveJSON('global_promo.json', state.globalPromo);
+    return res.json({ success: true, message: 'Promo global desactivada' });
+  }
+  const days = parseInt(req.body.days) || 7;
+  const label = (req.body.label || 'Semana PRO Gratis').trim();
+  const features = Array.isArray(req.body.features)
+    ? req.body.features
+    : ['bares', 'music_streaming', 'ollama_ai'];
+  const expiresAt = new Date(Date.now() + days * 86400000).toISOString();
+  state.globalPromo = { active: true, features, expiresAt, label, activatedAt: new Date().toISOString() };
+  saveJSON('global_promo.json', state.globalPromo);
+  console.log(`[PROMO] Global promo activada: "${label}" — ${days} dias — expira ${expiresAt}`);
+  res.json({ success: true, label, days, features, expiresAt });
+});
+
+app.get('/api/license/admin/global-promo', (req, res) => {
+  const adminKey = req.headers['x-admin-key'];
+  if (adminKey !== ADMIN_SECRET && adminKey !== MASTER_ADMIN) {
+    return res.status(401).json({ error: 'Admin key inválida' });
+  }
+  res.json(state.globalPromo);
 });
 
 // ── Estadísticas de uso ──────────────────────────────────────────────────────
