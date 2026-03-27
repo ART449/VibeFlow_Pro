@@ -33,6 +33,9 @@
   let _fbUser = null;
 </script>
 <title>ByFlow — Vive Cantando</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Great+Vibes&display=swap" rel="stylesheet">
 <style>
 /* ── Reset & Variables ───────────────────────────────────────────────── */
 *{margin:0;padding:0;box-sizing:border-box;}
@@ -94,9 +97,9 @@ input,textarea,select{font-family:inherit;}
   opacity:.4;
 }
 .brand-wrap{display:flex;flex-direction:column;gap:1px;}
-.brand{font-size:17px;font-weight:900;letter-spacing:-.3px;
-  background:linear-gradient(135deg,#ff006e,#8338ec,#3a86ff);
-  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+.brand{font-family:'Great Vibes',cursive;font-size:24px;font-weight:400;letter-spacing:1px;
+  color:#fff;
+  text-shadow:0 0 7px #ff6b9d,0 0 15px #ff6b9d,0 0 30px #c084fc,0 0 50px #c084fc;
 }
 .brand-sub{font-size:9px;color:var(--sub);letter-spacing:2px;text-transform:uppercase;}
 .mode-switch{display:flex;gap:3px;margin-left:auto;background:rgba(255,255,255,.04);padding:4px;border-radius:12px;border:1px solid var(--border);}
@@ -286,15 +289,15 @@ input,textarea,select{font-family:inherit;}
 
 /* ── Mode-based accent system (inspirado v7.1) ── */
 body.mode-bares .topbar::after{background:linear-gradient(90deg,transparent,#f59e0b,#ef4444,transparent);}
-body.mode-bares .brand{background:linear-gradient(135deg,#f59e0b,#ef4444);-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+body.mode-bares .brand{text-shadow:0 0 7px #f59e0b,0 0 15px #f59e0b,0 0 30px #ef4444,0 0 50px #ef4444;}
 body.mode-bares .btn-add{background:linear-gradient(135deg,#f59e0b,#ef4444);box-shadow:0 2px 10px rgba(245,158,11,.25);}
 body.mode-bares .queue-item.singing{border-color:#f59e0b;background:rgba(245,158,11,.07);box-shadow:0 0 12px rgba(245,158,11,.1);}
 body.mode-ia .topbar::after{background:linear-gradient(90deg,transparent,var(--s),var(--a),transparent);}
-body.mode-ia .brand{background:linear-gradient(135deg,var(--s),var(--a));-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+body.mode-ia .brand{text-shadow:0 0 7px var(--s),0 0 15px var(--s),0 0 30px var(--a),0 0 50px var(--a);}
 body.mode-youtube .topbar::after{background:linear-gradient(90deg,transparent,#ff4444,#ff006e,transparent);}
-body.mode-youtube .brand{background:linear-gradient(135deg,#ff4444,#ff006e);-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+body.mode-youtube .brand{text-shadow:0 0 7px #ff4444,0 0 15px #ff4444,0 0 30px #ff006e,0 0 50px #ff006e;}
 body.mode-estudio .topbar::after{background:linear-gradient(90deg,transparent,#06b6d4,#3b82f6,transparent);}
-body.mode-estudio .brand{background:linear-gradient(135deg,#06b6d4,#3b82f6);-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+body.mode-estudio .brand{text-shadow:0 0 7px #06b6d4,0 0 15px #06b6d4,0 0 30px #3b82f6,0 0 50px #3b82f6;}
 body.mode-estudio .btn-add{background:linear-gradient(135deg,#06b6d4,#3b82f6);box-shadow:0 2px 10px rgba(6,182,212,.25);}
 
 /* ── Estudio Panel ── */
@@ -1512,9 +1515,9 @@ body:has(.center.tp-fullscreen) #audio-bar{
 @keyframes cardEntrance{from{opacity:0;transform:translateY(24px);}to{opacity:1;transform:translateY(0);}}
 @keyframes fadeUp{from{opacity:0;transform:translateY(16px);}to{opacity:1;transform:translateY(0);}}
 .welcome-logo{
-  font-size:3rem;font-weight:900;letter-spacing:-1px;
-  background:linear-gradient(135deg,#ff006e,#8338ec,#3a86ff);
-  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+  font-family:'Great Vibes',cursive;font-size:4rem;font-weight:400;letter-spacing:2px;
+  color:#fff;
+  text-shadow:0 0 10px #ff6b9d,0 0 20px #ff6b9d,0 0 40px #c084fc,0 0 80px #c084fc;
   text-align:center;opacity:0;animation:fadeUp .7s ease forwards;
 }
 .welcome-sub{font-size:1rem;color:var(--sub);text-align:center;margin-top:-8px;opacity:0;animation:fadeUp .7s ease .15s forwards;}
@@ -1586,6 +1589,99 @@ body:has(.center.tp-fullscreen) #audio-bar{
 }
 .welcome-skip:hover{border-color:var(--p);color:#fff;}
 
+/* ── Home Hub ─────────────────────────────────────────────────── */
+#home-hub{
+  display:none;position:fixed;top:0;left:0;right:0;bottom:0;z-index:90;
+  background:var(--bg);overflow-y:auto;overflow-x:hidden;
+}
+#home-hub.active{display:flex;flex-direction:column;align-items:center;}
+.hub-bg{
+  position:fixed;top:0;left:0;right:0;height:50vh;pointer-events:none;z-index:0;
+  background:radial-gradient(ellipse at 30% 0%,rgba(255,0,110,.12) 0%,transparent 50%),
+             radial-gradient(ellipse at 70% 0%,rgba(131,56,236,.12) 0%,transparent 50%),
+             radial-gradient(ellipse at 50% 30%,rgba(58,134,255,.06) 0%,transparent 60%);
+}
+.hub-content{position:relative;z-index:1;width:100%;max-width:900px;padding:40px 20px 100px;}
+.hub-header{text-align:center;margin-bottom:32px;}
+.hub-logo{font-family:'Great Vibes',cursive;font-size:42px;font-weight:400;color:#fff;text-shadow:0 0 10px #ff6b9d,0 0 20px #ff6b9d,0 0 40px #c084fc,0 0 80px #c084fc;margin-bottom:4px;}
+.hub-subtitle{color:var(--sub);font-size:14px;font-weight:400;}
+.hub-promo{
+  margin-bottom:24px;padding:14px 20px;border-radius:12px;text-align:center;
+  background:linear-gradient(135deg,rgba(245,158,11,.15),rgba(239,68,68,.1));
+  border:1px solid rgba(245,158,11,.3);
+  animation:hub-promo-pulse 3s ease-in-out infinite;
+}
+.hub-promo-text{font-size:13px;font-weight:600;color:#f59e0b;}
+.hub-promo-sub{font-size:11px;color:var(--sub);margin-top:2px;}
+@keyframes hub-promo-pulse{0%,100%{border-color:rgba(245,158,11,.3);}50%{border-color:rgba(245,158,11,.6);}}
+.hub-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+.hub-card{
+  position:relative;padding:24px 20px;border-radius:16px;cursor:pointer;
+  background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);
+  backdrop-filter:blur(12px);transition:all .25s ease;overflow:hidden;
+}
+.hub-card:hover{transform:translateY(-4px);border-color:rgba(255,255,255,.2);background:rgba(255,255,255,.07);}
+.hub-card:active{transform:scale(.97);}
+.hub-card-glow{
+  position:absolute;top:-40px;left:50%;transform:translateX(-50%);
+  width:200px;height:120px;border-radius:50%;pointer-events:none;
+  opacity:.4;transition:opacity .3s;filter:blur(40px);
+}
+.hub-card:hover .hub-card-glow{opacity:.7;}
+.hub-card-top{display:flex;align-items:center;gap:12px;margin-bottom:12px;position:relative;z-index:1;}
+.hub-card-icon{
+  width:52px;height:52px;border-radius:14px;display:flex;align-items:center;justify-content:center;
+  font-size:26px;border:1px solid rgba(255,255,255,.15);flex-shrink:0;
+}
+.hub-card-title{font-size:18px;font-weight:800;color:#fff;}
+.hub-card-tag{
+  font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:1px;
+  padding:3px 8px;border-radius:6px;margin-left:8px;
+}
+.hub-card-tag.free{background:rgba(0,245,160,.12);color:var(--g);border:1px solid rgba(0,245,160,.2);}
+.hub-card-tag.pro{background:rgba(245,158,11,.12);color:#f59e0b;border:1px solid rgba(245,158,11,.2);}
+.hub-card-tag.promo{background:rgba(0,245,160,.12);color:var(--g);border:1px solid rgba(0,245,160,.2);}
+.hub-card-desc{font-size:13px;color:var(--sub);line-height:1.5;margin-bottom:12px;position:relative;z-index:1;}
+.hub-card-features{list-style:none;padding:0;margin:0;position:relative;z-index:1;}
+.hub-card-features li{font-size:11px;color:rgba(255,255,255,.5);padding:3px 0;display:flex;align-items:center;gap:6px;}
+.hub-card-features li::before{content:'→';font-size:10px;opacity:.6;}
+/* Card color variants */
+.hub-card[data-mode="karaoke"] .hub-card-glow{background:rgba(255,0,110,.5);}
+.hub-card[data-mode="karaoke"] .hub-card-icon{background:linear-gradient(135deg,#ff006e,#8338ec);}
+.hub-card[data-mode="youtube"] .hub-card-glow{background:rgba(255,68,68,.5);}
+.hub-card[data-mode="youtube"] .hub-card-icon{background:linear-gradient(135deg,#ff4444,#ff006e);}
+.hub-card[data-mode="bares"] .hub-card-glow{background:rgba(245,158,11,.5);}
+.hub-card[data-mode="bares"] .hub-card-icon{background:linear-gradient(135deg,#f59e0b,#ef4444);}
+.hub-card[data-mode="ia"] .hub-card-glow{background:rgba(131,56,236,.5);}
+.hub-card[data-mode="ia"] .hub-card-icon{background:linear-gradient(135deg,#8338ec,#3a86ff);}
+.hub-card[data-mode="estudio"] .hub-card-glow{background:rgba(6,182,212,.5);}
+.hub-card[data-mode="estudio"] .hub-card-icon{background:linear-gradient(135deg,#06b6d4,#3b82f6);}
+/* Hub card for estudio spans full width */
+.hub-card.hub-card-full{grid-column:1/-1;}
+/* Mode panel backgrounds */
+body.mode-bares .main{background:radial-gradient(ellipse at 50% 0%,rgba(245,158,11,.06) 0%,transparent 40%),var(--bg);}
+body.mode-ia .main{background:radial-gradient(ellipse at 50% 0%,rgba(131,56,236,.06) 0%,transparent 40%),var(--bg);}
+body.mode-youtube .main{background:radial-gradient(ellipse at 50% 0%,rgba(255,68,68,.06) 0%,transparent 40%),var(--bg);}
+body.mode-estudio .main{background:radial-gradient(ellipse at 50% 0%,rgba(6,182,212,.06) 0%,transparent 40%),var(--bg);}
+body.mode-karaoke .main{background:radial-gradient(ellipse at 50% 0%,rgba(255,0,110,.04) 0%,transparent 40%),var(--bg);}
+/* Hub button in topbar */
+.hub-home-btn{
+  width:32px;height:32px;border-radius:8px;border:1px solid rgba(255,255,255,.1);
+  background:rgba(255,255,255,.05);color:var(--sub);cursor:pointer;
+  display:flex;align-items:center;justify-content:center;font-size:16px;
+  transition:all .2s;flex-shrink:0;
+}
+.hub-home-btn:hover{background:rgba(255,255,255,.1);color:#fff;border-color:var(--p);}
+@media(max-width:1024px){
+  .hub-content{padding:24px 16px 120px;}
+  .hub-grid{grid-template-columns:1fr;}
+  .hub-card{padding:18px 16px;}
+  .hub-card-top{gap:10px;}
+  .hub-card-icon{width:44px;height:44px;font-size:22px;}
+  .hub-card-title{font-size:16px;}
+  .hub-logo{font-size:28px;}
+}
+
 /* ── Hideable Panels ─────────────────────────────────────────────── */
 .sidebar.panel-hidden{width:0;min-width:0;padding:0;overflow:hidden;border:none;opacity:0;pointer-events:none;transition:all .3s;}
 .right-panel.panel-hidden{width:0;min-width:0;padding:0;overflow:hidden;border:none;opacity:0;pointer-events:none;transition:all .3s;}
@@ -1626,9 +1722,9 @@ body:has(.center.tp-fullscreen) #audio-bar{
 }
 .legal-close:hover{background:rgba(255,60,60,.2);color:#ff6b6b;}
 .legal-logo{
-  font-size:22px;font-weight:900;margin-bottom:4px;
-  background:linear-gradient(135deg,#ff006e,#8338ec,#3a86ff);
-  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+  font-family:'Great Vibes',cursive;font-size:28px;font-weight:400;margin-bottom:4px;
+  color:#fff;
+  text-shadow:0 0 7px #ff6b9d,0 0 15px #ff6b9d,0 0 30px #c084fc;
 }
 .legal-brand-sub{font-size:10px;color:var(--sub);letter-spacing:2px;margin-bottom:18px;}
 .legal-section{margin-bottom:16px;}
@@ -1779,7 +1875,7 @@ body:has(.center.tp-fullscreen) #audio-bar{
   /* ─── Topbar: limpio, compacto, sin overflow ─── */
   .topbar{padding:0 8px;height:46px;gap:6px;overflow:hidden;flex-wrap:nowrap;}
   .brand-wrap{flex-shrink:0;max-width:70px;}
-  .brand{font-size:14px;}
+  .brand{font-size:20px;}
   .brand-sub{display:none;}
   .brand-wrap > div:last-child{display:none!important;}
   .mode-switch{display:none;}
@@ -1853,7 +1949,7 @@ body:has(.center.tp-fullscreen) #audio-bar{
   /* Topbar aun mas compacto para Pixel/iPhone SE */
   .topbar{height:48px;padding:0 8px;gap:4px;}
   .brand-wrap{max-width:75px;}
-  .brand{font-size:12px;}
+  .brand{font-size:18px;}
   #bf-login-btn{padding:4px 8px!important;font-size:10px!important;}
   #bf-user-photo{width:26px!important;height:26px!important;}
   .usearch-bar{height:28px;border-radius:8px;}
@@ -2167,6 +2263,7 @@ input:focus-visible,textarea:focus-visible{
   <!-- ═══ TOPBAR ═══ -->
   <div class="topbar">
     <button id="mobile-back-btn" onclick="mobileSetMode('karaoke',document.querySelector('.mnav-btn[data-mode=karaoke]'))" style="display:none;background:none;border:none;color:var(--p);font-size:18px;padding:4px 4px;cursor:pointer;flex-shrink:0;" title="Volver a Karaoke" aria-label="Volver a Karaoke">&#x25C0;</button>
+    <button class="hub-home-btn" onclick="showHub()" title="Inicio">🏠</button>
     <div class="brand-wrap">
       <div class="brand">ByFlow</div>
       <div class="brand-sub">VIVE CANTANDO</div>
@@ -2996,7 +3093,7 @@ input:focus-visible,textarea:focus-visible{
 
         <!-- Acerca de -->
         <div class="settings-section" style="text-align:center;padding:20px 16px;">
-          <div style="font-size:20px;font-weight:900;background:linear-gradient(135deg,#ff006e,#8338ec,#3a86ff);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">ByFlow</div>
+          <div style="font-family:'Great Vibes',cursive;font-size:28px;font-weight:400;color:#fff;text-shadow:0 0 7px #ff6b9d,0 0 15px #ff6b9d,0 0 30px #c084fc;">ByFlow</div>
           <div style="font-size:11px;color:var(--sub);margin-top:2px;">Vive Cantando</div>
           <div style="font-size:10px;color:rgba(255,255,255,.25);margin-top:8px;">v3.3 &middot; powered by IArtLabs</div>
           <div style="font-size:9px;color:rgba(255,255,255,.15);margin-top:4px;">CERO descargas &middot; Solo streaming</div>
@@ -3230,6 +3327,103 @@ input:focus-visible,textarea:focus-visible{
       <span style="font-size:10px;color:var(--a);cursor:pointer;" onclick="welcomeSelect('remote')">&#x1F4F1; Control Remoto</span>
     </div>
     <div style="font-size:10px;color:rgba(255,255,255,.15);margin-top:8px;max-width:380px;line-height:1.4;text-align:center;">Al usar ByFlow aceptas nuestros <span style="text-decoration:underline;cursor:pointer;" onclick="openLegalModal();dismissWelcome();">terminos de servicio</span>. Letras IA: 50/50 autor/ArT-AtR. Letras propias: 100% autor. &copy; 2024-2026 IArtLabs</div>
+  </div>
+</div>
+
+<!-- ── Home Hub ── -->
+<div id="home-hub">
+  <div class="hub-bg"></div>
+  <div class="hub-content">
+    <div class="hub-header">
+      <div class="hub-logo">ByFlow</div>
+      <div class="hub-subtitle">Vive Cantando — Elige tu experiencia</div>
+    </div>
+    <div id="hub-promo-banner" class="hub-promo" style="display:none;">
+      <div class="hub-promo-text">⚡ Semana PRO Gratis — Todos los modos desbloqueados</div>
+      <div class="hub-promo-sub" id="hub-promo-expires"></div>
+    </div>
+    <div class="hub-grid">
+      <div class="hub-card" data-mode="karaoke" onclick="hubSelectMode('karaoke')">
+        <div class="hub-card-glow"></div>
+        <div class="hub-card-top">
+          <div class="hub-card-icon">🎤</div>
+          <div>
+            <span class="hub-card-title">Karaoke</span>
+            <span class="hub-card-tag free">GRATIS</span>
+          </div>
+        </div>
+        <div class="hub-card-desc">Canta con teleprompter profesional. Agrega canciones a la cola, gestiona turnos y sincroniza letras en tiempo real.</div>
+        <ul class="hub-card-features">
+          <li>Teleprompter sincronizado</li>
+          <li>Cola de cantantes con turnos</li>
+          <li>Vista remota para pantallas</li>
+        </ul>
+      </div>
+      <div class="hub-card" data-mode="youtube" onclick="hubSelectMode('youtube')">
+        <div class="hub-card-glow"></div>
+        <div class="hub-card-top">
+          <div class="hub-card-icon">🎵</div>
+          <div>
+            <span class="hub-card-title">Musica</span>
+            <span class="hub-card-tag pro" id="hub-tag-youtube">PRO</span>
+          </div>
+        </div>
+        <div class="hub-card-desc">Busca y reproduce musica de YouTube, SoundCloud y Jamendo. Streaming legal, sin descargas, sin pirateria.</div>
+        <ul class="hub-card-features">
+          <li>YouTube, SoundCloud, Jamendo</li>
+          <li>Streaming 100% legal</li>
+          <li>Busqueda inteligente</li>
+        </ul>
+      </div>
+      <div class="hub-card" data-mode="bares" onclick="hubSelectMode('bares')">
+        <div class="hub-card-glow"></div>
+        <div class="hub-card-top">
+          <div class="hub-card-icon">🍺</div>
+          <div>
+            <span class="hub-card-title">Bares</span>
+            <span class="hub-card-tag pro" id="hub-tag-bares">PRO</span>
+          </div>
+        </div>
+        <div class="hub-card-desc">Convierte tu bar en un venue profesional. Gestiona mesas, lanza promos, soundboard DJ y organiza eventos en vivo.</div>
+        <ul class="hub-card-features">
+          <li>Gestion de mesas y clientes</li>
+          <li>Promos y jingles automaticos</li>
+          <li>Soundboard para DJ</li>
+        </ul>
+      </div>
+      <div class="hub-card" data-mode="ia" onclick="hubSelectMode('ia')">
+        <div class="hub-card-glow"></div>
+        <div class="hub-card-top">
+          <div class="hub-card-icon">🤖</div>
+          <div>
+            <span class="hub-card-title">IA Studio</span>
+            <span class="hub-card-tag pro" id="hub-tag-ia">PRO</span>
+          </div>
+        </div>
+        <div class="hub-card-desc">GFlow, tu director vocal IA. Genera letras, recibe instrucciones de canto personalizadas y mejora tu estilo.</div>
+        <ul class="hub-card-features">
+          <li>Generador de letras offline</li>
+          <li>Director vocal inteligente</li>
+          <li>Sugerencias por artista</li>
+        </ul>
+      </div>
+      <div class="hub-card hub-card-full" data-mode="estudio" onclick="hubSelectMode('estudio')">
+        <div class="hub-card-glow"></div>
+        <div class="hub-card-top">
+          <div class="hub-card-icon">✍️</div>
+          <div>
+            <span class="hub-card-title">Estudio de Letras</span>
+            <span class="hub-card-tag free">GRATIS</span>
+          </div>
+        </div>
+        <div class="hub-card-desc">Escribe, edita y guarda tus letras. Accede a tu catalogo personal, genera rimas con el motor ArT-AtR y carga al teleprompter.</div>
+        <ul class="hub-card-features">
+          <li>Editor de letras con guardado</li>
+          <li>Motor de rimas ArT-AtR (192 frases, 65+ rimas)</li>
+          <li>Catalogo personal + canciones Suno</li>
+        </ul>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -3502,6 +3696,7 @@ input:focus-visible,textarea:focus-visible{
 
 <div class="mobile-nav" id="mobile-nav">
   <div class="mobile-nav-inner">
+    <button class="mnav-btn" data-mode="home" onclick="showHub()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg><span>Inicio</span></button>
     <button class="mnav-btn active" data-mode="karaoke" onclick="mobileSetMode('karaoke',this)">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
       <span>Karaoke</span>
@@ -4492,7 +4687,55 @@ function toggleMode(mode) {
   }
 }
 
+// ── Home Hub ────────────────────────────────────────────────────────────────
+function showHub() {
+  // Hide all panels
+  document.querySelectorAll('.sidebar,.right-panel,#ia-panel,#yt-panel,#bares-panel,#settings-panel,.estudio-panel,#vistas-panel').forEach(el => el.style.display = 'none');
+  document.getElementById('home-hub').classList.add('active');
+  document.querySelector('.app').style.display = 'none';
+  // Remove active from all mobile nav buttons
+  document.querySelectorAll('.mnav-btn').forEach(b => b.classList.remove('active'));
+  const homeBtn = document.querySelector('.mnav-btn[data-mode="home"]');
+  if (homeBtn) homeBtn.classList.add('active');
+  // Check for global promo
+  checkGlobalPromo();
+}
+
+function hubSelectMode(mode) {
+  document.getElementById('home-hub').classList.remove('active');
+  document.querySelector('.app').style.display = '';
+  if (typeof setMode === 'function') setMode(mode);
+}
+
+async function checkGlobalPromo() {
+  try {
+    const token = localStorage.getItem('bf_license_token') || '';
+    const res = await fetch('/api/license/status' + (token ? '?token=' + token : ''));
+    const data = await res.json();
+    const banner = document.getElementById('hub-promo-banner');
+    if (data.globalPromo && data.activated) {
+      banner.style.display = '';
+      const exp = new Date(data.expiresAt);
+      const days = Math.ceil((exp - Date.now()) / 86400000);
+      document.getElementById('hub-promo-expires').textContent = 'Todos los modos PRO gratis por ' + days + ' dias mas';
+      // Update PRO tags to show promo
+      ['youtube','bares','ia'].forEach(m => {
+        const tag = document.getElementById('hub-tag-' + m);
+        if (tag) { tag.textContent = 'GRATIS ' + days + 'd'; tag.className = 'hub-card-tag promo'; }
+      });
+    } else {
+      banner.style.display = 'none';
+    }
+  } catch(e) { console.warn('[HUB] Promo check failed:', e); }
+}
+
 function setMode(mode) {
+  // Hide Home Hub if visible
+  const _hub = document.getElementById('home-hub');
+  if (_hub) _hub.classList.remove('active');
+  const _appEl = document.querySelector('.app');
+  if (_appEl) _appEl.style.display = '';
+
   // Bloquear si no hay login (excepto settings y remote)
   const noAuthModes = ['settings', 'remote'];
   if (!noAuthModes.includes(mode)) {
@@ -8563,7 +8806,7 @@ function welcomeSelect(mode) {
     card.appendChild(ripple);
     setTimeout(() => ripple.remove(), 500);
   }
-  setTimeout(() => { dismissWelcome(); setMode(mode); }, 150);
+  setTimeout(() => { dismissWelcome(); showHub(); }, 150);
 }
 
 // ── Firebase Auth — Login real con Google/Email ───────────────────────────
@@ -8591,7 +8834,7 @@ async function socialLogin(provider) {
       showToast('Bienvenido, ' + (_fbUser.displayName || 'Usuario') + '!', 'success');
       _updateUserUI();
       dismissWelcome();
-      setMode('karaoke');
+      showHub();
     }
   } catch (e) {
     console.error('[Auth]', e);
@@ -8626,7 +8869,7 @@ async function emailLogin(isRegister) {
       showToast('Bienvenido, ' + (email.split('@')[0]) + '!', 'success');
       _updateUserUI();
       dismissWelcome();
-      setMode('karaoke');
+      showHub();
     }
   } catch (e) {
     console.error('[Auth]', e);
@@ -9663,14 +9906,13 @@ window.addEventListener('appinstalled', () => {
   loadSettingsState();
   await connectSocket();
 
-  // Si ya tiene sesion Firebase, saltar welcome e ir directo
+  // Si ya tiene sesion Firebase, saltar welcome e ir al Hub
   const _savedUid = localStorage.getItem('byflow_user_uid');
   if (_savedUid) {
     const ov = document.getElementById('welcome-overlay');
     if (ov) ov.classList.add('hidden');
     window._byflowWelcomed = true;
-    const lastMode = localStorage.getItem('byflow_last_mode') || 'karaoke';
-    setMode(lastMode);
+    showHub();
   } else {
     // No hay sesion — mostrar welcome, obligar login
     document.querySelector('.sidebar').classList.add('panel-hidden');
