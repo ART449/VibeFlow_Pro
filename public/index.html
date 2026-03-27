@@ -647,6 +647,7 @@ select.inp{cursor:pointer;}
 /* ── Fullscreen teleprompter ─────────────────────────────────────────── */
 .center.tp-fullscreen{
   position:fixed;inset:0;z-index:9999;background:var(--bg);
+  padding-bottom:0!important;/* override mobile padding-bottom:120px */
 }
 /* Ocultar TODOS los elementos fijos cuando el teleprompter está fullscreen */
 body:has(.center.tp-fullscreen) .player-bar,
@@ -691,7 +692,9 @@ body:has(.center.tp-fullscreen) #audio-bar{
 .center.tp-fullscreen .tp-sync-controls{margin-left:0;bottom:8px;left:auto;right:16px;transform:none;}
 .center.tp-fullscreen .tp-lrc-badge{left:16px;transform:none;}
 .center.tp-fullscreen:hover .tp-lrc-badge,
-.center.tp-fullscreen:hover .tp-sync-controls{opacity:.6;}
+.center.tp-fullscreen:hover .tp-sync-controls,
+.center.tp-fullscreen.tp-fs-active .tp-lrc-badge,
+.center.tp-fullscreen.tp-fs-active .tp-sync-controls{opacity:.6;}
 .center.tp-fullscreen .tp-sync-controls:hover{opacity:1;}
 .tp-sync-btn{
   width:26px;height:26px;border-radius:6px;border:1px solid var(--border);
@@ -4402,9 +4405,30 @@ function tpToggleFullscreen() {
   const btn = document.querySelector('.tp-fullscreen-btn');
   if (isFS) {
     btn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 14h6v6m10-10h-6V4M4 10h6V4m10 10h-6v6"/></svg>';
-    showToast('Pantalla completa — ESC para salir');
+    const isMobile = window.innerWidth <= 900 || ('ontouchstart' in window);
+    showToast(isMobile ? 'Pantalla completa — toca para mostrar controles' : 'Pantalla completa — ESC para salir');
+    // Mobile: tap on center toggles controls visibility
+    if (isMobile) {
+      center._tpFsTapHandler = function(e) {
+        // Don't toggle if tapping the button itself or sync controls
+        if (e.target.closest('.tp-fullscreen-btn,.tp-sync-controls,.tp-lrc-badge')) return;
+        center.classList.toggle('tp-fs-active');
+        // Auto-hide controls after 3 seconds
+        clearTimeout(center._tpFsHideTimer);
+        if (center.classList.contains('tp-fs-active')) {
+          center._tpFsHideTimer = setTimeout(() => center.classList.remove('tp-fs-active'), 3000);
+        }
+      };
+      center.addEventListener('touchend', center._tpFsTapHandler);
+    }
   } else {
     btn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>';
+    center.classList.remove('tp-fs-active');
+    clearTimeout(center._tpFsHideTimer);
+    if (center._tpFsTapHandler) {
+      center.removeEventListener('touchend', center._tpFsTapHandler);
+      center._tpFsTapHandler = null;
+    }
   }
 }
 
