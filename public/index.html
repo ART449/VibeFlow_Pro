@@ -2258,6 +2258,353 @@ input:focus-visible,textarea:focus-visible{
   to{box-shadow:0 0 12px rgba(131,56,236,.15);}
 }
 
+/* ══════════════════════════════════════════════════════════════════════
+   PREMIUM POLISH — Google Labs-grade micro-interactions & refinements
+   ══════════════════════════════════════════════════════════════════════ */
+
+/* ── 1. SMOOTHER TRANSITIONS — universal easing on interactive elements ── */
+button,
+.mode-btn,
+.ctrl-btn,
+.qi-btn,
+.mnav-btn,
+.ia-chip,
+.ia-send,
+.yt-btn,
+.yt-card,
+.est-genre-btn,
+.est-mis-btn,
+.est-filter-btn,
+.est-vote-btn,
+.dj-pad,
+.settings-toggle,
+.settings-btn,
+.rp-btn,
+.ns-next-btn,
+.promo-skip,
+.welcome-skip,
+.oem-unlock-btn,
+.topbar-settings,
+.usearch-item-action,
+.cola-modal-close {
+  transition: all .2s cubic-bezier(.25,.46,.45,.94);
+}
+
+/* Smooth panel appearance */
+.ia-panel,
+.yt-panel,
+.bares-panel,
+.settings-panel,
+.estudio-panel,
+.vistas-panel {
+  transition: opacity .25s ease, transform .25s ease;
+}
+
+/* ── 2. BETTER SHADOWS & DEPTH — layered shadows for premium feel ── */
+
+/* Topbar: subtle depth shadow */
+.topbar {
+  box-shadow:
+    0 1px 3px rgba(0,0,0,.3),
+    0 4px 12px rgba(0,0,0,.15);
+}
+
+/* Sidebar & right panel depth */
+.sidebar,
+.right-panel,
+.ia-panel,
+.yt-panel,
+.bares-panel,
+.settings-panel {
+  box-shadow: -1px 0 8px rgba(0,0,0,.15);
+}
+
+/* Cards: multi-layer depth */
+.welcome-card,
+.hub-card,
+.settings-section,
+.queue-item,
+.yt-card,
+.est-ranking-item,
+.est-mis-item,
+.cola-item,
+.vp-cola-item,
+.vp-result-item {
+  box-shadow:
+    0 1px 2px rgba(0,0,0,.2),
+    0 4px 8px rgba(0,0,0,.1);
+}
+
+/* Card hover: lifted shadow */
+.welcome-card:hover,
+.hub-card:hover,
+.yt-card:hover,
+.est-ranking-item:hover,
+.est-mis-item:hover {
+  box-shadow:
+    0 4px 12px rgba(0,0,0,.3),
+    0 12px 28px rgba(0,0,0,.15);
+}
+
+/* Toast: deeper shadow */
+#toast {
+  box-shadow:
+    0 4px 12px rgba(0,0,0,.3),
+    0 12px 40px rgba(0,0,0,.25);
+}
+
+/* Player bar depth */
+.player-bar {
+  box-shadow:
+    0 -2px 8px rgba(0,0,0,.2),
+    0 -8px 24px rgba(0,0,0,.1);
+}
+
+/* Modal depth */
+.cola-modal,
+.tutorial-card,
+.catalog-modal {
+  box-shadow:
+    0 8px 24px rgba(0,0,0,.3),
+    0 24px 64px rgba(0,0,0,.25);
+}
+
+/* ── 3. MICRO-INTERACTIONS — premium hover/active feedback ── */
+
+/* Generic button hover: slight lift + brightness */
+.settings-btn:hover,
+.rp-btn:hover,
+.oem-unlock-btn:hover,
+.est-search-btn:hover,
+.est-save-btn:hover,
+.est-result-use:hover,
+.yt-save-key:hover {
+  filter: brightness(1.08);
+}
+
+/* Button active: press feedback */
+.settings-btn:active,
+.rp-btn:active,
+.oem-unlock-btn:active,
+.btn-add:active,
+.est-search-btn:active,
+.est-save-btn:active,
+.est-result-use:active,
+.yt-save-key:active,
+.yt-search-btn:active,
+.ia-send:active,
+.ns-next-btn:active,
+.welcome-skip:active,
+.promo-skip:active,
+.tutorial-btn:active,
+.usearch-item-action:active {
+  transform: scale(.97);
+  filter: brightness(.95);
+}
+
+/* Mode button active press */
+.mode-btn:active {
+  transform: scale(.96);
+}
+
+/* Queue item hover lift */
+.queue-item:hover {
+  transform: translateY(-1px);
+}
+
+/* DJ pad refined interaction */
+.dj-pad:hover {
+  box-shadow: 0 4px 16px rgba(0,0,0,.2);
+}
+
+/* Settings toggle: smoother */
+.settings-toggle {
+  transition: background .25s cubic-bezier(.25,.46,.45,.94);
+}
+.settings-toggle::after {
+  transition: transform .25s cubic-bezier(.25,.46,.45,.94);
+}
+
+/* Chips hover lift */
+.ia-chip:hover,
+.est-genre-btn:hover,
+.est-filter-btn:hover {
+  transform: translateY(-1px);
+}
+
+/* Mobile nav: active pulse */
+.mnav-btn.active {
+  position: relative;
+}
+.mnav-btn.active::after {
+  content: '';
+  position: absolute;
+  bottom: 2px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: var(--p);
+  box-shadow: 0 0 6px var(--glow-p);
+}
+
+/* Topbar settings button hover glow */
+.topbar-settings:hover {
+  box-shadow: 0 2px 8px rgba(255,255,255,.06);
+}
+
+/* ── 4. TYPOGRAPHY REFINEMENT — better hierarchy & readability ── */
+
+/* Body text: improved line-height */
+body {
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+/* Section titles: refined spacing */
+.k-section-title,
+.settings-section-title,
+.dj-section-title,
+.yt-lib-title,
+.vp-cola-title,
+.usearch-group-title {
+  letter-spacing: 1.8px;
+  font-weight: 800;
+}
+
+/* Sub labels: subtle tracking */
+.brand-sub,
+.oem-badge,
+.est-header-badge,
+.ns-label {
+  letter-spacing: 2.5px;
+}
+
+/* Welcome card title: tighter tracking for display text */
+.welcome-card .wc-title,
+.hub-card .hc-title,
+.oem-title {
+  letter-spacing: -.2px;
+}
+
+/* IA & settings body text readability */
+.ia-msg-text,
+.settings-label,
+.wc-desc,
+.est-mis-preview,
+.oem-sub {
+  line-height: 1.6;
+}
+
+/* Welcome screen: refine subtitle */
+.welcome-sub {
+  letter-spacing: .3px;
+  line-height: 1.6;
+}
+
+/* Monospace elements: tighter */
+.player-time,
+.speed-display,
+#datetime {
+  letter-spacing: .5px;
+}
+
+/* ── 5. INPUT FIELDS — polished focus states with glow ── */
+
+/* All inputs: smooth focus transition with glow */
+.inp,
+.rp-input,
+.settings-inp,
+.ia-input,
+.yt-search-inp,
+.yt-apikey-inp,
+.est-search-input,
+.est-letra-input,
+.vp-search-inp,
+.oem-key-inp,
+.usearch-input,
+.cola-modal-add .inp {
+  transition: border-color .25s ease, box-shadow .25s ease, background .25s ease;
+}
+
+/* Focus: glow ring matching accent */
+.inp:focus,
+.rp-input:focus,
+.cola-modal-add .inp:focus {
+  box-shadow: 0 0 0 3px rgba(255,0,110,.1);
+}
+
+.settings-inp:focus {
+  box-shadow: 0 0 0 3px rgba(58,134,255,.1);
+}
+
+.ia-input:focus {
+  box-shadow: 0 0 0 3px rgba(131,56,236,.1);
+}
+
+.yt-search-inp:focus,
+.yt-apikey-inp:focus {
+  box-shadow: 0 0 0 3px rgba(255,68,68,.1);
+}
+
+.est-search-input:focus,
+.est-letra-input:focus,
+.vp-search-inp:focus {
+  box-shadow: 0 0 0 3px rgba(6,182,212,.1);
+}
+
+/* Placeholder styling refinement */
+::placeholder {
+  transition: opacity .2s ease;
+}
+input:focus::placeholder,
+textarea:focus::placeholder {
+  opacity: .35;
+}
+
+/* ── 6. SCROLLBAR REFINEMENT ── */
+::-webkit-scrollbar-thumb {
+  transition: background .2s;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(255,255,255,.22);
+}
+
+/* ── 7. SELECTION COLOR ── */
+::selection {
+  background: rgba(255,0,110,.25);
+  color: #fff;
+}
+
+/* ── Light theme shadow overrides ── */
+[data-theme="light"] .topbar {
+  box-shadow: 0 1px 3px rgba(0,0,0,.08), 0 4px 12px rgba(0,0,0,.04);
+}
+[data-theme="light"] .welcome-card,
+[data-theme="light"] .hub-card,
+[data-theme="light"] .settings-section,
+[data-theme="light"] .queue-item {
+  box-shadow: 0 1px 3px rgba(0,0,0,.06), 0 4px 8px rgba(0,0,0,.03);
+}
+[data-theme="light"] .welcome-card:hover,
+[data-theme="light"] .hub-card:hover {
+  box-shadow: 0 4px 12px rgba(0,0,0,.1), 0 12px 28px rgba(0,0,0,.06);
+}
+[data-theme="light"] .player-bar {
+  box-shadow: 0 -2px 8px rgba(0,0,0,.06), 0 -8px 24px rgba(0,0,0,.03);
+}
+[data-theme="light"] .sidebar,
+[data-theme="light"] .right-panel {
+  box-shadow: -1px 0 8px rgba(0,0,0,.04);
+}
+[data-theme="light"] ::selection {
+  background: rgba(255,0,110,.15);
+  color: #1a1a2e;
+}
+
 </style>
 </head>
 <body>
