@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>ByFlow — Menu Prototype v4</title>
+<link href="https://fonts.googleapis.com/css2?family=Great+Vibes&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+:root{
+  --bg:#0a0a0f;
+  --surface:rgba(255,255,255,.04);
+  --surface-hover:rgba(255,255,255,.08);
+  --text:#e8e8f0;
+  --sub:rgba(255,255,255,.45);
+  --pink:#ff6b9d;
+  --purple:#c084fc;
+  --orange:#ff8a00;
+  --red:#e53935;
+  --cyan:#22d3ee;
+  --green:#34d399;
+  --blue:#60a5fa;
+  --gold:#fbbf24;
+}
+body{
+  font-family:'Inter',system-ui,sans-serif;
+  background:var(--bg);
+  color:var(--text);
+  min-height:100vh;
+  overflow-x:hidden;
+  -webkit-font-smoothing:antialiased;
+}
+
+/* ═══ FONDO ANIMADO ═══ */
+.bg-orbs{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden;}
+.bg-orbs .orb{
+  position:absolute;border-radius:50%;filter:blur(80px);opacity:.15;
+  animation:orbFloat 20s ease-in-out infinite;
+}
+.orb:nth-child(1){width:500px;height:500px;background:var(--pink);top:-10%;left:-10%;animation-delay:0s;}
+.orb:nth-child(2){width:400px;height:400px;background:var(--purple);top:50%;right:-5%;animation-delay:-7s;}
+.orb:nth-child(3){width:350px;height:350px;background:var(--cyan);bottom:-10%;left:30%;animation-delay:-14s;}
+@keyframes orbFloat{
+  0%,100%{transform:translate(0,0) scale(1);}
+  33%{transform:translate(30px,-40px) scale(1.1);}
+  66%{transform:translate(-20px,30px) scale(.9);}
+}
+
+/* ═══ CONTENEDOR PRINCIPAL ═══ */
+.app{position:relative;z-index:1;max-width:900px;margin:0 auto;padding:20px;}
+
+/* ═══ HEADER ═══ */
+.header{text-align:center;padding:40px 0 10px;}
+.logo{font-family:'Great Vibes',cursive;font-size:4rem;line-height:1;
+  background:linear-gradient(135deg,var(--pink),var(--purple));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+  filter:drop-shadow(0 0 30px rgba(255,107,157,.3));
+  animation:logoPulse 4s ease-in-out infinite;
+}
+@keyframes logoPulse{
+  0%,100%{filter:drop-shadow(0 0 30px rgba(255,107,157,.3));}
+  50%{filter:drop-shadow(0 0 50px rgba(192,132,252,.4));}
+}
+.tagline{font-size:11px;color:var(--sub);letter-spacing:3px;text-transform:uppercase;margin-top:4px;}
+.powered{font-size:9px;color:rgba(255,255,255,.2);margin-top:2px;}
+
+/* ═══ CONTEXT BAR (inteligente) ═══ */
+.context-bar{
+  margin:24px 0 8px;padding:14px 18px;
+  background:linear-gradient(135deg,rgba(255,107,157,.08),rgba(192,132,252,.08));
+  border:1px solid rgba(255,107,157,.15);border-radius:16px;
+  display:flex;align-items:center;gap:12px;
+  animation:fadeSlideUp .6s ease;
+  cursor:pointer;transition:all .3s ease;
+}
+.context-bar:hover{border-color:rgba(255,107,157,.3);transform:translateY(-1px);}
+.context-bar .cb-icon{font-size:24px;}
+.context-bar .cb-text{flex:1;}
+.context-bar .cb-title{font-size:13px;font-weight:600;}
+.context-bar .cb-sub{font-size:11px;color:var(--sub);margin-top:2px;}
+.context-bar .cb-arrow{font-size:18px;color:var(--sub);transition:transform .3s;}
+.context-bar:hover .cb-arrow{transform:translateX(4px);color:var(--pink);}
+
+/* ═══ SECCION TITULO ═══ */
+.section-title{
+  display:flex;align-items:center;gap:8px;
+  font-size:11px;font-weight:600;letter-spacing:2px;text-transform:uppercase;
+  color:var(--sub);margin:28px 0 14px;padding:0 4px;
+}
+.section-title::after{content:'';flex:1;height:1px;background:rgba(255,255,255,.06);}
+
+/* ═══ BENTO GRID ═══ */
+.bento{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  grid-auto-rows:minmax(140px,auto);
+  gap:12px;
+}
+@media(max-width:600px){
+  .bento{grid-template-columns:repeat(2,1fr);}
+  .bento .card.featured{grid-column:span 2;}
+}
+
+/* ═══ CARDS ═══ */
+.card{
+  position:relative;overflow:hidden;
+  background:var(--surface);
+  border:1px solid rgba(255,255,255,.06);
+  border-radius:20px;
+  padding:20px;
+  display:flex;flex-direction:column;justify-content:flex-end;
+  cursor:pointer;
+  transition:all .4s cubic-bezier(.25,.46,.45,.94);
+  animation:fadeSlideUp .6s ease backwards;
+}
+.card:nth-child(1){animation-delay:.1s;}
+.card:nth-child(2){animation-delay:.15s;}
+.card:nth-child(3){animation-delay:.2s;}
+.card:nth-child(4){animation-delay:.25s;}
+.card:nth-child(5){animation-delay:.3s;}
+.card:nth-child(6){animation-delay:.35s;}
+.card:nth-child(7){animation-delay:.4s;}
+.card:nth-child(8){animation-delay:.45s;}
+.card:nth-child(9){animation-delay:.5s;}
+
+.card.featured{grid-column:span 2;grid-row:span 1;}
+
+.card:hover{
+  transform:translateY(-4px);
+  border-color:var(--card-accent,.3);
+  box-shadow:0 20px 40px rgba(0,0,0,.3),0 0 60px var(--card-glow,transparent);
+}
+.card:active{transform:scale(.97);transition:.1s;}
+
+/* Glow interno */
+.card .card-glow{
+  position:absolute;top:0;left:0;right:0;height:120px;
+  opacity:0;transition:opacity .4s;pointer-events:none;
+}
+.card:hover .card-glow{opacity:1;}
+
+/* Icono */
+.card .card-icon{
+  font-size:36px;margin-bottom:auto;padding-bottom:12px;
+  transition:transform .4s cubic-bezier(.25,.46,.45,.94);
+}
+.card:hover .card-icon{transform:scale(1.15) rotate(-5deg);}
+
+/* Texto */
+.card .card-title{font-size:15px;font-weight:600;line-height:1.2;}
+.card .card-desc{font-size:11px;color:var(--sub);margin-top:4px;line-height:1.4;}
+
+/* Badge */
+.card .badge{
+  position:absolute;top:12px;right:12px;
+  font-size:9px;font-weight:700;letter-spacing:1px;
+  padding:3px 8px;border-radius:6px;
+  text-transform:uppercase;
+}
+.badge.free{background:rgba(52,211,153,.15);color:var(--green);border:1px solid rgba(52,211,153,.2);}
+.badge.pro{background:rgba(251,191,36,.12);color:var(--gold);border:1px solid rgba(251,191,36,.2);}
+.badge.new{background:rgba(96,165,250,.12);color:var(--blue);border:1px solid rgba(96,165,250,.2);}
+.badge.hot{background:rgba(255,107,157,.12);color:var(--pink);border:1px solid rgba(255,107,157,.2);}
+
+/* Stat mini */
+.card .card-stat{
+  display:flex;align-items:center;gap:4px;
+  font-size:10px;color:var(--sub);margin-top:8px;
+}
+.card .card-stat .dot{width:5px;height:5px;border-radius:50%;background:var(--green);animation:pulse 2s infinite;}
+@keyframes pulse{0%,100%{opacity:1;}50%{opacity:.3;}}
+
+/* ═══ MODOS COLORES ═══ */
+.card[data-mode="karaoke"]{--card-accent:rgba(233,30,144,.4);--card-glow:rgba(233,30,144,.1);}
+.card[data-mode="karaoke"] .card-glow{background:radial-gradient(ellipse at 50% 0%,rgba(233,30,144,.2) 0%,transparent 70%);}
+
+.card[data-mode="musica"]{--card-accent:rgba(229,57,53,.4);--card-glow:rgba(229,57,53,.1);}
+.card[data-mode="musica"] .card-glow{background:radial-gradient(ellipse at 50% 0%,rgba(229,57,53,.2) 0%,transparent 70%);}
+
+.card[data-mode="estudio"]{--card-accent:rgba(34,211,238,.4);--card-glow:rgba(34,211,238,.1);}
+.card[data-mode="estudio"] .card-glow{background:radial-gradient(ellipse at 50% 0%,rgba(34,211,238,.2) 0%,transparent 70%);}
+
+.card[data-mode="bares"]{--card-accent:rgba(255,138,0,.4);--card-glow:rgba(255,138,0,.1);}
+.card[data-mode="bares"] .card-glow{background:radial-gradient(ellipse at 50% 0%,rgba(255,138,0,.2) 0%,transparent 70%);}
+
+.card[data-mode="ia"]{--card-accent:rgba(124,77,255,.4);--card-glow:rgba(124,77,255,.1);}
+.card[data-mode="ia"] .card-glow{background:radial-gradient(ellipse at 50% 0%,rgba(124,77,255,.2) 0%,transparent 70%);}
+
+.card[data-mode="remix"]{--card-accent:rgba(251,191,36,.4);--card-glow:rgba(251,191,36,.1);}
+.card[data-mode="remix"] .card-glow{background:radial-gradient(ellipse at 50% 0%,rgba(251,191,36,.2) 0%,transparent 70%);}
+
+.card[data-mode="radio"]{--card-accent:rgba(52,211,153,.4);--card-glow:rgba(52,211,153,.1);}
+.card[data-mode="radio"] .card-glow{background:radial-gradient(ellipse at 50% 0%,rgba(52,211,153,.2) 0%,transparent 70%);}
+
+.card[data-mode="social"]{--card-accent:rgba(96,165,250,.4);--card-glow:rgba(96,165,250,.1);}
+.card[data-mode="social"] .card-glow{background:radial-gradient(ellipse at 50% 0%,rgba(96,165,250,.2) 0%,transparent 70%);}
+
+/* ═══ QUICK ACTIONS (bottom bar) ═══ */
+.quick-bar{
+  display:flex;gap:8px;margin:24px 0 16px;
+  overflow-x:auto;padding:4px 0;
+  -webkit-overflow-scrolling:touch;
+  scrollbar-width:none;
+}
+.quick-bar::-webkit-scrollbar{display:none;}
+.quick-chip{
+  flex-shrink:0;
+  display:flex;align-items:center;gap:6px;
+  padding:10px 16px;
+  background:var(--surface);
+  border:1px solid rgba(255,255,255,.06);
+  border-radius:12px;
+  font-size:12px;font-weight:500;
+  color:var(--sub);
+  cursor:pointer;
+  transition:all .3s;
+  white-space:nowrap;
+}
+.quick-chip:hover{
+  background:var(--surface-hover);
+  color:var(--text);
+  border-color:rgba(255,255,255,.12);
+  transform:translateY(-2px);
+}
+.quick-chip .qc-icon{font-size:16px;}
+
+/* ═══ FOOTER ═══ */
+.footer{
+  text-align:center;padding:30px 0 20px;
+  font-size:10px;color:rgba(255,255,255,.15);
+}
+
+/* ═══ ANIMACIONES ═══ */
+@keyframes fadeSlideUp{
+  from{opacity:0;transform:translateY(20px);}
+  to{opacity:1;transform:translateY(0);}
+}
+
+/* ═══ MODAL PREVIEW ═══ */
+.modal-overlay{
+  position:fixed;inset:0;z-index:100;
+  background:rgba(0,0,0,.7);backdrop-filter:blur(10px);
+  display:none;align-items:center;justify-content:center;
+  animation:fadeIn .3s ease;
+}
+.modal-overlay.active{display:flex;}
+@keyframes fadeIn{from{opacity:0;}to{opacity:1;}}
+
+.modal-card{
+  background:#12121a;border:1px solid rgba(255,255,255,.1);
+  border-radius:24px;padding:32px;max-width:420px;width:90%;
+  text-align:center;
+  animation:modalSlide .4s cubic-bezier(.25,.46,.45,.94);
+}
+@keyframes modalSlide{from{opacity:0;transform:scale(.9) translateY(20px);}to{opacity:1;transform:scale(1) translateY(0);}}
+.modal-card .modal-icon{font-size:48px;margin-bottom:16px;}
+.modal-card .modal-title{font-size:22px;font-weight:700;margin-bottom:8px;}
+.modal-card .modal-desc{font-size:13px;color:var(--sub);line-height:1.6;margin-bottom:20px;}
+.modal-card .modal-features{
+  display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin-bottom:20px;
+}
+.modal-card .modal-feat{
+  font-size:10px;padding:4px 10px;border-radius:8px;
+  background:rgba(255,255,255,.05);color:var(--sub);border:1px solid rgba(255,255,255,.06);
+}
+.modal-card .modal-btn{
+  display:inline-flex;align-items:center;gap:8px;
+  padding:12px 28px;border-radius:14px;border:none;
+  font-size:14px;font-weight:600;color:#fff;
+  cursor:pointer;transition:all .3s;
+}
+.modal-card .modal-btn:hover{transform:translateY(-2px);filter:brightness(1.1);}
+.modal-card .modal-close{
+  position:absolute;top:16px;right:16px;
+  background:none;border:none;color:var(--sub);font-size:20px;cursor:pointer;
+}
+
+/* ═══ RESPONSIVE ═══ */
+@media(max-width:480px){
+  .logo{font-size:3rem;}
+  .bento{gap:8px;}
+  .card{padding:16px;border-radius:16px;}
+  .card .card-icon{font-size:28px;}
+  .card .card-title{font-size:13px;}
+  .header{padding:24px 0 6px;}
+}
+
+/* ═══ WAVE VISUALIZER ═══ */
+.wave-bar{
+  display:flex;align-items:center;justify-content:center;gap:3px;
+  height:20px;margin:12px 0 4px;
+}
+.wave-bar span{
+  width:3px;border-radius:2px;
+  background:linear-gradient(180deg,var(--pink),var(--purple));
+  animation:waveAnim 1.2s ease-in-out infinite;
+}
+.wave-bar span:nth-child(1){height:8px;animation-delay:.0s;}
+.wave-bar span:nth-child(2){height:14px;animation-delay:.1s;}
+.wave-bar span:nth-child(3){height:20px;animation-delay:.2s;}
+.wave-bar span:nth-child(4){height:12px;animation-delay:.3s;}
+.wave-bar span:nth-child(5){height:16px;animation-delay:.4s;}
+.wave-bar span:nth-child(6){height:10px;animation-delay:.5s;}
+.wave-bar span:nth-child(7){height:18px;animation-delay:.6s;}
+@keyframes waveAnim{
+  0%,100%{transform:scaleY(1);}
+  50%{transform:scaleY(.3);}
+}
+</style>
+</head>
+<body>
+
+<div class="bg-orbs">
+  <div class="orb"></div>
+  <div class="orb"></div>
+  <div class="orb"></div>
+</div>
+
+<div class="app">
+
+  <!-- HEADER -->
+  <div class="header">
+    <div class="logo">ByFlow</div>
+    <div class="tagline">Vive Cantando</div>
+    <div class="powered">powered by IArtLabs</div>
+    <div class="wave-bar">
+      <span></span><span></span><span></span><span></span><span></span><span></span><span></span>
+    </div>
+  </div>
+
+  <!-- CONTEXT BAR — inteligente -->
+  <div class="context-bar" onclick="alert('Retomando sesion anterior...')">
+    <div class="cb-icon">&#x1F3B5;</div>
+    <div class="cb-text">
+      <div class="cb-title">Continuar donde te quedaste</div>
+      <div class="cb-sub">Karaoke &bull; "Bohemian Rhapsody" &bull; hace 2 horas</div>
+    </div>
+    <div class="cb-arrow">&#x2192;</div>
+  </div>
+
+  <!-- SECCION: PARA CANTAR -->
+  <div class="section-title">&#x1F3A4; Para Cantar</div>
+  <div class="bento">
+
+    <!-- KARAOKE (featured) -->
+    <div class="card featured" data-mode="karaoke" onclick="showModal('karaoke')">
+      <div class="card-glow"></div>
+      <span class="badge free">Gratis</span>
+      <div class="card-icon">&#x1F3A4;</div>
+      <div class="card-title">Karaoke</div>
+      <div class="card-desc">Teleprompter inteligente con letras sincronizadas. Agrega canciones a la cola y canta.</div>
+      <div class="card-stat"><span class="dot"></span> 847 sesiones esta semana</div>
+    </div>
+
+    <!-- MUSICA -->
+    <div class="card" data-mode="musica" onclick="showModal('musica')">
+      <div class="card-glow"></div>
+      <span class="badge pro">Pro</span>
+      <div class="card-icon">&#x1F3B6;</div>
+      <div class="card-title">Musica</div>
+      <div class="card-desc">YouTube, SoundCloud y Jamendo en un solo lugar.</div>
+    </div>
+
+    <!-- ESTUDIO -->
+    <div class="card" data-mode="estudio" onclick="showModal('estudio')">
+      <div class="card-glow"></div>
+      <span class="badge pro">Pro</span>
+      <div class="card-icon">&#x1F399;&#xFE0F;</div>
+      <div class="card-title">Estudio</div>
+      <div class="card-desc">Doble reproductor, editor de letras y ranking de voces.</div>
+    </div>
+
+    <!-- REMIX (NUEVO) -->
+    <div class="card" data-mode="remix" onclick="showModal('remix')">
+      <div class="card-glow"></div>
+      <span class="badge new">Nuevo</span>
+      <div class="card-icon">&#x1F4BF;</div>
+      <div class="card-title">DJ Remix</div>
+      <div class="card-desc">Mezcla 2 beats con crossfader en vivo. Para battles y freestyle.</div>
+    </div>
+
+  </div>
+
+  <!-- SECCION: PARA EL NEGOCIO -->
+  <div class="section-title">&#x1F4BC; Para el Negocio</div>
+  <div class="bento">
+
+    <!-- BARES -->
+    <div class="card" data-mode="bares" onclick="showModal('bares')">
+      <div class="card-glow"></div>
+      <span class="badge pro">Pro</span>
+      <div class="card-icon">&#x1F37B;</div>
+      <div class="card-title">Bares</div>
+      <div class="card-desc">Mesas, promos, jingle personalizado y soundboard de eventos.</div>
+    </div>
+
+    <!-- IA STUDIO -->
+    <div class="card" data-mode="ia" onclick="showModal('ia')">
+      <div class="card-glow"></div>
+      <span class="badge pro">Pro</span>
+      <div class="card-icon">&#x1F916;</div>
+      <div class="card-title">IA Studio</div>
+      <div class="card-desc">Genera letras con IA, sugiere canciones y analiza tu estilo.</div>
+    </div>
+
+  </div>
+
+  <!-- SECCION: COMUNIDAD -->
+  <div class="section-title">&#x1F30D; Comunidad</div>
+  <div class="bento">
+
+    <!-- RADIO (NUEVO) -->
+    <div class="card featured" data-mode="radio" onclick="showModal('radio')">
+      <div class="card-glow"></div>
+      <span class="badge new">Nuevo</span>
+      <div class="card-icon">&#x1F4E1;</div>
+      <div class="card-title">Radio ByFlow</div>
+      <div class="card-desc">Estaciones 24/7 por genero: Trap, Reggaeton, Lo-Fi, Latin. Musica libre sin parar. Perfecto para ambientar.</div>
+      <div class="card-stat"><span class="dot"></span> 12 oyentes ahora</div>
+    </div>
+
+    <!-- SOCIAL (NUEVO) -->
+    <div class="card" data-mode="social" onclick="showModal('social')">
+      <div class="card-glow"></div>
+      <span class="badge hot">&#x1F525; Hot</span>
+      <div class="card-icon">&#x1F465;</div>
+      <div class="card-title">Social</div>
+      <div class="card-desc">Feed de letras, perfiles de escritores, chat en vivo y eventos.</div>
+    </div>
+
+  </div>
+
+  <!-- QUICK ACTIONS -->
+  <div class="section-title">&#x26A1; Acceso Rapido</div>
+  <div class="quick-bar">
+    <div class="quick-chip"><span class="qc-icon">&#x1F50D;</span> Buscar cancion</div>
+    <div class="quick-chip"><span class="qc-icon">&#x270D;&#xFE0F;</span> Escribir letra</div>
+    <div class="quick-chip"><span class="qc-icon">&#x1F3B2;</span> Cancion random</div>
+    <div class="quick-chip"><span class="qc-icon">&#x1F4CA;</span> Mis stats</div>
+    <div class="quick-chip"><span class="qc-icon">&#x2699;&#xFE0F;</span> Configuracion</div>
+    <div class="quick-chip"><span class="qc-icon">&#x1F4F1;</span> Codigo QR</div>
+    <div class="quick-chip"><span class="qc-icon">&#x1F3AF;</span> Noche de Talento</div>
+  </div>
+
+  <div class="footer">
+    ByFlow v4.0 &bull; powered by IArtLabs &bull; Prototipo de Menu
+  </div>
+
+</div>
+
+<!-- MODAL -->
+<div class="modal-overlay" id="modal" onclick="if(event.target===this)closeModal()">
+  <div class="modal-card" style="position:relative;">
+    <button class="modal-close" onclick="closeModal()">&#x2715;</button>
+    <div class="modal-icon" id="m-icon"></div>
+    <div class="modal-title" id="m-title"></div>
+    <div class="modal-desc" id="m-desc"></div>
+    <div class="modal-features" id="m-feats"></div>
+    <button class="modal-btn" id="m-btn" onclick="closeModal()">Entrar</button>
+  </div>
+</div>
+
+<script>
+const modes = {
+  karaoke: {
+    icon: '\u{1F3A4}', title: 'Karaoke',
+    desc: 'El teleprompter mas inteligente. Sincroniza letras, arma tu cola, y canta con amigos. Gratis para siempre.',
+    features: ['Teleprompter', 'Cola de canciones', 'Letras LRCLIB', 'Vista remota', 'Fullscreen'],
+    color: '#e91e90', gradient: 'linear-gradient(135deg,#e91e90,#ff6b9d)'
+  },
+  musica: {
+    icon: '\u{1F3B6}', title: 'Musica',
+    desc: 'Streaming unificado de YouTube, SoundCloud y Jamendo. Sin descargas, todo legal.',
+    features: ['YouTube embed', 'SoundCloud widget', 'Jamendo libre', 'Busqueda unificada'],
+    color: '#e53935', gradient: 'linear-gradient(135deg,#e53935,#ff5252)'
+  },
+  estudio: {
+    icon: '\u{1F399}\uFE0F', title: 'Estudio de Letras',
+    desc: 'Doble reproductor para beat + voz. Editor de letras con firma automatica. Ranking de artistas.',
+    features: ['Doble reproductor', 'Editor letras', 'Ranking voces', 'Generador IA', 'Firma ByFlow'],
+    color: '#22d3ee', gradient: 'linear-gradient(135deg,#06b6d4,#22d3ee)'
+  },
+  remix: {
+    icon: '\u{1F4BF}', title: 'DJ Remix',
+    desc: 'Carga 2 beats de YouTube y mezcla en vivo con crossfader. Perfecto para battles de freestyle y eventos.',
+    features: ['2 reproductores', 'Crossfader', 'EQ 3 bandas', 'Loop & cue', 'BPM sync'],
+    color: '#fbbf24', gradient: 'linear-gradient(135deg,#f59e0b,#fbbf24)'
+  },
+  bares: {
+    icon: '\u{1F37B}', title: 'Modo Bares',
+    desc: 'Sistema completo para tu bar: mesas, promos, jingle personalizado y soundboard de eventos.',
+    features: ['Mesas & pedidos', 'Promos activas', 'Jingle custom', 'Soundboard', 'QR para clientes'],
+    color: '#ff8a00', gradient: 'linear-gradient(135deg,#f97316,#ff8a00)'
+  },
+  ia: {
+    icon: '\u{1F916}', title: 'IA Studio',
+    desc: 'Motor de IA offline con 192 frases y 65+ rimas. Genera letras unicas con tu estilo.',
+    features: ['Generador offline', 'Sugerencias', 'Analisis estilo', 'Rimas inteligentes', 'Firma auto'],
+    color: '#7c4dff', gradient: 'linear-gradient(135deg,#6d28d9,#7c4dff)'
+  },
+  radio: {
+    icon: '\u{1F4E1}', title: 'Radio ByFlow',
+    desc: 'Estaciones 24/7 con musica libre de Jamendo. Solo pon play y ambienta tu espacio sin complicaciones.',
+    features: ['Trap FM', 'Reggaeton Radio', 'Lo-Fi Chill', 'Latin Vibes', 'Sin anuncios'],
+    color: '#34d399', gradient: 'linear-gradient(135deg,#10b981,#34d399)'
+  },
+  social: {
+    icon: '\u{1F465}', title: 'Social',
+    desc: 'Conecta con otros artistas. Publica tus letras, vota las mejores y participa en eventos en vivo.',
+    features: ['Feed de letras', 'Perfiles', 'Chat en vivo', 'Eventos', 'Votos & ranking'],
+    color: '#60a5fa', gradient: 'linear-gradient(135deg,#3b82f6,#60a5fa)'
+  }
+};
+
+function showModal(mode) {
+  const m = modes[mode];
+  if (!m) return;
+  document.getElementById('m-icon').textContent = m.icon;
+  document.getElementById('m-title').textContent = m.title;
+  document.getElementById('m-desc').textContent = m.desc;
+  const featsEl = document.getElementById('m-feats');
+  featsEl.innerHTML = m.features.map(f => '<span class="modal-feat">' + f + '</span>').join('');
+  const btn = document.getElementById('m-btn');
+  btn.style.background = m.gradient;
+  btn.innerHTML = '\u{26A1} Entrar a ' + m.title;
+  document.getElementById('modal').classList.add('active');
+}
+
+function closeModal() {
+  document.getElementById('modal').classList.remove('active');
+}
+
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
+</script>
+
+</body>
+</html>

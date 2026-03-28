@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,user-scalable=no">
+<title>ByFlow POS — Login</title>
+<link rel="manifest" href="/pos-manifest.json">
+<meta name="theme-color" content="#ff8a00">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="ByFlow POS">
+<link rel="apple-touch-icon" href="/pos-icon-192.svg">
+<link href="https://fonts.googleapis.com/css2?family=Great+Vibes&family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+:root{--bg:#0a0a0f;--surface:rgba(255,255,255,.04);--border:rgba(255,255,255,.08);--text:#e8e8f0;--sub:rgba(255,255,255,.4);--orange:#ff8a00;--green:#34d399;--red:#ef4444;--pink:#ff6b9d;}
+body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--text);height:100vh;display:flex;align-items:center;justify-content:center;-webkit-font-smoothing:antialiased;overflow:hidden;}
+
+/* Background orbs */
+.bg{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden;}
+.bg .orb{position:absolute;border-radius:50%;filter:blur(100px);opacity:.1;animation:orbF 25s ease-in-out infinite;}
+.orb:nth-child(1){width:500px;height:500px;background:var(--orange);top:-15%;right:-10%;}
+.orb:nth-child(2){width:400px;height:400px;background:var(--pink);bottom:-10%;left:-5%;animation-delay:-10s;}
+@keyframes orbF{0%,100%{transform:translate(0,0) scale(1);}50%{transform:translate(30px,-30px) scale(1.1);}}
+
+.login-container{position:relative;z-index:1;display:flex;flex-direction:column;align-items:center;gap:24px;width:340px;}
+
+/* Logo */
+.logo-area{text-align:center;}
+.logo{font-family:'Great Vibes',cursive;font-size:3.5rem;background:linear-gradient(135deg,var(--orange),#fbbf24);-webkit-background-clip:text;-webkit-text-fill-color:transparent;filter:drop-shadow(0 0 30px rgba(255,138,0,.2));line-height:1;}
+.tagline{font-size:10px;letter-spacing:3px;text-transform:uppercase;color:var(--sub);margin-top:4px;}
+.pos-label{display:inline-block;margin-top:8px;font-size:10px;font-weight:700;letter-spacing:2px;padding:4px 12px;border-radius:6px;background:rgba(255,138,0,.1);color:var(--orange);border:1px solid rgba(255,138,0,.2);}
+
+/* PIN Display */
+.pin-display{display:flex;gap:10px;margin:8px 0;}
+.pin-dot{width:18px;height:18px;border-radius:50%;border:2px solid rgba(255,255,255,.15);transition:all .2s;}
+.pin-dot.filled{background:var(--orange);border-color:var(--orange);box-shadow:0 0 12px rgba(255,138,0,.4);}
+.pin-dot.error{background:var(--red);border-color:var(--red);animation:shake .4s ease;}
+@keyframes shake{0%,100%{transform:translateX(0);}25%{transform:translateX(-6px);}75%{transform:translateX(6px);}}
+
+/* Status message */
+.pin-msg{font-size:12px;color:var(--sub);height:20px;text-align:center;transition:all .3s;}
+.pin-msg.error{color:var(--red);}
+.pin-msg.success{color:var(--green);}
+
+/* Numpad */
+.numpad{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;width:280px;}
+.num-btn{
+  width:84px;height:64px;border-radius:14px;border:1px solid var(--border);
+  background:var(--surface);color:var(--text);font-size:24px;font-weight:600;
+  cursor:pointer;transition:all .15s;display:flex;align-items:center;justify-content:center;
+  user-select:none;-webkit-tap-highlight-color:transparent;
+}
+.num-btn:hover{background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.15);}
+.num-btn:active{transform:scale(.93);background:rgba(255,138,0,.1);border-color:rgba(255,138,0,.3);}
+.num-btn.action{font-size:14px;font-weight:700;}
+.num-btn.clear{color:var(--red);}
+.num-btn.enter{background:linear-gradient(135deg,#f97316,var(--orange));color:#fff;border:none;font-size:14px;font-weight:700;}
+.num-btn.enter:hover{filter:brightness(1.1);}
+.num-btn.enter:active{transform:scale(.93);}
+
+/* Employee greeting */
+.greeting{
+  position:fixed;inset:0;z-index:100;display:none;
+  background:rgba(10,10,15,.95);backdrop-filter:blur(20px);
+  align-items:center;justify-content:center;flex-direction:column;gap:16px;
+}
+.greeting.show{display:flex;animation:fadeIn .4s ease;}
+.greeting .g-avatar{font-size:56px;animation:bounceIn .5s ease;}
+.greeting .g-name{font-size:28px;font-weight:800;}
+.greeting .g-role{font-size:14px;color:var(--orange);font-weight:600;text-transform:uppercase;letter-spacing:2px;}
+.greeting .g-area{font-size:12px;color:var(--sub);}
+.greeting .g-loading{margin-top:16px;display:flex;gap:4px;}
+.greeting .g-loading span{width:8px;height:8px;border-radius:50%;background:var(--orange);animation:loadDot .8s ease infinite;}
+.greeting .g-loading span:nth-child(2){animation-delay:.15s;}
+.greeting .g-loading span:nth-child(3){animation-delay:.3s;}
+@keyframes loadDot{0%,100%{opacity:.3;transform:scale(.8);}50%{opacity:1;transform:scale(1.2);}}
+@keyframes bounceIn{0%{transform:scale(0);opacity:0;}50%{transform:scale(1.2);}100%{transform:scale(1);opacity:1;}}
+@keyframes fadeIn{from{opacity:0;}to{opacity:1;}}
+
+/* Quick switch hint */
+.devices-hint{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);font-size:10px;color:rgba(255,255,255,.15);text-align:center;z-index:1;}
+.devices-hint a{color:rgba(255,255,255,.25);text-decoration:none;}
+
+/* Active sessions */
+.sessions{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin-top:4px;}
+.session-chip{
+  display:flex;align-items:center;gap:4px;padding:4px 10px;border-radius:8px;
+  background:var(--surface);border:1px solid var(--border);font-size:10px;color:var(--sub);
+  cursor:pointer;transition:all .2s;
+}
+.session-chip:hover{background:rgba(255,138,0,.08);border-color:rgba(255,138,0,.2);color:var(--text);}
+.session-chip .sc-dot{width:5px;height:5px;border-radius:50%;background:var(--green);}
+
+/* Responsive */
+@media(max-width:400px){
+  .login-container{width:300px;}
+  .numpad{width:240px;}
+  .num-btn{width:72px;height:56px;font-size:20px;border-radius:12px;}
+  .logo{font-size:2.8rem;}
+}
+</style>
+</head>
+<body>
+
+<div class="bg"><div class="orb"></div><div class="orb"></div></div>
+
+<div class="login-container">
+  <div class="logo-area">
+    <div class="logo">ByFlow</div>
+    <div class="tagline">Punto de Venta + Eatertainment</div>
+    <div class="pos-label">POS TERMINAL</div>
+  </div>
+
+  <div class="pin-display">
+    <div class="pin-dot" id="d0"></div>
+    <div class="pin-dot" id="d1"></div>
+    <div class="pin-dot" id="d2"></div>
+    <div class="pin-dot" id="d3"></div>
+    <div class="pin-dot" id="d4"></div>
+    <div class="pin-dot" id="d5"></div>
+  </div>
+
+  <div class="pin-msg" id="pin-msg">Ingresa tu PIN para acceder</div>
+
+  <div class="numpad">
+    <div class="num-btn" onclick="pressKey('1')">1</div>
+    <div class="num-btn" onclick="pressKey('2')">2</div>
+    <div class="num-btn" onclick="pressKey('3')">3</div>
+    <div class="num-btn" onclick="pressKey('4')">4</div>
+    <div class="num-btn" onclick="pressKey('5')">5</div>
+    <div class="num-btn" onclick="pressKey('6')">6</div>
+    <div class="num-btn" onclick="pressKey('7')">7</div>
+    <div class="num-btn" onclick="pressKey('8')">8</div>
+    <div class="num-btn" onclick="pressKey('9')">9</div>
+    <div class="num-btn action clear" onclick="clearPin()">&#x232B;</div>
+    <div class="num-btn" onclick="pressKey('0')">0</div>
+    <div class="num-btn action enter" onclick="submitPin()">ENTRAR</div>
+  </div>
+
+  <div class="sessions" id="sessions"></div>
+</div>
+
+<!-- Greeting overlay -->
+<div class="greeting" id="greeting">
+  <div class="g-avatar" id="g-avatar"></div>
+  <div class="g-name" id="g-name"></div>
+  <div class="g-role" id="g-role"></div>
+  <div class="g-area" id="g-area"></div>
+  <div class="g-loading"><span></span><span></span><span></span></div>
+</div>
+
+<div class="devices-hint">
+  ByFlow POS v1.0 &bull; powered by IArtLabs<br>
+  Conecta tablets y PCs a la misma red para sync automatico
+</div>
+
+<script>
+let pin = '';
+const MAX_PIN = 6;
+const MIN_PIN = 4;
+
+function pressKey(n) {
+  if (pin.length >= MAX_PIN) return;
+  pin += n;
+  updateDots();
+  clearMsg();
+  // Auto-submit on 4 or 6 digits
+  if (pin.length === MAX_PIN) {
+    setTimeout(() => submitPin(), 200);
+  }
+}
+
+function clearPin() {
+  if (pin.length === 0) return;
+  pin = pin.slice(0, -1);
+  updateDots();
+  clearMsg();
+}
+
+function updateDots() {
+  for (let i = 0; i < MAX_PIN; i++) {
+    const dot = document.getElementById('d' + i);
+    dot.classList.toggle('filled', i < pin.length);
+    dot.classList.remove('error');
+  }
+}
+
+function showError(msg) {
+  const el = document.getElementById('pin-msg');
+  el.textContent = msg;
+  el.className = 'pin-msg error';
+  for (let i = 0; i < MAX_PIN; i++) {
+    document.getElementById('d' + i).classList.add('error');
+  }
+  setTimeout(() => {
+    pin = '';
+    updateDots();
+    clearMsg();
+  }, 1500);
+}
+
+function clearMsg() {
+  const el = document.getElementById('pin-msg');
+  el.textContent = pin.length === 0 ? 'Ingresa tu PIN para acceder' : pin.length + ' digitos';
+  el.className = 'pin-msg';
+}
+
+async function submitPin() {
+  if (pin.length < MIN_PIN) {
+    showError('PIN debe tener al menos ' + MIN_PIN + ' digitos');
+    return;
+  }
+
+  const el = document.getElementById('pin-msg');
+  el.textContent = 'Verificando...';
+  el.className = 'pin-msg';
+
+  try {
+    const resp = await fetch('/pos/auth/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ pin })
+    });
+    const data = await resp.json();
+
+    if (!data.ok) {
+      showError(data.error || 'PIN incorrecto');
+      return;
+    }
+
+    // Success! Show greeting
+    showGreeting(data.employee, data.defaultView);
+
+  } catch (err) {
+    showError('Error de conexion');
+    console.error(err);
+  }
+}
+
+function showGreeting(emp, defaultView) {
+  const roleNames = {
+    dueno: 'Dueño', gerente: 'Gerente', capitan: 'Capitán',
+    cajero: 'Cajero', mesero: 'Mesero', bartender: 'Bartender',
+    cocinero: 'Cocinero', dj: 'DJ Karaoke', seguridad: 'Seguridad'
+  };
+  const roleColors = {
+    dueno: '#fbbf24', gerente: '#ff8a00', capitan: '#60a5fa',
+    cajero: '#34d399', mesero: '#ff6b9d', bartender: '#c084fc',
+    cocinero: '#22d3ee', dj: '#ff6b9d', seguridad: '#ef4444'
+  };
+
+  document.getElementById('g-avatar').textContent = emp.avatar || '👤';
+  document.getElementById('g-name').textContent = 'Bienvenido, ' + emp.name.split(' ')[0];
+  document.getElementById('g-role').textContent = roleNames[emp.role] || emp.role;
+  document.getElementById('g-role').style.color = roleColors[emp.role] || '#ff8a00';
+  document.getElementById('g-area').textContent = 'Area: ' + emp.area;
+
+  const greeting = document.getElementById('greeting');
+  greeting.classList.add('show');
+
+  // Store session
+  sessionStorage.setItem('pos_employee', JSON.stringify(emp));
+  sessionStorage.setItem('pos_token', emp.token);
+
+  // Redirect after 2 seconds
+  setTimeout(() => {
+    // For now, go to bares-v2.html (later this will be the actual POS app)
+    window.location.href = '/bares-v2.html?role=' + emp.role + '&employee=' + emp.id + '&view=' + defaultView;
+  }, 2000);
+}
+
+// Keyboard support
+document.addEventListener('keydown', (e) => {
+  if (e.key >= '0' && e.key <= '9') pressKey(e.key);
+  else if (e.key === 'Backspace') clearPin();
+  else if (e.key === 'Enter') submitPin();
+});
+
+// Load active sessions (mock for now)
+function loadSessions() {
+  const container = document.getElementById('sessions');
+  // In production, this would query the server for active sessions on this device
+  const savedEmp = sessionStorage.getItem('pos_employee');
+  if (savedEmp) {
+    const emp = JSON.parse(savedEmp);
+    container.innerHTML = '<div class="session-chip" onclick="quickSwitch()"><span class="sc-dot"></span> ' + emp.name + ' (' + emp.role + ') — toca para volver</div>';
+  }
+}
+function quickSwitch() {
+  const emp = JSON.parse(sessionStorage.getItem('pos_employee'));
+  if (emp) {
+    showGreeting(emp, emp.role === 'mesero' ? 'mis-mesas' : 'mesas');
+  }
+}
+
+loadSessions();
+
+// ═══ PWA: Service Worker + Install Prompt ═══
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('/pos-sw.js').then((reg) => {
+    console.log('[POS] Service Worker registered:', reg.scope);
+  }).catch((err) => {
+    console.log('[POS] SW registration failed:', err);
+  });
+}
+
+// PWA Install prompt
+let deferredPrompt;
+window.addEventListener('beforeinstallprompt', (e) => {
+  e.preventDefault();
+  deferredPrompt = e;
+  // Show install button
+  const btn = document.createElement('div');
+  btn.id = 'install-btn';
+  btn.innerHTML = '📲 Instalar ByFlow POS';
+  btn.style.cssText = 'position:fixed;bottom:50px;left:50%;transform:translateX(-50%);padding:10px 24px;border-radius:12px;background:linear-gradient(135deg,#f97316,#ff8a00);color:#fff;font-size:12px;font-weight:700;cursor:pointer;box-shadow:0 4px 20px rgba(255,138,0,.3);z-index:200;animation:fadeIn .5s ease;';
+  btn.onclick = async () => {
+    deferredPrompt.prompt();
+    const { outcome } = await deferredPrompt.userChoice;
+    console.log('[POS] Install:', outcome);
+    btn.remove();
+    deferredPrompt = null;
+  };
+  document.body.appendChild(btn);
+});
+
+window.addEventListener('appinstalled', () => {
+  console.log('[POS] App installed!');
+  const btn = document.getElementById('install-btn');
+  if (btn) btn.remove();
+});
+</script>
+</body>
+</html>

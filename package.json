@@ -12,6 +12,7 @@
     "node": ">=18.0.0"
   },
   "dependencies": {
+    "better-sqlite3": "^12.8.0",
     "compression": "^1.8.1",
     "cors": "^2.8.5",
     "dotenv": "^17.3.1",

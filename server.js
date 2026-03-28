@@ -375,6 +375,14 @@ app.post('/api/stripe/webhook', express.raw({ type: 'application/json' }), async
 
 app.use(express.json({ limit: '1mb' }));
 
+// ── POS Eatertainment Module (DESPUES de express.json) ────
+try {
+  const pos = require('./pos');
+  pos.init(app, io);
+} catch (e) {
+  console.log('[POS] Module not loaded:', e.message);
+}
+
 // ── Security Shield Middleware ──────────────────────────────────────────────
 app.use((req, res, next) => {
   const ip = req.ip || req.connection?.remoteAddress || 'unknown';

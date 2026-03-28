@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>ByFlow POS — Sin Conexion</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:'Inter',system-ui,sans-serif;background:#0a0a0f;color:#e8e8f0;height:100vh;display:flex;align-items:center;justify-content:center;text-align:center;}
+.offline{max-width:400px;padding:40px;}
+.offline .icon{font-size:64px;margin-bottom:16px;}
+.offline h1{font-size:24px;font-weight:800;margin-bottom:8px;}
+.offline p{font-size:14px;color:rgba(255,255,255,.5);line-height:1.6;margin-bottom:24px;}
+.offline .note{font-size:12px;color:#ff8a00;background:rgba(255,138,0,.1);border:1px solid rgba(255,138,0,.2);border-radius:12px;padding:12px;margin-bottom:16px;}
+.offline button{padding:12px 32px;border-radius:12px;border:none;background:linear-gradient(135deg,#f97316,#ff8a00);color:#fff;font-size:14px;font-weight:700;cursor:pointer;}
+</style>
+</head>
+<body>
+<div class="offline">
+  <div class="icon">📡</div>
+  <h1>Sin Conexion</h1>
+  <p>No hay conexion a internet. Pero no te preocupes — los pedidos que tomes se guardaran automaticamente y se sincronizaran cuando vuelva la conexion.</p>
+  <div class="note">💡 Los pedidos offline se envian automaticamente cuando detectamos internet.</div>
+  <button onclick="location.reload()">🔄 Reintentar</button>
+</div>
+</body>
+</html>

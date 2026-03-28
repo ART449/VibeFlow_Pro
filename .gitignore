@@ -7,6 +7,11 @@ python/separated/
 .DS_Store
 Thumbs.db
 
+# POS security (never commit)
+.pos_key
+data/pos.db
+data/backups/
+
 # License secrets (never commit)
 data/.license_secret
 data/.admin_secret

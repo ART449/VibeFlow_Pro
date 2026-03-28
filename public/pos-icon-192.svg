@@ -1,0 +1,7 @@
+<svg xmlns='http://www.w3.org/2000/svg' width='192' height='192' viewBox='0 0 192 192'>
+  <rect width='192' height='192' rx='32' fill='#0a0a0f'/>
+  <rect x='4' y='4' width='184' height='184' rx='28' fill='none' stroke='#ff8a00' stroke-width='3' opacity='.3'/>
+  <text x='96' y='80' text-anchor='middle' font-family='serif' font-size='48' font-style='italic' fill='#ff8a00'>By</text>
+  <text x='96' y='125' text-anchor='middle' font-family='serif' font-size='48' font-style='italic' fill='#fbbf24'>Flow</text>
+  <text x='96' y='155' text-anchor='middle' font-family='sans-serif' font-size='14' font-weight='bold' fill='rgba(255,255,255,.3)' letter-spacing='3'>POS</text>
+</svg>

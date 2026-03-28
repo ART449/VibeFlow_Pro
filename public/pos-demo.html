@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>ByFlow POS — Tu Bar Merece Esto</title>
+<link href="https://fonts.googleapis.com/css2?family=Great+Vibes&family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+:root{--bg:#0a0a0f;--surface:rgba(255,255,255,.04);--border:rgba(255,255,255,.08);--text:#e8e8f0;--sub:rgba(255,255,255,.4);--orange:#ff8a00;--green:#34d399;--red:#ef4444;--pink:#ff6b9d;--purple:#c084fc;--cyan:#22d3ee;--amber:#fbbf24;}
+body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--text);-webkit-font-smoothing:antialiased;overflow-x:hidden;}
+
+/* BG */
+.bg{position:fixed;inset:0;z-index:0;pointer-events:none;}
+.bg .orb{position:absolute;border-radius:50%;filter:blur(120px);opacity:.08;animation:orbF 30s ease-in-out infinite;}
+.orb:nth-child(1){width:600px;height:600px;background:var(--orange);top:-10%;right:-10%;}
+.orb:nth-child(2){width:400px;height:400px;background:var(--pink);bottom:20%;left:-5%;animation-delay:-12s;}
+.orb:nth-child(3){width:500px;height:500px;background:var(--purple);bottom:-10%;right:20%;animation-delay:-20s;}
+@keyframes orbF{0%,100%{transform:translate(0,0);}50%{transform:translate(40px,-40px);}}
+
+.page{position:relative;z-index:1;max-width:1000px;margin:0 auto;padding:20px;}
+
+/* HERO */
+.hero{text-align:center;padding:60px 20px 40px;}
+.hero-badge{display:inline-block;padding:4px 14px;border-radius:20px;background:rgba(255,138,0,.1);border:1px solid rgba(255,138,0,.2);color:var(--orange);font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;margin-bottom:16px;}
+.hero h1{font-size:clamp(28px,5vw,48px);font-weight:900;line-height:1.1;margin-bottom:12px;}
+.hero h1 span{background:linear-gradient(135deg,var(--orange),var(--amber));-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+.hero p{font-size:16px;color:var(--sub);max-width:600px;margin:0 auto 24px;line-height:1.6;}
+.hero-cta{display:inline-flex;align-items:center;gap:8px;padding:14px 32px;border-radius:14px;background:linear-gradient(135deg,#f97316,var(--orange));color:#fff;font-size:15px;font-weight:700;border:none;cursor:pointer;text-decoration:none;transition:all .3s;box-shadow:0 8px 30px rgba(255,138,0,.25);}
+.hero-cta:hover{transform:translateY(-3px);box-shadow:0 12px 40px rgba(255,138,0,.35);}
+.hero-sub{font-size:11px;color:var(--sub);margin-top:12px;}
+
+/* SECTION */
+.section{padding:40px 0;}
+.section-title{text-align:center;margin-bottom:30px;}
+.section-title h2{font-size:28px;font-weight:800;margin-bottom:8px;}
+.section-title p{font-size:14px;color:var(--sub);}
+
+/* FEATURES GRID */
+.features{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px;}
+.feat{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:20px;transition:all .3s;cursor:default;}
+.feat:hover{border-color:rgba(255,138,0,.3);transform:translateY(-3px);box-shadow:0 12px 30px rgba(0,0,0,.3);}
+.feat .f-icon{font-size:28px;margin-bottom:10px;}
+.feat .f-title{font-size:14px;font-weight:700;margin-bottom:6px;}
+.feat .f-desc{font-size:12px;color:var(--sub);line-height:1.5;}
+.feat .f-tag{display:inline-block;margin-top:8px;padding:2px 8px;border-radius:4px;font-size:9px;font-weight:700;letter-spacing:.5px;}
+.f-tag.exclusive{background:rgba(255,107,157,.1);color:var(--pink);border:1px solid rgba(255,107,157,.15);}
+.f-tag.included{background:rgba(52,211,153,.1);color:var(--green);border:1px solid rgba(52,211,153,.15);}
+
+/* DEMO PREVIEW */
+.demo-section{background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:24px;margin:30px 0;overflow:hidden;}
+.demo-section h3{font-size:16px;font-weight:700;margin-bottom:4px;display:flex;align-items:center;gap:8px;}
+.demo-section .demo-sub{font-size:12px;color:var(--sub);margin-bottom:16px;}
+.demo-frame{border-radius:12px;overflow:hidden;border:1px solid var(--border);height:400px;}
+.demo-frame iframe{width:100%;height:100%;border:none;}
+.demo-tabs{display:flex;gap:4px;margin-bottom:12px;overflow-x:auto;}
+.demo-tab{padding:6px 14px;border-radius:8px;font-size:11px;font-weight:600;background:var(--surface);border:1px solid var(--border);color:var(--sub);cursor:pointer;white-space:nowrap;transition:all .2s;}
+.demo-tab:hover,.demo-tab.active{background:rgba(255,138,0,.1);color:var(--orange);border-color:rgba(255,138,0,.3);}
+
+/* COMPARISON TABLE */
+.compare{margin:30px 0;}
+.compare-table{width:100%;border-collapse:collapse;background:var(--surface);border-radius:16px;overflow:hidden;border:1px solid var(--border);}
+.compare-table th{padding:14px 16px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--sub);text-align:left;border-bottom:2px solid var(--border);}
+.compare-table th:last-child{background:rgba(255,138,0,.06);color:var(--orange);text-align:center;}
+.compare-table td{padding:12px 16px;font-size:13px;border-bottom:1px solid rgba(255,255,255,.03);}
+.compare-table td:last-child{text-align:center;font-weight:700;}
+.compare-table tr:hover{background:rgba(255,255,255,.02);}
+.check{color:var(--green);font-size:16px;}
+.cross{color:var(--red);font-size:16px;opacity:.4;}
+.compare-table .highlight-row{background:rgba(255,138,0,.04);}
+.compare-table .highlight-row td{color:var(--orange);font-weight:700;}
+
+/* PRICING */
+.pricing{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:16px;margin:30px 0;}
+.price-card{background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:28px;text-align:center;transition:all .3s;}
+.price-card:hover{transform:translateY(-4px);box-shadow:0 16px 40px rgba(0,0,0,.3);}
+.price-card.featured{border-color:rgba(255,138,0,.4);background:rgba(255,138,0,.04);position:relative;}
+.price-card.featured::before{content:'⭐ MAS POPULAR';position:absolute;top:-10px;left:50%;transform:translateX(-50%);background:linear-gradient(135deg,#f97316,var(--orange));color:#fff;font-size:9px;font-weight:800;padding:3px 12px;border-radius:10px;letter-spacing:1px;}
+.price-card.lifetime{border-color:rgba(251,191,36,.3);background:rgba(251,191,36,.03);}
+.price-card .pc-name{font-size:13px;font-weight:700;color:var(--sub);text-transform:uppercase;letter-spacing:2px;margin-bottom:12px;}
+.price-card .pc-price{font-size:42px;font-weight:900;margin-bottom:4px;}
+.price-card .pc-price span{font-size:16px;font-weight:400;color:var(--sub);}
+.price-card .pc-period{font-size:12px;color:var(--sub);margin-bottom:16px;}
+.price-card .pc-save{display:inline-block;padding:3px 10px;border-radius:6px;background:rgba(52,211,153,.1);color:var(--green);font-size:10px;font-weight:700;margin-bottom:16px;}
+.price-card ul{list-style:none;text-align:left;margin-bottom:20px;}
+.price-card ul li{font-size:12px;padding:6px 0;border-bottom:1px solid rgba(255,255,255,.03);display:flex;align-items:center;gap:6px;}
+.price-card ul li::before{content:'✅';font-size:10px;}
+.price-card .pc-btn{display:block;padding:12px;border-radius:12px;border:none;font-size:13px;font-weight:700;cursor:pointer;transition:all .2s;width:100%;}
+.pc-btn.primary{background:linear-gradient(135deg,#f97316,var(--orange));color:#fff;}
+.pc-btn.secondary{background:var(--surface);color:var(--text);border:1px solid var(--border);}
+.pc-btn.gold{background:linear-gradient(135deg,#f59e0b,var(--amber));color:#000;}
+.pc-btn:hover{transform:translateY(-2px);filter:brightness(1.1);}
+
+/* COMPETITORS */
+.comp-bar{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid rgba(255,255,255,.03);}
+.comp-bar .cb-name{width:120px;font-size:12px;color:var(--sub);}
+.comp-bar .cb-bar{flex:1;height:28px;border-radius:8px;background:rgba(255,255,255,.03);overflow:hidden;position:relative;}
+.comp-bar .cb-fill{height:100%;border-radius:8px;display:flex;align-items:center;padding:0 10px;font-size:10px;font-weight:700;color:#fff;transition:width 1s ease;}
+.comp-bar .cb-price{font-size:12px;font-weight:700;width:100px;text-align:right;}
+
+/* TESTIMONIAL */
+.testimonial{background:linear-gradient(135deg,rgba(255,138,0,.06),rgba(251,191,36,.03));border:1px solid rgba(255,138,0,.15);border-radius:16px;padding:24px;margin:20px 0;text-align:center;}
+.testimonial .t-quote{font-size:16px;font-style:italic;line-height:1.6;margin-bottom:12px;color:var(--text);}
+.testimonial .t-author{font-size:12px;color:var(--orange);font-weight:600;}
+
+/* FAQ */
+.faq{margin:30px 0;}
+.faq-item{border-bottom:1px solid var(--border);padding:14px 0;}
+.faq-q{font-size:13px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:8px;}
+.faq-q::before{content:'▸';color:var(--orange);transition:transform .2s;}
+.faq-item.open .faq-q::before{transform:rotate(90deg);}
+.faq-a{font-size:12px;color:var(--sub);line-height:1.6;max-height:0;overflow:hidden;transition:max-height .3s;padding-left:16px;}
+.faq-item.open .faq-a{max-height:200px;padding-top:8px;}
+
+/* CTA FINAL */
+.final-cta{text-align:center;padding:40px 20px;margin:20px 0;background:linear-gradient(135deg,rgba(255,138,0,.08),rgba(192,132,252,.05));border:1px solid rgba(255,138,0,.15);border-radius:20px;}
+.final-cta h2{font-size:24px;font-weight:900;margin-bottom:8px;}
+.final-cta p{font-size:14px;color:var(--sub);margin-bottom:20px;}
+.final-cta .contact-info{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-top:16px;}
+.contact-chip{display:flex;align-items:center;gap:6px;padding:8px 16px;border-radius:10px;background:var(--surface);border:1px solid var(--border);font-size:12px;color:var(--sub);cursor:pointer;transition:all .2s;text-decoration:none;}
+.contact-chip:hover{background:var(--surface);color:var(--text);border-color:rgba(255,255,255,.15);}
+
+/* Footer */
+.footer{text-align:center;padding:30px 0;font-size:10px;color:rgba(255,255,255,.15);}
+.footer .logo{font-family:'Great Vibes',cursive;font-size:2rem;background:linear-gradient(135deg,var(--orange),var(--amber));-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:4px;}
+
+/* Back button */
+.back-btn{position:fixed;top:16px;left:16px;z-index:100;padding:8px 16px;border-radius:10px;background:rgba(10,10,15,.9);backdrop-filter:blur(10px);border:1px solid var(--border);color:var(--sub);font-size:11px;cursor:pointer;text-decoration:none;transition:all .2s;}
+.back-btn:hover{color:var(--text);border-color:rgba(255,255,255,.2);}
+
+@media(max-width:600px){
+  .features{grid-template-columns:1fr;}
+  .pricing{grid-template-columns:1fr;}
+  .hero h1{font-size:28px;}
+}
+</style>
+</head>
+<body>
+
+<div class="bg"><div class="orb"></div><div class="orb"></div><div class="orb"></div></div>
+
+<a class="back-btn" href="/">← Volver a ByFlow</a>
+
+<div class="page">
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-badge">🍻 Nuevo — ByFlow POS Eatertainment</div>
+  <h1>Tu bar merece <span>tecnologia de primer mundo</span></h1>
+  <p>El unico punto de venta en Mexico que integra POS + Karaoke + Entretenimiento. Tus clientes cantan, piden y pagan — todo desde un solo sistema.</p>
+  <a class="hero-cta" href="#demo">🚀 Ver Demo en Vivo</a>
+  <div class="hero-sub">Sin tarjeta de credito &bull; Sin compromisos &bull; Prueba gratis 14 dias</div>
+</div>
+
+<!-- EL PROBLEMA -->
+<div class="section">
+  <div class="section-title">
+    <h2>😤 Esto te suena familiar?</h2>
+    <p>Los problemas que tiene TODOS los bares con karaoke en Mexico</p>
+  </div>
+  <div class="features">
+    <div class="feat">
+      <div class="f-icon">📋</div>
+      <div class="f-title">Comandas en papel que se pierden</div>
+      <div class="f-desc">El mesero escribe mal, la cocina no entiende, el cliente espera 40 minutos. Y el papel se moja con cerveza.</div>
+    </div>
+    <div class="feat">
+      <div class="f-icon">🎤</div>
+      <div class="f-title">Karaoke y POS son 2 sistemas diferentes</div>
+      <div class="f-desc">Un programa para cobrar, otro para el karaoke. No se hablan. No sabes que mesa pidio que cancion.</div>
+    </div>
+    <div class="feat">
+      <div class="f-icon">💰</div>
+      <div class="f-title">Pagas $1,000+ al mes por un POS viejo</div>
+      <div class="f-desc">Licencias caras, hardware obligatorio, soporte que cobra extra. Y la interfaz parece de los 2000s.</div>
+    </div>
+    <div class="feat">
+      <div class="f-icon">📊</div>
+      <div class="f-title">No sabes cuanto vendiste hasta el corte</div>
+      <div class="f-desc">Sin reportes en tiempo real, sin dashboard, sin saber que producto es el mas rentable en este momento.</div>
+    </div>
+  </div>
+</div>
+
+<!-- LA SOLUCION -->
+<div class="section">
+  <div class="section-title">
+    <h2>🔥 ByFlow POS resuelve TODO</h2>
+    <p>Un solo sistema para tu bar, tu cocina, tu barra y tu karaoke</p>
+  </div>
+  <div class="features">
+    <div class="feat">
+      <div class="f-icon">🗺️</div>
+      <div class="f-title">Mapa de mesas en vivo</div>
+      <div class="f-desc">Ve en tiempo real: que mesa esta libre, ocupada, cantando karaoke o pidiendo la cuenta. Desde cualquier dispositivo.</div>
+      <span class="f-tag included">Incluido</span>
+    </div>
+    <div class="feat">
+      <div class="f-icon">📱</div>
+      <div class="f-title">Multi-dispositivo sin hardware</div>
+      <div class="f-desc">Funciona en tablets, celulares y PCs. Sin comprar terminales caras. Abre el navegador y listo.</div>
+      <span class="f-tag included">Incluido</span>
+    </div>
+    <div class="feat">
+      <div class="f-icon">🎤</div>
+      <div class="f-title">Karaoke integrado al POS</div>
+      <div class="f-desc">Cola de canciones POR MESA. El DJ ve que mesa canta. El mesero agrega canciones desde la comanda. NADIE mas tiene esto.</div>
+      <span class="f-tag exclusive">Solo en ByFlow</span>
+    </div>
+    <div class="feat">
+      <div class="f-icon">🍳</div>
+      <div class="f-title">Monitor de cocina y barra</div>
+      <div class="f-desc">Las comandas llegan en pantalla a cocina y barra. Cuando esta listo, el mesero recibe alerta en su tablet.</div>
+      <span class="f-tag included">Incluido</span>
+    </div>
+    <div class="feat">
+      <div class="f-icon">🔐</div>
+      <div class="f-title">Roles y permisos por PIN</div>
+      <div class="f-desc">9 niveles: Dueno, Gerente, Capitan, Cajero, Mesero, Bartender, Cocinero, DJ, Seguridad. Cada quien ve solo lo que debe.</div>
+      <span class="f-tag included">Incluido</span>
+    </div>
+    <div class="feat">
+      <div class="f-icon">🍺</div>
+      <div class="f-title">Happy Hour automatico</div>
+      <div class="f-desc">Programa horarios y productos. El descuento se aplica SOLO al cobrar. Con timer en vivo para el personal.</div>
+      <span class="f-tag exclusive">Solo en ByFlow</span>
+    </div>
+    <div class="feat">
+      <div class="f-icon">🎫</div>
+      <div class="f-title">Cover y control de entrada</div>
+      <div class="f-desc">General y VIP. Control de capacidad maxima. Registro de entradas/salidas con timestamps.</div>
+      <span class="f-tag exclusive">Solo en ByFlow</span>
+    </div>
+    <div class="feat">
+      <div class="f-icon">📊</div>
+      <div class="f-title">Reportes en tiempo real</div>
+      <div class="f-desc">Ventas por hora, top productos, top canciones, rendimiento de empleados. Todo desde tu celular.</div>
+      <span class="f-tag included">Incluido</span>
+    </div>
+    <div class="feat">
+      <div class="f-icon">📦</div>
+      <div class="f-title">Inventario con alertas</div>
+      <div class="f-desc">Stock en tiempo real, costo por trago, margen de ganancia, alertas de stock bajo. Nunca te quedes sin tequila.</div>
+      <span class="f-tag included">Incluido</span>
+    </div>
+    <div class="feat">
+      <div class="f-icon">🧾</div>
+      <div class="f-title">Facturacion CFDI 4.0</div>
+      <div class="f-desc">Factura electronica directa. Auto-factura por QR en el ticket. Cumple con el SAT sin complicaciones.</div>
+      <span class="f-tag included">Incluido</span>
+    </div>
+    <div class="feat">
+      <div class="f-icon">✂️</div>
+      <div class="f-title">Dividir cuenta y tabs</div>
+      <div class="f-desc">Split entre amigos, tabs abiertos en la barra, pre-autorizacion de tarjeta. Cero clientes que se van sin pagar.</div>
+      <span class="f-tag included">Incluido</span>
+    </div>
+    <div class="feat">
+      <div class="f-icon">📡</div>
+      <div class="f-title">Funciona sin internet</div>
+      <div class="f-desc">PWA instalable. Si se cae el internet, sigue tomando pedidos. Cuando vuelve, se sincroniza automaticamente.</div>
+      <span class="f-tag exclusive">Solo en ByFlow</span>
+    </div>
+  </div>
+</div>
+
+<!-- DEMO EN VIVO -->
+<div class="demo-section" id="demo">
+  <h3>🖥️ Demo en Vivo — Mira como funciona</h3>
+  <div class="demo-sub">Esto es lo que ves cuando abres ByFlow POS. Click en las tabs para explorar cada modulo.</div>
+  <div class="demo-tabs">
+    <div class="demo-tab active" onclick="loadDemo('mesas',this)">🍻 Mesas</div>
+    <div class="demo-tab" onclick="loadDemo('cocina',this)">🍳 Cocina</div>
+    <div class="demo-tab" onclick="loadDemo('inventario',this)">📦 Inventario</div>
+    <div class="demo-tab" onclick="loadDemo('reportes',this)">📊 Reportes</div>
+    <div class="demo-tab" onclick="loadDemo('cover',this)">🎫 Cover</div>
+    <div class="demo-tab" onclick="loadDemo('empleados',this)">👥 Empleados</div>
+    <div class="demo-tab" onclick="loadDemo('corte',this)">💰 Corte</div>
+  </div>
+  <div class="demo-frame">
+    <iframe id="demo-iframe" src="/bares-v2.html?demo=true"></iframe>
+  </div>
+</div>
+
+<!-- COMPARATIVA DE PRECIOS -->
+<div class="section">
+  <div class="section-title">
+    <h2>💸 Cuanto cuesta la competencia?</h2>
+    <p>Comparacion honesta. Sin nombrar marcas, solo numeros.</p>
+  </div>
+
+  <div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:20px;margin-bottom:20px;">
+    <div style="font-size:12px;font-weight:700;color:var(--sub);margin-bottom:12px;">COSTO MENSUAL DE SOFTWARE POS EN MEXICO</div>
+    <div class="comp-bar">
+      <div class="cb-name">Competidor A</div>
+      <div class="cb-bar"><div class="cb-fill" style="width:85%;background:linear-gradient(90deg,#ef4444,#dc2626);">$900 - $1,100/mes</div></div>
+      <div class="cb-price" style="color:var(--red);">$1,100/mes</div>
+    </div>
+    <div class="comp-bar">
+      <div class="cb-name">Competidor B</div>
+      <div class="cb-bar"><div class="cb-fill" style="width:65%;background:linear-gradient(90deg,#f97316,#ea580c);">$700 - $900/mes</div></div>
+      <div class="cb-price" style="color:var(--orange);">$900/mes</div>
+    </div>
+    <div class="comp-bar">
+      <div class="cb-name">Competidor C</div>
+      <div class="cb-bar"><div class="cb-fill" style="width:55%;background:linear-gradient(90deg,#eab308,#ca8a04);">$500 - $750/mes</div></div>
+      <div class="cb-price" style="color:var(--amber);">$750/mes</div>
+    </div>
+    <div class="comp-bar" style="margin-top:8px;padding-top:8px;border-top:2px solid var(--border);">
+      <div class="cb-name" style="font-weight:700;color:var(--orange);">ByFlow POS</div>
+      <div class="cb-bar"><div class="cb-fill" style="width:25%;background:linear-gradient(90deg,var(--green),#059669);">$299/mes</div></div>
+      <div class="cb-price" style="color:var(--green);font-size:14px;">$299/mes</div>
+    </div>
+    <div style="text-align:center;margin-top:12px;font-size:11px;color:var(--sub);">* Precios del competidor A basados en la version Professional con 10 nodos. Otros precios basados en planes comparables.</div>
+  </div>
+
+  <table class="compare-table">
+    <thead>
+      <tr><th>Funcion</th><th>La competencia</th><th>ByFlow POS</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Punto de venta basico</td><td class="check">✅</td><td class="check">✅</td></tr>
+      <tr><td>Monitor cocina/barra</td><td class="check">✅</td><td class="check">✅</td></tr>
+      <tr><td>Inventario y stock</td><td class="check">✅</td><td class="check">✅</td></tr>
+      <tr><td>Facturacion CFDI</td><td class="check">✅ (extra $$$)</td><td class="check">✅ Incluido</td></tr>
+      <tr><td>Reportes en tiempo real</td><td class="check">✅</td><td class="check">✅</td></tr>
+      <tr class="highlight-row"><td>🎤 Karaoke integrado al POS</td><td class="cross">❌</td><td class="check">✅</td></tr>
+      <tr class="highlight-row"><td>🎫 Cover / control de entrada</td><td class="cross">❌</td><td class="check">✅</td></tr>
+      <tr class="highlight-row"><td>🍺 Happy Hour automatico</td><td class="cross">❌</td><td class="check">✅</td></tr>
+      <tr class="highlight-row"><td>📱 Funciona en cualquier tablet/celular</td><td class="cross">❌ Hardware propio</td><td class="check">✅ Cualquier dispositivo</td></tr>
+      <tr class="highlight-row"><td>📡 Funciona sin internet</td><td class="cross">❌</td><td class="check">✅ PWA offline</td></tr>
+      <tr class="highlight-row"><td>🎵 Generador de letras con IA</td><td class="cross">❌</td><td class="check">✅</td></tr>
+      <tr><td>Hardware requerido</td><td style="color:var(--red);">Terminal especial ($$$)</td><td style="color:var(--green);">Cualquier dispositivo</td></tr>
+      <tr><td>Instalacion</td><td style="color:var(--red);">Tecnico ($2,000+)</td><td style="color:var(--green);">Abre el navegador</td></tr>
+      <tr><td>Actualizaciones</td><td style="color:var(--amber);">Manuales</td><td style="color:var(--green);">Automaticas</td></tr>
+      <tr style="font-weight:700;font-size:14px;border-top:2px solid var(--border);">
+        <td>Precio mensual</td>
+        <td style="color:var(--red);">$750 — $1,100/mes</td>
+        <td style="color:var(--green);font-size:16px;">$299/mes</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- PRICING -->
+<div class="section" id="precios">
+  <div class="section-title">
+    <h2>💰 Planes y Precios</h2>
+    <p>Sin letras chiquitas. Sin comisiones ocultas. Sin hardware obligatorio.</p>
+  </div>
+  <div class="pricing">
+    <!-- STARTER -->
+    <div class="price-card">
+      <div class="pc-name">Starter</div>
+      <div class="pc-price">$149<span>/mes</span></div>
+      <div class="pc-period">1 sucursal &bull; 3 dispositivos</div>
+      <ul>
+        <li>Mapa de mesas</li>
+        <li>Comandas digitales</li>
+        <li>Cobro (efectivo + tarjeta)</li>
+        <li>Monitor cocina/barra</li>
+        <li>Reportes basicos</li>
+        <li>Karaoke integrado</li>
+      </ul>
+      <button class="pc-btn secondary" onclick="contactar('starter')">Empezar Gratis 14 Dias</button>
+    </div>
+
+    <!-- PRO (featured) -->
+    <div class="price-card featured">
+      <div class="pc-name">Profesional</div>
+      <div class="pc-price">$299<span>/mes</span></div>
+      <div class="pc-period">1 sucursal &bull; 10 dispositivos</div>
+      <div class="pc-save">Ahorra $600/mes vs competencia</div>
+      <ul>
+        <li>Todo de Starter</li>
+        <li>Inventario con alertas</li>
+        <li>Happy Hour automatico</li>
+        <li>Cover / control entrada</li>
+        <li>9 roles con permisos</li>
+        <li>Facturacion CFDI</li>
+        <li>Corte de caja</li>
+        <li>Reportes avanzados</li>
+        <li>Funciona sin internet</li>
+        <li>Soporte prioritario</li>
+      </ul>
+      <button class="pc-btn primary" onclick="contactar('profesional')">🚀 Empezar Gratis 14 Dias</button>
+    </div>
+
+    <!-- VITALICIO -->
+    <div class="price-card lifetime">
+      <div class="pc-name">🏆 Vitalicio</div>
+      <div class="pc-price" style="color:var(--amber);">$4,999<span> unico pago</span></div>
+      <div class="pc-period">Para siempre &bull; Dispositivos ilimitados</div>
+      <div class="pc-save">Equivale a 16 meses. Despues = $0</div>
+      <ul>
+        <li>TODO de Profesional</li>
+        <li>Dispositivos ilimitados</li>
+        <li>Multi-sucursal (hasta 3)</li>
+        <li>Sin pagos mensuales NUNCA</li>
+        <li>Updates de por vida</li>
+        <li>Soporte VIP</li>
+        <li>Personalizacion de marca</li>
+        <li>Primer mes de capacitacion</li>
+      </ul>
+      <button class="pc-btn gold" onclick="contactar('vitalicio')">👑 Asegurar Precio Vitalicio</button>
+    </div>
+  </div>
+</div>
+
+<!-- FAQ -->
+<div class="section">
+  <div class="section-title">
+    <h2>❓ Preguntas Frecuentes</h2>
+  </div>
+  <div class="faq">
+    <div class="faq-item" onclick="this.classList.toggle('open')">
+      <div class="faq-q">Necesito comprar hardware especial?</div>
+      <div class="faq-a">No. ByFlow POS funciona en cualquier tablet, celular o computadora con navegador. Android, iPad, Windows, lo que tengas. Solo necesitas internet (y si se cae, sigue funcionando offline).</div>
+    </div>
+    <div class="faq-item" onclick="this.classList.toggle('open')">
+      <div class="faq-q">Puedo migrar desde otro POS?</div>
+      <div class="faq-a">Si. Te ayudamos a migrar tu menu, inventario y empleados. El proceso toma menos de 1 hora y no paras tu operacion.</div>
+    </div>
+    <div class="faq-item" onclick="this.classList.toggle('open')">
+      <div class="faq-q">Que pasa si no tengo karaoke en mi bar?</div>
+      <div class="faq-a">ByFlow POS funciona perfecto sin karaoke tambien. Pero si quieres agregar karaoke a tu bar, ya lo tienes incluido sin costo extra. Es una forma de atraer mas clientes.</div>
+    </div>
+    <div class="faq-item" onclick="this.classList.toggle('open')">
+      <div class="faq-q">Cuantos dispositivos puedo conectar?</div>
+      <div class="faq-a">Starter: 3 dispositivos. Profesional: 10 dispositivos. Vitalicio: ilimitados. Todos se sincronizan en tiempo real.</div>
+    </div>
+    <div class="faq-item" onclick="this.classList.toggle('open')">
+      <div class="faq-q">El vitalicio es de verdad para siempre?</div>
+      <div class="faq-a">Si. Un solo pago, acceso de por vida, actualizaciones incluidas. Sin letras chiquitas. Si en 2 anos seguimos (y seguiremos), tu licencia sigue activa.</div>
+    </div>
+    <div class="faq-item" onclick="this.classList.toggle('open')">
+      <div class="faq-q">Tienen facturacion CFDI?</div>
+      <div class="faq-a">Si, incluida en el plan Profesional y Vitalicio. Compatible con CFDI 4.0 del SAT. Tus clientes pueden auto-facturarse con el QR del ticket.</div>
+    </div>
+  </div>
+</div>
+
+<!-- CTA FINAL -->
+<div class="final-cta">
+  <h2>Listo para modernizar tu bar? 🚀</h2>
+  <p>14 dias gratis. Sin tarjeta. Sin compromisos. Si no te convence, no pagas nada.</p>
+  <a class="hero-cta" href="#" onclick="contactar('demo');return false;">📲 Solicitar Demo Gratis</a>
+  <div class="contact-info">
+    <a class="contact-chip" href="https://wa.me/5215512345678" target="_blank">💬 WhatsApp</a>
+    <a class="contact-chip" href="mailto:pos@byflowapp.com">📧 pos@byflowapp.com</a>
+    <a class="contact-chip" href="https://byflowapp.up.railway.app" target="_blank">🌐 byflowapp.up.railway.app</a>
+  </div>
+</div>
+
+<div class="footer">
+  <div class="logo">ByFlow</div>
+  POS Eatertainment &bull; powered by IArtLabs &bull; Hecho en Mexico 🇲🇽
+</div>
+
+</div>
+
+<script>
+function loadDemo(view, el) {
+  document.querySelectorAll('.demo-tab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  const iframe = document.getElementById('demo-iframe');
+  // Navigate iframe to specific view
+  iframe.contentWindow.postMessage({ action: 'showView', view }, '*');
+  // Also try direct navigation
+  try {
+    const navBtn = iframe.contentDocument.querySelector('[onclick*="' + view + '"]');
+    if (navBtn) navBtn.click();
+  } catch(e) {}
+}
+
+function contactar(plan) {
+  const msgs = {
+    starter: 'Hola! Me interesa ByFlow POS plan Starter para mi bar.',
+    profesional: 'Hola! Me interesa ByFlow POS plan Profesional.',
+    vitalicio: 'Hola! Me interesa la licencia Vitalicia de ByFlow POS.',
+    demo: 'Hola! Quiero ver una demo de ByFlow POS para mi bar.'
+  };
+  const msg = encodeURIComponent(msgs[plan] || msgs.demo);
+  window.open('https://wa.me/5215512345678?text=' + msg, '_blank');
+}
+
+// Animate comparison bars on scroll
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(e => {
+    if (e.isIntersecting) {
+      e.target.querySelectorAll('.cb-fill').forEach(f => {
+        f.style.width = f.style.width; // trigger animation
+      });
+    }
+  });
+}, { threshold: 0.3 });
+document.querySelectorAll('.comp-bar').forEach(b => observer.observe(b));
+</script>
+</body>
+</html>
