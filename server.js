@@ -1501,6 +1501,14 @@ app.delete('/api/security/log', (req, res) => {
   res.json({ ok: true, message: 'Log de seguridad limpiado' });
 });
 
+// API Keys endpoint — sirve keys desde env vars (NUNCA hardcodeadas)
+app.get('/api/config/keys', (req, res) => {
+  res.json({
+    youtube_api_key: process.env.YOUTUBE_API_KEY || '',
+    jamendo_client_id: process.env.JAMENDO_CLIENT_ID || ''
+  });
+});
+
 // Health
 app.get('/api/health', (req, res) => res.json({
   status: 'ok', version: '2.1.0-shield', uptime: process.uptime(),
