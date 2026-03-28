@@ -3,9 +3,10 @@
  * Multi-device synchronization for POS terminals
  */
 
+const { validateToken } = require('./auth');
+
 function registerPOSSockets(io) {
   const posNamespace = io.of('/pos');
-  const { validateToken } = require('./auth');
 
   // AUTH MIDDLEWARE for Socket.IO — validate token before allowing connection
   posNamespace.use((socket, next) => {

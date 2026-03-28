@@ -9,7 +9,7 @@
 *{margin:0;padding:0;box-sizing:border-box;}
 :root{
   --bg:#0a0a0f;--surface:rgba(255,255,255,.04);--surface2:rgba(255,255,255,.07);--surface3:rgba(255,255,255,.10);
-  --border:rgba(255,255,255,.08);--text:#e8e8f0;--sub:rgba(255,255,255,.45);
+  --border:rgba(255,255,255,.08);--text:#e8e8f0;--sub:rgba(255,255,255,.55);
   --orange:#ff8a00;--orange2:#f97316;--amber:#fbbf24;
   --green:#34d399;--red:#ef4444;--pink:#ff6b9d;--purple:#c084fc;
   --cyan:#22d3ee;--blue:#60a5fa;--lime:#a3e635;
@@ -316,10 +316,10 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--t
   <div class="sb-section">
     <div class="sb-title">Operacion</div>
     <div class="nav active" onclick="showView('mesas',this)"><span class="ni">&#x1F37B;</span> <span>Mesas</span> <span class="nb">12</span></div>
-    <div class="nav" onclick="showView('comandas',this)"><span class="ni">&#x1F4CB;</span> <span>Comandas</span> <span class="nb">5</span></div>
-    <div class="nav" onclick="showView('mesas',this)"><span class="ni">&#x1F3A4;</span> <span>Cola Karaoke</span> <span class="nb pink">8</span></div>
-    <div class="nav" onclick="showView('mesas',this)"><span class="ni">&#x1F4B3;</span> <span>Cobrar</span></div>
-    <div class="nav" onclick="showView('mesas',this)"><span class="ni">&#x1F4C5;</span> <span>Reservaciones</span></div>
+    <div class="nav" onclick="toast('&#x1F4CB; Comandas — Proximamente', 'info')"><span class="ni">&#x1F4CB;</span> <span>Comandas</span> <span class="nb">5</span></div>
+    <div class="nav" onclick="toast('&#x1F3A4; Cola Karaoke — Proximamente', 'info')"><span class="ni">&#x1F3A4;</span> <span>Cola Karaoke</span> <span class="nb pink">8</span></div>
+    <div class="nav" onclick="toast('&#x1F4B3; Cobrar — Proximamente', 'info')"><span class="ni">&#x1F4B3;</span> <span>Cobrar</span></div>
+    <div class="nav" onclick="toast('&#x1F4C5; Reservaciones — Proximamente', 'info')"><span class="ni">&#x1F4C5;</span> <span>Reservaciones</span></div>
     <div class="nav" onclick="showView('cover',this)"><span class="ni">&#x1F3AB;</span> <span>Cover / Entrada</span> <span class="nb green">43</span></div>
   </div>
   <div class="sb-section">
@@ -811,6 +811,7 @@ function selT(n, el) {
 // ═══ ORDER MANAGEMENT ═══
 let orderTotal = 1570;
 let orderCount = 6;
+let isHappyHour = false;
 
 function addI(name, price, el) {
   // Find the order list — prefer the mobile overlay if open, else the main POS
@@ -860,14 +861,17 @@ function clearOrder() {
 }
 
 function updateTotals() {
-  const hhDisc = Math.round(orderTotal * 0.086);
   const subtotal = orderTotal;
+  const hhDisc = isHappyHour ? Math.round(subtotal * 0.086) : 0;
   const afterDisc = subtotal - hhDisc;
   const iva = Math.round(afterDisc * 0.16);
   const total = afterDisc + iva;
+  const hhLine = isHappyHour
+    ? '<div class="tr disc"><span>&#x1F37A; Happy Hour</span><span>-$' + hhDisc.toLocaleString() + '</span></div>'
+    : '';
   const totalsHTML =
     '<div class="tr"><span>Subtotal</span><span>$' + subtotal.toLocaleString() + '</span></div>' +
-    '<div class="tr disc"><span>&#x1F37A; Happy Hour</span><span>-$' + hhDisc.toLocaleString() + '</span></div>' +
+    hhLine +
     '<div class="tr"><span>IVA 16%</span><span>$' + iva.toLocaleString() + '</span></div>' +
     '<div class="tr grand"><span>Total</span><span>$' + total.toLocaleString() + '</span></div>';
   document.getElementById('totals-area').innerHTML = totalsHTML;
@@ -1105,6 +1109,14 @@ function showViewDirect(id) {
   const target = document.getElementById('v-' + id);
   if (target) target.classList.add('active');
 }
+
+// ═══ INIT: Fetch Happy Hour status ═══
+document.addEventListener('DOMContentLoaded', () => {
+  fetch('/pos/happy-hour/active')
+    .then(r => r.ok ? r.json() : null)
+    .then(data => { if (data) { isHappyHour = !!data.is_happy_hour; updateTotals(); } })
+    .catch(() => {});
+});
 
 // ═══ INIT: Wire up category buttons ═══
 document.addEventListener('DOMContentLoaded', () => {

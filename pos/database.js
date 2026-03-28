@@ -359,4 +359,5 @@ function seedData(db) {
   console.log('[POS] Seed data created: 10 employees, 7 categories, 40 products, 17 tables, 3 happy hours');
 }
 
-module.exports = { getDb, hashPin };
+// DB_PATH exported as single source of truth — import here, not hard-coded elsewhere
+module.exports = { getDb, DB_PATH };

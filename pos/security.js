@@ -6,7 +6,9 @@
 const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
-const { getDb } = require('./database');
+const express = require('express');
+const { getDb, DB_PATH } = require('./database');
+const auth = require('./auth');
 
 // ═══ CONFIG ═══
 const BACKUP_DIR = path.join(__dirname, '..', 'data', 'backups');
@@ -20,8 +22,7 @@ const ENCRYPTION_ALGO = 'aes-256-gcm';
  * @returns {object} { ok, path, size }
  */
 function createBackup() {
-  const dbPath = path.join(__dirname, '..', 'data', 'pos.db');
-  if (!fs.existsSync(dbPath)) {
+  if (!fs.existsSync(DB_PATH)) {
     return { ok: false, error: 'Database not found' };
   }
 
@@ -123,17 +124,15 @@ function restoreBackup(backupName) {
     return { ok: false, error: 'Backup not found: ' + backupName };
   }
 
-  const dbPath = path.join(__dirname, '..', 'data', 'pos.db');
-
   // Create a safety backup before restoring
   const safetyName = `pos-pre-restore-${Date.now()}.db`;
   const safetyPath = path.join(BACKUP_DIR, safetyName);
 
   try {
     // Safety copy of current DB
-    fs.copyFileSync(dbPath, safetyPath);
+    fs.copyFileSync(DB_PATH, safetyPath);
     // Restore
-    fs.copyFileSync(backupPath, dbPath);
+    fs.copyFileSync(backupPath, DB_PATH);
     console.log(`[POS-SECURITY] Database restored from ${backupName}. Safety backup: ${safetyName}`);
     return { ok: true, restored: backupName, safety: safetyName };
   } catch (err) {
@@ -254,7 +253,6 @@ function exportBarData() {
 // ═══ 4. SECURITY ROUTES ═══
 
 function registerSecurityRoutes(app) {
-  const express = require('express');
   const secJson = express.json({ limit: '1mb' });
 
   // NOTE: All /pos/security/* routes are protected by authMiddleware in routes.js
@@ -284,7 +282,6 @@ function registerSecurityRoutes(app) {
       return res.status(403).json({ ok: false, error: 'Solo el dueno puede restaurar backups' });
     }
     const { backupName, pin } = req.body || {};
-    const auth = require('./auth');
     const result = auth.authorizeAction('restore_backup', pin, req.posSession.employeeId);
     if (!result.authorized) {
       return res.json({ ok: false, error: 'Autorizacion fallida: ' + (result.error || '') });
@@ -304,9 +301,8 @@ function registerSecurityRoutes(app) {
 
   // Security status
   app.get('/pos/security/status', (req, res) => {
-    const dbPath = path.join(__dirname, '..', 'data', 'pos.db');
     const keyExists = fs.existsSync(path.join(__dirname, '..', '.pos_key'));
-    const dbSize = fs.existsSync(dbPath) ? (fs.statSync(dbPath).size / 1024 / 1024).toFixed(2) + ' MB' : 'N/A';
+    const dbSize = fs.existsSync(DB_PATH) ? (fs.statSync(DB_PATH).size / 1024 / 1024).toFixed(2) + ' MB' : 'N/A';
     const backups = listBackups();
     const lastBackup = backups.length > 0 ? backups[0] : null;
     const barId = ensureBarId();
@@ -314,7 +310,7 @@ function registerSecurityRoutes(app) {
     res.json({
       ok: true,
       status: {
-        database: { exists: fs.existsSync(dbPath), size: dbSize, wal_mode: true },
+        database: { exists: fs.existsSync(DB_PATH), size: dbSize, wal_mode: true },
         encryption: { key_exists: keyExists, algorithm: ENCRYPTION_ALGO },
         backups: { count: backups.length, last: lastBackup, max_kept: MAX_BACKUPS },
         tenant: { bar_id: barId, isolated: true },

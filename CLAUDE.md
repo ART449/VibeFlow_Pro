@@ -59,6 +59,17 @@
 - **Idioma UI:** Español
 - **Deploy:** git push a GitHub → Railway auto-deploy
 
+## Doctrina Kaizen + 5S (LEY ESCRITA — no se negocia)
+- **Archivo completo:** `KAIZEN_5S.md` en la raiz del proyecto
+- **Kaizen:** Cada commit DEBE dejar el codigo mejor que como lo encontro
+- **1S Seiri:** Eliminar codigo muerto, stubs, features fantasma
+- **2S Seiton:** Cada archivo en su lugar, nombres claros, single source of truth
+- **3S Seiso:** Sin console.logs de debug, sin comentarios viejos, sin basura
+- **4S Seiketsu:** Mismo patron en todos los modulos (validar → auth → ejecutar → responder)
+- **5S Shitsuke:** Auditorias automaticas, code review con agentes, retrospectiva
+- **Ergonomia:** Toda interfaz DEBE funcionar en mobile (375px), tablet (768px) y desktop (1280px+). Touch-first. Botones minimo 44px. Contraste WCAG AA. Feedback visual en cada accion del usuario.
+- **Checklist pre-commit:** Kaizen bonus? Algo eliminado? Todo en su lugar? Sin basura? Patron consistente? Tests/auditoria corrida?
+
 ## Politica de propiedad intelectual
 - **Letras generadas con ByFlow** = 100% propiedad del usuario que las creo
 - **Clausula comercial:** Si la letra genera ingresos, 15% regalias para IArtLabs

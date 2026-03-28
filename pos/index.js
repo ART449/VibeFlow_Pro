@@ -7,7 +7,7 @@
  *   pos.init(app, io);
  */
 
-const { getDb } = require('./database');
+const { getDb, DB_PATH } = require('./database');
 const { registerRoutes } = require('./routes');
 const { registerPOSSockets } = require('./sockets');
 const { registerSecurityRoutes, startAutoBackup, ensureBarId } = require('./security');
@@ -33,7 +33,7 @@ function init(app, io) {
   console.log('[POS] ═══════════════════════════════════════');
   console.log('[POS] ByFlow POS Eatertainment v1.0');
   console.log('[POS] Bar ID: ' + barId);
-  console.log('[POS] Database: data/pos.db');
+  console.log('[POS] Database: ' + require('path').basename(DB_PATH));
   console.log('[POS] API: /pos/*');
   console.log('[POS] Security: backups + encryption + audit');
   console.log('[POS] Sockets: /pos namespace');
