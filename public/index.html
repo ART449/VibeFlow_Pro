@@ -9703,11 +9703,9 @@ window.addEventListener('appinstalled', () => {
   // Si ya tiene sesion Firebase, saltar welcome e ir directo
   const _savedUid = localStorage.getItem('byflow_user_uid');
   if (_savedUid) {
-    const ov = document.getElementById('welcome-overlay');
-    if (ov) ov.classList.add('hidden');
-    window._byflowWelcomed = true;
-    const lastMode = localStorage.getItem('byflow_last_mode') || 'karaoke';
-    setMode(lastMode);
+    // SIEMPRE mostrar Welcome Screen al cargar — el usuario elige su modo
+    // (antes saltaba directo al ultimo modo, confundiendo al usuario)
+    // El welcome overlay se queda visible hasta que el usuario seleccione un modo
   } else {
     // No hay sesion — mostrar welcome, obligar login
     document.querySelector('.sidebar').classList.add('panel-hidden');
