@@ -306,6 +306,16 @@ const PORT = process.env.PORT || 8080;
 const HOST = '0.0.0.0';
 const app  = express();
 app.set('trust proxy', 1);  // Railway/nginx — necesario para rate limiting correcto
+
+// ── Security Headers (helmet) ────
+try {
+  const helmet = require('helmet');
+  app.use(helmet({
+    contentSecurityPolicy: false, // We use inline scripts
+    crossOriginEmbedderPolicy: false,
+    crossOriginResourcePolicy: { policy: 'cross-origin' }
+  }));
+} catch(e) { console.log('[Security] helmet not loaded:', e.message); }
 const server = http.createServer(app);
 // ── CORS & Allowed Origins ─────────────────────────────────────────────────
 const ALLOWED_ORIGINS = process.env.CORS_ORIGINS

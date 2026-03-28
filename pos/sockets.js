@@ -5,13 +5,32 @@
 
 function registerPOSSockets(io) {
   const posNamespace = io.of('/pos');
+  const { validateToken } = require('./auth');
+
+  // AUTH MIDDLEWARE for Socket.IO — validate token before allowing connection
+  posNamespace.use((socket, next) => {
+    const token = socket.handshake.auth?.token || socket.handshake.query?.token;
+    if (!token) {
+      return next(new Error('Token requerido para conectar al POS'));
+    }
+    const session = validateToken(token);
+    if (!session) {
+      return next(new Error('Token invalido o expirado'));
+    }
+    // Attach verified session — NOT from client claims
+    socket.posSession = session;
+    next();
+  });
 
   posNamespace.on('connection', (socket) => {
-    console.log(`[POS] Device connected: ${socket.id}`);
+    console.log(`[POS] Device connected: ${socket.id} (${socket.posSession.role})`);
 
     // ═══ JOIN ROOMS ═══
     // Each device joins rooms based on its role
-    socket.on('pos:join', ({ barId, role, employeeId, area }) => {
+    socket.on('pos:join', ({ barId }) => {
+      // Use SERVER-VERIFIED session data, NOT client claims
+      const role = socket.posSession.role;
+      const employeeId = socket.posSession.employeeId;
       const barRoom = `bar_${barId || 'default'}`;
       socket.join(barRoom);
       socket.employeeId = employeeId;

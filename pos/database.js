@@ -6,9 +6,9 @@
 
 const Database = require('better-sqlite3');
 const path = require('path');
-const crypto = require('crypto');
+const bcrypt = require('bcryptjs');
 
-const DB_PATH = path.join(__dirname, '..', 'data', 'pos.db');
+const DB_PATH = path.join(__dirname, '..', 'data', 'pos-v2.db');
 
 let db;
 
@@ -235,7 +235,7 @@ function runMigrations(db) {
 }
 
 function hashPin(pin) {
-  return crypto.createHash('sha256').update(pin + '_byflow_pos').digest('hex');
+  return bcrypt.hashSync(pin, 8); // 8 rounds for seed, auth.js uses 10 for new PINs
 }
 
 function seedData(db) {

@@ -107,7 +107,18 @@ function listBackups() {
  * @param {string} backupName - filename of the backup
  */
 function restoreBackup(backupName) {
+  // PATH TRAVERSAL PROTECTION: strict filename validation
+  if (!backupName || !/^pos-backup-[\d\-T]+\.db$/.test(backupName)) {
+    return { ok: false, error: 'Nombre de backup invalido' };
+  }
+
   const backupPath = path.join(BACKUP_DIR, backupName);
+  // Double-check resolved path stays inside BACKUP_DIR
+  const resolved = path.resolve(backupPath);
+  if (!resolved.startsWith(path.resolve(BACKUP_DIR))) {
+    return { ok: false, error: 'Path traversal detectado' };
+  }
+
   if (!fs.existsSync(backupPath)) {
     return { ok: false, error: 'Backup not found: ' + backupName };
   }
@@ -246,33 +257,47 @@ function registerSecurityRoutes(app) {
   const express = require('express');
   const secJson = express.json({ limit: '1mb' });
 
-  // Backup now
+  // NOTE: All /pos/security/* routes are protected by authMiddleware in routes.js
+  // Only dueno/gerente level can access these (checked via posSession)
+
+  // Backup now (requires gerente+)
   app.post('/pos/security/backup', secJson, (req, res) => {
+    if (!req.posSession || req.posSession.role_level > 1) {
+      return res.status(403).json({ ok: false, error: 'Solo gerente o dueno puede crear backups' });
+    }
     const result = createBackup();
     res.json(result);
   });
 
-  // List backups
+  // List backups (requires gerente+)
   app.get('/pos/security/backups', (req, res) => {
+    if (!req.posSession || req.posSession.role_level > 1) {
+      return res.status(403).json({ ok: false, error: 'Acceso denegado' });
+    }
     const backups = listBackups();
     res.json({ ok: true, backups, count: backups.length });
   });
 
-  // Restore backup (requires dueno PIN)
+  // Restore backup (requires dueno PIN verification)
   app.post('/pos/security/restore', secJson, (req, res) => {
-    const { backupName, pin } = req.body;
-    // Verify dueno authorization
+    if (!req.posSession || req.posSession.role_level > 0) {
+      return res.status(403).json({ ok: false, error: 'Solo el dueno puede restaurar backups' });
+    }
+    const { backupName, pin } = req.body || {};
     const auth = require('./auth');
-    const result = auth.authorizeAction('modify_menu', pin, 0); // level 0 = dueno only
+    const result = auth.authorizeAction('restore_backup', pin, req.posSession.employeeId);
     if (!result.authorized) {
-      return res.json({ ok: false, error: 'Solo el dueno puede restaurar backups. ' + (result.error || '') });
+      return res.json({ ok: false, error: 'Autorizacion fallida: ' + (result.error || '') });
     }
     const restoreResult = restoreBackup(backupName);
     res.json(restoreResult);
   });
 
-  // Export data
+  // Export data (requires dueno)
   app.get('/pos/security/export', (req, res) => {
+    if (!req.posSession || req.posSession.role_level > 0) {
+      return res.status(403).json({ ok: false, error: 'Solo el dueno puede exportar datos' });
+    }
     const data = exportBarData();
     res.json({ ok: true, data });
   });

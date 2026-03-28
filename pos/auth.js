@@ -1,54 +1,46 @@
 /**
  * ByFlow POS — Authentication & RBAC Module
- * PIN-based auth with role hierarchy
+ * PIN-based auth with bcrypt, token store, rate limiting
  */
 
-const { getDb, hashPin } = require('./database');
+const bcrypt = require('bcryptjs');
+const crypto = require('crypto');
+const { getDb } = require('./database');
+
+// ═══ CONSTANTS ═══
+const BCRYPT_ROUNDS = 10;
+const TOKEN_EXPIRY_MS = 8 * 60 * 60 * 1000; // 8 hours
+const MAX_LOGIN_ATTEMPTS = 5;
+const LOCKOUT_MS = 5 * 60 * 1000; // 5 min lockout after max attempts
 
 // Role hierarchy: lower number = more power
 const ROLE_LEVELS = {
-  dueno: 0,
-  gerente: 1,
-  capitan: 2,
-  cajero: 3,
-  mesero: 4,
-  bartender: 5,
-  cocinero: 6,
-  dj: 7,
-  seguridad: 8
+  dueno: 0, gerente: 1, capitan: 2, cajero: 3,
+  mesero: 4, bartender: 5, cocinero: 6, dj: 7, seguridad: 8
 };
+
+// Allowed roles for validation
+const VALID_ROLES = Object.keys(ROLE_LEVELS);
 
 // What each role can access
 const ROLE_PERMISSIONS = {
-  dueno: ['*'], // everything
+  dueno: ['*'],
   gerente: [
     'tables', 'orders', 'payments', 'kitchen', 'bar', 'karaoke',
     'inventory', 'reports', 'employees', 'shifts', 'covers',
-    'discounts', 'cancel_items', 'corte_all', 'happy_hour', 'reservations'
+    'discounts', 'cancel_items', 'corte_all', 'happy_hour', 'reservations', 'config'
   ],
   capitan: [
     'tables', 'orders', 'payments', 'kitchen', 'bar', 'karaoke',
     'covers', 'assign_tables', 'assign_waiters', 'cancel_items',
     'discounts_10', 'reservations'
   ],
-  cajero: [
-    'payments', 'corte_own', 'tickets', 'cfdi', 'tables_view'
-  ],
-  mesero: [
-    'tables_own', 'orders_own', 'request_payment', 'karaoke_add'
-  ],
-  bartender: [
-    'bar_monitor', 'bar_ready', 'inventory_bar'
-  ],
-  cocinero: [
-    'kitchen_monitor', 'kitchen_ready'
-  ],
-  dj: [
-    'karaoke_queue', 'karaoke_next', 'karaoke_add', 'soundboard'
-  ],
-  seguridad: [
-    'covers', 'entry_log', 'capacity'
-  ]
+  cajero: ['payments', 'corte_own', 'tickets', 'cfdi', 'tables_view'],
+  mesero: ['tables_own', 'orders_own', 'request_payment', 'karaoke_add'],
+  bartender: ['bar_monitor', 'bar_ready', 'inventory_bar', 'bar'],
+  cocinero: ['kitchen_monitor', 'kitchen_ready', 'kitchen'],
+  dj: ['karaoke_queue', 'karaoke_next', 'karaoke_add', 'soundboard', 'karaoke'],
+  seguridad: ['covers', 'entry_log', 'capacity']
 };
 
 // Actions that require authorization from a higher role
@@ -61,38 +53,185 @@ const AUTH_REQUIREMENTS = {
   corte_all: { min_level: 1, label: 'Corte de todas las cajas' },
   modify_menu: { min_level: 0, label: 'Modificar menu/precios' },
   delete_employee: { min_level: 0, label: 'Eliminar empleado' },
-  void_payment: { min_level: 1, label: 'Anular pago' }
+  void_payment: { min_level: 1, label: 'Anular pago' },
+  restore_backup: { min_level: 0, label: 'Restaurar backup' }
 };
+
+// ═══ TOKEN STORE (in-memory, server-side) ═══
+const tokenStore = new Map(); // token -> { employeeId, role, role_level, expiresAt }
+
+// Clean expired tokens every 30 min
+setInterval(() => {
+  const now = Date.now();
+  for (const [token, data] of tokenStore) {
+    if (data.expiresAt < now) tokenStore.delete(token);
+  }
+}, 30 * 60 * 1000);
+
+// ═══ RATE LIMITING (per-IP login attempts) ═══
+const loginAttempts = new Map(); // ip -> { count, lockedUntil }
+
+function checkLoginRate(ip) {
+  const record = loginAttempts.get(ip);
+  if (!record) return { allowed: true };
+
+  if (record.lockedUntil && Date.now() < record.lockedUntil) {
+    const remaining = Math.ceil((record.lockedUntil - Date.now()) / 1000);
+    return { allowed: false, error: `Demasiados intentos. Espera ${remaining} segundos.` };
+  }
+
+  // Reset if lockout expired
+  if (record.lockedUntil && Date.now() >= record.lockedUntil) {
+    loginAttempts.delete(ip);
+    return { allowed: true };
+  }
+
+  return { allowed: true };
+}
+
+function recordLoginAttempt(ip, success) {
+  if (success) {
+    loginAttempts.delete(ip);
+    return;
+  }
+
+  const record = loginAttempts.get(ip) || { count: 0 };
+  record.count += 1;
+
+  if (record.count >= MAX_LOGIN_ATTEMPTS) {
+    record.lockedUntil = Date.now() + LOCKOUT_MS;
+  }
+
+  loginAttempts.set(ip, record);
+}
+
+// ═══ PIN HASHING (bcrypt) ═══
+function hashPin(pin) {
+  return bcrypt.hashSync(pin, BCRYPT_ROUNDS);
+}
+
+function verifyPin(pin, hash) {
+  return bcrypt.compareSync(pin, hash);
+}
 
 /**
  * Authenticate employee by PIN
  * @param {string} pin - 4-6 digit PIN
+ * @param {string} ip - client IP for rate limiting
  * @returns {object|null} employee record or null
  */
-function authenticate(pin) {
-  const db = getDb();
-  const hashed = hashPin(pin);
-  const employee = db.prepare(
-    'SELECT id, name, pin, role, role_level, active, area, avatar FROM employees WHERE pin = ? AND active = 1'
-  ).get(hashed);
+function authenticate(pin, ip) {
+  // Rate limit check
+  if (ip) {
+    const rateCheck = checkLoginRate(ip);
+    if (!rateCheck.allowed) return { error: rateCheck.error };
+  }
 
-  if (!employee) return null;
+  const db = getDb();
+
+  // Get all active employees and compare PINs with bcrypt
+  const employees = db.prepare(
+    'SELECT id, name, pin, role, role_level, active, area, avatar FROM employees WHERE active = 1'
+  ).all();
+
+  let matched = null;
+  for (const emp of employees) {
+    if (verifyPin(pin, emp.pin)) {
+      matched = emp;
+      break;
+    }
+  }
+
+  if (!matched) {
+    if (ip) recordLoginAttempt(ip, false);
+
+    // Audit log failed attempt
+    db.prepare(
+      "INSERT INTO audit_log (employee_id, action, details) VALUES (NULL, 'login_failed', ?)"
+    ).run(`Failed login attempt from ${ip || 'unknown'}`);
+
+    return null;
+  }
+
+  if (ip) recordLoginAttempt(ip, true);
 
   // Update last login
-  db.prepare("UPDATE employees SET last_login = datetime('now') WHERE id = ?").run(employee.id);
+  db.prepare("UPDATE employees SET last_login = datetime('now') WHERE id = ?").run(matched.id);
 
-  // Log
-  db.prepare('INSERT INTO audit_log (employee_id, action, details) VALUES (?, ?, ?)').run(
-    employee.id, 'login', `Login: ${employee.name} (${employee.role})`
-  );
+  // Audit log
+  db.prepare(
+    "INSERT INTO audit_log (employee_id, action, details) VALUES (?, 'login', ?)"
+  ).run(matched.id, `Login: ${matched.name} (${matched.role}) from ${ip || 'unknown'}`);
+
+  // Generate and store token
+  const token = generateToken(matched.id, matched.role, matched.role_level);
 
   // Return without pin hash
-  const { pin: _, ...safe } = employee;
+  const { pin: _, ...safe } = matched;
   return {
     ...safe,
-    permissions: getPermissions(employee.role),
-    token: generateToken(employee.id)
+    permissions: getPermissions(matched.role),
+    token
   };
+}
+
+/**
+ * Generate and store a session token
+ */
+function generateToken(employeeId, role, roleLevel) {
+  const token = crypto.randomBytes(32).toString('hex');
+  tokenStore.set(token, {
+    employeeId,
+    role,
+    role_level: roleLevel,
+    expiresAt: Date.now() + TOKEN_EXPIRY_MS
+  });
+  return token;
+}
+
+/**
+ * Validate a token and return the session data
+ * @param {string} token
+ * @returns {object|null} session data or null
+ */
+function validateToken(token) {
+  if (!token) return null;
+  const session = tokenStore.get(token);
+  if (!session) return null;
+  if (session.expiresAt < Date.now()) {
+    tokenStore.delete(token);
+    return null;
+  }
+  return session;
+}
+
+/**
+ * Express middleware: require valid token on all POS routes
+ */
+function authMiddleware(req, res, next) {
+  // Skip auth for login route
+  if (req.path === '/pos/auth/login') return next();
+
+  // Skip auth for GET on public-ish routes (products, categories for menu display)
+  // But still require auth for sensitive data
+  const publicGets = ['/pos/products', '/pos/categories', '/pos/happy-hour/active'];
+  if (req.method === 'GET' && publicGets.includes(req.path)) return next();
+
+  const authHeader = req.headers.authorization;
+  const token = authHeader ? authHeader.replace('Bearer ', '') : req.query.token;
+
+  if (!token) {
+    return res.status(401).json({ ok: false, error: 'Token requerido. Inicia sesion con tu PIN.' });
+  }
+
+  const session = validateToken(token);
+  if (!session) {
+    return res.status(401).json({ ok: false, error: 'Sesion expirada. Vuelve a iniciar sesion.' });
+  }
+
+  // Attach session to request
+  req.posSession = session;
+  next();
 }
 
 /**
@@ -105,57 +244,49 @@ function hasPermission(role, permission) {
   return perms.includes(permission);
 }
 
-/**
- * Get all permissions for a role
- */
 function getPermissions(role) {
   return ROLE_PERMISSIONS[role] || [];
 }
 
 /**
- * Check if an action requires authorization from a higher role
- * @returns {object} { required: bool, min_level: number, label: string }
- */
-function requiresAuth(action) {
-  const req = AUTH_REQUIREMENTS[action];
-  if (!req) return { required: false };
-  return { required: true, ...req };
-}
-
-/**
  * Authorize a protected action with a supervisor's PIN
- * @param {string} action - action key
- * @param {string} supervisorPin - PIN of the authorizer
- * @param {number} requesterId - employee requesting the action
- * @returns {object} { authorized: bool, authorizer: string, error: string }
+ * @returns {object} { authorized, authorizer, error }
  */
 function authorizeAction(action, supervisorPin, requesterId) {
   const req = AUTH_REQUIREMENTS[action];
-  if (!req) return { authorized: true, authorizer: 'system' };
+
+  // FIXED: Unknown actions are DENIED, not auto-approved
+  if (!req) return { authorized: false, error: 'Accion desconocida: ' + action };
 
   const db = getDb();
-  const hashed = hashPin(supervisorPin);
-  const supervisor = db.prepare(
-    'SELECT id, name, role, role_level FROM employees WHERE pin = ? AND active = 1'
-  ).get(hashed);
+  const employees = db.prepare(
+    'SELECT id, name, pin, role, role_level FROM employees WHERE active = 1'
+  ).all();
+
+  let supervisor = null;
+  for (const emp of employees) {
+    if (verifyPin(supervisorPin, emp.pin)) {
+      supervisor = emp;
+      break;
+    }
+  }
 
   if (!supervisor) {
     return { authorized: false, error: 'PIN invalido' };
   }
 
   if (supervisor.role_level > req.min_level) {
+    const needed = getRoleName(req.min_level);
     return {
       authorized: false,
-      error: `Se requiere ${getRoleName(req.min_level)} o superior. ${supervisor.name} es ${supervisor.role}.`
+      error: `Se requiere ${needed} o superior. ${supervisor.name} es ${supervisor.role}.`
     };
   }
 
-  // Log the authorization
-  db.prepare('INSERT INTO audit_log (employee_id, action, details) VALUES (?, ?, ?)').run(
-    supervisor.id,
-    'authorize',
-    `${supervisor.name} autorizo "${req.label}" para empleado #${requesterId}`
-  );
+  // Audit log
+  db.prepare(
+    "INSERT INTO audit_log (employee_id, action, details) VALUES (?, 'authorize', ?)"
+  ).run(supervisor.id, `${supervisor.name} autorizo "${req.label}" para empleado #${requesterId}`);
 
   return { authorized: true, authorizer: supervisor.name, authorizer_id: supervisor.id };
 }
@@ -166,27 +297,13 @@ function getRoleName(level) {
 }
 
 /**
- * Simple token generation (session-based, not JWT for simplicity)
- */
-function generateToken(employeeId) {
-  const crypto = require('crypto');
-  return crypto.randomBytes(32).toString('hex');
-}
-
-/**
  * Get the default view/route for a role
  */
 function getDefaultView(role) {
   const views = {
-    dueno: 'mesas',
-    gerente: 'mesas',
-    capitan: 'mesas',
-    cajero: 'cobrar',
-    mesero: 'mis-mesas',
-    bartender: 'barra',
-    cocinero: 'cocina',
-    dj: 'karaoke',
-    seguridad: 'cover'
+    dueno: 'mesas', gerente: 'mesas', capitan: 'mesas', cajero: 'cobrar',
+    mesero: 'mis-mesas', bartender: 'barra', cocinero: 'cocina',
+    dj: 'karaoke', seguridad: 'cover'
   };
   return views[role] || 'mesas';
 }
@@ -212,19 +329,12 @@ function getSidebarForRole(role) {
     { id: 'empleados', icon: '👥', label: 'Empleados', perm: 'employees' },
     { id: 'config', icon: '⚙️', label: 'Configuracion', perm: 'config' },
   ];
-
   return all.filter(item => hasPermission(role, item.perm));
 }
 
 module.exports = {
-  authenticate,
-  hasPermission,
-  getPermissions,
-  requiresAuth,
-  authorizeAction,
-  getDefaultView,
-  getSidebarForRole,
-  ROLE_LEVELS,
-  ROLE_PERMISSIONS,
-  AUTH_REQUIREMENTS
+  authenticate, authMiddleware, validateToken,
+  hasPermission, getPermissions, hashPin, verifyPin,
+  authorizeAction, getDefaultView, getSidebarForRole,
+  ROLE_LEVELS, ROLE_PERMISSIONS, AUTH_REQUIREMENTS, VALID_ROLES
 };
