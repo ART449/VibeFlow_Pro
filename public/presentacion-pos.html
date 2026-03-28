@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>ByFlow POS — Presentacion</title>
+<link href="https://fonts.googleapis.com/css2?family=Great+Vibes&family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+:root{--bg:#0a0a0f;--orange:#ff8a00;--amber:#fbbf24;--green:#34d399;--red:#ef4444;--pink:#ff6b9d;--purple:#c084fc;--cyan:#22d3ee;--sub:rgba(255,255,255,.4);}
+body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:#e8e8f0;overflow:hidden;height:100vh;-webkit-font-smoothing:antialiased;}
+
+.deck{display:flex;transition:transform .6s cubic-bezier(.25,.46,.45,.94);height:100vh;}
+.slide{min-width:100vw;height:100vh;display:flex;align-items:center;justify-content:center;flex-direction:column;padding:60px;position:relative;overflow:hidden;}
+
+/* BG effects */
+.slide::before{content:'';position:absolute;width:500px;height:500px;border-radius:50%;filter:blur(120px);opacity:.08;pointer-events:none;}
+.slide:nth-child(odd)::before{background:var(--orange);top:-20%;right:-10%;}
+.slide:nth-child(even)::before{background:var(--purple);bottom:-20%;left:-10%;}
+
+.slide .content{position:relative;z-index:1;max-width:900px;width:100%;text-align:center;}
+
+/* Typography */
+h1{font-size:clamp(36px,5vw,64px);font-weight:900;line-height:1.1;margin-bottom:16px;}
+h1 span{background:linear-gradient(135deg,var(--orange),var(--amber));-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+h2{font-size:clamp(28px,4vw,48px);font-weight:800;margin-bottom:20px;}
+h2 span{color:var(--orange);}
+p{font-size:clamp(14px,2vw,20px);color:var(--sub);line-height:1.6;max-width:700px;margin:0 auto;}
+.logo{font-family:'Great Vibes',cursive;font-size:5rem;background:linear-gradient(135deg,var(--orange),var(--amber));-webkit-background-clip:text;-webkit-text-fill-color:transparent;filter:drop-shadow(0 0 40px rgba(255,138,0,.3));}
+.badge{display:inline-block;padding:6px 16px;border-radius:20px;background:rgba(255,138,0,.1);border:1px solid rgba(255,138,0,.2);color:var(--orange);font-size:12px;font-weight:700;letter-spacing:2px;text-transform:uppercase;margin-bottom:20px;}
+.powered{font-size:14px;color:rgba(255,255,255,.2);margin-top:16px;}
+
+/* Grid cards */
+.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:16px;text-align:left;margin-top:24px;max-width:800px;}
+.grid.g3{grid-template-columns:repeat(3,1fr);}
+.card{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:16px;padding:20px;}
+.card .c-icon{font-size:28px;margin-bottom:8px;}
+.card .c-title{font-size:15px;font-weight:700;margin-bottom:4px;}
+.card .c-desc{font-size:12px;color:var(--sub);line-height:1.5;}
+.card.highlight{border-color:rgba(255,138,0,.3);background:rgba(255,138,0,.04);}
+
+/* Compare bars */
+.bar-row{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid rgba(255,255,255,.05);text-align:left;}
+.bar-row .br-name{width:140px;font-size:14px;}
+.bar-row .br-bar{flex:1;height:32px;border-radius:8px;background:rgba(255,255,255,.03);overflow:hidden;}
+.bar-row .br-fill{height:100%;border-radius:8px;display:flex;align-items:center;padding:0 12px;font-size:12px;font-weight:700;color:#fff;}
+.bar-row .br-price{width:120px;text-align:right;font-size:16px;font-weight:800;}
+
+/* Price cards */
+.price-card{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:20px;padding:28px;text-align:center;}
+.price-card.feat{border-color:rgba(255,138,0,.4);background:rgba(255,138,0,.04);transform:scale(1.05);}
+.price-card .pc-name{font-size:12px;font-weight:700;color:var(--sub);letter-spacing:2px;text-transform:uppercase;}
+.price-card .pc-price{font-size:40px;font-weight:900;margin:8px 0;}
+.price-card .pc-price small{font-size:16px;font-weight:400;color:var(--sub);}
+.price-card .pc-desc{font-size:11px;color:var(--sub);margin-bottom:12px;}
+.price-card ul{list-style:none;text-align:left;font-size:12px;}
+.price-card ul li{padding:4px 0;display:flex;align-items:center;gap:4px;}
+.price-card ul li::before{content:'✅';font-size:9px;}
+
+/* Comparison table */
+.cmp{width:100%;text-align:left;border-collapse:collapse;margin-top:16px;}
+.cmp th{font-size:11px;color:var(--sub);text-transform:uppercase;letter-spacing:1px;padding:8px;border-bottom:2px solid rgba(255,255,255,.08);}
+.cmp th:last-child{color:var(--orange);text-align:center;}
+.cmp td{padding:8px;font-size:13px;border-bottom:1px solid rgba(255,255,255,.03);}
+.cmp td:last-child{text-align:center;}
+.cmp .hl{background:rgba(255,138,0,.04);color:var(--orange);font-weight:600;}
+
+/* Security icons */
+.sec-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:20px;text-align:center;}
+.sec-item{padding:20px;background:rgba(255,255,255,.03);border-radius:12px;}
+.sec-item .si{font-size:32px;margin-bottom:8px;}
+.sec-item .sl{font-size:13px;font-weight:700;}
+.sec-item .sd{font-size:10px;color:var(--sub);margin-top:4px;}
+
+/* Nav */
+.nav{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);display:flex;gap:8px;z-index:100;background:rgba(10,10,15,.9);backdrop-filter:blur(10px);padding:8px 16px;border-radius:14px;border:1px solid rgba(255,255,255,.08);}
+.nav button{padding:8px 16px;border-radius:10px;border:none;font-size:12px;font-weight:700;cursor:pointer;transition:all .2s;}
+.nav .prev{background:rgba(255,255,255,.06);color:rgba(255,255,255,.5);}
+.nav .next{background:linear-gradient(135deg,#f97316,var(--orange));color:#fff;}
+.nav .prev:hover,.nav .next:hover{transform:translateY(-2px);}
+.nav .counter{font-size:11px;color:var(--sub);display:flex;align-items:center;padding:0 8px;}
+.nav .dots{display:flex;gap:4px;align-items:center;padding:0 8px;}
+.nav .dot{width:6px;height:6px;border-radius:50%;background:rgba(255,255,255,.15);transition:all .3s;}
+.nav .dot.active{background:var(--orange);width:20px;border-radius:3px;}
+
+/* Contact */
+.contact-row{display:flex;gap:12px;justify-content:center;margin-top:24px;flex-wrap:wrap;}
+.contact-chip{padding:10px 20px;border-radius:12px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);font-size:13px;display:flex;align-items:center;gap:6px;}
+
+/* Fullscreen */
+.fs-btn{position:fixed;top:16px;right:16px;z-index:100;padding:6px 12px;border-radius:8px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.08);color:var(--sub);font-size:11px;cursor:pointer;}
+
+@media(max-width:600px){
+  .slide{padding:30px;}
+  .grid,.grid.g3{grid-template-columns:1fr;}
+  .sec-grid{grid-template-columns:1fr;}
+}
+</style>
+</head>
+<body>
+
+<div class="deck" id="deck">
+
+<!-- SLIDE 1: PORTADA -->
+<div class="slide">
+  <div class="content">
+    <div class="badge">Nuevo</div>
+    <div class="logo">ByFlow</div>
+    <h1>POS <span>Eatertainment</span></h1>
+    <p>El primer punto de venta en Mexico que integra POS + Karaoke + Entretenimiento</p>
+    <div class="powered">powered by IArtLabs &bull; Hecho en Mexico 🇲🇽</div>
+  </div>
+</div>
+
+<!-- SLIDE 2: EL PROBLEMA -->
+<div class="slide">
+  <div class="content">
+    <h2>😤 El problema de <span>los bares hoy</span></h2>
+    <div class="grid">
+      <div class="card"><div class="c-icon">📋</div><div class="c-title">Comandas en papel</div><div class="c-desc">Se pierden, se mojan, la cocina no entiende la letra del mesero</div></div>
+      <div class="card"><div class="c-icon">🎤</div><div class="c-title">Karaoke aparte del POS</div><div class="c-desc">Dos sistemas que no se hablan. No sabes que mesa pidio que cancion</div></div>
+      <div class="card"><div class="c-icon">💸</div><div class="c-title">Software caro y viejo</div><div class="c-desc">$1,000+ al mes por interfaces de los 2000s. Hardware obligatorio</div></div>
+      <div class="card"><div class="c-icon">📊</div><div class="c-title">Cero visibilidad</div><div class="c-desc">No sabes cuanto vendiste hasta el corte. Sin reportes en tiempo real</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- SLIDE 3: LA SOLUCION -->
+<div class="slide">
+  <div class="content">
+    <h2>🔥 Un solo sistema para <span>todo tu bar</span></h2>
+    <p>Mesas, comandas, cocina, barra, karaoke, cover, inventario, reportes y facturacion. Todo desde cualquier tablet, celular o computadora.</p>
+    <div class="grid" style="margin-top:24px;">
+      <div class="card highlight"><div class="c-icon">🍻</div><div class="c-title">Mapa de mesas en vivo</div><div class="c-desc">Libre, ocupada, cantando, reservada — todo en tiempo real</div></div>
+      <div class="card highlight"><div class="c-icon">🎤</div><div class="c-title">Karaoke integrado</div><div class="c-desc">Cola de canciones POR MESA. Solo ByFlow tiene esto</div></div>
+      <div class="card"><div class="c-icon">🍳</div><div class="c-title">Monitor cocina/barra</div><div class="c-desc">Comandas en pantalla. Alerta al mesero cuando esta listo</div></div>
+      <div class="card"><div class="c-icon">📱</div><div class="c-title">Multi-dispositivo</div><div class="c-desc">Sin hardware especial. Cualquier dispositivo con navegador</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- SLIDE 4: ROLES -->
+<div class="slide">
+  <div class="content">
+    <h2>🔐 Cada quien ve <span>lo que debe</span></h2>
+    <p>9 niveles de acceso por PIN. Sin passwords complicados. Tap-tap-tap y entras.</p>
+    <div class="grid g3" style="margin-top:20px;">
+      <div class="card"><div class="c-icon">👑</div><div class="c-title">Dueno</div><div class="c-desc">Ve TODO. Reportes, finanzas, config, empleados</div></div>
+      <div class="card"><div class="c-icon">👩‍💼</div><div class="c-title">Gerente</div><div class="c-desc">Operacion completa. Descuentos, cancelaciones</div></div>
+      <div class="card"><div class="c-icon">🧑‍🍳</div><div class="c-title">Mesero</div><div class="c-desc">Solo SUS mesas. Tomar pedidos, pedir cuenta</div></div>
+      <div class="card"><div class="c-icon">🍸</div><div class="c-title">Bartender</div><div class="c-desc">Monitor de barra. Marcar tragos listos</div></div>
+      <div class="card"><div class="c-icon">👨‍🍳</div><div class="c-title">Cocinero</div><div class="c-desc">Monitor de cocina. Sin acceso a dinero</div></div>
+      <div class="card"><div class="c-icon">🛡️</div><div class="c-title">Seguridad</div><div class="c-desc">Cover, control de entrada, capacidad</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- SLIDE 5: FEATURES EXCLUSIVAS -->
+<div class="slide">
+  <div class="content">
+    <h2>⚡ Lo que <span>nadie mas tiene</span></h2>
+    <div class="grid">
+      <div class="card highlight"><div class="c-icon">🎤</div><div class="c-title">Karaoke en el POS</div><div class="c-desc">Cola de canciones por mesa integrada directo en la comanda</div></div>
+      <div class="card highlight"><div class="c-icon">🍺</div><div class="c-title">Happy Hour automatico</div><div class="c-desc">Timer en vivo. Descuento se aplica solo al cobrar</div></div>
+      <div class="card highlight"><div class="c-icon">🎫</div><div class="c-title">Cover y entrada</div><div class="c-desc">General y VIP. Control de capacidad. Registro con timestamps</div></div>
+      <div class="card highlight"><div class="c-icon">📡</div><div class="c-title">Funciona sin internet</div><div class="c-desc">PWA offline. Toma pedidos sin wifi, sincroniza cuando vuelve</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- SLIDE 6: COMPARATIVA PRECIOS -->
+<div class="slide">
+  <div class="content">
+    <h2>💸 Cuanto cuesta <span>la competencia?</span></h2>
+    <div style="max-width:700px;margin:20px auto 0;text-align:left;">
+      <div class="bar-row"><div class="br-name" style="color:var(--red);">Competidor A</div><div class="br-bar"><div class="br-fill" style="width:85%;background:linear-gradient(90deg,#ef4444,#dc2626);">$900 - $1,100/mes</div></div><div class="br-price" style="color:var(--red);">$1,100</div></div>
+      <div class="bar-row"><div class="br-name" style="color:var(--amber);">Competidor B</div><div class="br-bar"><div class="br-fill" style="width:65%;background:linear-gradient(90deg,#f97316,#ea580c);">$700 - $900/mes</div></div><div class="br-price" style="color:var(--amber);">$900</div></div>
+      <div class="bar-row"><div class="br-name" style="color:var(--sub);">Competidor C</div><div class="br-bar"><div class="br-fill" style="width:55%;background:linear-gradient(90deg,#eab308,#ca8a04);">$500 - $750/mes</div></div><div class="br-price">$750</div></div>
+      <div class="bar-row" style="margin-top:12px;padding-top:12px;border-top:2px solid rgba(255,138,0,.2);"><div class="br-name" style="color:var(--green);font-weight:800;">ByFlow POS</div><div class="br-bar"><div class="br-fill" style="width:25%;background:linear-gradient(90deg,var(--green),#059669);">$299/mes</div></div><div class="br-price" style="color:var(--green);font-size:20px;">$299</div></div>
+    </div>
+    <p style="margin-top:16px;font-size:14px;">Hasta <span style="color:var(--green);font-weight:800;font-size:20px;">73% mas barato</span> con MAS funciones</p>
+  </div>
+</div>
+
+<!-- SLIDE 7: TABLA COMPARATIVA -->
+<div class="slide">
+  <div class="content">
+    <h2>✅ Funcion por <span>funcion</span></h2>
+    <table class="cmp">
+      <thead><tr><th>Funcion</th><th>Competencia</th><th>ByFlow POS</th></tr></thead>
+      <tbody>
+        <tr><td>POS basico + inventario</td><td>✅</td><td>✅</td></tr>
+        <tr><td>Monitor cocina/barra</td><td>✅</td><td>✅</td></tr>
+        <tr><td>Facturacion CFDI</td><td>✅ (extra $$$)</td><td>✅ Incluido</td></tr>
+        <tr class="hl"><td>🎤 Karaoke integrado</td><td>❌</td><td>✅</td></tr>
+        <tr class="hl"><td>🎫 Cover / entrada</td><td>❌</td><td>✅</td></tr>
+        <tr class="hl"><td>🍺 Happy Hour auto</td><td>❌</td><td>✅</td></tr>
+        <tr class="hl"><td>📱 Cualquier dispositivo</td><td>❌ Hardware</td><td>✅</td></tr>
+        <tr class="hl"><td>📡 Funciona offline</td><td>❌</td><td>✅</td></tr>
+        <tr><td>Instalacion</td><td style="color:var(--red);">Tecnico $2,000+</td><td style="color:var(--green);">Abre el navegador</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- SLIDE 8: PLANES -->
+<div class="slide">
+  <div class="content">
+    <h2>💰 Planes y <span>Precios</span></h2>
+    <p style="margin-bottom:20px;">Sin letras chiquitas. Sin comisiones. Sin hardware obligatorio.</p>
+    <div class="grid g3">
+      <div class="price-card">
+        <div class="pc-name">Starter</div>
+        <div class="pc-price">$149<small>/mes</small></div>
+        <div class="pc-desc">1 sucursal &bull; 3 dispositivos</div>
+        <ul><li>Mapa de mesas</li><li>Comandas</li><li>Cobro</li><li>Monitor cocina</li><li>Karaoke</li></ul>
+      </div>
+      <div class="price-card feat">
+        <div class="pc-name" style="color:var(--orange);">⭐ Profesional</div>
+        <div class="pc-price" style="color:var(--orange);">$299<small>/mes</small></div>
+        <div class="pc-desc">1 sucursal &bull; 10 dispositivos</div>
+        <ul><li>Todo de Starter</li><li>Inventario</li><li>Happy Hour</li><li>Cover</li><li>9 roles</li><li>CFDI</li><li>Reportes</li><li>Offline</li></ul>
+      </div>
+      <div class="price-card">
+        <div class="pc-name" style="color:var(--amber);">🏆 Vitalicio</div>
+        <div class="pc-price" style="color:var(--amber);">$4,999<small> unico</small></div>
+        <div class="pc-desc">Para siempre &bull; Ilimitado</div>
+        <ul><li>TODO incluido</li><li>Dispositivos ilimitados</li><li>Multi-sucursal</li><li>Updates de por vida</li><li>Soporte VIP</li><li>Capacitacion</li></ul>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SLIDE 9: SEGURIDAD -->
+<div class="slide">
+  <div class="content">
+    <h2>🔒 Tu informacion <span>esta segura</span></h2>
+    <p>Tus datos son tuyos. Respaldados, cifrados, y solo tu los puedes ver.</p>
+    <div class="sec-grid">
+      <div class="sec-item"><div class="si">💾</div><div class="sl">Backups automaticos</div><div class="sd">Cada 6 horas. Ultimos 30 dias. Restaura en 1 click.</div></div>
+      <div class="sec-item"><div class="si">🔐</div><div class="sl">Cifrado AES-256</div><div class="sd">Datos sensibles encriptados. Si roban el archivo, no leen nada.</div></div>
+      <div class="sec-item"><div class="si">🏪</div><div class="sl">Datos aislados</div><div class="sd">Cada bar tiene su propio ID. Nadie mas ve tu informacion.</div></div>
+      <div class="sec-item"><div class="si">📋</div><div class="sl">Audit log</div><div class="sd">Cada login, cada accion queda registrada con hora y quien.</div></div>
+      <div class="sec-item"><div class="si">📤</div><div class="sl">Exporta tus datos</div><div class="sd">Pide todos tus datos en 1 click. Son tuyos, siempre.</div></div>
+      <div class="sec-item"><div class="si">🔑</div><div class="sl">PINs protegidos</div><div class="sd">Hasheados con SHA-256. Ni el dueno puede verlos.</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- SLIDE 10: CONTACTO -->
+<div class="slide">
+  <div class="content">
+    <div class="logo" style="font-size:4rem;">ByFlow</div>
+    <h2 style="margin-top:8px;">Listo para <span>modernizar tu bar?</span></h2>
+    <p>14 dias gratis. Sin tarjeta. Sin compromisos.</p>
+    <div class="contact-row">
+      <div class="contact-chip">🌐 byflowapp.up.railway.app</div>
+      <div class="contact-chip">📧 contacto@iartlabs.com</div>
+      <div class="contact-chip">💬 WhatsApp disponible</div>
+    </div>
+    <div class="powered" style="margin-top:32px;font-size:12px;">
+      powered by <strong>IArtLabs</strong> &bull; Hecho en Mexico 🇲🇽<br>
+      <span style="font-size:10px;opacity:.5;">ByFlow POS Eatertainment v1.0 &bull; 2026</span>
+    </div>
+  </div>
+</div>
+
+</div>
+
+<!-- NAVIGATION -->
+<div class="nav">
+  <button class="prev" onclick="go(-1)">← Anterior</button>
+  <div class="dots" id="dots"></div>
+  <button class="next" onclick="go(1)">Siguiente →</button>
+</div>
+<button class="fs-btn" onclick="toggleFS()">⛶ Pantalla completa</button>
+
+<script>
+let current = 0;
+const total = document.querySelectorAll('.slide').length;
+const deck = document.getElementById('deck');
+
+// Create dots
+const dotsEl = document.getElementById('dots');
+for (let i = 0; i < total; i++) {
+  const d = document.createElement('div');
+  d.className = 'dot' + (i === 0 ? ' active' : '');
+  d.onclick = () => goTo(i);
+  dotsEl.appendChild(d);
+}
+
+function go(dir) {
+  goTo(current + dir);
+}
+
+function goTo(idx) {
+  if (idx < 0 || idx >= total) return;
+  current = idx;
+  deck.style.transform = 'translateX(-' + (current * 100) + 'vw)';
+  document.querySelectorAll('.dot').forEach((d, i) => d.classList.toggle('active', i === current));
+}
+
+// Keyboard
+document.addEventListener('keydown', e => {
+  if (e.key === 'ArrowRight' || e.key === ' ') go(1);
+  if (e.key === 'ArrowLeft') go(-1);
+  if (e.key === 'f' || e.key === 'F') toggleFS();
+});
+
+// Touch swipe
+let touchX = 0;
+document.addEventListener('touchstart', e => { touchX = e.touches[0].clientX; });
+document.addEventListener('touchend', e => {
+  const diff = touchX - e.changedTouches[0].clientX;
+  if (Math.abs(diff) > 50) go(diff > 0 ? 1 : -1);
+});
+
+function toggleFS() {
+  if (!document.fullscreenElement) document.documentElement.requestFullscreen();
+  else document.exitFullscreen();
+}
+</script>
+</body>
+</html>
