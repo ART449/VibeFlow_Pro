@@ -205,6 +205,12 @@ select.form-input{cursor:pointer;}
 <script>
 const API = '';
 
+// ═══ XSS PROTECTION ═══
+function escapeHtml(str) {
+  if (typeof str !== 'string') return '';
+  return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#039;');
+}
+
 // ═══ AUTH ═══
 function getToken() { return sessionStorage.getItem('pos_token') || ''; }
 function authHeaders() {
@@ -247,9 +253,9 @@ async function loadProducts() {
     const stock = p.stock === -1 ? '∞' : p.stock;
     const stockClass = p.stock > 0 && p.stock <= 5 ? 'color:var(--red)' : '';
     return '<tr>' +
-      '<td>' + (p.icon || '') + '</td>' +
-      '<td><strong>' + p.name + '</strong></td>' +
-      '<td>' + (p.category_name || '') + '</td>' +
+      '<td>' + escapeHtml(p.icon || '') + '</td>' +
+      '<td><strong>' + escapeHtml(p.name) + '</strong></td>' +
+      '<td>' + escapeHtml(p.category_name || '') + '</td>' +
       '<td style="color:var(--orange);font-weight:700;">$' + p.price + '</td>' +
       '<td>$' + (p.cost || 0) + '</td>' +
       '<td style="color:var(--green);font-weight:600;">' + margin + '</td>' +
@@ -266,7 +272,7 @@ async function loadCategories() {
   const d = await r.json();
   if (!d.ok) return;
   document.getElementById('categories-body').innerHTML = d.categories.map(c =>
-    '<tr><td>' + (c.icon || '') + '</td><td><strong>' + c.name + '</strong></td><td>' + c.sort_order + '</td>' +
+    '<tr><td>' + escapeHtml(c.icon || '') + '</td><td><strong>' + escapeHtml(c.name) + '</strong></td><td>' + escapeHtml(String(c.sort_order)) + '</td>' +
     '<td><span class="badge active">Activo</span></td>' +
     '<td class="actions"><button class="act edit">✏️</button></td></tr>'
   ).join('');
@@ -279,11 +285,11 @@ async function loadTables() {
   document.getElementById('tables-body').innerHTML = d.tables.map(t => {
     const statusColors = { libre: 'var(--green)', ocupada: 'var(--orange)', cantando: 'var(--pink)', reservada: 'var(--blue)', cuenta: 'var(--amber)', tab: 'var(--purple)' };
     return '<tr>' +
-      '<td><strong>' + t.number + '</strong></td>' +
-      '<td>' + t.area + '</td>' +
-      '<td>' + t.capacity + '</td>' +
-      '<td style="color:' + (statusColors[t.status] || '') + ';font-weight:600;">' + t.status + '</td>' +
-      '<td>' + (t.waiter_name || '—') + '</td>' +
+      '<td><strong>' + escapeHtml(String(t.number)) + '</strong></td>' +
+      '<td>' + escapeHtml(t.area) + '</td>' +
+      '<td>' + escapeHtml(String(t.capacity)) + '</td>' +
+      '<td style="color:' + escapeHtml(statusColors[t.status] || '') + ';font-weight:600;">' + escapeHtml(t.status) + '</td>' +
+      '<td>' + escapeHtml(t.waiter_name || '—') + '</td>' +
       '<td class="actions"><button class="act edit">✏️</button> <button class="act del">🗑️</button></td>' +
       '</tr>';
   }).join('');
@@ -296,12 +302,12 @@ async function loadEmployees() {
   const roleNames = { dueno:'Dueño', gerente:'Gerente', capitan:'Capitán', cajero:'Cajero', mesero:'Mesero', bartender:'Bartender', cocinero:'Cocinero', dj:'DJ', seguridad:'Seguridad' };
   document.getElementById('employees-body').innerHTML = d.employees.map(e =>
     '<tr>' +
-    '<td>' + (e.avatar || '👤') + '</td>' +
-    '<td><strong>' + e.name + '</strong></td>' +
-    '<td><span class="badge role">' + (roleNames[e.role] || e.role) + '</span></td>' +
-    '<td>' + e.role_level + '</td>' +
-    '<td>' + (e.area || '') + '</td>' +
-    '<td style="font-size:10px;color:var(--sub);">' + (e.last_login || 'Nunca') + '</td>' +
+    '<td>' + escapeHtml(e.avatar || '👤') + '</td>' +
+    '<td><strong>' + escapeHtml(e.name) + '</strong></td>' +
+    '<td><span class="badge role">' + escapeHtml(roleNames[e.role] || e.role) + '</span></td>' +
+    '<td>' + escapeHtml(String(e.role_level)) + '</td>' +
+    '<td>' + escapeHtml(e.area || '') + '</td>' +
+    '<td style="font-size:10px;color:var(--sub);">' + escapeHtml(e.last_login || 'Nunca') + '</td>' +
     '<td><span class="badge ' + (e.active ? 'active' : 'inactive') + '">' + (e.active ? 'Activo' : 'Inactivo') + '</span></td>' +
     '<td class="actions"><button class="act edit">✏️</button></td>' +
     '</tr>'

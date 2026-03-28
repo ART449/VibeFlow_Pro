@@ -156,6 +156,12 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--t
 </div>
 
 <script>
+// ═══ XSS PROTECTION ═══
+function escapeHtml(str) {
+  if (typeof str !== 'string') return '';
+  return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#039;');
+}
+
 let pin = '';
 const MAX_PIN = 6;
 const MIN_PIN = 4;
@@ -284,7 +290,7 @@ function loadSessions() {
   const savedEmp = sessionStorage.getItem('pos_employee');
   if (savedEmp) {
     const emp = JSON.parse(savedEmp);
-    container.innerHTML = '<div class="session-chip" onclick="quickSwitch()"><span class="sc-dot"></span> ' + emp.name + ' (' + emp.role + ') — toca para volver</div>';
+    container.innerHTML = '<div class="session-chip" onclick="quickSwitch()"><span class="sc-dot"></span> ' + escapeHtml(emp.name) + ' (' + escapeHtml(emp.role) + ') — toca para volver</div>';
   }
 }
 function quickSwitch() {

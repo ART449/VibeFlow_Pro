@@ -778,6 +778,12 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--t
 </button>
 
 <script>
+// ═══ XSS PROTECTION ═══
+function escapeHtml(str) {
+  if (typeof str !== 'string') return '';
+  return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#039;');
+}
+
 // ═══ NAVIGATION ═══
 function showView(id, el) {
   document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
@@ -814,7 +820,7 @@ function addI(name, price, el) {
   const line = document.createElement('div');
   line.className = 'ol';
   line.style.animation = 'fadeIn .3s';
-  line.innerHTML = '<span class="ol-q">1</span><span class="ol-n">' + name + '</span><span class="ol-p">$' + price + '</span><span class="ol-x" onclick="removeItem(this,' + price + ')">&#x2715;</span>';
+  line.innerHTML = '<span class="ol-q">1</span><span class="ol-n">' + escapeHtml(name) + '</span><span class="ol-p">$' + price + '</span><span class="ol-x" onclick="removeItem(this,' + price + ')">&#x2715;</span>';
   list.appendChild(line);
   list.scrollTop = list.scrollHeight;
   orderTotal += price;
@@ -941,8 +947,8 @@ function switchCat(cat, el) {
   const items = menuData[cat] || menuData.cervezas;
   grid.innerHTML = items.map((it, idx) => {
     const hhTag = it.hh ? '<span class="pi-hh">$' + it.p + '</span>$' + Math.round(it.p/2) : '$' + it.p;
-    return '<div class="pi" onclick="addI(\'' + it.n + '\',' + it.p + ')" style="animation:fadeIn .2s ' + (idx*0.03) + 's backwards;">' +
-      '<div class="pi-i">' + it.i + '</div><div class="pi-n">' + it.n + '</div><div class="pi-p">' + hhTag + '</div></div>';
+    return '<div class="pi" onclick="addI(\'' + escapeHtml(it.n) + '\',' + it.p + ')" style="animation:fadeIn .2s ' + (idx*0.03) + 's backwards;">' +
+      '<div class="pi-i">' + it.i + '</div><div class="pi-n">' + escapeHtml(it.n) + '</div><div class="pi-p">' + hhTag + '</div></div>';
   }).join('');
 }
 
@@ -1107,6 +1113,155 @@ document.addEventListener('DOMContentLoaded', () => {
   cats.forEach((c, i) => {
     c.onclick = () => switchCat(catMap[i], c);
   });
+});
+
+// ═══════════════════════════════════════════════
+// API INTEGRATION — Real data from POS backend
+// ═══════════════════════════════════════════════
+
+function getToken() {
+  return sessionStorage.getItem('pos_token') ||
+    new URLSearchParams(location.search).get('token') ||
+    '';
+}
+
+function authHeaders() {
+  return { 'Authorization': 'Bearer ' + getToken() };
+}
+
+// ── Auth guard ──────────────────────────────────
+(function checkAuth() {
+  if (!getToken()) {
+    window.location.replace('/pos.html');
+  }
+})();
+
+// ── Render tables from API response ─────────────
+function renderTables(tables) {
+  var grid = document.querySelector('#v-mesas .grid');
+  if (!grid || !Array.isArray(tables) || tables.length === 0) return;
+
+  var statusClass = { libre: 'libre', ocupada: 'ocupada', cantando: 'cantando', reservada: 'reservada', cuenta: 'cuenta', tab: 'ocupada' };
+  var statusLabel = { libre: 'Libre', ocupada: 'Ocupada', cantando: 'Cantando', reservada: 'Reservada', cuenta: 'Cuenta', tab: 'Tab' };
+  var statusTs = { libre: 'ts-libre', ocupada: 'ts-ocupada', cantando: 'ts-cantando', reservada: 'ts-reservada', cuenta: 'ts-cuenta', tab: 'ts-tab' };
+
+  grid.innerHTML = tables.map(function(t) {
+    var st = (t.status || 'libre').toLowerCase();
+    var tcCls = statusClass[st] || 'libre';
+    var tsCls = statusTs[st] || 'ts-libre';
+    var label = statusLabel[st] || st;
+    var guests = t.guests || t.capacity || '';
+    var area = t.area ? t.area + ' &bull; ' : '';
+    var total = t.total ? '<div class="tc-t">$' + Number(t.total).toLocaleString() + '</div>' : '';
+    var waiter = t.waiter_name ? '<div style="font-size:9px;color:var(--sub);margin-top:1px;">' + t.waiter_name + '</div>' : '';
+    var mic = st === 'cantando' ? '<span class="tc-mic">&#x1F3A4;</span>' : '';
+    var tableId = t.number || t.id;
+    return '<div class="tc ' + tcCls + '" onclick="selT(' + JSON.stringify(tableId) + ',this)">' +
+      mic +
+      '<div class="tc-n">' + (t.number || t.id) + '</div>' +
+      '<div class="tc-l">' + area + guests + ' pers</div>' +
+      total +
+      waiter +
+      '<span class="tc-s ' + tsCls + '">' + label + '</span>' +
+      '</div>';
+  }).join('');
+}
+
+// ── Render summary stats ─────────────────────────
+function renderSummary(tables, covers) {
+  var summaryCards = document.querySelectorAll('#v-mesas .summary .sm');
+  if (!summaryCards.length) return;
+
+  var total = tables.length;
+  var occupied = tables.filter(function(t) { return t.status && t.status !== 'libre'; }).length;
+  var openTotal = tables.reduce(function(acc, t) { return acc + (Number(t.total) || 0); }, 0);
+  var coverCount = covers && covers.count != null ? covers.count : null;
+
+  if (summaryCards[0]) {
+    summaryCards[0].innerHTML = '<div class="sm-l">Ocupadas</div><div class="sm-v" style="color:var(--orange);">' +
+      occupied + '<span style="font-size:11px;color:var(--sub);">/' + total + '</span></div>';
+  }
+  if (summaryCards[1] && openTotal > 0) {
+    summaryCards[1].innerHTML = '<div class="sm-l">Cuentas abiertas</div><div class="sm-v">$' + openTotal.toLocaleString() + '</div>';
+  }
+  if (summaryCards[4] && coverCount !== null) {
+    summaryCards[4].innerHTML = '<div class="sm-l">Personas</div><div class="sm-v" style="color:var(--cyan);">' + coverCount + '</div>';
+  }
+}
+
+// ── Render products from API ─────────────────────
+function renderProducts(products) {
+  var grid = document.querySelector('.prod-grid');
+  if (!grid || !Array.isArray(products) || products.length === 0) return;
+
+  grid.innerHTML = products.map(function(p, idx) {
+    var icon = p.icon || '&#x1F37A;';
+    var price = Number(p.price || p.precio || 0);
+    var happyPrice = p.happy_hour_price ? Number(p.happy_hour_price) : null;
+    var hhTag = happyPrice
+      ? '<span class="pi-hh">$' + price + '</span>$' + happyPrice
+      : '$' + price;
+    var name = p.name || p.nombre || '';
+    return '<div class="pi" onclick="addI(' + JSON.stringify(name) + ',' + price + ')" ' +
+      'style="animation:fadeIn .2s ' + (idx * 0.03) + 's backwards;">' +
+      '<div class="pi-i">' + icon + '</div>' +
+      '<div class="pi-n">' + name + '</div>' +
+      '<div class="pi-p">' + hhTag + '</div>' +
+      '</div>';
+  }).join('');
+}
+
+// ── Load tables ──────────────────────────────────
+function loadTables() {
+  fetch('/pos/tables', { headers: authHeaders() })
+    .then(function(res) { return res.ok ? res.json() : Promise.reject(res.status); })
+    .then(function(data) {
+      var tables = Array.isArray(data) ? data : (data.tables || data.data || []);
+      if (tables.length > 0) {
+        renderTables(tables);
+        window._posTablesCache = tables;
+        loadCovers(tables);
+      }
+    })
+    .catch(function() { /* API unavailable — keep static HTML */ });
+}
+
+// ── Load covers / today count ────────────────────
+function loadCovers(tables) {
+  fetch('/pos/covers/today', { headers: authHeaders() })
+    .then(function(res) { return res.ok ? res.json() : Promise.reject(res.status); })
+    .then(function(data) {
+      renderSummary(tables || window._posTablesCache || [], data);
+    })
+    .catch(function() { /* Keep static fallback */ });
+}
+
+// ── Load products by category_id ─────────────────
+function loadProducts(categoryId) {
+  var url = categoryId != null ? '/pos/products?category_id=' + categoryId : '/pos/products';
+  fetch(url, { headers: authHeaders() })
+    .then(function(res) { return res.ok ? res.json() : Promise.reject(res.status); })
+    .then(function(data) {
+      var products = Array.isArray(data) ? data : (data.products || data.data || []);
+      if (products.length > 0) renderProducts(products);
+    })
+    .catch(function() { /* Keep static fallback */ });
+}
+
+// ── Patch category bar to also fetch from API ────
+document.addEventListener('DOMContentLoaded', function() {
+  var cats = document.querySelectorAll('.cat-bar .cc');
+  cats.forEach(function(c, i) {
+    var prev = c.onclick;
+    c.onclick = function(e) {
+      if (prev) prev.call(c, e);
+      loadProducts(i + 1);
+    };
+  });
+
+  // Bootstrap on load: fetch tables and default category (1 = cervezas)
+  loadTables();
+  loadProducts(1);
 });
 </script>
 

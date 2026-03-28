@@ -3,7 +3,7 @@
  * Offline support + caching for PWA
  */
 
-const CACHE_NAME = 'byflow-pos-v1';
+const CACHE_NAME = 'byflow-pos-' + '20260328';
 const OFFLINE_URL = '/pos-offline.html';
 
 const PRECACHE_URLS = [
@@ -25,12 +25,19 @@ self.addEventListener('install', (event) => {
   self.skipWaiting();
 });
 
-// Activate: clean old caches
+// Activate: clean ALL old caches and notify clients of update
 self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches.keys().then((keys) => {
       return Promise.all(
-        keys.filter(k => k !== CACHE_NAME).map(k => caches.delete(k))
+        keys.filter(k => k !== CACHE_NAME).map(k => {
+          console.log('[POS-SW] Deleting old cache:', k);
+          return caches.delete(k);
+        })
+      );
+    }).then(() => {
+      self.clients.matchAll().then(clients =>
+        clients.forEach(c => c.postMessage({ type: 'SW_UPDATED' }))
       );
     })
   );
@@ -61,23 +68,38 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // Static files: cache-first, fallback to network
-  event.respondWith(
-    caches.match(event.request).then((cached) => {
-      if (cached) return cached;
-      return fetch(event.request).then((response) => {
-        // Cache successful responses
+  // HTML files: network-first so new deploys are picked up immediately
+  const isHtml = event.request.mode === 'navigate' ||
+    url.pathname.endsWith('.html') ||
+    (!url.pathname.includes('.') && event.request.headers.get('accept') && event.request.headers.get('accept').includes('text/html'));
+
+  if (isHtml) {
+    event.respondWith(
+      fetch(event.request).then((response) => {
         if (response.ok && event.request.method === 'GET') {
           const clone = response.clone();
           caches.open(CACHE_NAME).then((cache) => cache.put(event.request, clone));
         }
         return response;
       }).catch(() => {
-        // Offline fallback for navigation
-        if (event.request.mode === 'navigate') {
-          return caches.match(OFFLINE_URL);
+        // Network failed — serve from cache or offline page
+        return caches.match(event.request).then(cached => cached || caches.match(OFFLINE_URL));
+      })
+    );
+    return;
+  }
+
+  // Fonts and static assets (CSS, images, SVGs): cache-first for performance
+  event.respondWith(
+    caches.match(event.request).then((cached) => {
+      if (cached) return cached;
+      return fetch(event.request).then((response) => {
+        if (response.ok && event.request.method === 'GET') {
+          const clone = response.clone();
+          caches.open(CACHE_NAME).then((cache) => cache.put(event.request, clone));
         }
-      });
+        return response;
+      }).catch(() => undefined);
     })
   );
 });
