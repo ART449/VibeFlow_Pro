@@ -3202,16 +3202,7 @@ input:focus-visible,textarea:focus-visible{
       <div class="wc-desc">YouTube, SoundCloud y Jamendo</div>
       <span class="wc-tag pro">PRO</span>
     </div>
-    <div class="welcome-card" data-mode="bares" onclick="event.stopPropagation()" style="cursor:default;">
-      <div class="wc-glow"></div>
-      <div class="wc-icon bares">&#x1F37A;</div>
-      <div class="wc-title">Bares & POS</div>
-      <div class="wc-desc">Punto de venta + karaoke integrado para tu negocio</div>
-      <div style="display:flex;gap:6px;margin-top:10px;">
-        <span onclick="window.location.href='/pos-demo.html'" style="flex:1;text-align:center;padding:8px;border-radius:8px;background:rgba(255,138,0,.12);color:#ff8a00;border:1px solid rgba(255,138,0,.2);font-size:11px;font-weight:700;cursor:pointer;">&#x1F50D; Ver Demo</span>
-        <span onclick="window.location.href='/pos.html'" style="flex:1;text-align:center;padding:8px;border-radius:8px;background:rgba(52,211,153,.12);color:#34d399;border:1px solid rgba(52,211,153,.2);font-size:11px;font-weight:700;cursor:pointer;">&#x1F511; Tengo Licencia</span>
-      </div>
-    </div>
+    <!-- Bares/POS removido del menu publico — acceso solo via /pos.html o link abajo -->
     <div class="welcome-card" data-mode="ia" onclick="welcomeSelect('ia')">
       <div class="wc-glow"></div>
       <div class="wc-icon ia">&#x2728;</div>
@@ -3232,6 +3223,8 @@ input:focus-visible,textarea:focus-visible{
   <div class="welcome-footer">
     <div style="display:flex;gap:16px;align-items:center;">
       <span style="font-size:10px;color:var(--a);cursor:pointer;" onclick="welcomeSelect('remote')">&#x1F4F1; Control Remoto</span>
+      <span style="font-size:10px;color:rgba(255,138,0,.5);cursor:pointer;" onclick="window.location.href='/pos-demo.html'">&#x1F37B; Tienes un bar?</span>
+      <span style="font-size:10px;color:rgba(52,211,153,.5);cursor:pointer;" onclick="window.location.href='/pos.html'">&#x1F511; POS Login</span>
     </div>
     <div style="font-size:10px;color:rgba(255,255,255,.15);margin-top:8px;max-width:380px;line-height:1.4;text-align:center;">Al usar ByFlow aceptas nuestros <span style="text-decoration:underline;cursor:pointer;" onclick="openLegalModal();dismissWelcome();">terminos de servicio</span>. Letras IA: 50/50 autor/ArT-AtR. Letras propias: 100% autor. &copy; 2024-2026 IArtLabs</div>
   </div>
