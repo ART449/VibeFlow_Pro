@@ -368,7 +368,7 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--t
         <li>Reportes basicos</li>
         <li>Karaoke integrado</li>
       </ul>
-      <button class="pc-btn secondary" onclick="contactar('starter')">Empezar Gratis 14 Dias</button>
+      <button class="pc-btn secondary" onclick="comprar('starter')">Empezar Gratis 14 Dias</button>
     </div>
 
     <!-- PRO (featured) -->
@@ -389,7 +389,7 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--t
         <li>Funciona sin internet</li>
         <li>Soporte prioritario</li>
       </ul>
-      <button class="pc-btn primary" onclick="contactar('profesional')">🚀 Empezar Gratis 14 Dias</button>
+      <button class="pc-btn primary" onclick="comprar('profesional')">🚀 Empezar Gratis 14 Dias</button>
     </div>
 
     <!-- VITALICIO -->
@@ -408,7 +408,7 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--t
         <li>Personalizacion de marca</li>
         <li>Primer mes de capacitacion</li>
       </ul>
-      <button class="pc-btn gold" onclick="contactar('vitalicio')">👑 Asegurar Precio Vitalicio</button>
+      <button class="pc-btn gold" onclick="comprar('vitalicio')">👑 Asegurar Precio Vitalicio</button>
     </div>
   </div>
 </div>
@@ -479,6 +479,33 @@ function loadDemo(view, el) {
   } catch(e) {}
 }
 
+// Stripe checkout — pago automatico
+async function comprar(plan) {
+  const email = prompt('Tu email para la licencia POS:');
+  if (!email || !email.includes('@')) { alert('Email invalido'); return; }
+
+  const planMap = { starter: 'POS_STARTER', profesional: 'POS_PRO', vitalicio: 'POS_VITALICIO' };
+  const stripePlan = planMap[plan];
+  if (!stripePlan) { contactar(plan); return; }
+
+  try {
+    const r = await fetch('/api/billing/checkout-session', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ plan: stripePlan, email })
+    });
+    const data = await r.json();
+    if (data.url) {
+      window.location.href = data.url; // Redirige a Stripe Checkout
+    } else {
+      // Stripe no configurado — fallback a WhatsApp
+      contactar(plan);
+    }
+  } catch (e) {
+    contactar(plan); // Fallback a WhatsApp si hay error
+  }
+}
+
 function contactar(plan) {
   const msgs = {
     starter: 'Hola! Me interesa ByFlow POS plan Starter para mi bar.',
@@ -489,6 +516,15 @@ function contactar(plan) {
   const msg = encodeURIComponent(msgs[plan] || msgs.demo);
   window.open('https://wa.me/524494917648?text=' + msg, '_blank');
 }
+
+// Check if returning from checkout
+(function() {
+  const params = new URLSearchParams(location.search);
+  if (params.get('checkout') === 'success') {
+    alert('Pago exitoso! Tu licencia POS esta activa. Revisa tu email para tu PIN de acceso.');
+    window.location.href = '/pos.html';
+  }
+})();
 
 </script>
 </body>

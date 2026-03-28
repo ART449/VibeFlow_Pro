@@ -346,8 +346,32 @@ app.post('/api/stripe/webhook', express.raw({ type: 'application/json' }), async
       case 'checkout.session.completed': {
         const s = event.data.object;
         const email = s.customer_details?.email || s.metadata?.email;
+        const plan = s.metadata?.plan || 'PRO_BAR';
         if (email && s.subscription && s.customer) {
-          subs.users[email] = { ...(subs.users[email]||{}), stripeCustomerId:s.customer, stripeSubscriptionId:s.subscription, status:'active', updatedAt:new Date().toISOString() };
+          // 1. Guardar suscripcion
+          subs.users[email] = { ...(subs.users[email]||{}), stripeCustomerId:s.customer, stripeSubscriptionId:s.subscription, status:'active', plan, updatedAt:new Date().toISOString() };
+
+          // 2. Si es plan BAR/POS: generar licencia VFP automatica
+          if (plan === 'PRO_BAR' || plan === 'POS_STARTER' || plan === 'POS_PRO' || plan === 'POS_VITALICIO') {
+            const licenseKey = generateLicenseKey();
+            const licenseEntry = {
+              key: licenseKey,
+              plan,
+              email,
+              type: 'pos',
+              activated: true,
+              activatedAt: new Date().toISOString(),
+              stripeCustomerId: s.customer,
+              stripeSubscriptionId: s.subscription
+            };
+            // Guardar licencia
+            if (!subs.posLicenses) subs.posLicenses = {};
+            subs.posLicenses[email] = licenseEntry;
+            subs.users[email].posLicenseKey = licenseKey;
+            subs.users[email].posActive = true;
+            console.log('[Stripe] POS license auto-generated for', email, ':', licenseKey);
+          }
+
           writeSubs(subs);
         }
         break;
@@ -1524,20 +1548,61 @@ app.post('/api/billing/checkout-session', async (req, res) => {
   if (!stripe) return res.status(503).json({ error: 'Pagos no configurados todavia' });
   const { plan, email } = req.body || {};
   if (!email) return res.status(400).json({ error: 'Email requerido' });
-  const priceId = plan === 'PRO_CREATOR' ? process.env.STRIPE_PRICE_PRO_CREATOR
-                : plan === 'PRO_BAR' ? process.env.STRIPE_PRICE_PRO_BAR : null;
+  const priceMap = {
+    'PRO_CREATOR': process.env.STRIPE_PRICE_PRO_CREATOR,
+    'PRO_BAR': process.env.STRIPE_PRICE_PRO_BAR,
+    'POS_STARTER': process.env.STRIPE_PRICE_POS_STARTER,
+    'POS_PRO': process.env.STRIPE_PRICE_POS_PRO,
+    'POS_VITALICIO': process.env.STRIPE_PRICE_POS_VITALICIO
+  };
+  const priceId = priceMap[plan] || null;
   if (!priceId) return res.status(400).json({ error: 'Plan invalido' });
   try {
+    const isOneTime = plan === 'POS_VITALICIO';
     const session = await stripe.checkout.sessions.create({
-      mode: 'subscription',
+      mode: isOneTime ? 'payment' : 'subscription',
       line_items: [{ price: priceId, quantity: 1 }],
-      success_url: `${process.env.APP_BASE_URL || 'https://byflowapp.up.railway.app'}/?checkout=success`,
-      cancel_url: `${process.env.APP_BASE_URL || 'https://byflowapp.up.railway.app'}/?checkout=cancel`,
+      success_url: `${process.env.APP_BASE_URL || 'https://byflowapp.up.railway.app'}/pos-demo.html?checkout=success&plan=${plan}`,
+      cancel_url: `${process.env.APP_BASE_URL || 'https://byflowapp.up.railway.app'}/pos-demo.html?checkout=cancel`,
       customer_email: email,
       metadata: { plan, email }
     });
     res.json({ url: session.url });
   } catch (err) { console.error('[Stripe] Checkout error:', err.message); res.status(500).json({ error: 'Error al crear checkout' }); }
+});
+
+// ── POS License verification ─────────────────────────────────────────────────
+app.get('/api/pos/license', (req, res) => {
+  const email = typeof req.query.email === 'string' ? req.query.email.trim().slice(0, 200) : '';
+  const key = typeof req.query.key === 'string' ? req.query.key.trim() : '';
+  const subs = readSubs();
+
+  // Check by email
+  if (email && subs.posLicenses && subs.posLicenses[email]) {
+    const lic = subs.posLicenses[email];
+    const user = subs.users?.[email] || {};
+    const isActive = user.status === 'active' || lic.plan === 'POS_VITALICIO';
+    return res.json({
+      ok: true, active: isActive,
+      plan: lic.plan, email,
+      key: lic.key,
+      activatedAt: lic.activatedAt
+    });
+  }
+
+  // Check by license key
+  if (key) {
+    if (!validateKeySignature(key)) return res.json({ ok: false, error: 'Licencia invalida' });
+    for (const [e, lic] of Object.entries(subs.posLicenses || {})) {
+      if (lic.key === key) {
+        const user = subs.users?.[e] || {};
+        const isActive = user.status === 'active' || lic.plan === 'POS_VITALICIO';
+        return res.json({ ok: true, active: isActive, plan: lic.plan, email: e, key });
+      }
+    }
+  }
+
+  res.json({ ok: false, error: 'No se encontro licencia POS para este email o clave' });
 });
 
 app.get('/api/billing/status', (req, res) => {
