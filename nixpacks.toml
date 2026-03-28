@@ -1,5 +1,0 @@
-[phases.setup]
-aptPkgs = ["libatomic1", "python3", "make", "g++"]
-
-[phases.build]
-cmds = ["npm install"]
