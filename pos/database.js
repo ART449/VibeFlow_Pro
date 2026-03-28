@@ -354,6 +354,13 @@ function seedData(db) {
     insertSetting.run('email_contacto', 'contacto@iartlabs.com');
     insertSetting.run('instagram', '');
     insertSetting.run('facebook', '');
+    // API Keys (configurar desde admin o env vars — NUNCA hardcodear)
+    insertSetting.run('youtube_api_key', '');
+    insertSetting.run('jamendo_client_id', '');
+    // Freno de gasto API
+    insertSetting.run('api_daily_limit', '500');
+    insertSetting.run('api_calls_today', '0');
+    insertSetting.run('api_limit_action', 'block');
   })();
 
   console.log('[POS] Seed data created: 10 employees, 7 categories, 40 products, 17 tables, 3 happy hours');

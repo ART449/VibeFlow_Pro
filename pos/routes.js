@@ -6,6 +6,7 @@
 const express = require('express');
 const { getDb } = require('./database');
 const auth = require('./auth');
+const { getApiUsage } = require('./api-limiter');
 
 // ═══ INPUT VALIDATION HELPERS ═══
 const VALID_TABLE_STATUS = ['libre', 'ocupada', 'cantando', 'reservada', 'cuenta', 'tab'];
@@ -18,7 +19,9 @@ const VALID_COVER_TYPES = ['general', 'vip', 'cortesia', 'lista'];
 const ALLOWED_SETTINGS = [
   'bar_name', 'tax_rate', 'tip_suggested', 'cover_general', 'cover_vip',
   'cover_includes', 'max_capacity', 'cfdi_rfc', 'cfdi_razon_social',
-  'whatsapp', 'email_contacto', 'instagram', 'facebook'
+  'whatsapp', 'email_contacto', 'instagram', 'facebook',
+  'youtube_api_key', 'jamendo_client_id',
+  'api_daily_limit', 'api_calls_today', 'api_limit_action'
 ];
 
 function sanitize(str, maxLen) {
@@ -586,6 +589,12 @@ function registerRoutes(app) {
     `).all(dayOfWeek, currentTime, currentTime);
 
     res.json({ ok: true, active, is_happy_hour: active.length > 0 });
+  });
+
+  // ═══ API USAGE / SPENDING BRAKE ═══
+  app.get('/pos/api-usage', (req, res) => {
+    const usage = getApiUsage();
+    res.json({ ok: true, usage });
   });
 
   console.log('[POS] API routes registered (HARDENED): /pos/*');

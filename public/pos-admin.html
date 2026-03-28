@@ -188,6 +188,22 @@ select.form-input{cursor:pointer;}
           <div class="set-row"><label>RFC</label><input id="s-cfdi_rfc" value=""></div>
           <div class="set-row"><label>Razon Social</label><input id="s-cfdi_razon_social" value=""></div>
         </div>
+        <div class="set-card">
+          <h4>🔑 APIs Externas</h4>
+          <div class="set-row"><label>YouTube API Key</label><input id="s-youtube_api_key" type="password" value="" placeholder="AIza..."></div>
+          <div class="set-row"><label>Jamendo Client ID</label><input id="s-jamendo_client_id" value="" placeholder="abc123..."></div>
+        </div>
+        <div class="set-card">
+          <h4>🛑 Freno de Gasto API</h4>
+          <div class="set-row"><label>Limite diario</label><input id="s-api_daily_limit" type="number" value="500"></div>
+          <div class="set-row"><label>Llamadas hoy</label><input id="s-api_calls_today" type="number" value="0" readonly style="opacity:.5;"></div>
+          <div class="set-row"><label>Al llegar al limite</label>
+            <select id="s-api_limit_action" style="padding:4px 8px;border-radius:6px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.08);color:#e8e8f0;font-size:12px;">
+              <option value="block">Bloquear (seguro)</option>
+              <option value="warn">Solo avisar</option>
+            </select>
+          </div>
+        </div>
       </div>
       <button class="form-btn primary" style="max-width:200px;margin-top:16px;" onclick="saveSettings()">💾 Guardar Configuracion</button>
     </div>
