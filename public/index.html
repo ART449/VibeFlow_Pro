@@ -2439,14 +2439,14 @@ input:focus-visible,textarea:focus-visible{
     <div class="right-panel">
       <h4 title="Escanea este QR desde otro celular para controlar el karaoke remotamente">Control Remoto (QR)</h4>
       <img id="qr-img" alt="Codigo QR para control remoto de ByFlow" title="Escanea con la camara de tu celular para conectarte" style="display:none;">
-      <div id="qr-url" title="URL para acceder desde otro dispositivo en la misma red WiFi" style="font-size:10px;word-break:break-all;text-align:center;color:var(--sub);padding:8px 0;">Proximamente — Escanea para controlar ByFlow desde tu celular</div>
+      <div id="qr-url" title="URL para acceder desde otro dispositivo en la misma red WiFi" style="font-size:10px;word-break:break-all;text-align:center;color:var(--sub);padding:8px 0;">Cargando QR...</div>
       <div class="divider"></div>
       <h4 title="Guarda canciones con su letra para cargarlas rapidamente desde el Catalogo">Guardar Nueva Cancion</h4>
       <input type="text" class="rp-input" id="new-song-title" placeholder="Titulo de la cancion..." title="Nombre de la cancion" style="margin-bottom:6px;">
       <input type="text" class="rp-input" id="new-song-artista" placeholder="Artista (opcional)..." title="Nombre del artista o banda" style="margin-bottom:6px;">
       <textarea class="rp-input" id="new-song-letra" placeholder="Pega o escribe la letra aqui..." title="Letra completa de la cancion para el teleprompter" style="height:90px;resize:none;"></textarea>
       <button class="rp-btn" onclick="agregarCancion()" title="Guardar esta cancion en el catalogo para uso futuro">Guardar al Catalogo</button>
-      <button class="rp-btn" onclick="showToast('Proximamente — busqueda automatica desde YouTube')" title="Proximamente: buscar letra automaticamente desde YouTube" style="margin-top:6px;background:rgba(255,68,68,.15);border-color:rgba(255,68,68,.3);color:rgba(255,255,255,.5);cursor:default;">▶ Buscar en YouTube <span style="font-size:9px;opacity:.7;">(Proximamente)</span></button>
+      <button class="rp-btn" onclick="buscarLetraYoutube()" title="Buscar letra automaticamente usando el titulo" style="margin-top:6px;background:rgba(255,68,68,.15);border-color:rgba(255,68,68,.3);color:var(--text);cursor:pointer;">&#9654; Buscar Letra Online</button>
     </div>
 
     <!-- ═══ IA PANEL ═══ -->
@@ -4187,11 +4187,14 @@ function updatePlayBtn() {
   document.getElementById('ico-pause').style.display = tpState.autoScrolling ? 'block' : 'none';
   const hasWords = tpState.words.length > 0;
   const playBtn = document.getElementById('btn-play');
-  if (playBtn) { playBtn.style.opacity = hasWords ? '' : '0.35'; playBtn.style.pointerEvents = hasWords ? '' : 'none'; }
+  if (playBtn) { playBtn.style.opacity = hasWords ? '' : '0.5'; playBtn.style.pointerEvents = hasWords ? '' : 'none'; }
   document.querySelectorAll('.ctrl-btn:not(#btn-play)').forEach(btn => {
-    btn.style.opacity = hasWords ? '' : '0.35';
+    btn.style.opacity = hasWords ? '' : '0.5';
     btn.style.pointerEvents = hasWords ? '' : 'none';
   });
+  // Also disable the "Siguiente" button when no song loaded
+  const nsBtn = document.querySelector('.ns-next-btn');
+  if (nsBtn) { nsBtn.style.opacity = hasWords ? '' : '0.5'; nsBtn.style.pointerEvents = hasWords ? '' : 'none'; }
 }
 function updateWordCounter() {
   const c = Math.max(0, tpState.currentIdx + 1);
@@ -4484,6 +4487,31 @@ async function agregarCancion() {
     if (letra) { setLyrics(letra); if (socket) socket.emit('tp_lyrics', {lyrics: letra}); }
     showToast('Cancion guardada: ' + titulo);
   } catch { showToast('Error al guardar cancion'); }
+}
+
+async function buscarLetraYoutube() {
+  const titulo = document.getElementById('new-song-title').value.trim();
+  const artista = document.getElementById('new-song-artista') ? document.getElementById('new-song-artista').value.trim() : '';
+  if (!titulo) { showToast('Escribe el titulo primero'); return; }
+  const q = titulo + (artista ? ' ' + artista : '');
+  const letraEl = document.getElementById('new-song-letra');
+  showToast('Buscando letra de "' + titulo + '"...');
+  try {
+    const r = await fetch('/api/lrclib/search?q=' + encodeURIComponent(q));
+    const data = await r.json();
+    if (data && data.length && data[0].plainLyrics) {
+      letraEl.value = data[0].plainLyrics;
+      showToast('Letra encontrada: ' + (data[0].trackName || titulo), 'success');
+      return;
+    }
+    // Fallback: check local _artLetras
+    if (window.__artLetrasReady && window.__artLetrasData) {
+      const ql = q.toLowerCase();
+      const local = window.__artLetrasData.find(l => l.titulo.toLowerCase().includes(ql));
+      if (local) { letraEl.value = local.letra; showToast('Letra local: ' + local.titulo, 'success'); return; }
+    }
+    showToast('No se encontro letra para "' + titulo + '"', 'warning');
+  } catch { showToast('Error buscando letra — sin conexion', 'error'); }
 }
 
 // ── Mode Switch ───────────────────────────────────────────────────────────
@@ -5247,15 +5275,19 @@ async function talentVoteFor(eventoId, alias) {
 async function loadQR() {
   const img = document.getElementById('qr-img');
   const url = document.getElementById('qr-url');
+  const remoteUrl = location.origin + '/?mode=remote';
   try {
     const r = await fetch('/api/qr');
     const d = await r.json();
     if (img && d.qr) { img.src = d.qr; img.style.display = ''; }
-    if (url) url.textContent = d.url || location.origin;
+    if (url) {
+      const displayUrl = d.url || location.origin;
+      url.innerHTML = 'Escanea para controlar desde otro dispositivo<br><a href="' + remoteUrl + '" target="_blank" style="color:var(--a);text-decoration:underline;">' + escHtml(displayUrl) + '</a>';
+    }
   } catch {
-    // No QR endpoint or failed — show friendly message
+    // No QR endpoint or failed — show URL as text fallback
     if (img) img.style.display = 'none';
-    if (url) url.textContent = 'Proximamente — Escanea para controlar ByFlow desde tu celular';
+    if (url) url.innerHTML = 'Escanea para controlar desde otro dispositivo<br><a href="' + remoteUrl + '" target="_blank" style="color:var(--a);text-decoration:underline;">' + escHtml(location.origin) + '</a><br><span style="font-size:8px;opacity:.5;">Abre este link desde otro celular en la misma red WiFi</span>';
   }
 }
 
@@ -8097,6 +8129,25 @@ function gflowEstUpdateStatus() {
 }
 
 // ── Buscador Universal (Letras + YouTube + Jamendo en paralelo) ────────────
+function _uSearchRenderLyrics(lyricsData) {
+  if (!lyricsData.length) return '';
+  let html = '<div class="usearch-group"><div class="usearch-group-title">Letras</div>';
+  html += lyricsData.slice(0, 5).map((l, i) => {
+    const preview = (l.plainLyrics || '').split('\n').slice(0, 2).join(' / ').substring(0, 80);
+    const isLocal = l._local;
+    return '<div class="usearch-item" onclick="uLoadLyrics(' + i + ')">' +
+      '<div class="usearch-item-img" style="display:flex;align-items:center;justify-content:center;font-size:18px;">' + (isLocal ? '&#128194;' : '&#127925;') + '</div>' +
+      '<div class="usearch-item-info">' +
+        '<div class="usearch-item-title">' + escHtml(l.trackName || l.titulo || '') + '</div>' +
+        '<div class="usearch-item-sub">' + escHtml(l.artistName || 'ArT-AtR') + (isLocal ? ' &middot; LOCAL' : '') + '</div>' +
+        '<div class="usearch-item-sub" style="opacity:.4;font-style:italic;">' + escHtml(preview) + '...</div>' +
+      '</div>' +
+      '<button class="usearch-item-action">Cargar</button>' +
+    '</div>';
+  }).join('');
+  html += '</div>';
+  return html;
+}
 async function uSearch() {
   const q = document.getElementById('usearch-input').value.trim();
   if (!q) { showToast('Escribe algo para buscar'); return; }
@@ -8105,7 +8156,22 @@ async function uSearch() {
   const closeBtn = document.getElementById('usearch-close');
   resultsEl.style.display = 'block';
   closeBtn.style.display = 'inline';
-  resultsEl.innerHTML = '<div class="usearch-loading">🔍 Buscando en todas las fuentes...</div>';
+
+  // Show instant local results from _artLetras while external APIs load
+  const localResults = [];
+  try {
+    if (window.__artLetrasReady && window.__artLetrasData) {
+      const ql = q.toLowerCase();
+      window.__artLetrasData.filter(l => l.titulo.toLowerCase().includes(ql) || l.letra.toLowerCase().includes(ql))
+        .slice(0, 5).forEach(l => localResults.push({ trackName: l.titulo, artistName: 'ArT-AtR', plainLyrics: l.letra, _local: true }));
+    }
+  } catch {}
+  if (localResults.length) {
+    window._uSearchLyrics = localResults;
+    resultsEl.innerHTML = _uSearchRenderLyrics(localResults) + '<div class="usearch-loading" style="font-size:10px;padding:8px;">Buscando en mas fuentes...</div>';
+  } else {
+    resultsEl.innerHTML = '<div class="usearch-loading">Buscando en todas las fuentes...</div>';
+  }
 
   // Lanzar 3 búsquedas en paralelo
   const [lyrics, yt, jm] = await Promise.allSettled([
