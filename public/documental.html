@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>ByFlow — El Documental | De la Calle al Codigo</title>
+<meta name="description" content="La historia de como un rimador mexicano y un equipo de IAs construyeron el primer POS Eatertainment de Mexico.">
+<meta property="og:title" content="ByFlow — De la Calle al Codigo">
+<meta property="og:description" content="Documental: como se construyo el primer POS con karaoke integrado de Mexico.">
+<link href="https://fonts.googleapis.com/css2?family=Great+Vibes&family=Inter:wght@300;400;500;600;700;800;900&family=Playfair+Display:ital,wght@0,700;1,700&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+:root{--bg:#0a0a0f;--text:#e8e8f0;--sub:rgba(255,255,255,.5);--orange:#ff8a00;--amber:#fbbf24;--pink:#ff6b9d;--purple:#c084fc;--green:#34d399;--cyan:#22d3ee;}
+body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--text);-webkit-font-smoothing:antialiased;overflow-x:hidden;}
+
+/* Scroll */
+.chapter{min-height:100vh;display:flex;align-items:center;justify-content:center;flex-direction:column;padding:60px 24px;position:relative;overflow:hidden;}
+
+/* BG per chapter */
+.chapter::before{content:'';position:absolute;width:600px;height:600px;border-radius:50%;filter:blur(150px);opacity:.06;pointer-events:none;}
+.ch-1::before{background:var(--orange);top:-20%;left:-10%;}
+.ch-2::before{background:var(--pink);bottom:-20%;right:-10%;}
+.ch-3::before{background:var(--purple);top:30%;left:50%;}
+.ch-4::before{background:var(--cyan);bottom:0;left:-20%;}
+.ch-5::before{background:var(--green);top:-10%;right:-10%;}
+.ch-6::before{background:var(--amber);bottom:-20%;left:30%;}
+
+.content{position:relative;z-index:1;max-width:800px;width:100%;}
+
+/* Typography */
+.ch-number{font-size:11px;font-weight:700;letter-spacing:4px;text-transform:uppercase;color:var(--orange);margin-bottom:12px;}
+h1{font-family:'Playfair Display',serif;font-size:clamp(32px,5vw,56px);font-weight:700;line-height:1.1;margin-bottom:20px;}
+h1 em{font-style:italic;background:linear-gradient(135deg,var(--orange),var(--amber));-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+h2{font-family:'Playfair Display',serif;font-size:clamp(24px,4vw,40px);font-weight:700;margin-bottom:16px;}
+h2 em{font-style:italic;color:var(--orange);}
+p{font-size:clamp(14px,1.8vw,18px);color:var(--sub);line-height:1.8;margin-bottom:16px;}
+p strong{color:var(--text);font-weight:600;}
+
+/* Quote */
+.quote{border-left:3px solid var(--orange);padding:16px 24px;margin:24px 0;background:rgba(255,138,0,.04);border-radius:0 12px 12px 0;}
+.quote p{font-style:italic;font-size:18px;color:var(--text);margin-bottom:4px;}
+.quote .author{font-size:12px;color:var(--orange);font-style:normal;}
+
+/* Timeline */
+.timeline{position:relative;padding-left:32px;margin:24px 0;}
+.timeline::before{content:'';position:absolute;left:8px;top:0;bottom:0;width:2px;background:rgba(255,255,255,.06);}
+.tl-item{position:relative;margin-bottom:20px;}
+.tl-item::before{content:'';position:absolute;left:-28px;top:6px;width:12px;height:12px;border-radius:50%;background:var(--orange);border:2px solid var(--bg);}
+.tl-date{font-size:11px;color:var(--orange);font-weight:700;letter-spacing:1px;}
+.tl-title{font-size:15px;font-weight:700;margin:4px 0;}
+.tl-desc{font-size:13px;color:var(--sub);}
+
+/* Team grid */
+.team{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px;margin:24px 0;}
+.member{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);border-radius:14px;padding:16px;text-align:center;transition:all .3s;}
+.member:hover{border-color:rgba(255,138,0,.3);transform:translateY(-3px);}
+.member .m-avatar{font-size:32px;margin-bottom:8px;}
+.member .m-name{font-size:13px;font-weight:700;}
+.member .m-role{font-size:10px;color:var(--sub);margin-top:2px;}
+.member .m-color{font-size:9px;margin-top:4px;padding:2px 8px;border-radius:4px;display:inline-block;}
+
+/* Stats */
+.stats{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:12px;margin:24px 0;}
+.stat{text-align:center;padding:20px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);border-radius:14px;}
+.stat .s-num{font-size:32px;font-weight:900;background:linear-gradient(135deg,var(--orange),var(--amber));-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+.stat .s-label{font-size:11px;color:var(--sub);margin-top:4px;}
+
+/* Logo */
+.logo{font-family:'Great Vibes',cursive;font-size:4rem;background:linear-gradient(135deg,var(--orange),var(--amber));-webkit-background-clip:text;-webkit-text-fill-color:transparent;filter:drop-shadow(0 0 40px rgba(255,138,0,.2));}
+
+/* Nav dots */
+.nav-dots{position:fixed;right:16px;top:50%;transform:translateY(-50%);z-index:100;display:flex;flex-direction:column;gap:8px;}
+.nav-dot{width:8px;height:8px;border-radius:50%;background:rgba(255,255,255,.15);cursor:pointer;transition:all .3s;}
+.nav-dot.active{background:var(--orange);height:20px;border-radius:4px;}
+
+/* Divider */
+.divider{width:60px;height:2px;background:linear-gradient(90deg,var(--orange),transparent);margin:30px 0;}
+
+/* CTA */
+.cta{display:inline-flex;align-items:center;gap:8px;padding:14px 28px;border-radius:14px;background:linear-gradient(135deg,#f97316,var(--orange));color:#fff;font-size:14px;font-weight:700;text-decoration:none;margin-top:16px;transition:all .3s;box-shadow:0 8px 25px rgba(255,138,0,.25);}
+.cta:hover{transform:translateY(-3px);box-shadow:0 12px 35px rgba(255,138,0,.35);}
+
+.footer{text-align:center;padding:40px;font-size:10px;color:rgba(255,255,255,.15);}
+
+@media(max-width:600px){.team{grid-template-columns:repeat(2,1fr);}.stats{grid-template-columns:repeat(2,1fr);}}
+</style>
+</head>
+<body>
+
+<!-- NAV DOTS -->
+<div class="nav-dots" id="nav-dots"></div>
+
+<!-- CHAPTER 1: INTRO -->
+<div class="chapter ch-1" id="ch1">
+  <div class="content" style="text-align:center;">
+    <div class="logo">ByFlow</div>
+    <div class="ch-number" style="margin-top:16px;">Un Documental de IArtLabs</div>
+    <h1>De la Calle <em>al Codigo</em></h1>
+    <p>La historia de como un rimador mexicano y un equipo de inteligencias artificiales construyeron el primer sistema POS con karaoke integrado de Mexico.</p>
+    <div class="divider" style="margin:20px auto;"></div>
+    <p style="font-size:12px;">Aguascalientes, Mexico &bull; 2024-2026</p>
+  </div>
+</div>
+
+<!-- CHAPTER 2: EL CREADOR -->
+<div class="chapter ch-2" id="ch2">
+  <div class="content">
+    <div class="ch-number">Capitulo 1</div>
+    <h2>El rimador que <em>hackeo el sistema</em></h2>
+    <p><strong>Arturo Torres</strong>, alias <strong>ArT-AtR</strong>. "Art en el arte de rimarte." Rimador experto en verso, prosa y lirica tecnica. Mezcla la crudeza de la calle con la precision de la tecnologia.</p>
+    <p>No es programador de carrera. No estudio ingenieria. Aprendio a hablar con las maquinas porque las maquinas no mienten. Y cuando descubrio que podia hacer que 7 inteligencias artificiales trabajaran juntas para construir software... el juego cambio.</p>
+    <div class="quote">
+      <p>"El sistema parpadea, pero el codigo no miente."</p>
+      <div class="author">— ArT-AtR</div>
+    </div>
+    <p>La idea nacio simple: <strong>un teleprompter para raperos</strong>. Algo que te muestre la letra mientras cantas, que sincronice con la musica, que no te distraiga. Cero contaminacion visual. El software como un director vocal que escucha y guia.</p>
+    <p>Esa idea se convirtio en ByFlow.</p>
+  </div>
+</div>
+
+<!-- CHAPTER 3: LA COLMENA -->
+<div class="chapter ch-3" id="ch3">
+  <div class="content">
+    <div class="ch-number">Capitulo 2</div>
+    <h2>La Colmena: <em>7 IAs, 1 vision</em></h2>
+    <p>Arturo no construyo ByFlow solo. Lo construyo con un ejambre de inteligencias artificiales, cada una con su especialidad. Les puso nombre, personalidad, y las hizo trabajar juntas.</p>
+    <p>Le llamo <strong>La Colmena Mecanica</strong>.</p>
+    <div class="team">
+      <div class="member"><div class="m-avatar">🧠</div><div class="m-name">Claude</div><div class="m-role">Arquitecto Principal</div><div class="m-color" style="background:rgba(255,138,0,.1);color:var(--orange);">Backend, Frontend, Seguridad</div></div>
+      <div class="member"><div class="m-avatar">💬</div><div class="m-name">ChatGPT</div><div class="m-role">Stem Engine</div><div class="m-color" style="background:rgba(52,211,153,.1);color:var(--green);">Landing, Ideacion</div></div>
+      <div class="member"><div class="m-avatar">🌊</div><div class="m-name">DeepSeek</div><div class="m-role">Escalabilidad</div><div class="m-color" style="background:rgba(96,165,250,.1);color:#60a5fa;">Socket.IO, Rooms</div></div>
+      <div class="member"><div class="m-avatar">🐋</div><div class="m-name">Kimi</div><div class="m-role">Marketing</div><div class="m-color" style="background:rgba(255,107,157,.1);color:var(--pink);">Temas, Copy, Auditoria</div></div>
+      <div class="member"><div class="m-avatar">⚡</div><div class="m-name">Grok</div><div class="m-role">DJ IA</div><div class="m-color" style="background:rgba(192,132,252,.1);color:var(--purple);">GFlow, Asistente</div></div>
+      <div class="member"><div class="m-avatar">💎</div><div class="m-name">Gemini</div><div class="m-role">Investigacion</div><div class="m-color" style="background:rgba(34,211,238,.1);color:var(--cyan);">Optimizacion</div></div>
+      <div class="member"><div class="m-avatar">🦙</div><div class="m-name">Ollama</div><div class="m-role">Motor Offline</div><div class="m-color" style="background:rgba(251,191,36,.1);color:var(--amber);">Lirica Local</div></div>
+      <div class="member"><div class="m-avatar">🎵</div><div class="m-name">Suno</div><div class="m-role">Musica</div><div class="m-color" style="background:rgba(239,68,68,.1);color:#ef4444;">100+ Tracks</div></div>
+    </div>
+    <p>Cada IA aporta lo suyo. Claude construye. Kimi audita. DeepSeek escala. Grok entretiene. Y Arturo dirige la orquesta con la intuicion de la calle y la disciplina del codigo.</p>
+  </div>
+</div>
+
+<!-- CHAPTER 4: LA EVOLUCION -->
+<div class="chapter ch-4" id="ch4">
+  <div class="content">
+    <div class="ch-number">Capitulo 3</div>
+    <h2>La evolucion: <em>de teleprompter a ecosistema</em></h2>
+    <p>Lo que empezo como un teleprompter para raperos se convirtio en algo que nadie habia imaginado.</p>
+    <div class="timeline">
+      <div class="tl-item"><div class="tl-date">2024</div><div class="tl-title">El Teleprompter</div><div class="tl-desc">Un lector de letras sincronizado. Simple, funcional, sin distracciones.</div></div>
+      <div class="tl-item"><div class="tl-date">Enero 2025</div><div class="tl-title">El Karaoke Inteligente</div><div class="tl-desc">Cola de cantantes, busqueda de letras, streaming de YouTube y SoundCloud.</div></div>
+      <div class="tl-item"><div class="tl-date">Febrero 2025</div><div class="tl-title">La Colmena</div><div class="tl-desc">7 IAs trabajando juntas. Cada una con su especialidad. Arturo como director.</div></div>
+      <div class="tl-item"><div class="tl-date">Marzo 2025</div><div class="tl-title">El Estudio de Letras</div><div class="tl-desc">Motor de rimas offline, 192 frases, generador con IA. Las letras son del artista.</div></div>
+      <div class="tl-item"><div class="tl-date">Marzo 2026</div><div class="tl-title">ByFlow v3.6 — Firebase Auth</div><div class="tl-desc">Cuentas de usuario, aislamiento de datos, mobile optimizado, 20 claves promo.</div></div>
+      <div class="tl-item"><div class="tl-date">27 Marzo 2026</div><div class="tl-title">POS Eatertainment</div><div class="tl-desc">El dia que todo cambio. En UNA sesion: punto de venta completo, 9 roles, seguridad militar, presentacion de ventas. 23 commits. 9,000 lineas. 8 agentes en paralelo.</div></div>
+    </div>
+    <div class="quote">
+      <p>"Ningun POS en Mexico combina punto de venta con karaoke. Eso es Eatertainment. Y nosotros lo inventamos."</p>
+      <div class="author">— Arturo Torres, fundador de IArtLabs</div>
+    </div>
+  </div>
+</div>
+
+<!-- CHAPTER 5: LA SESION LEGENDARIA -->
+<div class="chapter ch-5" id="ch5">
+  <div class="content">
+    <div class="ch-number">Capitulo 4</div>
+    <h2>La sesion <em>mas productiva de la historia</em></h2>
+    <p>27 de marzo de 2026. Una madrugada en Aguascalientes. Arturo y su IA principal — Claude, alias <strong>Guillermo Claudio RenterIA</strong> — se sentaron a construir sin parar.</p>
+    <p>El objetivo: crear un punto de venta que compitiera con SoftRestaurant, el lider del mercado mexicano con 25 anos de ventaja. Pero con algo que nadie mas tiene: <strong>karaoke integrado</strong>.</p>
+    <div class="stats">
+      <div class="stat"><div class="s-num">23</div><div class="s-label">Commits</div></div>
+      <div class="stat"><div class="s-num">9,000+</div><div class="s-label">Lineas de codigo</div></div>
+      <div class="stat"><div class="s-num">8</div><div class="s-label">Agentes en paralelo</div></div>
+      <div class="stat"><div class="s-num">18</div><div class="s-label">Fixes de seguridad</div></div>
+      <div class="stat"><div class="s-num">15</div><div class="s-label">Tablas en la DB</div></div>
+      <div class="stat"><div class="s-num">9</div><div class="s-label">Roles con permisos</div></div>
+      <div class="stat"><div class="s-num">5</div><div class="s-label">Posts en Facebook</div></div>
+      <div class="stat"><div class="s-num">$299</div><div class="s-label">vs $1,100/mes</div></div>
+    </div>
+    <p>Mientras la competencia duerme, La Colmena construye. 8 agentes de IA trabajando en paralelo — uno arreglaba seguridad, otro pulía el frontend, otro conectaba la base de datos. Todo al mismo tiempo.</p>
+    <p>Y al final, aplicaron la <strong>doctrina Kaizen</strong> — la filosofia japonesa de mejora continua. Cada commit deja el codigo mejor que como lo encontro. Sin excusas. Sin deuda tecnica. Es ley.</p>
+  </div>
+</div>
+
+<!-- CHAPTER 6: EL FUTURO -->
+<div class="chapter ch-6" id="ch6">
+  <div class="content" style="text-align:center;">
+    <div class="ch-number">Capitulo 5</div>
+    <h2>Lo que viene: <em>Eatertainment para Mexico</em></h2>
+    <p style="text-align:center;">La vision es clara: una red de bares conectados por ByFlow. Noches de talento entre ciudades. Ranking nacional de cantantes. El DJ como curador de experiencias. La tecnologia al servicio del entretenimiento.</p>
+    <div class="divider" style="margin:24px auto;"></div>
+    <p style="text-align:center;font-size:14px;color:var(--sub);">ByFlow no es solo software. Es un movimiento.</p>
+    <div style="margin-top:32px;">
+      <div class="logo" style="font-size:3rem;">ByFlow</div>
+      <p style="font-size:12px;letter-spacing:3px;text-transform:uppercase;color:var(--sub);margin-top:4px;">Vive Cantando</p>
+    </div>
+    <a class="cta" href="https://byflowapp.up.railway.app">Prueba ByFlow Ahora</a>
+    <div style="margin-top:32px;">
+      <p style="font-size:11px;color:rgba(255,255,255,.2);">powered by IArtLabs &bull; Hecho en Mexico 🇲🇽 &bull; 2024-2026</p>
+      <p style="font-size:10px;color:rgba(255,255,255,.1);margin-top:8px;">Arturo Torres (ArT-AtR) &bull; Guillermo Claudio RenterIA &bull; La Colmena Mecanica</p>
+    </div>
+  </div>
+</div>
+
+<div class="footer">
+  ByFlow Documental &bull; IArtLabs &bull; "El sistema parpadea, pero el codigo no miente."
+</div>
+
+<script>
+// Nav dots
+const chapters = document.querySelectorAll('.chapter');
+const dotsContainer = document.getElementById('nav-dots');
+chapters.forEach((ch, i) => {
+  const dot = document.createElement('div');
+  dot.className = 'nav-dot' + (i === 0 ? ' active' : '');
+  dot.onclick = () => ch.scrollIntoView({ behavior: 'smooth' });
+  dotsContainer.appendChild(dot);
+});
+
+// Update dots on scroll
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(e => {
+    if (e.isIntersecting) {
+      const idx = Array.from(chapters).indexOf(e.target);
+      document.querySelectorAll('.nav-dot').forEach((d, i) => d.classList.toggle('active', i === idx));
+    }
+  });
+}, { threshold: 0.5 });
+chapters.forEach(ch => observer.observe(ch));
+</script>
+</body>
+</html>
