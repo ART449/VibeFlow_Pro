@@ -33,9 +33,6 @@
   let _fbUser = null;
 </script>
 <title>ByFlow — Vive Cantando</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Great+Vibes&display=swap" rel="stylesheet">
 <style>
 /* ── Reset & Variables ───────────────────────────────────────────────── */
 *{margin:0;padding:0;box-sizing:border-box;}
@@ -97,9 +94,9 @@ input,textarea,select{font-family:inherit;}
   opacity:.4;
 }
 .brand-wrap{display:flex;flex-direction:column;gap:1px;}
-.brand{font-family:'Great Vibes',cursive;font-size:24px;font-weight:400;letter-spacing:1px;
-  color:#fff;
-  text-shadow:0 0 7px #ff6b9d,0 0 15px #ff6b9d,0 0 30px #c084fc,0 0 50px #c084fc;
+.brand{font-size:17px;font-weight:900;letter-spacing:-.3px;
+  background:linear-gradient(135deg,#ff006e,#8338ec,#3a86ff);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
 }
 .brand-sub{font-size:9px;color:var(--sub);letter-spacing:2px;text-transform:uppercase;}
 .mode-switch{display:flex;gap:3px;margin-left:auto;background:rgba(255,255,255,.04);padding:4px;border-radius:12px;border:1px solid var(--border);}
@@ -289,15 +286,15 @@ input,textarea,select{font-family:inherit;}
 
 /* ── Mode-based accent system (inspirado v7.1) ── */
 body.mode-bares .topbar::after{background:linear-gradient(90deg,transparent,#f59e0b,#ef4444,transparent);}
-body.mode-bares .brand{text-shadow:0 0 7px #f59e0b,0 0 15px #f59e0b,0 0 30px #ef4444,0 0 50px #ef4444;}
+body.mode-bares .brand{background:linear-gradient(135deg,#f59e0b,#ef4444);-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
 body.mode-bares .btn-add{background:linear-gradient(135deg,#f59e0b,#ef4444);box-shadow:0 2px 10px rgba(245,158,11,.25);}
 body.mode-bares .queue-item.singing{border-color:#f59e0b;background:rgba(245,158,11,.07);box-shadow:0 0 12px rgba(245,158,11,.1);}
 body.mode-ia .topbar::after{background:linear-gradient(90deg,transparent,var(--s),var(--a),transparent);}
-body.mode-ia .brand{text-shadow:0 0 7px var(--s),0 0 15px var(--s),0 0 30px var(--a),0 0 50px var(--a);}
+body.mode-ia .brand{background:linear-gradient(135deg,var(--s),var(--a));-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
 body.mode-youtube .topbar::after{background:linear-gradient(90deg,transparent,#ff4444,#ff006e,transparent);}
-body.mode-youtube .brand{text-shadow:0 0 7px #ff4444,0 0 15px #ff4444,0 0 30px #ff006e,0 0 50px #ff006e;}
+body.mode-youtube .brand{background:linear-gradient(135deg,#ff4444,#ff006e);-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
 body.mode-estudio .topbar::after{background:linear-gradient(90deg,transparent,#06b6d4,#3b82f6,transparent);}
-body.mode-estudio .brand{text-shadow:0 0 7px #06b6d4,0 0 15px #06b6d4,0 0 30px #3b82f6,0 0 50px #3b82f6;}
+body.mode-estudio .brand{background:linear-gradient(135deg,#06b6d4,#3b82f6);-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
 body.mode-estudio .btn-add{background:linear-gradient(135deg,#06b6d4,#3b82f6);box-shadow:0 2px 10px rgba(6,182,212,.25);}
 
 /* ── Estudio Panel ── */
@@ -647,7 +644,6 @@ select.inp{cursor:pointer;}
 /* ── Fullscreen teleprompter ─────────────────────────────────────────── */
 .center.tp-fullscreen{
   position:fixed;inset:0;z-index:9999;background:var(--bg);
-  padding-bottom:0!important;/* override mobile padding-bottom:120px */
 }
 /* Ocultar TODOS los elementos fijos cuando el teleprompter está fullscreen */
 body:has(.center.tp-fullscreen) .player-bar,
@@ -692,9 +688,7 @@ body:has(.center.tp-fullscreen) #audio-bar{
 .center.tp-fullscreen .tp-sync-controls{margin-left:0;bottom:8px;left:auto;right:16px;transform:none;}
 .center.tp-fullscreen .tp-lrc-badge{left:16px;transform:none;}
 .center.tp-fullscreen:hover .tp-lrc-badge,
-.center.tp-fullscreen:hover .tp-sync-controls,
-.center.tp-fullscreen.tp-fs-active .tp-lrc-badge,
-.center.tp-fullscreen.tp-fs-active .tp-sync-controls{opacity:.6;}
+.center.tp-fullscreen:hover .tp-sync-controls{opacity:.6;}
 .center.tp-fullscreen .tp-sync-controls:hover{opacity:1;}
 .tp-sync-btn{
   width:26px;height:26px;border-radius:6px;border:1px solid var(--border);
@@ -1518,9 +1512,9 @@ body:has(.center.tp-fullscreen) #audio-bar{
 @keyframes cardEntrance{from{opacity:0;transform:translateY(24px);}to{opacity:1;transform:translateY(0);}}
 @keyframes fadeUp{from{opacity:0;transform:translateY(16px);}to{opacity:1;transform:translateY(0);}}
 .welcome-logo{
-  font-family:'Great Vibes',cursive;font-size:4rem;font-weight:400;letter-spacing:2px;
-  color:#fff;
-  text-shadow:0 0 10px #ff6b9d,0 0 20px #ff6b9d,0 0 40px #c084fc,0 0 80px #c084fc;
+  font-size:3rem;font-weight:900;letter-spacing:-1px;
+  background:linear-gradient(135deg,#ff006e,#8338ec,#3a86ff);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
   text-align:center;opacity:0;animation:fadeUp .7s ease forwards;
 }
 .welcome-sub{font-size:1rem;color:var(--sub);text-align:center;margin-top:-8px;opacity:0;animation:fadeUp .7s ease .15s forwards;}
@@ -1592,99 +1586,6 @@ body:has(.center.tp-fullscreen) #audio-bar{
 }
 .welcome-skip:hover{border-color:var(--p);color:#fff;}
 
-/* ── Home Hub ─────────────────────────────────────────────────── */
-#home-hub{
-  display:none;position:fixed;top:0;left:0;right:0;bottom:0;z-index:90;
-  background:var(--bg);overflow-y:auto;overflow-x:hidden;
-}
-#home-hub.active{display:flex;flex-direction:column;align-items:center;}
-.hub-bg{
-  position:fixed;top:0;left:0;right:0;height:50vh;pointer-events:none;z-index:0;
-  background:radial-gradient(ellipse at 30% 0%,rgba(255,0,110,.12) 0%,transparent 50%),
-             radial-gradient(ellipse at 70% 0%,rgba(131,56,236,.12) 0%,transparent 50%),
-             radial-gradient(ellipse at 50% 30%,rgba(58,134,255,.06) 0%,transparent 60%);
-}
-.hub-content{position:relative;z-index:1;width:100%;max-width:900px;padding:40px 20px 100px;}
-.hub-header{text-align:center;margin-bottom:32px;}
-.hub-logo{font-family:'Great Vibes',cursive;font-size:42px;font-weight:400;color:#fff;text-shadow:0 0 10px #ff6b9d,0 0 20px #ff6b9d,0 0 40px #c084fc,0 0 80px #c084fc;margin-bottom:4px;}
-.hub-subtitle{color:var(--sub);font-size:14px;font-weight:400;}
-.hub-promo{
-  margin-bottom:24px;padding:14px 20px;border-radius:12px;text-align:center;
-  background:linear-gradient(135deg,rgba(245,158,11,.15),rgba(239,68,68,.1));
-  border:1px solid rgba(245,158,11,.3);
-  animation:hub-promo-pulse 3s ease-in-out infinite;
-}
-.hub-promo-text{font-size:13px;font-weight:600;color:#f59e0b;}
-.hub-promo-sub{font-size:11px;color:var(--sub);margin-top:2px;}
-@keyframes hub-promo-pulse{0%,100%{border-color:rgba(245,158,11,.3);}50%{border-color:rgba(245,158,11,.6);}}
-.hub-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
-.hub-card{
-  position:relative;padding:24px 20px;border-radius:16px;cursor:pointer;
-  background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);
-  backdrop-filter:blur(12px);transition:all .25s ease;overflow:hidden;
-}
-.hub-card:hover{transform:translateY(-4px);border-color:rgba(255,255,255,.2);background:rgba(255,255,255,.07);}
-.hub-card:active{transform:scale(.97);}
-.hub-card-glow{
-  position:absolute;top:-40px;left:50%;transform:translateX(-50%);
-  width:200px;height:120px;border-radius:50%;pointer-events:none;
-  opacity:.4;transition:opacity .3s;filter:blur(40px);
-}
-.hub-card:hover .hub-card-glow{opacity:.7;}
-.hub-card-top{display:flex;align-items:center;gap:12px;margin-bottom:12px;position:relative;z-index:1;}
-.hub-card-icon{
-  width:52px;height:52px;border-radius:14px;display:flex;align-items:center;justify-content:center;
-  font-size:26px;border:1px solid rgba(255,255,255,.15);flex-shrink:0;
-}
-.hub-card-title{font-size:18px;font-weight:800;color:#fff;}
-.hub-card-tag{
-  font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:1px;
-  padding:3px 8px;border-radius:6px;margin-left:8px;
-}
-.hub-card-tag.free{background:rgba(0,245,160,.12);color:var(--g);border:1px solid rgba(0,245,160,.2);}
-.hub-card-tag.pro{background:rgba(245,158,11,.12);color:#f59e0b;border:1px solid rgba(245,158,11,.2);}
-.hub-card-tag.promo{background:rgba(0,245,160,.12);color:var(--g);border:1px solid rgba(0,245,160,.2);}
-.hub-card-desc{font-size:13px;color:var(--sub);line-height:1.5;margin-bottom:12px;position:relative;z-index:1;}
-.hub-card-features{list-style:none;padding:0;margin:0;position:relative;z-index:1;}
-.hub-card-features li{font-size:11px;color:rgba(255,255,255,.5);padding:3px 0;display:flex;align-items:center;gap:6px;}
-.hub-card-features li::before{content:'→';font-size:10px;opacity:.6;}
-/* Card color variants */
-.hub-card[data-mode="karaoke"] .hub-card-glow{background:rgba(255,0,110,.5);}
-.hub-card[data-mode="karaoke"] .hub-card-icon{background:linear-gradient(135deg,#ff006e,#8338ec);}
-.hub-card[data-mode="youtube"] .hub-card-glow{background:rgba(255,68,68,.5);}
-.hub-card[data-mode="youtube"] .hub-card-icon{background:linear-gradient(135deg,#ff4444,#ff006e);}
-.hub-card[data-mode="bares"] .hub-card-glow{background:rgba(245,158,11,.5);}
-.hub-card[data-mode="bares"] .hub-card-icon{background:linear-gradient(135deg,#f59e0b,#ef4444);}
-.hub-card[data-mode="ia"] .hub-card-glow{background:rgba(131,56,236,.5);}
-.hub-card[data-mode="ia"] .hub-card-icon{background:linear-gradient(135deg,#8338ec,#3a86ff);}
-.hub-card[data-mode="estudio"] .hub-card-glow{background:rgba(6,182,212,.5);}
-.hub-card[data-mode="estudio"] .hub-card-icon{background:linear-gradient(135deg,#06b6d4,#3b82f6);}
-/* Hub card for estudio spans full width */
-.hub-card.hub-card-full{grid-column:1/-1;}
-/* Mode panel backgrounds */
-body.mode-bares .main{background:radial-gradient(ellipse at 50% 0%,rgba(245,158,11,.06) 0%,transparent 40%),var(--bg);}
-body.mode-ia .main{background:radial-gradient(ellipse at 50% 0%,rgba(131,56,236,.06) 0%,transparent 40%),var(--bg);}
-body.mode-youtube .main{background:radial-gradient(ellipse at 50% 0%,rgba(255,68,68,.06) 0%,transparent 40%),var(--bg);}
-body.mode-estudio .main{background:radial-gradient(ellipse at 50% 0%,rgba(6,182,212,.06) 0%,transparent 40%),var(--bg);}
-body.mode-karaoke .main{background:radial-gradient(ellipse at 50% 0%,rgba(255,0,110,.04) 0%,transparent 40%),var(--bg);}
-/* Hub button in topbar */
-.hub-home-btn{
-  width:32px;height:32px;border-radius:8px;border:1px solid rgba(255,255,255,.1);
-  background:rgba(255,255,255,.05);color:var(--sub);cursor:pointer;
-  display:flex;align-items:center;justify-content:center;font-size:16px;
-  transition:all .2s;flex-shrink:0;
-}
-.hub-home-btn:hover{background:rgba(255,255,255,.1);color:#fff;border-color:var(--p);}
-@media(max-width:1024px){
-  .hub-content{padding:24px 16px 120px;}
-  .hub-grid{grid-template-columns:1fr;}
-  .hub-card{padding:18px 16px;}
-  .hub-card-top{gap:10px;}
-  .hub-card-icon{width:44px;height:44px;font-size:22px;}
-  .hub-card-title{font-size:16px;}
-  .hub-logo{font-size:28px;}
-}
-
 /* ── Hideable Panels ─────────────────────────────────────────────── */
 .sidebar.panel-hidden{width:0;min-width:0;padding:0;overflow:hidden;border:none;opacity:0;pointer-events:none;transition:all .3s;}
 .right-panel.panel-hidden{width:0;min-width:0;padding:0;overflow:hidden;border:none;opacity:0;pointer-events:none;transition:all .3s;}
@@ -1725,9 +1626,9 @@ body.mode-karaoke .main{background:radial-gradient(ellipse at 50% 0%,rgba(255,0,
 }
 .legal-close:hover{background:rgba(255,60,60,.2);color:#ff6b6b;}
 .legal-logo{
-  font-family:'Great Vibes',cursive;font-size:28px;font-weight:400;margin-bottom:4px;
-  color:#fff;
-  text-shadow:0 0 7px #ff6b9d,0 0 15px #ff6b9d,0 0 30px #c084fc;
+  font-size:22px;font-weight:900;margin-bottom:4px;
+  background:linear-gradient(135deg,#ff006e,#8338ec,#3a86ff);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
 }
 .legal-brand-sub{font-size:10px;color:var(--sub);letter-spacing:2px;margin-bottom:18px;}
 .legal-section{margin-bottom:16px;}
@@ -1878,7 +1779,7 @@ body.mode-karaoke .main{background:radial-gradient(ellipse at 50% 0%,rgba(255,0,
   /* ─── Topbar: limpio, compacto, sin overflow ─── */
   .topbar{padding:0 8px;height:46px;gap:6px;overflow:hidden;flex-wrap:nowrap;}
   .brand-wrap{flex-shrink:0;max-width:70px;}
-  .brand{font-size:20px;}
+  .brand{font-size:14px;}
   .brand-sub{display:none;}
   .brand-wrap > div:last-child{display:none!important;}
   .mode-switch{display:none;}
@@ -1952,7 +1853,7 @@ body.mode-karaoke .main{background:radial-gradient(ellipse at 50% 0%,rgba(255,0,
   /* Topbar aun mas compacto para Pixel/iPhone SE */
   .topbar{height:48px;padding:0 8px;gap:4px;}
   .brand-wrap{max-width:75px;}
-  .brand{font-size:18px;}
+  .brand{font-size:12px;}
   #bf-login-btn{padding:4px 8px!important;font-size:10px!important;}
   #bf-user-photo{width:26px!important;height:26px!important;}
   .usearch-bar{height:28px;border-radius:8px;}
@@ -2258,353 +2159,6 @@ input:focus-visible,textarea:focus-visible{
   to{box-shadow:0 0 12px rgba(131,56,236,.15);}
 }
 
-/* ══════════════════════════════════════════════════════════════════════
-   PREMIUM POLISH — Google Labs-grade micro-interactions & refinements
-   ══════════════════════════════════════════════════════════════════════ */
-
-/* ── 1. SMOOTHER TRANSITIONS — universal easing on interactive elements ── */
-button,
-.mode-btn,
-.ctrl-btn,
-.qi-btn,
-.mnav-btn,
-.ia-chip,
-.ia-send,
-.yt-btn,
-.yt-card,
-.est-genre-btn,
-.est-mis-btn,
-.est-filter-btn,
-.est-vote-btn,
-.dj-pad,
-.settings-toggle,
-.settings-btn,
-.rp-btn,
-.ns-next-btn,
-.promo-skip,
-.welcome-skip,
-.oem-unlock-btn,
-.topbar-settings,
-.usearch-item-action,
-.cola-modal-close {
-  transition: all .2s cubic-bezier(.25,.46,.45,.94);
-}
-
-/* Smooth panel appearance */
-.ia-panel,
-.yt-panel,
-.bares-panel,
-.settings-panel,
-.estudio-panel,
-.vistas-panel {
-  transition: opacity .25s ease, transform .25s ease;
-}
-
-/* ── 2. BETTER SHADOWS & DEPTH — layered shadows for premium feel ── */
-
-/* Topbar: subtle depth shadow */
-.topbar {
-  box-shadow:
-    0 1px 3px rgba(0,0,0,.3),
-    0 4px 12px rgba(0,0,0,.15);
-}
-
-/* Sidebar & right panel depth */
-.sidebar,
-.right-panel,
-.ia-panel,
-.yt-panel,
-.bares-panel,
-.settings-panel {
-  box-shadow: -1px 0 8px rgba(0,0,0,.15);
-}
-
-/* Cards: multi-layer depth */
-.welcome-card,
-.hub-card,
-.settings-section,
-.queue-item,
-.yt-card,
-.est-ranking-item,
-.est-mis-item,
-.cola-item,
-.vp-cola-item,
-.vp-result-item {
-  box-shadow:
-    0 1px 2px rgba(0,0,0,.2),
-    0 4px 8px rgba(0,0,0,.1);
-}
-
-/* Card hover: lifted shadow */
-.welcome-card:hover,
-.hub-card:hover,
-.yt-card:hover,
-.est-ranking-item:hover,
-.est-mis-item:hover {
-  box-shadow:
-    0 4px 12px rgba(0,0,0,.3),
-    0 12px 28px rgba(0,0,0,.15);
-}
-
-/* Toast: deeper shadow */
-#toast {
-  box-shadow:
-    0 4px 12px rgba(0,0,0,.3),
-    0 12px 40px rgba(0,0,0,.25);
-}
-
-/* Player bar depth */
-.player-bar {
-  box-shadow:
-    0 -2px 8px rgba(0,0,0,.2),
-    0 -8px 24px rgba(0,0,0,.1);
-}
-
-/* Modal depth */
-.cola-modal,
-.tutorial-card,
-.catalog-modal {
-  box-shadow:
-    0 8px 24px rgba(0,0,0,.3),
-    0 24px 64px rgba(0,0,0,.25);
-}
-
-/* ── 3. MICRO-INTERACTIONS — premium hover/active feedback ── */
-
-/* Generic button hover: slight lift + brightness */
-.settings-btn:hover,
-.rp-btn:hover,
-.oem-unlock-btn:hover,
-.est-search-btn:hover,
-.est-save-btn:hover,
-.est-result-use:hover,
-.yt-save-key:hover {
-  filter: brightness(1.08);
-}
-
-/* Button active: press feedback */
-.settings-btn:active,
-.rp-btn:active,
-.oem-unlock-btn:active,
-.btn-add:active,
-.est-search-btn:active,
-.est-save-btn:active,
-.est-result-use:active,
-.yt-save-key:active,
-.yt-search-btn:active,
-.ia-send:active,
-.ns-next-btn:active,
-.welcome-skip:active,
-.promo-skip:active,
-.tutorial-btn:active,
-.usearch-item-action:active {
-  transform: scale(.97);
-  filter: brightness(.95);
-}
-
-/* Mode button active press */
-.mode-btn:active {
-  transform: scale(.96);
-}
-
-/* Queue item hover lift */
-.queue-item:hover {
-  transform: translateY(-1px);
-}
-
-/* DJ pad refined interaction */
-.dj-pad:hover {
-  box-shadow: 0 4px 16px rgba(0,0,0,.2);
-}
-
-/* Settings toggle: smoother */
-.settings-toggle {
-  transition: background .25s cubic-bezier(.25,.46,.45,.94);
-}
-.settings-toggle::after {
-  transition: transform .25s cubic-bezier(.25,.46,.45,.94);
-}
-
-/* Chips hover lift */
-.ia-chip:hover,
-.est-genre-btn:hover,
-.est-filter-btn:hover {
-  transform: translateY(-1px);
-}
-
-/* Mobile nav: active pulse */
-.mnav-btn.active {
-  position: relative;
-}
-.mnav-btn.active::after {
-  content: '';
-  position: absolute;
-  bottom: 2px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 4px;
-  height: 4px;
-  border-radius: 50%;
-  background: var(--p);
-  box-shadow: 0 0 6px var(--glow-p);
-}
-
-/* Topbar settings button hover glow */
-.topbar-settings:hover {
-  box-shadow: 0 2px 8px rgba(255,255,255,.06);
-}
-
-/* ── 4. TYPOGRAPHY REFINEMENT — better hierarchy & readability ── */
-
-/* Body text: improved line-height */
-body {
-  line-height: 1.5;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-rendering: optimizeLegibility;
-}
-
-/* Section titles: refined spacing */
-.k-section-title,
-.settings-section-title,
-.dj-section-title,
-.yt-lib-title,
-.vp-cola-title,
-.usearch-group-title {
-  letter-spacing: 1.8px;
-  font-weight: 800;
-}
-
-/* Sub labels: subtle tracking */
-.brand-sub,
-.oem-badge,
-.est-header-badge,
-.ns-label {
-  letter-spacing: 2.5px;
-}
-
-/* Welcome card title: tighter tracking for display text */
-.welcome-card .wc-title,
-.hub-card .hc-title,
-.oem-title {
-  letter-spacing: -.2px;
-}
-
-/* IA & settings body text readability */
-.ia-msg-text,
-.settings-label,
-.wc-desc,
-.est-mis-preview,
-.oem-sub {
-  line-height: 1.6;
-}
-
-/* Welcome screen: refine subtitle */
-.welcome-sub {
-  letter-spacing: .3px;
-  line-height: 1.6;
-}
-
-/* Monospace elements: tighter */
-.player-time,
-.speed-display,
-#datetime {
-  letter-spacing: .5px;
-}
-
-/* ── 5. INPUT FIELDS — polished focus states with glow ── */
-
-/* All inputs: smooth focus transition with glow */
-.inp,
-.rp-input,
-.settings-inp,
-.ia-input,
-.yt-search-inp,
-.yt-apikey-inp,
-.est-search-input,
-.est-letra-input,
-.vp-search-inp,
-.oem-key-inp,
-.usearch-input,
-.cola-modal-add .inp {
-  transition: border-color .25s ease, box-shadow .25s ease, background .25s ease;
-}
-
-/* Focus: glow ring matching accent */
-.inp:focus,
-.rp-input:focus,
-.cola-modal-add .inp:focus {
-  box-shadow: 0 0 0 3px rgba(255,0,110,.1);
-}
-
-.settings-inp:focus {
-  box-shadow: 0 0 0 3px rgba(58,134,255,.1);
-}
-
-.ia-input:focus {
-  box-shadow: 0 0 0 3px rgba(131,56,236,.1);
-}
-
-.yt-search-inp:focus,
-.yt-apikey-inp:focus {
-  box-shadow: 0 0 0 3px rgba(255,68,68,.1);
-}
-
-.est-search-input:focus,
-.est-letra-input:focus,
-.vp-search-inp:focus {
-  box-shadow: 0 0 0 3px rgba(6,182,212,.1);
-}
-
-/* Placeholder styling refinement */
-::placeholder {
-  transition: opacity .2s ease;
-}
-input:focus::placeholder,
-textarea:focus::placeholder {
-  opacity: .35;
-}
-
-/* ── 6. SCROLLBAR REFINEMENT ── */
-::-webkit-scrollbar-thumb {
-  transition: background .2s;
-}
-::-webkit-scrollbar-thumb:hover {
-  background: rgba(255,255,255,.22);
-}
-
-/* ── 7. SELECTION COLOR ── */
-::selection {
-  background: rgba(255,0,110,.25);
-  color: #fff;
-}
-
-/* ── Light theme shadow overrides ── */
-[data-theme="light"] .topbar {
-  box-shadow: 0 1px 3px rgba(0,0,0,.08), 0 4px 12px rgba(0,0,0,.04);
-}
-[data-theme="light"] .welcome-card,
-[data-theme="light"] .hub-card,
-[data-theme="light"] .settings-section,
-[data-theme="light"] .queue-item {
-  box-shadow: 0 1px 3px rgba(0,0,0,.06), 0 4px 8px rgba(0,0,0,.03);
-}
-[data-theme="light"] .welcome-card:hover,
-[data-theme="light"] .hub-card:hover {
-  box-shadow: 0 4px 12px rgba(0,0,0,.1), 0 12px 28px rgba(0,0,0,.06);
-}
-[data-theme="light"] .player-bar {
-  box-shadow: 0 -2px 8px rgba(0,0,0,.06), 0 -8px 24px rgba(0,0,0,.03);
-}
-[data-theme="light"] .sidebar,
-[data-theme="light"] .right-panel {
-  box-shadow: -1px 0 8px rgba(0,0,0,.04);
-}
-[data-theme="light"] ::selection {
-  background: rgba(255,0,110,.15);
-  color: #1a1a2e;
-}
-
 </style>
 </head>
 <body>
@@ -2613,7 +2167,6 @@ textarea:focus::placeholder {
   <!-- ═══ TOPBAR ═══ -->
   <div class="topbar">
     <button id="mobile-back-btn" onclick="mobileSetMode('karaoke',document.querySelector('.mnav-btn[data-mode=karaoke]'))" style="display:none;background:none;border:none;color:var(--p);font-size:18px;padding:4px 4px;cursor:pointer;flex-shrink:0;" title="Volver a Karaoke" aria-label="Volver a Karaoke">&#x25C0;</button>
-    <button class="hub-home-btn" onclick="showHub()" title="Inicio">🏠</button>
     <div class="brand-wrap">
       <div class="brand">ByFlow</div>
       <div class="brand-sub">VIVE CANTANDO</div>
@@ -2885,14 +2438,15 @@ textarea:focus::placeholder {
     <button class="panel-toggle panel-toggle-right" id="toggle-right" onclick="toggleRightPanel()" title="Esconder/mostrar panel derecho" aria-label="Esconder/mostrar panel derecho">&#x25B6;</button>
     <div class="right-panel">
       <h4 title="Escanea este QR desde otro celular para controlar el karaoke remotamente">Control Remoto (QR)</h4>
-      <img id="qr-img" alt="Codigo QR para control remoto de ByFlow" title="Escanea con la camara de tu celular para conectarte">
-      <div id="qr-url" title="URL para acceder desde otro dispositivo en la misma red WiFi" style="font-size:10px;word-break:break-all;">Generando enlace de control remoto...</div>
+      <img id="qr-img" alt="Codigo QR para control remoto de ByFlow" title="Escanea con la camara de tu celular para conectarte" style="display:none;">
+      <div id="qr-url" title="URL para acceder desde otro dispositivo en la misma red WiFi" style="font-size:10px;word-break:break-all;text-align:center;color:var(--sub);padding:8px 0;">Proximamente — Escanea para controlar ByFlow desde tu celular</div>
       <div class="divider"></div>
       <h4 title="Guarda canciones con su letra para cargarlas rapidamente desde el Catalogo">Guardar Nueva Cancion</h4>
       <input type="text" class="rp-input" id="new-song-title" placeholder="Titulo de la cancion..." title="Nombre de la cancion" style="margin-bottom:6px;">
       <input type="text" class="rp-input" id="new-song-artista" placeholder="Artista (opcional)..." title="Nombre del artista o banda" style="margin-bottom:6px;">
       <textarea class="rp-input" id="new-song-letra" placeholder="Pega o escribe la letra aqui..." title="Letra completa de la cancion para el teleprompter" style="height:90px;resize:none;"></textarea>
       <button class="rp-btn" onclick="agregarCancion()" title="Guardar esta cancion en el catalogo para uso futuro">Guardar al Catalogo</button>
+      <button class="rp-btn" onclick="showToast('Proximamente — busqueda automatica desde YouTube')" title="Proximamente: buscar letra automaticamente desde YouTube" style="margin-top:6px;background:rgba(255,68,68,.15);border-color:rgba(255,68,68,.3);color:rgba(255,255,255,.5);cursor:default;">▶ Buscar en YouTube <span style="font-size:9px;opacity:.7;">(Proximamente)</span></button>
     </div>
 
     <!-- ═══ IA PANEL ═══ -->
@@ -3416,11 +2970,11 @@ textarea:focus::placeholder {
             </div>
             <div style="margin-bottom:8px;">
               <div style="font-size:9px;color:var(--sub);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">🏆 Top Canciones</div>
-              <div id="stat-top-songs" style="font-size:10px;color:var(--sub);">Cargando...</div>
+              <div id="stat-top-songs" style="font-size:10px;color:var(--sub);opacity:.5;">Agrega canciones para ver tus stats</div>
             </div>
             <div style="margin-bottom:8px;">
               <div style="font-size:9px;color:var(--sub);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">🎤 Top Cantantes</div>
-              <div id="stat-top-singers" style="font-size:10px;color:var(--sub);">Cargando...</div>
+              <div id="stat-top-singers" style="font-size:10px;color:var(--sub);opacity:.5;">Agrega cantantes para ver tus stats</div>
             </div>
             <div>
               <div style="font-size:9px;color:var(--sub);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">📊 Ultimos 7 dias</div>
@@ -3443,7 +2997,7 @@ textarea:focus::placeholder {
 
         <!-- Acerca de -->
         <div class="settings-section" style="text-align:center;padding:20px 16px;">
-          <div style="font-family:'Great Vibes',cursive;font-size:28px;font-weight:400;color:#fff;text-shadow:0 0 7px #ff6b9d,0 0 15px #ff6b9d,0 0 30px #c084fc;">ByFlow</div>
+          <div style="font-size:20px;font-weight:900;background:linear-gradient(135deg,#ff006e,#8338ec,#3a86ff);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">ByFlow</div>
           <div style="font-size:11px;color:var(--sub);margin-top:2px;">Vive Cantando</div>
           <div style="font-size:10px;color:rgba(255,255,255,.25);margin-top:8px;">v3.3 &middot; powered by IArtLabs</div>
           <div style="font-size:9px;color:rgba(255,255,255,.15);margin-top:4px;">CERO descargas &middot; Solo streaming</div>
@@ -3677,103 +3231,6 @@ textarea:focus::placeholder {
       <span style="font-size:10px;color:var(--a);cursor:pointer;" onclick="welcomeSelect('remote')">&#x1F4F1; Control Remoto</span>
     </div>
     <div style="font-size:10px;color:rgba(255,255,255,.15);margin-top:8px;max-width:380px;line-height:1.4;text-align:center;">Al usar ByFlow aceptas nuestros <span style="text-decoration:underline;cursor:pointer;" onclick="openLegalModal();dismissWelcome();">terminos de servicio</span>. Letras IA: 50/50 autor/ArT-AtR. Letras propias: 100% autor. &copy; 2024-2026 IArtLabs</div>
-  </div>
-</div>
-
-<!-- ── Home Hub ── -->
-<div id="home-hub">
-  <div class="hub-bg"></div>
-  <div class="hub-content">
-    <div class="hub-header">
-      <div class="hub-logo">ByFlow</div>
-      <div class="hub-subtitle">Vive Cantando — Elige tu experiencia</div>
-    </div>
-    <div id="hub-promo-banner" class="hub-promo" style="display:none;">
-      <div class="hub-promo-text">⚡ Semana PRO Gratis — Todos los modos desbloqueados</div>
-      <div class="hub-promo-sub" id="hub-promo-expires"></div>
-    </div>
-    <div class="hub-grid">
-      <div class="hub-card" data-mode="karaoke" onclick="hubSelectMode('karaoke')">
-        <div class="hub-card-glow"></div>
-        <div class="hub-card-top">
-          <div class="hub-card-icon">🎤</div>
-          <div>
-            <span class="hub-card-title">Karaoke</span>
-            <span class="hub-card-tag free">GRATIS</span>
-          </div>
-        </div>
-        <div class="hub-card-desc">Canta con teleprompter profesional. Agrega canciones a la cola, gestiona turnos y sincroniza letras en tiempo real.</div>
-        <ul class="hub-card-features">
-          <li>Teleprompter sincronizado</li>
-          <li>Cola de cantantes con turnos</li>
-          <li>Vista remota para pantallas</li>
-        </ul>
-      </div>
-      <div class="hub-card" data-mode="youtube" onclick="hubSelectMode('youtube')">
-        <div class="hub-card-glow"></div>
-        <div class="hub-card-top">
-          <div class="hub-card-icon">🎵</div>
-          <div>
-            <span class="hub-card-title">Musica</span>
-            <span class="hub-card-tag pro" id="hub-tag-youtube">PRO</span>
-          </div>
-        </div>
-        <div class="hub-card-desc">Busca y reproduce musica de YouTube, SoundCloud y Jamendo. Streaming legal, sin descargas, sin pirateria.</div>
-        <ul class="hub-card-features">
-          <li>YouTube, SoundCloud, Jamendo</li>
-          <li>Streaming 100% legal</li>
-          <li>Busqueda inteligente</li>
-        </ul>
-      </div>
-      <div class="hub-card" data-mode="bares" onclick="hubSelectMode('bares')">
-        <div class="hub-card-glow"></div>
-        <div class="hub-card-top">
-          <div class="hub-card-icon">🍺</div>
-          <div>
-            <span class="hub-card-title">Bares</span>
-            <span class="hub-card-tag pro" id="hub-tag-bares">PRO</span>
-          </div>
-        </div>
-        <div class="hub-card-desc">Convierte tu bar en un venue profesional. Gestiona mesas, lanza promos, soundboard DJ y organiza eventos en vivo.</div>
-        <ul class="hub-card-features">
-          <li>Gestion de mesas y clientes</li>
-          <li>Promos y jingles automaticos</li>
-          <li>Soundboard para DJ</li>
-        </ul>
-      </div>
-      <div class="hub-card" data-mode="ia" onclick="hubSelectMode('ia')">
-        <div class="hub-card-glow"></div>
-        <div class="hub-card-top">
-          <div class="hub-card-icon">🤖</div>
-          <div>
-            <span class="hub-card-title">IA Studio</span>
-            <span class="hub-card-tag pro" id="hub-tag-ia">PRO</span>
-          </div>
-        </div>
-        <div class="hub-card-desc">GFlow, tu director vocal IA. Genera letras, recibe instrucciones de canto personalizadas y mejora tu estilo.</div>
-        <ul class="hub-card-features">
-          <li>Generador de letras offline</li>
-          <li>Director vocal inteligente</li>
-          <li>Sugerencias por artista</li>
-        </ul>
-      </div>
-      <div class="hub-card hub-card-full" data-mode="estudio" onclick="hubSelectMode('estudio')">
-        <div class="hub-card-glow"></div>
-        <div class="hub-card-top">
-          <div class="hub-card-icon">✍️</div>
-          <div>
-            <span class="hub-card-title">Estudio de Letras</span>
-            <span class="hub-card-tag free">GRATIS</span>
-          </div>
-        </div>
-        <div class="hub-card-desc">Escribe, edita y guarda tus letras. Accede a tu catalogo personal, genera rimas con el motor ArT-AtR y carga al teleprompter.</div>
-        <ul class="hub-card-features">
-          <li>Editor de letras con guardado</li>
-          <li>Motor de rimas ArT-AtR (192 frases, 65+ rimas)</li>
-          <li>Catalogo personal + canciones Suno</li>
-        </ul>
-      </div>
-    </div>
   </div>
 </div>
 
@@ -4046,7 +3503,6 @@ textarea:focus::placeholder {
 
 <div class="mobile-nav" id="mobile-nav">
   <div class="mobile-nav-inner">
-    <button class="mnav-btn" data-mode="home" onclick="showHub()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg><span>Inicio</span></button>
     <button class="mnav-btn active" data-mode="karaoke" onclick="mobileSetMode('karaoke',this)">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
       <span>Karaoke</span>
@@ -4732,6 +4188,13 @@ function stopAutoScroll() {
 function updatePlayBtn() {
   document.getElementById('ico-play').style.display  = tpState.autoScrolling ? 'none' : 'block';
   document.getElementById('ico-pause').style.display = tpState.autoScrolling ? 'block' : 'none';
+  const hasWords = tpState.words.length > 0;
+  const playBtn = document.getElementById('btn-play');
+  if (playBtn) { playBtn.style.opacity = hasWords ? '' : '0.35'; playBtn.style.pointerEvents = hasWords ? '' : 'none'; }
+  document.querySelectorAll('.ctrl-btn:not(#btn-play)').forEach(btn => {
+    btn.style.opacity = hasWords ? '' : '0.35';
+    btn.style.pointerEvents = hasWords ? '' : 'none';
+  });
 }
 function updateWordCounter() {
   const c = Math.max(0, tpState.currentIdx + 1);
@@ -4752,30 +4215,9 @@ function tpToggleFullscreen() {
   const btn = document.querySelector('.tp-fullscreen-btn');
   if (isFS) {
     btn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 14h6v6m10-10h-6V4M4 10h6V4m10 10h-6v6"/></svg>';
-    const isMobile = window.innerWidth <= 900 || ('ontouchstart' in window);
-    showToast(isMobile ? 'Pantalla completa — toca para mostrar controles' : 'Pantalla completa — ESC para salir');
-    // Mobile: tap on center toggles controls visibility
-    if (isMobile) {
-      center._tpFsTapHandler = function(e) {
-        // Don't toggle if tapping the button itself or sync controls
-        if (e.target.closest('.tp-fullscreen-btn,.tp-sync-controls,.tp-lrc-badge')) return;
-        center.classList.toggle('tp-fs-active');
-        // Auto-hide controls after 3 seconds
-        clearTimeout(center._tpFsHideTimer);
-        if (center.classList.contains('tp-fs-active')) {
-          center._tpFsHideTimer = setTimeout(() => center.classList.remove('tp-fs-active'), 3000);
-        }
-      };
-      center.addEventListener('touchend', center._tpFsTapHandler);
-    }
+    showToast('Pantalla completa — ESC para salir');
   } else {
     btn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>';
-    center.classList.remove('tp-fs-active');
-    clearTimeout(center._tpFsHideTimer);
-    if (center._tpFsTapHandler) {
-      center.removeEventListener('touchend', center._tpFsTapHandler);
-      center._tpFsTapHandler = null;
-    }
   }
 }
 
@@ -4962,6 +4404,7 @@ async function eliminarCola(id) { try { await fetch('/api/cola/'+id, {method:'DE
 function openColaModal() {
   renderColaModal();
   document.getElementById('cola-modal').classList.add('open');
+  fetchCola();
 }
 function closeColaModal() {
   document.getElementById('cola-modal').classList.remove('open');
@@ -5058,55 +4501,7 @@ function toggleMode(mode) {
   }
 }
 
-// ── Home Hub ────────────────────────────────────────────────────────────────
-function showHub() {
-  // Hide all panels
-  document.querySelectorAll('.sidebar,.right-panel,#ia-panel,#yt-panel,#bares-panel,#settings-panel,.estudio-panel,#vistas-panel').forEach(el => el.style.display = 'none');
-  document.getElementById('home-hub').classList.add('active');
-  document.querySelector('.app').style.display = 'none';
-  // Remove active from all mobile nav buttons
-  document.querySelectorAll('.mnav-btn').forEach(b => b.classList.remove('active'));
-  const homeBtn = document.querySelector('.mnav-btn[data-mode="home"]');
-  if (homeBtn) homeBtn.classList.add('active');
-  // Check for global promo
-  checkGlobalPromo();
-}
-
-function hubSelectMode(mode) {
-  document.getElementById('home-hub').classList.remove('active');
-  document.querySelector('.app').style.display = '';
-  if (typeof setMode === 'function') setMode(mode);
-}
-
-async function checkGlobalPromo() {
-  try {
-    const token = localStorage.getItem('bf_license_token') || '';
-    const res = await fetch('/api/license/status' + (token ? '?token=' + token : ''));
-    const data = await res.json();
-    const banner = document.getElementById('hub-promo-banner');
-    if (data.globalPromo && data.activated) {
-      banner.style.display = '';
-      const exp = new Date(data.expiresAt);
-      const days = Math.ceil((exp - Date.now()) / 86400000);
-      document.getElementById('hub-promo-expires').textContent = 'Todos los modos PRO gratis por ' + days + ' dias mas';
-      // Update PRO tags to show promo
-      ['youtube','bares','ia'].forEach(m => {
-        const tag = document.getElementById('hub-tag-' + m);
-        if (tag) { tag.textContent = 'GRATIS ' + days + 'd'; tag.className = 'hub-card-tag promo'; }
-      });
-    } else {
-      banner.style.display = 'none';
-    }
-  } catch(e) { console.warn('[HUB] Promo check failed:', e); }
-}
-
 function setMode(mode) {
-  // Hide Home Hub if visible
-  const _hub = document.getElementById('home-hub');
-  if (_hub) _hub.classList.remove('active');
-  const _appEl = document.querySelector('.app');
-  if (_appEl) _appEl.style.display = '';
-
   // Bloquear si no hay login (excepto settings y remote)
   const noAuthModes = ['settings', 'remote'];
   if (!noAuthModes.includes(mode)) {
@@ -5858,13 +5253,12 @@ async function loadQR() {
   try {
     const r = await fetch('/api/qr');
     const d = await r.json();
-    if (img && d.qr) img.src = d.qr;
+    if (img && d.qr) { img.src = d.qr; img.style.display = ''; }
     if (url) url.textContent = d.url || location.origin;
   } catch {
-    // No QR endpoint or failed — show production URL
-    if (url) url.textContent = location.origin;
-    if (img) img.alt = 'QR no disponible en este entorno';
+    // No QR endpoint or failed — show friendly message
     if (img) img.style.display = 'none';
+    if (url) url.textContent = 'Proximamente — Escanea para controlar ByFlow desde tu celular';
   }
 }
 
@@ -9054,6 +8448,7 @@ async function loadStats() {
     }
   } catch {
     document.getElementById('stat-top-songs').innerHTML = '<div style="opacity:.5;">Error cargando</div>';
+    document.getElementById('stat-top-singers').innerHTML = '<div style="opacity:.5;">Error cargando</div>';
   }
 }
 
@@ -9177,7 +8572,7 @@ function welcomeSelect(mode) {
     card.appendChild(ripple);
     setTimeout(() => ripple.remove(), 500);
   }
-  setTimeout(() => { dismissWelcome(); showHub(); }, 150);
+  setTimeout(() => { dismissWelcome(); setMode(mode); }, 150);
 }
 
 // ── Firebase Auth — Login real con Google/Email ───────────────────────────
@@ -9205,7 +8600,7 @@ async function socialLogin(provider) {
       showToast('Bienvenido, ' + (_fbUser.displayName || 'Usuario') + '!', 'success');
       _updateUserUI();
       dismissWelcome();
-      showHub();
+      setMode('karaoke');
     }
   } catch (e) {
     console.error('[Auth]', e);
@@ -9240,7 +8635,7 @@ async function emailLogin(isRegister) {
       showToast('Bienvenido, ' + (email.split('@')[0]) + '!', 'success');
       _updateUserUI();
       dismissWelcome();
-      showHub();
+      setMode('karaoke');
     }
   } catch (e) {
     console.error('[Auth]', e);
@@ -10159,22 +9554,49 @@ async function vpSearch() {
     const ytKey = localStorage.getItem('byflow_yt_api_key') || '';
     const res = await fetch(`/api/youtube/search?q=${encodeURIComponent(q)}&key=${encodeURIComponent(ytKey)}`);
     const data = await res.json();
-    if (data.error || !data.items || data.items.length === 0) {
-      results.innerHTML = '<div style="padding:20px;text-align:center;color:var(--sub);font-size:11px;">Sin resultados</div>';
+    if (!data.error && data.items && data.items.length > 0) {
+      results.innerHTML = data.items.map(item => {
+        const vid = item.id.videoId || item.id;
+        const title = item.snippet.title.replace(/&amp;/g,'&').replace(/&quot;/g,'"').replace(/&#39;/g,"'");
+        const thumb = item.snippet.thumbnails?.default?.url || '';
+        return `<div class="vp-result-item" onclick="vpPlay('${vid}','${title.replace(/'/g,"\\'")}')">
+          <img class="vp-result-thumb" src="${thumb}" alt="" loading="lazy">
+          <div class="vp-result-title" title="${title}">${title}</div>
+          <button class="vp-result-play">&#9654;</button>
+        </div>`;
+      }).join('');
       return;
     }
-    results.innerHTML = data.items.map(item => {
-      const vid = item.id.videoId || item.id;
-      const title = item.snippet.title.replace(/&amp;/g,'&').replace(/&quot;/g,'"').replace(/&#39;/g,"'");
-      const thumb = item.snippet.thumbnails?.default?.url || '';
-      return `<div class="vp-result-item" onclick="vpPlay('${vid}','${title.replace(/'/g,"\\'")}')">
-        <img class="vp-result-thumb" src="${thumb}" alt="" loading="lazy">
-        <div class="vp-result-title" title="${title}">${title}</div>
-        <button class="vp-result-play">&#9654;</button>
-      </div>`;
-    }).join('');
+    // Fallback: search LRCLIB for lyrics when YouTube API unavailable
+    const lrcRes = await fetch(`/api/lrclib/search?q=${encodeURIComponent(q)}`);
+    const lrcData = await lrcRes.json();
+    if (lrcData && lrcData.length > 0) {
+      window._vpLrcCache = lrcData;
+      results.innerHTML = lrcData.slice(0, 8).map((item, idx) => {
+        const title = escHtml((item.trackName || item.name || q));
+        const artist = escHtml(item.artistName || item.artist || '');
+        return '<div class="vp-result-item" onclick="loadLyricsDirect(' + idx + ')">' +
+          '<div class="vp-result-title" title="' + title + (artist ? ' — ' + artist : '') + '">' + title + (artist ? ' <span style="font-size:9px;opacity:.6;">— ' + artist + '</span>' : '') + '</div>' +
+          '<button class="vp-result-play" title="Cargar letra">&#9654;</button>' +
+          '</div>';
+      }).join('');
+    } else {
+      results.innerHTML = '<div style="padding:20px;text-align:center;color:var(--sub);font-size:11px;">Sin resultados para "' + escHtml(q) + '"</div>';
+    }
   } catch {
     results.innerHTML = '<div style="padding:20px;text-align:center;color:var(--sub);font-size:11px;">Error de busqueda</div>';
+  }
+}
+function loadLyricsDirect(idx) {
+  const item = (window._vpLrcCache || [])[idx];
+  if (!item) return;
+  const lyrics = item.syncedLyrics || item.plainLyrics || '';
+  const title = item.trackName || item.name || '';
+  if (lyrics) {
+    setLyrics(lyrics);
+    showToast('Letra cargada: ' + title);
+  } else {
+    showToast('Sin letra disponible para esta cancion');
   }
 }
 
@@ -10268,6 +9690,7 @@ window.addEventListener('appinstalled', () => {
   initFXSliders();
   renderMesas();
   applyMesasCollapse();
+  updatePlayBtn();
   loadQR();
   fetchCola();
   fetchSongs();
@@ -10277,13 +9700,14 @@ window.addEventListener('appinstalled', () => {
   loadSettingsState();
   await connectSocket();
 
-  // Si ya tiene sesion Firebase, saltar welcome e ir al Hub
+  // Si ya tiene sesion Firebase, saltar welcome e ir directo
   const _savedUid = localStorage.getItem('byflow_user_uid');
   if (_savedUid) {
     const ov = document.getElementById('welcome-overlay');
     if (ov) ov.classList.add('hidden');
     window._byflowWelcomed = true;
-    showHub();
+    const lastMode = localStorage.getItem('byflow_last_mode') || 'karaoke';
+    setMode(lastMode);
   } else {
     // No hay sesion — mostrar welcome, obligar login
     document.querySelector('.sidebar').classList.add('panel-hidden');
