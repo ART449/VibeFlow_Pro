@@ -4,6 +4,11 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 <title>ByFlow POS — Presentacion</title>
+<meta name="description" content="Presentacion de ByFlow POS Eatertainment — el primer POS con karaoke integrado en Mexico. Planes desde $149/mes.">
+<meta property="og:title" content="ByFlow POS — Presentacion Eatertainment">
+<meta property="og:description" content="El primer punto de venta en Mexico que integra POS + Karaoke + Entretenimiento. Desde $149/mes.">
+<meta property="og:url" content="https://byflowapp.up.railway.app/presentacion-pos.html">
+<meta property="og:type" content="website">
 <link href="https://fonts.googleapis.com/css2?family=Great+Vibes&family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
 <style>
 *{margin:0;padding:0;box-sizing:border-box;}
@@ -302,9 +307,17 @@ function goTo(idx) {
 
 // Keyboard
 document.addEventListener('keydown', e => {
-  if (e.key === 'ArrowRight' || e.key === ' ') go(1);
+  if (e.key === 'ArrowRight') go(1);
   if (e.key === 'ArrowLeft') go(-1);
   if (e.key === 'f' || e.key === 'F') toggleFS();
+  // Only intercept spacebar when body or the deck has focus (not inputs/buttons)
+  if (e.key === ' ') {
+    const active = document.activeElement;
+    if (active === document.body || active === deck) {
+      e.preventDefault();
+      go(1);
+    }
+  }
 });
 
 // Touch swipe

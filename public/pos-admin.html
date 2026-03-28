@@ -205,6 +205,19 @@ select.form-input{cursor:pointer;}
 <script>
 const API = '';
 
+// ═══ AUTH ═══
+function getToken() { return sessionStorage.getItem('pos_token') || ''; }
+function authHeaders() {
+  return { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + getToken() };
+}
+
+// Auth gate — redirect if no token
+(function() {
+  if (!sessionStorage.getItem('pos_token')) {
+    window.location.href = '/pos.html';
+  }
+})();
+
 // ═══ NAVIGATION ═══
 function showSec(id, el) {
   document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
@@ -225,7 +238,7 @@ function toast(msg, type) {
 
 // ═══ LOAD DATA ═══
 async function loadProducts() {
-  const r = await fetch(API + '/pos/products');
+  const r = await fetch(API + '/pos/products', { headers: authHeaders() });
   const d = await r.json();
   if (!d.ok) return;
   const body = document.getElementById('products-body');
@@ -249,7 +262,7 @@ async function loadProducts() {
 }
 
 async function loadCategories() {
-  const r = await fetch(API + '/pos/categories');
+  const r = await fetch(API + '/pos/categories', { headers: authHeaders() });
   const d = await r.json();
   if (!d.ok) return;
   document.getElementById('categories-body').innerHTML = d.categories.map(c =>
@@ -260,7 +273,7 @@ async function loadCategories() {
 }
 
 async function loadTables() {
-  const r = await fetch(API + '/pos/tables');
+  const r = await fetch(API + '/pos/tables', { headers: authHeaders() });
   const d = await r.json();
   if (!d.ok) return;
   document.getElementById('tables-body').innerHTML = d.tables.map(t => {
@@ -277,7 +290,7 @@ async function loadTables() {
 }
 
 async function loadEmployees() {
-  const r = await fetch(API + '/pos/employees');
+  const r = await fetch(API + '/pos/employees', { headers: authHeaders() });
   const d = await r.json();
   if (!d.ok) return;
   const roleNames = { dueno:'Dueño', gerente:'Gerente', capitan:'Capitán', cajero:'Cajero', mesero:'Mesero', bartender:'Bartender', cocinero:'Cocinero', dj:'DJ', seguridad:'Seguridad' };
@@ -296,7 +309,7 @@ async function loadEmployees() {
 }
 
 async function loadSettings() {
-  const r = await fetch(API + '/pos/settings');
+  const r = await fetch(API + '/pos/settings', { headers: authHeaders() });
   const d = await r.json();
   if (!d.ok) return;
   Object.entries(d.settings).forEach(([k, v]) => {
@@ -312,7 +325,7 @@ async function saveSettings() {
     settings[key] = el.value;
   });
   const r = await fetch(API + '/pos/settings', {
-    method: 'PUT', headers: { 'Content-Type': 'application/json' },
+    method: 'PUT', headers: authHeaders(),
     body: JSON.stringify(settings)
   });
   const d = await r.json();
@@ -322,7 +335,7 @@ async function saveSettings() {
 
 async function toggleProduct(id, active) {
   const r = await fetch(API + '/pos/products/' + id, {
-    method: 'PUT', headers: { 'Content-Type': 'application/json' },
+    method: 'PUT', headers: authHeaders(),
     body: JSON.stringify({ active })
   });
   const d = await r.json();
@@ -409,47 +422,60 @@ function closeModal() {
 // ═══ SAVE FUNCTIONS ═══
 async function saveProduct() {
   const data = {
-    name: document.getElementById('f-name').value,
-    icon: document.getElementById('f-icon').value,
+    name: document.getElementById('f-name').value.trim(),
+    icon: document.getElementById('f-icon').value.trim(),
     price: parseFloat(document.getElementById('f-price').value),
     cost: parseFloat(document.getElementById('f-cost').value) || 0,
     category_id: parseInt(document.getElementById('f-category').value),
     stock: parseInt(document.getElementById('f-stock').value)
   };
   if (!data.name || !data.price) { toast('Nombre y precio requeridos', 'err'); return; }
-
-  // For now, use the products endpoint (would need a POST endpoint)
-  toast('Producto "' + data.name + '" creado — $' + data.price, 'ok');
-  closeModal();
-  loadProducts();
+  try {
+    const r = await fetch(API + '/pos/products', {
+      method: 'POST', headers: authHeaders(), body: JSON.stringify(data)
+    });
+    const d = await r.json();
+    if (d.ok) { toast('Producto "' + data.name + '" creado — $' + data.price, 'ok'); closeModal(); loadProducts(); }
+    else { toast(d.error || 'Error al crear producto', 'err'); }
+  } catch (e) { toast('Error de conexion', 'err'); }
 }
 
 async function saveEmployee() {
   const data = {
-    name: document.getElementById('f-emp-name').value,
+    name: document.getElementById('f-emp-name').value.trim(),
     pin: document.getElementById('f-emp-pin').value,
     role: document.getElementById('f-emp-role').value,
     area: document.getElementById('f-emp-area').value,
-    avatar: document.getElementById('f-emp-avatar').value
+    avatar: document.getElementById('f-emp-avatar').value.trim()
   };
   if (!data.name || !data.pin || data.pin.length < 4) {
     toast('Nombre y PIN (min 4 digitos) requeridos', 'err'); return;
   }
-  toast('Empleado "' + data.name + '" creado como ' + data.role, 'ok');
-  closeModal();
-  loadEmployees();
+  try {
+    const r = await fetch(API + '/pos/employees', {
+      method: 'POST', headers: authHeaders(), body: JSON.stringify(data)
+    });
+    const d = await r.json();
+    if (d.ok) { toast('Empleado "' + data.name + '" creado como ' + data.role, 'ok'); closeModal(); loadEmployees(); }
+    else { toast(d.error || 'Error al crear empleado', 'err'); }
+  } catch (e) { toast('Error de conexion', 'err'); }
 }
 
 async function saveTable() {
   const data = {
-    number: document.getElementById('f-tbl-number').value,
+    number: document.getElementById('f-tbl-number').value.trim(),
     capacity: parseInt(document.getElementById('f-tbl-capacity').value),
     area: document.getElementById('f-tbl-area').value
   };
   if (!data.number) { toast('Numero de mesa requerido', 'err'); return; }
-  toast('Mesa "' + data.number + '" creada en ' + data.area, 'ok');
-  closeModal();
-  loadTables();
+  try {
+    const r = await fetch(API + '/pos/tables', {
+      method: 'POST', headers: authHeaders(), body: JSON.stringify(data)
+    });
+    const d = await r.json();
+    if (d.ok) { toast('Mesa "' + data.number + '" creada en ' + data.area, 'ok'); closeModal(); loadTables(); }
+    else { toast(d.error || 'Error al crear mesa', 'err'); }
+  } catch (e) { toast('Error de conexion', 'err'); }
 }
 
 // ═══ INIT ═══

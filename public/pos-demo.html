@@ -4,6 +4,11 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 <title>ByFlow POS — Tu Bar Merece Esto</title>
+<meta name="description" content="El unico POS en Mexico con karaoke integrado. Mesas, comandas, cocina, barra y karaoke en un solo sistema. Desde $149/mes.">
+<meta property="og:title" content="ByFlow POS — Tu bar merece tecnologia de primer mundo">
+<meta property="og:description" content="El unico POS en Mexico con karaoke integrado. Desde $149/mes.">
+<meta property="og:url" content="https://byflowapp.up.railway.app/pos-demo.html">
+<meta property="og:type" content="website">
 <link href="https://fonts.googleapis.com/css2?family=Great+Vibes&family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
 <style>
 *{margin:0;padding:0;box-sizing:border-box;}
@@ -51,8 +56,8 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--t
 .demo-section{background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:24px;margin:30px 0;overflow:hidden;}
 .demo-section h3{font-size:16px;font-weight:700;margin-bottom:4px;display:flex;align-items:center;gap:8px;}
 .demo-section .demo-sub{font-size:12px;color:var(--sub);margin-bottom:16px;}
-.demo-frame{border-radius:12px;overflow:hidden;border:1px solid var(--border);height:400px;}
-.demo-frame iframe{width:100%;height:100%;border:none;}
+.demo-frame{border-radius:12px;overflow:hidden;border:1px solid var(--border);min-height:500px;}
+.demo-frame iframe{width:100%;height:100%;min-height:500px;border:none;}
 .demo-tabs{display:flex;gap:4px;margin-bottom:12px;overflow-x:auto;}
 .demo-tab{padding:6px 14px;border-radius:8px;font-size:11px;font-weight:600;background:var(--surface);border:1px solid var(--border);color:var(--sub);cursor:pointer;white-space:nowrap;transition:all .2s;}
 .demo-tab:hover,.demo-tab.active{background:rgba(255,138,0,.1);color:var(--orange);border-color:rgba(255,138,0,.3);}
@@ -278,7 +283,7 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--t
     <div class="demo-tab" onclick="loadDemo('corte',this)">💰 Corte</div>
   </div>
   <div class="demo-frame">
-    <iframe id="demo-iframe" src="/bares-v2.html?demo=true"></iframe>
+    <iframe id="demo-iframe" src="/bares-v2.html?demo=true" scrolling="auto"></iframe>
   </div>
 </div>
 
@@ -484,17 +489,6 @@ function contactar(plan) {
   window.open('https://wa.me/524494917648?text=' + msg, '_blank');
 }
 
-// Animate comparison bars on scroll
-const observer = new IntersectionObserver((entries) => {
-  entries.forEach(e => {
-    if (e.isIntersecting) {
-      e.target.querySelectorAll('.cb-fill').forEach(f => {
-        f.style.width = f.style.width; // trigger animation
-      });
-    }
-  });
-}, { threshold: 0.3 });
-document.querySelectorAll('.comp-bar').forEach(b => observer.observe(b));
 </script>
 </body>
 </html>

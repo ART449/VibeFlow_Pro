@@ -30,13 +30,13 @@
       "name": "Mesas",
       "short_name": "Mesas",
       "url": "/pos.html?view=mesas",
-      "icons": [{ "src": "/pos-icon-192.png", "sizes": "192x192" }]
+      "icons": [{ "src": "/pos-icon-192.svg", "sizes": "192x192" }]
     },
     {
       "name": "Monitor Cocina",
       "short_name": "Cocina",
       "url": "/pos.html?view=cocina",
-      "icons": [{ "src": "/pos-icon-192.png", "sizes": "192x192" }]
+      "icons": [{ "src": "/pos-icon-192.svg", "sizes": "192x192" }]
     }
   ]
 }
