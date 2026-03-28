@@ -350,6 +350,10 @@ function seedData(db) {
     insertSetting.run('max_capacity', '120');
     insertSetting.run('cfdi_rfc', '');
     insertSetting.run('cfdi_razon_social', '');
+    insertSetting.run('whatsapp', '');
+    insertSetting.run('email_contacto', 'contacto@iartlabs.com');
+    insertSetting.run('instagram', '');
+    insertSetting.run('facebook', '');
   })();
 
   console.log('[POS] Seed data created: 10 employees, 7 categories, 40 products, 17 tables, 3 happy hours');
