@@ -209,12 +209,13 @@ function validateToken(token) {
  * Express middleware: require valid token on all POS routes
  */
 function authMiddleware(req, res, next) {
-  // Skip auth for login route
-  if (req.path === '/pos/auth/login') return next();
+  // Skip auth for login and authorize routes
+  if (req.path === '/auth/login' || req.path === '/pos/auth/login') return next();
+  if (req.path === '/auth/authorize' || req.path === '/pos/auth/authorize') return next();
 
   // Skip auth for GET on public-ish routes (products, categories for menu display)
-  // But still require auth for sensitive data
-  const publicGets = ['/pos/products', '/pos/categories', '/pos/happy-hour/active'];
+  const publicGets = ['/products', '/categories', '/happy-hour/active',
+                      '/pos/products', '/pos/categories', '/pos/happy-hour/active'];
   if (req.method === 'GET' && publicGets.includes(req.path)) return next();
 
   const authHeader = req.headers.authorization;
