@@ -8214,19 +8214,83 @@ async function uSearch() {
 
   let html = '';
 
-  // ── Recomendados: parear videos con letras cuando coinciden ──
+  // ── Unificar y rankear todos los resultados ──
+  // Scoring: cada resultado recibe puntos por relevancia
+  const ql = q.toLowerCase().split(/\s+/);
+  function scoreResult(title, artist) {
+    const t = (title || '').toLowerCase();
+    const a = (artist || '').toLowerCase();
+    let score = 0;
+    // Titulo contiene la query completa
+    if (t.includes(q.toLowerCase())) score += 50;
+    // Cada palabra de la query que aparece en titulo
+    ql.forEach(w => { if (t.includes(w)) score += 10; });
+    // Cada palabra que aparece en artista
+    ql.forEach(w => { if (a.includes(w)) score += 5; });
+    // Titulo empieza con la query
+    if (t.startsWith(q.toLowerCase())) score += 20;
+    return score;
+  }
+
+  // Parear videos con letras (matching mas flexible)
   const paired = [];
   if (ytData.length && lyricsData.length) {
     ytData.slice(0, 5).forEach(v => {
-      const vTitle = (v.snippet?.title || '').toLowerCase();
+      const vTitle = (v.snippet?.title || '').toLowerCase().replace(/[^a-z0-9\s]/g, '');
       const match = lyricsData.find(l => {
-        const lTitle = (l.trackName || l.titulo || '').toLowerCase();
+        const lTitle = (l.trackName || l.titulo || '').toLowerCase().replace(/[^a-z0-9\s]/g, '');
         const lArtist = (l.artistName || '').toLowerCase();
-        return vTitle.includes(lTitle) || lTitle.includes(vTitle.split('-')[0].trim()) ||
+        // Matching flexible: compartir 2+ palabras
+        const vWords = vTitle.split(/\s+/);
+        const lWords = lTitle.split(/\s+/);
+        const shared = vWords.filter(w => w.length > 2 && lWords.some(lw => lw.includes(w) || w.includes(lw)));
+        return shared.length >= 2 || vTitle.includes(lTitle) || lTitle.includes(vTitle.split('-')[0].trim()) ||
                (lArtist && vTitle.includes(lArtist));
       });
-      if (match) paired.push({ video: v, lyrics: match, lyricsIdx: lyricsData.indexOf(match) });
+      if (match) paired.push({ video: v, lyrics: match, lyricsIdx: lyricsData.indexOf(match), score: scoreResult(v.snippet?.title, v.snippet?.channelTitle) + 30 });
     });
+  }
+  // Ordenar pareados por score
+  paired.sort((a, b) => b.score - a.score);
+
+  // Si no hay pareados pero hay resultados, crear "Mejor resultado" con el top de cada fuente
+  if (!paired.length && (lyricsData.length || ytData.length || jmData.length)) {
+    const best = lyricsData[0] || null;
+    const bestYt = ytData[0] || null;
+    const bestJm = jmData[0] || null;
+    // Mostrar el mejor resultado destacado
+    const topResult = best || bestYt || bestJm;
+    if (topResult) {
+      html += '<div class="usearch-group"><div class="usearch-group-title">⭐ Mejor resultado</div>';
+      if (best && bestYt) {
+        const vid = bestYt.id?.videoId || bestYt.id;
+        const thumb = bestYt.snippet?.thumbnails?.default?.url || '';
+        const title = best.trackName || best.titulo || bestYt.snippet?.title || '';
+        const artist = best.artistName || bestYt.snippet?.channelTitle || '';
+        const preview = (best.plainLyrics || '').split('\n').slice(0, 2).join(' / ').substring(0, 60);
+        html += `<div class="usearch-item" style="flex-wrap:wrap;gap:6px;padding:10px 14px;background:rgba(255,0,110,.04);border:1px solid rgba(255,0,110,.15);border-radius:10px;margin:4px 8px;">
+          <img class="usearch-item-img" src="${escHtml(thumb)}" alt="" loading="lazy" style="border-radius:8px;">
+          <div class="usearch-item-info">
+            <div class="usearch-item-title">${escHtml(title)}</div>
+            <div class="usearch-item-sub">${escHtml(artist)}</div>
+            <div class="usearch-item-sub" style="opacity:.5;font-style:italic;">${escHtml(preview)}...</div>
+          </div>
+          <div style="display:flex;gap:4px;">
+            <button class="usearch-item-action" onclick="uPlayYoutube('${vid}','${escHtml(title.replace(/'/g,''))}');uLoadLyrics(0)" style="background:var(--p);color:#fff;border-color:var(--p);">▶ Play + Letra</button>
+          </div>
+        </div>`;
+      } else if (best) {
+        html += `<div class="usearch-item" onclick="uLoadLyrics(0)" style="padding:10px 14px;background:rgba(255,0,110,.04);border:1px solid rgba(255,0,110,.15);border-radius:10px;margin:4px 8px;">
+          <div class="usearch-item-img" style="display:flex;align-items:center;justify-content:center;font-size:18px;">${best._local ? '📂' : '🎵'}</div>
+          <div class="usearch-item-info">
+            <div class="usearch-item-title">${escHtml(best.trackName || best.titulo || '')}</div>
+            <div class="usearch-item-sub">${escHtml(best.artistName || 'ArT-AtR')}</div>
+          </div>
+          <button class="usearch-item-action" style="background:var(--p);color:#fff;">Cargar Letra</button>
+        </div>`;
+      }
+      html += '</div>';
+    }
   }
 
   if (paired.length) {
