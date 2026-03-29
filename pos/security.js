@@ -31,7 +31,7 @@ function createBackup() {
     fs.mkdirSync(BACKUP_DIR, { recursive: true });
   }
 
-  // Use SQLite's backup API via better-sqlite3
+  // Export via sql.js db.export()
   const db = getDb();
   const now = new Date();
   const timestamp = now.toISOString().replace(/[:.]/g, '-').slice(0, 19);
@@ -39,8 +39,9 @@ function createBackup() {
   const backupPath = path.join(BACKUP_DIR, backupName);
 
   try {
-    // Use SQLite VACUUM INTO for atomic backup (safe even during writes)
-    db.exec(`VACUUM INTO '${backupPath.replace(/\\/g, '/')}'`);
+    // Export database bytes and write to backup file (sql.js compatible)
+    const data = db.export();
+    fs.writeFileSync(backupPath, Buffer.from(data));
 
     const stats = fs.statSync(backupPath);
     const sizeMB = (stats.size / 1024 / 1024).toFixed(2);

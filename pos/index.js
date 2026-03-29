@@ -4,16 +4,18 @@
  *
  * Usage in server.js:
  *   const pos = require('./pos');
- *   pos.init(app, io);
+ *   await pos.init(app, io);
  */
 
-const { getDb, DB_PATH } = require('./database');
+const { getDb, ensureDbReady, DB_PATH } = require('./database');
 const { registerRoutes } = require('./routes');
 const { registerPOSSockets } = require('./sockets');
 const { registerSecurityRoutes, startAutoBackup, ensureBarId } = require('./security');
 
-function init(app, io) {
-  // Initialize database (creates tables + seeds if first run)
+async function init(app, io) {
+  // Initialize sql.js database (async — must complete before any getDb() call)
+  await ensureDbReady();
+
   const db = getDb();
   console.log('[POS] Database initialized');
 

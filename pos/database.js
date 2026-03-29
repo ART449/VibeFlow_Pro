@@ -1,30 +1,208 @@
 /**
  * ByFlow POS Eatertainment — Database Module
  * Schema + migrations + seed data
- * Uses better-sqlite3 for sync operations
+ * Uses sql.js (pure JS SQLite — no native compilation needed)
+ *
+ * Provides a sync-compatible wrapper around sql.js so that
+ * routes.js, auth.js, security.js, and sockets.js work unchanged.
  */
 
-const Database = require('better-sqlite3');
+const initSqlJs = require('sql.js');
+const fs = require('fs');
 const path = require('path');
 const bcrypt = require('bcryptjs');
 
 const DB_PATH = path.join(__dirname, '..', 'data', 'pos-v2.db');
 
-let db;
+let db = null;       // sql.js Database instance
+let wrapper = null;  // Sync-compatible wrapper returned by getDb()
+let sqlJsReady = false;
+let initPromise = null;
 
-function getDb() {
-  if (!db) {
-    db = new Database(DB_PATH);
-    db.pragma('journal_mode = WAL');
-    db.pragma('foreign_keys = ON');
-    db.pragma('busy_timeout = 5000');
-    db.pragma('synchronous = NORMAL');
-    db.pragma('cache_size = -20000');
-    db.pragma('temp_store = MEMORY');
-    runMigrations(db);
+// ═══ AUTO-SAVE: persist to disk after write operations ═══
+function saveToDisk() {
+  if (!db) return;
+  try {
+    const dir = path.dirname(DB_PATH);
+    if (!fs.existsSync(dir)) {
+      fs.mkdirSync(dir, { recursive: true });
+    }
+    const data = db.export();
+    fs.writeFileSync(DB_PATH, Buffer.from(data));
+  } catch (err) {
+    console.error('[POS-DB] Failed to save database to disk:', err.message);
   }
-  return db;
 }
+
+// Debounced save — coalesce rapid writes into a single disk flush
+let saveTimer = null;
+function scheduleSave() {
+  if (saveTimer) clearTimeout(saveTimer);
+  saveTimer = setTimeout(saveToDisk, 250);
+}
+
+// ═══ WRAPPER: provides better-sqlite3-compatible API on top of sql.js ═══
+function createWrapper(rawDb) {
+  /**
+   * .prepare(sql) returns an object with .run(), .get(), .all()
+   * matching better-sqlite3 behavior.
+   */
+  function prepare(sql) {
+    return {
+      run(...params) {
+        rawDb.run(sql, params);
+        scheduleSave();
+        // Return an object with lastInsertRowid and changes
+        const lastId = rawDb.exec('SELECT last_insert_rowid() AS id');
+        const changesResult = rawDb.exec('SELECT changes() AS c');
+        return {
+          lastInsertRowid: lastId.length > 0 ? lastId[0].values[0][0] : 0,
+          changes: changesResult.length > 0 ? changesResult[0].values[0][0] : 0
+        };
+      },
+      get(...params) {
+        let stmt;
+        try {
+          stmt = rawDb.prepare(sql);
+          if (params.length > 0) stmt.bind(params);
+          if (stmt.step()) {
+            return stmt.getAsObject();
+          }
+          return undefined;
+        } finally {
+          if (stmt) stmt.free();
+        }
+      },
+      all(...params) {
+        let stmt;
+        try {
+          stmt = rawDb.prepare(sql);
+          if (params.length > 0) stmt.bind(params);
+          const results = [];
+          while (stmt.step()) {
+            results.push(stmt.getAsObject());
+          }
+          return results;
+        } finally {
+          if (stmt) stmt.free();
+        }
+      }
+    };
+  }
+
+  /**
+   * .exec(sql) — run raw SQL (multi-statement). Used for migrations.
+   * Also used by security.js for VACUUM INTO.
+   */
+  function exec(sql) {
+    rawDb.run(sql);
+    scheduleSave();
+  }
+
+  /**
+   * .transaction(fn) — wraps fn in BEGIN/COMMIT with ROLLBACK on error.
+   * Returns a function that executes the transaction when called.
+   */
+  function transaction(fn) {
+    return function (...args) {
+      rawDb.run('BEGIN TRANSACTION');
+      try {
+        const result = fn(...args);
+        rawDb.run('COMMIT');
+        scheduleSave();
+        return result;
+      } catch (err) {
+        rawDb.run('ROLLBACK');
+        throw err;
+      }
+    };
+  }
+
+  /**
+   * .pragma(str) — no-op for sql.js (WAL mode, busy_timeout etc. not applicable)
+   */
+  function pragma(_str) {
+    // sql.js runs in-memory, pragmas like WAL mode are not needed
+  }
+
+  /**
+   * .export() — return raw Uint8Array of the database (used by security.js backup)
+   */
+  function exportDb() {
+    return rawDb.export();
+  }
+
+  return { prepare, exec, transaction, pragma, export: exportDb };
+}
+
+// ═══ INITIALIZATION (sync-looking but bootstrapped once) ═══
+
+/**
+ * Initialize sql.js and load (or create) the database.
+ * Called once; subsequent calls are no-ops.
+ */
+async function initDatabase() {
+  if (sqlJsReady) return;
+
+  const SQL = await initSqlJs();
+
+  // Load existing DB file if present
+  if (fs.existsSync(DB_PATH)) {
+    const fileBuffer = fs.readFileSync(DB_PATH);
+    db = new SQL.Database(fileBuffer);
+    console.log('[POS-DB] Loaded existing database from disk');
+  } else {
+    const dir = path.dirname(DB_PATH);
+    if (!fs.existsSync(dir)) {
+      fs.mkdirSync(dir, { recursive: true });
+    }
+    db = new SQL.Database();
+    console.log('[POS-DB] Created new database');
+  }
+
+  // Enable foreign keys (the only pragma that matters for sql.js)
+  db.run('PRAGMA foreign_keys = ON');
+
+  wrapper = createWrapper(db);
+
+  // Run migrations
+  runMigrations(wrapper);
+
+  // Force immediate save after init
+  saveToDisk();
+
+  sqlJsReady = true;
+}
+
+/**
+ * getDb() — synchronous entry point used by all POS modules.
+ *
+ * IMPORTANT: The database MUST be initialized before this is called.
+ * Call `await ensureDbReady()` once at startup (in pos/index.js init).
+ * After that, getDb() is safe to call synchronously from any route handler.
+ */
+function getDb() {
+  if (!wrapper) {
+    throw new Error(
+      '[POS-DB] Database not initialized. Call await ensureDbReady() at startup before using getDb().'
+    );
+  }
+  return wrapper;
+}
+
+/**
+ * ensureDbReady() — async init guard. Call once at app startup.
+ * Subsequent calls are no-ops (idempotent).
+ */
+async function ensureDbReady() {
+  if (sqlJsReady) return;
+  if (!initPromise) {
+    initPromise = initDatabase();
+  }
+  await initPromise;
+}
+
+// ═══ MIGRATIONS ═══
 
 function runMigrations(db) {
   db.exec(`
@@ -242,16 +420,16 @@ function seedData(db) {
   // ═══ EMPLOYEES ═══
   const insertEmp = db.prepare('INSERT INTO employees (name, pin, role, role_level, area, avatar) VALUES (?,?,?,?,?,?)');
   const employees = [
-    ['Arturo Torres', hashPin('000000'), 'dueno', 0, 'todos', '👑'],
-    ['Ana Garcia', hashPin('1111'), 'gerente', 1, 'todos', '👩‍💼'],
-    ['Luis Mendez', hashPin('2222'), 'capitan', 2, 'salon', '🎖️'],
-    ['Juan Perez', hashPin('3333'), 'mesero', 4, 'salon', '🧑‍🍳'],
-    ['Maria Lopez', hashPin('4444'), 'bartender', 5, 'barra', '🍸'],
-    ['Roberto Diaz', hashPin('5555'), 'cocinero', 6, 'cocina', '👨‍🍳'],
-    ['Carlos Ruiz', hashPin('6666'), 'mesero', 4, 'terraza', '🧑‍🍳'],
-    ['DJ Memo', hashPin('7777'), 'dj', 7, 'karaoke', '🎤'],
-    ['Oscar Torres', hashPin('8888'), 'seguridad', 8, 'entrada', '🛡️'],
-    ['Sandra Rios', hashPin('9999'), 'cajero', 3, 'caja', '💳'],
+    ['Arturo Torres', hashPin('000000'), 'dueno', 0, 'todos', ''],
+    ['Ana Garcia', hashPin('1111'), 'gerente', 1, 'todos', ''],
+    ['Luis Mendez', hashPin('2222'), 'capitan', 2, 'salon', ''],
+    ['Juan Perez', hashPin('3333'), 'mesero', 4, 'salon', ''],
+    ['Maria Lopez', hashPin('4444'), 'bartender', 5, 'barra', ''],
+    ['Roberto Diaz', hashPin('5555'), 'cocinero', 6, 'cocina', ''],
+    ['Carlos Ruiz', hashPin('6666'), 'mesero', 4, 'terraza', ''],
+    ['DJ Memo', hashPin('7777'), 'dj', 7, 'karaoke', ''],
+    ['Oscar Torres', hashPin('8888'), 'seguridad', 8, 'entrada', ''],
+    ['Sandra Rios', hashPin('9999'), 'cajero', 3, 'caja', ''],
   ];
   const insertMany = db.transaction(() => {
     for (const e of employees) insertEmp.run(...e);
@@ -261,8 +439,8 @@ function seedData(db) {
   // ═══ CATEGORIES ═══
   const insertCat = db.prepare('INSERT INTO categories (name, icon, sort_order) VALUES (?,?,?)');
   const categories = [
-    ['Cervezas', '🍺', 1], ['Cocktails', '🍸', 2], ['Shots', '🥃', 3],
-    ['Botanas', '🍟', 4], ['Comida', '🍕', 5], ['Refrescos', '🧃', 6], ['Cafe', '☕', 7]
+    ['Cervezas', '', 1], ['Cocktails', '', 2], ['Shots', '', 3],
+    ['Botanas', '', 4], ['Comida', '', 5], ['Refrescos', '', 6], ['Cafe', '', 7]
   ];
   db.transaction(() => { for (const c of categories) insertCat.run(...c); })();
 
@@ -270,52 +448,52 @@ function seedData(db) {
   const insertProd = db.prepare('INSERT INTO products (name, category_id, price, cost, icon, stock, happy_hour, hh_discount) VALUES (?,?,?,?,?,?,?,?)');
   const products = [
     // Cervezas (cat 1)
-    ['Corona', 1, 45, 12, '🍺', 192, 1, 0.5],
-    ['Modelo Especial', 1, 50, 15, '🍺', 120, 1, 0.5],
-    ['Victoria', 1, 40, 10, '🍺', 96, 1, 0.5],
-    ['Heineken', 1, 65, 22, '🍺', 72, 0, 0],
-    ['Michelada', 1, 85, 20, '🍺', -1, 1, 0.5],
-    ['Pacifico', 1, 45, 12, '🍺', 48, 1, 0.5],
-    ['Negra Modelo', 1, 55, 16, '🍺', 48, 0, 0],
-    ['Cubeta x5', 1, 200, 55, '🧊', -1, 0, 0],
+    ['Corona', 1, 45, 12, '', 192, 1, 0.5],
+    ['Modelo Especial', 1, 50, 15, '', 120, 1, 0.5],
+    ['Victoria', 1, 40, 10, '', 96, 1, 0.5],
+    ['Heineken', 1, 65, 22, '', 72, 0, 0],
+    ['Michelada', 1, 85, 20, '', -1, 1, 0.5],
+    ['Pacifico', 1, 45, 12, '', 48, 1, 0.5],
+    ['Negra Modelo', 1, 55, 16, '', 48, 0, 0],
+    ['Cubeta x5', 1, 200, 55, '', -1, 0, 0],
     // Cocktails (cat 2)
-    ['Margarita', 2, 120, 28, '🍸', -1, 0, 0],
-    ['Paloma', 2, 90, 20, '🍸', -1, 0, 0],
-    ['Mojito', 2, 110, 25, '🍸', -1, 0, 0],
-    ['Pina Colada', 2, 130, 30, '🍸', -1, 0, 0],
-    ['Cuba Libre', 2, 95, 18, '🍸', -1, 0, 0],
-    ['Sangria', 2, 80, 15, '🍷', -1, 0, 0],
+    ['Margarita', 2, 120, 28, '', -1, 0, 0],
+    ['Paloma', 2, 90, 20, '', -1, 0, 0],
+    ['Mojito', 2, 110, 25, '', -1, 0, 0],
+    ['Pina Colada', 2, 130, 30, '', -1, 0, 0],
+    ['Cuba Libre', 2, 95, 18, '', -1, 0, 0],
+    ['Sangria', 2, 80, 15, '', -1, 0, 0],
     // Shots (cat 3)
-    ['Tequila Don Julio', 3, 80, 30, '🥃', 45, 0, 0],
-    ['Vodka', 3, 70, 18, '🥃', 105, 0, 0],
-    ['Whisky', 3, 100, 35, '🥃', 60, 0, 0],
-    ['Mezcal', 3, 90, 25, '🥃', 30, 0, 0],
-    ['Jagermeister', 3, 85, 28, '🥃', 40, 0, 0],
-    ['Ronda x4', 3, 280, 100, '🥃', -1, 0, 0],
+    ['Tequila Don Julio', 3, 80, 30, '', 45, 0, 0],
+    ['Vodka', 3, 70, 18, '', 105, 0, 0],
+    ['Whisky', 3, 100, 35, '', 60, 0, 0],
+    ['Mezcal', 3, 90, 25, '', 30, 0, 0],
+    ['Jagermeister', 3, 85, 28, '', 40, 0, 0],
+    ['Ronda x4', 3, 280, 100, '', -1, 0, 0],
     // Botanas (cat 4)
-    ['Nachos', 4, 90, 22, '🍟', -1, 0, 0],
-    ['Alitas BBQ', 4, 165, 55, '🍗', -1, 0, 0],
-    ['Papas Fritas', 4, 70, 15, '🍟', -1, 0, 0],
-    ['Guacamole', 4, 85, 20, '🥑', -1, 0, 0],
-    ['Tabla de Quesos', 4, 180, 60, '🧀', -1, 0, 0],
-    ['Tostadas de Atun', 4, 120, 35, '🍣', -1, 0, 0],
+    ['Nachos', 4, 90, 22, '', -1, 0, 0],
+    ['Alitas BBQ', 4, 165, 55, '', -1, 0, 0],
+    ['Papas Fritas', 4, 70, 15, '', -1, 0, 0],
+    ['Guacamole', 4, 85, 20, '', -1, 0, 0],
+    ['Tabla de Quesos', 4, 180, 60, '', -1, 0, 0],
+    ['Tostadas de Atun', 4, 120, 35, '', -1, 0, 0],
     // Comida (cat 5)
-    ['Hamburguesa', 5, 145, 40, '🍔', -1, 0, 0],
-    ['Pizza Personal', 5, 120, 30, '🍕', -1, 0, 0],
-    ['Tacos x3', 5, 95, 25, '🌮', -1, 0, 0],
-    ['Quesadilla', 5, 80, 18, '🧀', -1, 0, 0],
-    ['Hot Dog', 5, 65, 15, '🌭', -1, 0, 0],
-    ['Ensalada', 5, 90, 25, '🥗', -1, 0, 0],
+    ['Hamburguesa', 5, 145, 40, '', -1, 0, 0],
+    ['Pizza Personal', 5, 120, 30, '', -1, 0, 0],
+    ['Tacos x3', 5, 95, 25, '', -1, 0, 0],
+    ['Quesadilla', 5, 80, 18, '', -1, 0, 0],
+    ['Hot Dog', 5, 65, 15, '', -1, 0, 0],
+    ['Ensalada', 5, 90, 25, '', -1, 0, 0],
     // Refrescos (cat 6)
-    ['Coca-Cola', 6, 35, 8, '🧃', -1, 0, 0],
-    ['Agua Mineral', 6, 30, 5, '💧', -1, 0, 0],
-    ['Jugo de Naranja', 6, 40, 12, '🍊', -1, 0, 0],
-    ['Red Bull', 6, 65, 30, '⚡', -1, 0, 0],
-    ['Limonada', 6, 35, 8, '🍋', -1, 0, 0],
+    ['Coca-Cola', 6, 35, 8, '', -1, 0, 0],
+    ['Agua Mineral', 6, 30, 5, '', -1, 0, 0],
+    ['Jugo de Naranja', 6, 40, 12, '', -1, 0, 0],
+    ['Red Bull', 6, 65, 30, '', -1, 0, 0],
+    ['Limonada', 6, 35, 8, '', -1, 0, 0],
     // Cafe (cat 7)
-    ['Americano', 7, 40, 8, '☕', -1, 0, 0],
-    ['Cappuccino', 7, 55, 12, '☕', -1, 0, 0],
-    ['Latte', 7, 55, 12, '☕', -1, 0, 0],
+    ['Americano', 7, 40, 8, '', -1, 0, 0],
+    ['Cappuccino', 7, 55, 12, '', -1, 0, 0],
+    ['Latte', 7, 55, 12, '', -1, 0, 0],
   ];
   db.transaction(() => { for (const p of products) insertProd.run(...p); })();
 
@@ -367,4 +545,4 @@ function seedData(db) {
 }
 
 // DB_PATH exported as single source of truth — import here, not hard-coded elsewhere
-module.exports = { getDb, DB_PATH };
+module.exports = { getDb, ensureDbReady, DB_PATH };

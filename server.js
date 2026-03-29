@@ -410,9 +410,11 @@ app.post('/api/stripe/webhook', express.raw({ type: 'application/json' }), async
 app.use(express.json({ limit: '1mb' }));
 
 // ── POS Eatertainment Module (DESPUES de express.json) ────
+let _posReady = Promise.resolve();
 try {
   const pos = require('./pos');
-  pos.init(app, io);
+  // pos.init is async (sql.js requires async init) — resolved before server.listen
+  _posReady = pos.init(app, io).catch(e => console.error('[POS] Init failed:', e.message));
 } catch (e) {
   console.log('[POS] Module not loaded:', e.message);
 }
@@ -1752,8 +1754,8 @@ process.on('unhandledRejection', (reason) => {
   console.error('[FATAL] Unhandled Rejection:', reason);
 });
 
-// ── Arranque ────────────────────────────────────────────────────────────────
-server.listen(PORT, HOST, () => {
+// ── Arranque (await POS async init before listening) ─────────────────────
+_posReady.then(() => server.listen(PORT, HOST, () => {
   const ip = getLocalIp();
   const activeLic = getActiveLicense();
   console.log('');
@@ -1769,4 +1771,4 @@ server.listen(PORT, HOST, () => {
   console.log('   MASTER:    ****** (ver .master_admin o env MASTER_ADMIN)');
   console.log('  =============================================');
   console.log('');
-});
+}));

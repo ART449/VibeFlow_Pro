@@ -22,3 +22,7 @@ subscriptions.json
 # Credentials (never commit)
 docs/.credentials
 *.credentials
+*.db
+*.db-shm
+*.db-wal
+.claude/worktrees/
