@@ -10,6 +10,148 @@ Dejar claro que trabajo ya venia construido, que trabajo detecte en progreso, qu
 
 ---
 
+## ACTUALIZACION 4 - LRC Studio Pro y Song Package (base para karaoke + gemelo)
+
+### Alcance de esta pasada
+
+Esta cuarta pasada de Codex fue sobre el sistema de authoring LRC y la separacion entre letra, timeline y paquete de cancion.
+
+No toque:
+
+- `server.js`
+- `routes/`
+- `pos/`
+- `public/pos.html`
+- `public/bares-v2.html`
+- `public/pos-admin.html`
+
+### Objetivo cumplido
+
+Se creo la fase 1 real del flujo LRC para ByFlow:
+
+1. pagina separada de authoring `public/lrc-studio.html`
+2. motor compartido de LRC
+3. almacenamiento local de `Song Package`
+4. export a `.lrc` y `.json`
+5. compatibilidad con el catalogo actual `/api/canciones`
+6. acceso directo desde `public/index.html`
+
+### Archivos creados
+
+- `public/lrc-studio.html`
+- `public/js/modules/lrc-engine.js`
+- `public/js/modules/song-package.js`
+- `public/js/modules/lrc-editor.js`
+
+### Archivos actualizados
+
+- `public/index.html`
+- `docs/HANDOFF_CODEX_A_CLAUDE_2026-03-29.md`
+
+### Lo que hace cada pieza nueva
+
+`public/js/modules/lrc-engine.js`
+
+- parser y normalizador de LRC
+- conversion entre texto plano y cues por linea
+- export LRC con offset global
+- borrador automatico de timeline
+- validacion de cues
+- resolucion de linea activa por tiempo real
+
+`public/js/modules/song-package.js`
+
+- define el artefacto `Song Package`
+- guarda y lista packages en `localStorage`
+- exporta `.json` y `.lrc`
+- convierte canciones del catalogo actual a package
+- genera payload base para futuro gemelo independiente
+
+`public/js/modules/lrc-editor.js`
+
+- controla la pagina `lrc-studio.html`
+- carga letras desde texto, LRC o catalogo
+- sincroniza por linea con audio local
+- hotkeys:
+  - `Space` marca linea
+  - `Shift+Space` play/pause
+  - `A/D` nudge fino
+  - `Shift+A/D` nudge grande
+  - `J/K` seek
+  - `Ctrl+S` guardar local
+- preview de teleprompter
+- guardado al catalogo karaoke actual
+
+`public/lrc-studio.html`
+
+- herramienta separada del monolito principal
+- biblioteca de songs existentes + packages locales
+- editor de lineas
+- audio de referencia local
+- preview tipo teleprompter
+- export / copy del payload para gemelo
+
+### Decision tecnica importante
+
+No intente resolver el gemelo final solo desde frontend porque el estado actual de Socket.IO en backend sigue sincronizando por:
+
+- `lyrics`
+- `currentWord`
+- `scrollSpeed`
+- `isPlaying`
+
+Eso sirve para espejo simple, pero NO para un reproductor gemelo verdaderamente autonomo.
+
+Por eso esta fase deja listo el artefacto correcto del lado frontend:
+
+- `Song Package`
+- `lrcText`
+- `lyricsPlain`
+- `timingMode`
+- `globalOffsetMs`
+- payload exportable para sync futuro
+
+### Nota importante para Claude
+
+Si Claude va a hacer la siguiente fase backend, la recomendacion correcta es cambiar el contrato del gemelo para transmitir algo asi:
+
+- `songId`
+- `title`
+- `artist`
+- `currentTimeMs`
+- `playing`
+- `rate`
+- `updatedAt`
+- `globalOffsetMs`
+- `lrcText` o referencia al package
+
+No conviene seguir usando `currentWord` como fuente principal de sincronizacion si el objetivo es reproductor gemelo serio.
+
+### Integracion con lo actual
+
+Esta fase NO rompe el karaoke actual:
+
+- si el timeline esta completo, `Guardar al catalogo` manda LRC a `/api/canciones`
+- si no esta completo, guarda texto plano
+- `public/index.html` solo recibe un link nuevo a `lrc-studio.html`
+
+### Verificacion que ya hice
+
+- `node --check` sobre:
+  - `public/js/modules/lrc-engine.js`
+  - `public/js/modules/song-package.js`
+  - `public/js/modules/lrc-editor.js`
+- validacion automatica de que `public/lrc-studio.html` contiene todos los IDs usados por el editor
+- validacion de que `public/index.html` ya enlaza `lrc-studio.html`
+
+### Siguiente paso natural para Claude
+
+1. actualizar backend/socket para sync por tiempo real y no por palabra
+2. permitir que `remote.html` o una nueva `twin-player.html` consuma el `Song Package`
+3. si Arturo lo pide, agregar referencia YouTube embebida como fuente de authoring dentro de `lrc-studio.html`
+
+---
+
 ## ACTUALIZACION 3 - Prioridad 2 para mercado (privacidad, terminos, SEO, analytics, iconos)
 
 ### Alcance de esta pasada

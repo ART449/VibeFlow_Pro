@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5">
+<meta name="theme-color" content="#07070d">
+<title>ByFlow | LRC Studio Pro</title>
+<style>
+*{box-sizing:border-box}
+:root{
+  --bg:#07070d;--panel:#11111a;--panel2:#171726;--line:rgba(255,255,255,.08);--text:#f4f4f8;--sub:rgba(255,255,255,.62);
+  --pink:#ff006e;--cyan:#00d5ff;--gold:#fbbf24;--good:#00e59b;--bad:#ff6b6b;--shadow:0 30px 80px rgba(0,0,0,.35);
+}
+html,body{margin:0;padding:0;min-height:100%;background:
+  radial-gradient(circle at top left,rgba(255,0,110,.18),transparent 26%),
+  radial-gradient(circle at top right,rgba(0,213,255,.16),transparent 24%),
+  linear-gradient(180deg,#090910,#07070d 48%,#05050a);color:var(--text);font-family:"Segoe UI",Tahoma,sans-serif}
+a{color:inherit}
+.shell{max-width:1680px;margin:0 auto;padding:28px 20px 40px}
+.hero{position:relative;overflow:hidden;border:1px solid rgba(255,255,255,.08);border-radius:28px;padding:28px;background:
+  linear-gradient(135deg,rgba(255,0,110,.14),rgba(0,213,255,.10)),
+  linear-gradient(180deg,rgba(255,255,255,.04),rgba(255,255,255,.02));box-shadow:var(--shadow)}
+.hero::after{content:"";position:absolute;inset:auto -12% -42% auto;width:360px;height:360px;border-radius:50%;
+  background:radial-gradient(circle,rgba(251,191,36,.22),transparent 68%);filter:blur(10px);pointer-events:none}
+.eyebrow{display:inline-flex;gap:8px;align-items:center;padding:7px 12px;border-radius:999px;background:rgba(255,255,255,.05);
+  border:1px solid rgba(255,255,255,.08);color:var(--good);font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase}
+.hero-grid{display:grid;grid-template-columns:1.4fr .8fr;gap:24px;align-items:end}
+.hero h1{margin:14px 0 12px;font-size:clamp(38px,6vw,76px);line-height:.95;letter-spacing:-.04em}
+.hero p{max-width:860px;margin:0;color:var(--sub);font-size:18px;line-height:1.65}
+.hero-actions{display:flex;gap:12px;flex-wrap:wrap;margin-top:20px}
+.hero-actions a{display:inline-flex;align-items:center;justify-content:center;padding:12px 16px;border-radius:14px;font-weight:700;font-size:14px;text-decoration:none}
+.hero-actions a.primary{background:linear-gradient(135deg,var(--pink),#ff4d6d);color:#fff}
+.hero-actions a.secondary{background:rgba(255,255,255,.05);border:1px solid var(--line);color:var(--text)}
+.hotkeys{display:grid;gap:10px;border:1px solid var(--line);border-radius:22px;background:rgba(255,255,255,.03);padding:18px}
+.hotkeys h3{margin:0;font-size:14px;text-transform:uppercase;letter-spacing:.1em;color:var(--sub)}
+.key-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.key-card{padding:10px 12px;border-radius:14px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.06)}
+.key-card kbd{display:inline-flex;min-width:34px;justify-content:center;padding:6px 8px;border-radius:10px;background:#05050a;
+  border:1px solid rgba(255,255,255,.09);font-size:12px;font-family:ui-monospace,Consolas,monospace}
+.workspace{margin-top:24px;display:grid;grid-template-columns:320px minmax(0,1fr) 420px;gap:18px;align-items:start}
+.panel{border:1px solid var(--line);border-radius:24px;background:
+  linear-gradient(180deg,rgba(255,255,255,.04),rgba(255,255,255,.02)),
+  linear-gradient(180deg,var(--panel),var(--panel2));box-shadow:var(--shadow)}
+.panel-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;padding:18px 18px 12px;border-bottom:1px solid rgba(255,255,255,.06)}
+.panel h2,.panel h3{margin:0;font-size:15px;letter-spacing:.02em}
+.panel-sub{font-size:12px;color:var(--sub);line-height:1.45}
+.panel-body{padding:16px 18px 18px}
+.stack{display:grid;gap:14px}
+.field{display:grid;gap:6px}
+.field label{font-size:12px;color:var(--sub);font-weight:700;letter-spacing:.04em;text-transform:uppercase}
+.field input,.field textarea{width:100%;background:rgba(0,0,0,.24);border:1px solid rgba(255,255,255,.08);color:var(--text);
+  border-radius:14px;padding:12px 14px;font:inherit}
+.field textarea{min-height:180px;resize:vertical;line-height:1.6}
+.mini-note{font-size:12px;color:var(--sub);line-height:1.5}
+.pill-row,.button-row,.editor-toolbar{display:flex;flex-wrap:wrap;gap:8px}
+.stat-pill{display:inline-flex;align-items:center;padding:8px 10px;border-radius:999px;background:rgba(255,255,255,.05);
+  border:1px solid rgba(255,255,255,.07);font-size:12px;font-weight:700}
+.stat-pill.warn{color:#ffd166}
+.stat-pill.subtle{color:var(--sub);font-weight:600}
+.button-row button,.button-row label.buttonlike,.editor-toolbar button,.editor-toolbar label{appearance:none;border:none;cursor:pointer;padding:12px 14px;border-radius:14px;font-weight:700;font-size:13px}
+.primary{background:linear-gradient(135deg,var(--pink),#ff4d6d);color:#fff}
+.accent{background:linear-gradient(135deg,var(--cyan),#0084ff);color:#04111b}
+.ghost{background:rgba(255,255,255,.05);border:1px solid var(--line);color:var(--text)}
+.warn{background:rgba(255,107,107,.13);border:1px solid rgba(255,107,107,.24);color:#ffd6d6}
+.buttonlike{display:inline-flex;align-items:center;justify-content:center}.buttonlike input{display:none}
+.library-list{display:grid;gap:10px;max-height:360px;overflow:auto;padding-right:4px}
+.library-card{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px}
+.library-main{width:100%;text-align:left;padding:12px;border-radius:16px;border:1px solid rgba(255,255,255,.07);background:rgba(255,255,255,.04);color:var(--text);cursor:pointer}
+.library-trash{width:42px;border:none;border-radius:14px;background:rgba(255,107,107,.12);color:#ffd1d1;cursor:pointer;font-weight:800}
+.library-title{font-size:14px;font-weight:800;line-height:1.2}.library-meta{margin-top:4px;font-size:12px;color:var(--sub)}
+.library-chips{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}.library-chips span{font-size:11px;padding:4px 8px;border-radius:999px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.07)}
+.cue-list{display:grid;gap:8px;max-height:760px;overflow:auto;padding-right:4px}
+.cue-row{display:grid;grid-template-columns:52px 108px minmax(0,1fr) 88px;gap:10px;align-items:center;padding:10px;border-radius:16px;border:1px solid rgba(255,255,255,.07);background:rgba(255,255,255,.03)}
+.cue-row.active{border-color:rgba(0,213,255,.45);box-shadow:0 0 0 1px rgba(0,213,255,.2) inset}
+.cue-row.timed{background:linear-gradient(180deg,rgba(0,229,155,.05),rgba(255,255,255,.02))}
+.cue-row.untimed{background:linear-gradient(180deg,rgba(255,184,0,.05),rgba(255,255,255,.02))}
+.cue-index{width:100%;padding:10px 0;border:none;border-radius:12px;background:#090912;color:var(--text);cursor:pointer;font-weight:800}
+.cue-time-input{width:100%;background:#090912;border:1px solid rgba(255,255,255,.08);color:var(--text);border-radius:12px;padding:10px 12px;font:inherit}
+.cue-text{font-size:14px;line-height:1.45;color:var(--text)}.cue-actions{display:flex;gap:6px}
+.cue-actions button{flex:1;border:none;border-radius:12px;padding:10px 0;background:rgba(255,255,255,.05);color:var(--text);cursor:pointer;font-size:12px;font-weight:700}
+.audio-box{display:grid;gap:12px}.audio-box audio{width:100%;accent-color:var(--pink)}
+.audio-meta{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;font-size:12px;color:var(--sub)}
+.current-audio{font-weight:700;color:var(--text)}
+.toggle-row{display:flex;justify-content:space-between;align-items:center;gap:12px}.toggle-row input{accent-color:var(--pink)}
+.preview-shell{border-radius:22px;border:1px solid rgba(255,255,255,.07);background:
+  radial-gradient(circle at top,rgba(255,0,110,.10),transparent 48%),
+  linear-gradient(180deg,#090912,#0f0f18 38%,#090912);padding:16px}
+.preview-screen{min-height:520px;max-height:520px;overflow:auto;border-radius:18px;padding:22px;background:rgba(0,0,0,.3);border:1px solid rgba(255,255,255,.06)}
+.preview-line{font-size:30px;line-height:1.55;text-align:center;padding:10px 0;color:rgba(255,255,255,.36);transition:all .18s ease}
+.preview-line.past{color:rgba(255,255,255,.18)}.preview-line.active{color:#fff;transform:scale(1.02);text-shadow:0 0 16px rgba(255,0,110,.28),0 0 36px rgba(0,213,255,.12)}
+pre.payload{margin:0;max-height:220px;overflow:auto;border-radius:18px;padding:14px;background:#06060c;border:1px solid rgba(255,255,255,.06);font-size:12px;line-height:1.45;color:#9fe7ff}
+.empty-card{padding:24px;border-radius:16px;border:1px dashed rgba(255,255,255,.12);background:rgba(255,255,255,.03);color:var(--sub);text-align:center;line-height:1.6}
+.empty-card.small{padding:18px;font-size:12px}.footnote{margin-top:16px;font-size:12px;color:var(--sub);line-height:1.6}
+.lrc-toast{position:fixed;right:18px;bottom:18px;transform:translateY(24px);opacity:0;pointer-events:none;padding:12px 14px;border-radius:14px;background:#0d0d14;border:1px solid rgba(255,255,255,.08);color:var(--text);box-shadow:var(--shadow);transition:all .2s ease;z-index:99}
+.lrc-toast.show{opacity:1;transform:translateY(0)}.lrc-toast.ok{border-color:rgba(0,229,155,.34)}.lrc-toast.warn{border-color:rgba(255,107,107,.34)}
+::-webkit-scrollbar{width:10px;height:10px}::-webkit-scrollbar-thumb{background:rgba(255,255,255,.12);border-radius:999px}::-webkit-scrollbar-track{background:transparent}
+@media (max-width:1320px){.workspace{grid-template-columns:1fr}.preview-screen{max-height:380px;min-height:380px}.hero-grid{grid-template-columns:1fr}}
+@media (max-width:720px){.shell{padding:16px 14px 30px}.hero{padding:22px}.hero h1{font-size:38px}.cue-row{grid-template-columns:44px 96px minmax(0,1fr)}.cue-actions{grid-column:1 / -1}.preview-line{font-size:22px}}
+</style>
+</head>
+<body>
+  <div class="shell">
+    <section class="hero">
+      <div class="hero-grid">
+        <div>
+          <div class="eyebrow">ByFlow LRC Studio Pro</div>
+          <h1>Sincroniza letras como productor, no como parche.</h1>
+          <p>Este estudio separa la cancion, la letra y el timeline en un Song Package reutilizable. Cargas una letra, marcas tiempos con hotkeys, previsualizas el teleprompter y exportas un LRC o JSON listo para que el reproductor principal y el gemelo lean la misma fuente de verdad.</p>
+          <div class="hero-actions">
+            <a class="primary" href="/index.html">Volver a ByFlow</a>
+            <a class="secondary" href="/remote.html" target="_blank" rel="noopener">Abrir display remoto</a>
+          </div>
+        </div>
+        <aside class="hotkeys">
+          <h3>Hotkeys</h3>
+          <div class="key-grid">
+            <div class="key-card"><kbd>Space</kbd> Marca la linea activa</div>
+            <div class="key-card"><kbd>Shift+Space</kbd> Play o pausa</div>
+            <div class="key-card"><kbd>Up / Down</kbd> Cambia la linea activa</div>
+            <div class="key-card"><kbd>A / D</kbd> Nudge -/+100ms</div>
+            <div class="key-card"><kbd>Shift+A / D</kbd> Nudge -/+500ms</div>
+            <div class="key-card"><kbd>J / K</kbd> Seek -/+2s</div>
+            <div class="key-card"><kbd>Ctrl+S</kbd> Guarda local</div>
+            <div class="key-card"><kbd>JSON</kbd> Export para gemelo</div>
+          </div>
+        </aside>
+      </div>
+    </section>
+
+    <section class="workspace">
+      <aside class="panel">
+        <div class="panel-head"><div><h2>Biblioteca</h2><div class="panel-sub">Carga packages locales o canciones existentes del catalogo karaoke.</div></div></div>
+        <div class="panel-body stack">
+          <div class="field"><label>Song Packages locales</label><input id="lrc-local-filter" type="text" placeholder="Buscar package local..."></div>
+          <div id="local-package-list" class="library-list"></div>
+          <div class="field"><label>Catalogo karaoke</label><input id="lrc-catalog-filter" type="text" placeholder="Buscar cancion guardada..."></div>
+          <div id="catalog-song-list" class="library-list"></div>
+          <div class="button-row"><label class="buttonlike ghost">Importar archivo<input id="lrc-import-file" type="file" accept=".json,.lrc,.txt"></label></div>
+        </div>
+      </aside>
+
+      <main class="panel">
+        <div class="panel-head">
+          <div><h2>Editor de timeline</h2><div class="panel-sub">Construye las lineas, marca tiempos y corrige fino el LRC antes de exportarlo.</div></div>
+          <div id="lrc-stats" class="pill-row"></div>
+        </div>
+        <div class="panel-body stack">
+          <div class="panel" style="border-radius:20px">
+            <div class="panel-body stack">
+              <div class="field"><label>Letra base</label><textarea id="lyrics-source" placeholder="Pega aqui la letra o un LRC existente. Si pegas LRC, el editor parsea los tiempos. Si pegas texto plano, crea lineas listas para sincronizar."></textarea></div>
+              <div class="button-row"><button id="lyrics-build-cues" class="accent" type="button">Crear o actualizar lineas</button></div>
+            </div>
+          </div>
+
+          <div class="editor-toolbar">
+            <button id="lrc-capture-now" class="primary" type="button">Marcar linea activa</button>
+            <button id="lrc-auto-spread" class="ghost" type="button">Borrador automatico</button>
+            <button id="lrc-normalize" class="ghost" type="button">Normalizar tiempos</button>
+            <button id="lrc-clear-current" class="ghost" type="button">Limpiar linea activa</button>
+            <button id="lrc-clear-all" class="warn" type="button">Limpiar timeline</button>
+            <label class="ghost toggle-row"><span>Auto avanzar</span><input id="lrc-auto-advance" type="checkbox" checked></label>
+          </div>
+
+          <div id="cue-list" class="cue-list"></div>
+        </div>
+      </main>
+
+      <aside class="stack">
+        <section class="panel">
+          <div class="panel-head"><div><h3>Song Package</h3><div class="panel-sub">Metadata y offset global del paquete que leeran el karaoke y el gemelo.</div></div></div>
+          <div class="panel-body stack">
+            <div class="field"><label>Titulo</label><input id="pkg-title" type="text" placeholder="Ej. Noche de Acero"></div>
+            <div class="field"><label>Artista</label><input id="pkg-artist" type="text" placeholder="Ej. ByFlow Session"></div>
+            <div class="field"><label>Offset global (ms)</label><input id="pkg-offset" type="number" step="50" value="0" placeholder="0"></div>
+            <div class="field"><label>Notas</label><textarea id="pkg-notes" style="min-height:96px" placeholder="Observaciones de tempo, version, corte, etc."></textarea></div>
+          </div>
+        </section>
+
+        <section class="panel">
+          <div class="panel-head"><div><h3>Audio de referencia</h3><div class="panel-sub">Por ahora la referencia fina se hace con archivo local para darte sincronizacion estable.</div></div></div>
+          <div class="panel-body audio-box">
+            <div class="button-row">
+              <label class="buttonlike primary">Cargar audio local<input id="lrc-audio-file" type="file" accept="audio/*"></label>
+              <button id="lrc-play-pause" class="ghost" type="button">Play</button>
+              <button id="lrc-seek-back" class="ghost" type="button">-2s</button>
+              <button id="lrc-seek-forward" class="ghost" type="button">+2s</button>
+            </div>
+            <audio id="lrc-audio" controls preload="metadata"></audio>
+            <div class="audio-meta"><div class="current-audio" id="pkg-audio-name">Sin audio de referencia</div><div id="lrc-audio-clock">00:00.00</div></div>
+            <div class="mini-note">El audio no se guarda dentro del package. Se guarda el nombre de referencia, el timeline y el LRC resultante.</div>
+          </div>
+        </section>
+
+        <section class="panel">
+          <div class="panel-head"><div><h3>Preview teleprompter</h3><div class="panel-sub">Vista previa del LRC ya resuelto con offset global aplicado.</div></div></div>
+          <div class="panel-body"><div class="preview-shell"><div id="preview-lines" class="preview-screen"></div></div></div>
+        </section>
+
+        <section class="panel">
+          <div class="panel-head"><div><h3>Export y sync</h3><div class="panel-sub">Compatibilidad con el catalogo actual y payload listo para el gemelo independiente.</div></div></div>
+          <div class="panel-body stack">
+            <div class="button-row">
+              <button id="lrc-save-local" class="primary" type="button">Guardar package local</button>
+              <button id="lrc-save-catalog" class="accent" type="button">Guardar al catalogo</button>
+              <button id="lrc-export-lrc" class="ghost" type="button">Descargar .lrc</button>
+              <button id="lrc-export-json" class="ghost" type="button">Descargar .json</button>
+              <button id="lrc-copy-lrc" class="ghost" type="button">Copiar LRC</button>
+              <button id="lrc-copy-twin" class="ghost" type="button">Copiar payload gemelo</button>
+            </div>
+            <pre id="twin-payload" class="payload"></pre>
+            <div class="footnote">Si guardas al catalogo karaoke, ByFlow actual puede seguir usando la letra. Si el timeline esta completo, guarda LRC; si no, guarda texto plano.</div>
+          </div>
+        </section>
+      </aside>
+    </section>
+  </div>
+
+  <div id="lrc-toast" class="lrc-toast"></div>
+
+  <script src="/js/core/namespace.js"></script>
+  <script src="/js/modules/lrc-engine.js"></script>
+  <script src="/js/modules/song-package.js"></script>
+  <script src="/js/modules/lrc-editor.js"></script>
+  <script>
+    window.addEventListener('DOMContentLoaded', function() {
+      window.VibeFlow.modules.lrcEditor.init();
+    });
+  </script>
+</body>
+</html>
