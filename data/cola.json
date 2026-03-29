@@ -1,22 +1,6 @@
 [
   {
-    "id": "mmooh6xub9evzqrs9wa",
-    "cantante": "Carlos",
-    "cancion": "Despacito",
-    "mesa": "3",
-    "estado": "terminado",
-    "timestamp": 1773393122658
-  },
-  {
-    "id": "mmoohowsbuxdtr4ndd",
-    "cantante": "Maria",
-    "cancion": "Felices los 4",
-    "mesa": "7",
-    "estado": "terminado",
-    "timestamp": 1773393145948
-  },
-  {
-    "id": "mmoohowwtwa4slhneok",
+    "id": "demo001",
     "cantante": "Pedro",
     "cancion": "La Bamba",
     "mesa": "3",
@@ -24,11 +8,19 @@
     "timestamp": 1773393145952
   },
   {
-    "id": "mmu4691gfwghrxywu05",
-    "cantante": "Test",
+    "id": "demo002",
+    "cantante": "Maria",
+    "cancion": "Cama y Mesa",
+    "mesa": "7",
+    "estado": "esperando",
+    "timestamp": 1773393145960
+  },
+  {
+    "id": "demo003",
+    "cantante": "Carlos",
     "cancion": "Despacito",
-    "mesa": null,
-    "estado": "cantando",
-    "timestamp": 1773721816900
+    "mesa": "1",
+    "estado": "esperando",
+    "timestamp": 1773393145970
   }
 ]

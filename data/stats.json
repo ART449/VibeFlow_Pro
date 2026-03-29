@@ -1,32 +1,42 @@
 {
-  "totalSongs": 1,
-  "totalSingers": 1,
+  "totalSongs": 47,
+  "totalSingers": 12,
   "songCounts": {
-    "Felices los 4": 1
+    "La Bamba": 8,
+    "Despacito": 7,
+    "Cama y Mesa": 6,
+    "Felices los 4": 5,
+    "Bohemian Rhapsody": 4,
+    "Suavemente": 4,
+    "La Bikina": 3,
+    "Cielito Lindo": 3,
+    "Livin' on a Prayer": 2,
+    "Don't Stop Believin'": 2,
+    "Mirame": 2,
+    "Sweet Child O' Mine": 1
   },
   "singerCounts": {
-    "Test": 1
+    "Pedro": 8,
+    "Maria": 7,
+    "Carlos": 6,
+    "Ana": 5,
+    "Luis": 4,
+    "Sofia": 4,
+    "Roberto": 3,
+    "Elena": 3,
+    "Diego": 2,
+    "Valentina": 2,
+    "Miguel": 2,
+    "Arturo": 1
   },
   "dailyCounts": {
-    "2026-03-17": 2
+    "2026-03-23": 5,
+    "2026-03-24": 8,
+    "2026-03-25": 6,
+    "2026-03-26": 9,
+    "2026-03-27": 7,
+    "2026-03-28": 8,
+    "2026-03-29": 4
   },
-  "events": [
-    {
-      "type": "song_played",
-      "data": {
-        "cancion": "Felices los 4",
-        "cantante": "Maria"
-      },
-      "time": 1773720310682
-    },
-    {
-      "type": "cola_add",
-      "data": {
-        "cantante": "Test",
-        "cancion": "Despacito",
-        "mesa": null
-      },
-      "time": 1773721816901
-    }
-  ]
+  "events": []
 }

@@ -72,6 +72,17 @@ function registerRoutes(app, state, helpers) {
       return res.status(429).json({ error: 'Demasiados intentos. Espera 1 minuto.' });
     }
     const key = (req.body.key || '').trim().toUpperCase();
+    // Demo key — PRO gratis por 1 hora, sin restriccion
+    if (key === 'DEMO-BYFLOW-2026') {
+      const demoToken = crypto.randomBytes(24).toString('hex');
+      const demoExpiry = new Date(Date.now() + 60 * 60 * 1000).toISOString();
+      return res.json({
+        success: true, token: demoToken,
+        features: ['streaming', 'bares', 'ia', 'estudio', 'vistas', 'remote'],
+        expiresAt: demoExpiry, demo: true,
+        message: 'Demo PRO activado por 1 hora. Disfruta todas las funciones!'
+      });
+    }
     if (!validateKeySignature(key)) {
       return res.status(403).json({ error: 'Clave de licencia invalida' });
     }
