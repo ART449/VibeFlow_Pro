@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Tu Cuenta — ByFlow</title>
+<link href="https://fonts.googleapis.com/css2?family=Great+Vibes&family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+:root{
+  --bg:#0a0a0f;--surface:rgba(255,255,255,.04);--surface2:rgba(255,255,255,.07);
+  --border:rgba(255,255,255,.08);--text:#e8e8f0;--sub:rgba(255,255,255,.55);
+  --orange:#ff8a00;--amber:#fbbf24;--green:#34d399;--red:#ef4444;
+}
+body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex;align-items:center;justify-content:center;padding:16px;}
+
+.bill{width:100%;max-width:400px;background:rgba(15,15,22,.98);border:1px solid var(--border);border-radius:20px;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.4);}
+.bill-header{text-align:center;padding:24px 20px 16px;border-bottom:1px solid var(--border);}
+.bill-logo{font-family:'Great Vibes',cursive;font-size:2rem;background:linear-gradient(135deg,var(--orange),var(--amber));-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+.bill-bar{font-size:14px;font-weight:700;margin-top:4px;}
+.bill-meta{font-size:10px;color:var(--sub);margin-top:6px;display:flex;justify-content:center;gap:12px;}
+.bill-meta span{display:flex;align-items:center;gap:3px;}
+
+.bill-items{padding:16px 20px;}
+.bill-items-title{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:2px;color:var(--sub);margin-bottom:10px;}
+.item{display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid rgba(255,255,255,.03);}
+.item:last-child{border-bottom:none;}
+.item-icon{font-size:16px;width:24px;text-align:center;flex-shrink:0;}
+.item-info{flex:1;}
+.item-name{font-size:12px;font-weight:500;}
+.item-qty{font-size:10px;color:var(--sub);}
+.item-price{font-size:12px;font-weight:700;color:var(--orange);}
+
+.bill-totals{padding:12px 20px 20px;border-top:1px solid var(--border);}
+.total-row{display:flex;justify-content:space-between;font-size:12px;margin-bottom:6px;}
+.total-row.disc{color:var(--green);}
+.total-row.grand{font-size:18px;font-weight:800;color:var(--orange);margin-top:8px;padding-top:8px;border-top:1px solid var(--border);}
+
+.bill-status{text-align:center;padding:12px 20px 20px;}
+.status-badge{display:inline-block;padding:6px 16px;border-radius:8px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;}
+.status-abierta{background:rgba(255,138,0,.12);color:var(--orange);}
+.status-pagada{background:rgba(52,211,153,.12);color:var(--green);}
+.status-cerrada{background:rgba(96,165,250,.12);color:#60a5fa;}
+.status-cancelada{background:rgba(239,68,68,.12);color:var(--red);}
+
+.bill-footer{text-align:center;padding:12px 20px 20px;font-size:9px;color:rgba(255,255,255,.25);}
+
+.bill-loading{text-align:center;padding:60px 20px;}
+.bill-loading .spinner{width:32px;height:32px;border:3px solid var(--border);border-top-color:var(--orange);border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 12px;}
+@keyframes spin{to{transform:rotate(360deg);}}
+.bill-loading p{font-size:12px;color:var(--sub);}
+
+.bill-error{text-align:center;padding:60px 20px;}
+.bill-error .err-icon{font-size:48px;margin-bottom:12px;opacity:.5;}
+.bill-error .err-msg{font-size:13px;color:var(--sub);}
+</style>
+</head>
+<body>
+
+<div class="bill" id="bill">
+  <div class="bill-loading" id="bill-loading">
+    <div class="spinner"></div>
+    <p>Cargando tu cuenta...</p>
+  </div>
+</div>
+
+<script>
+(function() {
+  var params = new URLSearchParams(location.search);
+  var orderId = params.get('order') || location.pathname.split('/').pop();
+
+  if (!orderId || isNaN(parseInt(orderId))) {
+    showError('No se encontro el numero de orden');
+    return;
+  }
+
+  fetch('/api/cuenta/' + encodeURIComponent(orderId))
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+      if (!data.ok) {
+        showError(data.error || 'Orden no encontrada');
+        return;
+      }
+      renderBill(data);
+    })
+    .catch(function() {
+      showError('No se pudo conectar con el servidor');
+    });
+
+  function showError(msg) {
+    document.getElementById('bill').innerHTML =
+      '<div class="bill-header"><div class="bill-logo">ByFlow</div></div>' +
+      '<div class="bill-error">' +
+      '<div class="err-icon">&#x1F614;</div>' +
+      '<div class="err-msg">' + escapeHtml(msg) + '</div>' +
+      '</div>';
+  }
+
+  function escapeHtml(str) {
+    if (typeof str !== 'string') return '';
+    return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+  function fmtMoney(n) {
+    return '$' + Number(n || 0).toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  }
+
+  function renderBill(data) {
+    var o = data.order;
+    var items = data.items || [];
+    var d = new Date(o.created_at);
+    var dateStr = d.toLocaleDateString('es-MX', { day:'2-digit', month:'short', year:'numeric' });
+    var timeStr = d.toLocaleTimeString('es-MX', { hour:'2-digit', minute:'2-digit' });
+
+    var statusCls = 'status-' + (o.status || 'abierta');
+    var statusLabel = { abierta:'Cuenta Abierta', pagada:'Pagada', cerrada:'Cerrada', cancelada:'Cancelada' };
+
+    var html = '';
+    // Header
+    html += '<div class="bill-header">';
+    html += '<div class="bill-logo">ByFlow</div>';
+    html += '<div class="bill-bar">' + escapeHtml(data.bar_name) + '</div>';
+    html += '<div class="bill-meta">';
+    html += '<span>&#x1F37B; Mesa ' + escapeHtml(String(o.table_number)) + '</span>';
+    html += '<span>&#x1F4C5; ' + dateStr + '</span>';
+    html += '<span>&#x1F552; ' + timeStr + '</span>';
+    html += '</div></div>';
+
+    // Items
+    html += '<div class="bill-items">';
+    html += '<div class="bill-items-title">Detalle de consumo</div>';
+    for (var i = 0; i < items.length; i++) {
+      var it = items[i];
+      html += '<div class="item">';
+      html += '<div class="item-icon">' + (it.icon || '&#x1F37A;') + '</div>';
+      html += '<div class="item-info"><div class="item-name">' + escapeHtml(it.name) + '</div>';
+      html += '<div class="item-qty">' + it.qty + ' x ' + fmtMoney(it.unit_price) + '</div></div>';
+      html += '<div class="item-price">' + fmtMoney(it.total) + '</div>';
+      html += '</div>';
+    }
+    html += '</div>';
+
+    // Totals
+    html += '<div class="bill-totals">';
+    html += '<div class="total-row"><span>Subtotal</span><span>' + fmtMoney(o.subtotal) + '</span></div>';
+    if (o.discount > 0) {
+      html += '<div class="total-row disc"><span>Descuento</span><span>-' + fmtMoney(o.discount) + '</span></div>';
+    }
+    html += '<div class="total-row"><span>IVA</span><span>' + fmtMoney(o.tax) + '</span></div>';
+    if (o.tip > 0) {
+      html += '<div class="total-row"><span>Propina</span><span>' + fmtMoney(o.tip) + '</span></div>';
+    }
+    html += '<div class="total-row grand"><span>Total</span><span>' + fmtMoney(o.total) + '</span></div>';
+    html += '</div>';
+
+    // Status
+    html += '<div class="bill-status">';
+    html += '<span class="status-badge ' + statusCls + '">' + (statusLabel[o.status] || o.status) + '</span>';
+    html += '</div>';
+
+    // Footer
+    html += '<div class="bill-footer">Powered by ByFlow &mdash; IArtLabs &bull; Orden #' + o.id + '</div>';
+
+    document.getElementById('bill').innerHTML = html;
+    document.title = data.bar_name + ' — Tu Cuenta | ByFlow';
+  }
+})();
+</script>
+</body>
+</html>

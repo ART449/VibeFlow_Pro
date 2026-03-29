@@ -120,7 +120,10 @@ select.form-input{cursor:pointer;}
 
     <!-- PRODUCTOS -->
     <div class="section active" id="sec-products">
-      <h2>🛒 Productos / Menu <button class="add-btn" onclick="openModal('product')">+ Agregar Producto</button></h2>
+      <h2>🛒 Productos / Menu
+        <button class="add-btn" onclick="openModal('product')">+ Agregar Producto</button>
+        <button class="add-btn" style="background:linear-gradient(135deg,var(--blue),var(--cyan));margin-left:6px;" onclick="openModal('csv-import')">📥 Importar CSV</button>
+      </h2>
       <table class="tbl" id="tbl-products">
         <thead><tr><th></th><th>Nombre</th><th>Categoria</th><th>Precio</th><th>Costo</th><th>Margen</th><th>Stock</th><th>HH</th><th>Estado</th><th>Acciones</th></tr></thead>
         <tbody id="products-body"></tbody>
@@ -260,7 +263,7 @@ function toast(msg, type) {
 
 // ═══ LOAD DATA ═══
 async function loadProducts() {
-  const r = await fetch(API + '/pos/products', { headers: authHeaders() });
+  const r = await fetch(API + '/pos/products?show_all=1', { headers: authHeaders() });
   const d = await r.json();
   if (!d.ok) return;
   const body = document.getElementById('products-body');
@@ -290,7 +293,7 @@ async function loadCategories() {
   document.getElementById('categories-body').innerHTML = d.categories.map(c =>
     '<tr><td>' + escapeHtml(c.icon || '') + '</td><td><strong>' + escapeHtml(c.name) + '</strong></td><td>' + escapeHtml(String(c.sort_order)) + '</td>' +
     '<td><span class="badge active">Activo</span></td>' +
-    '<td class="actions"><button class="act edit">✏️</button></td></tr>'
+    '<td class="actions"><button class="act edit" onclick="editCategory(' + c.id + ')">✏️</button></td></tr>'
   ).join('');
 }
 
@@ -306,7 +309,7 @@ async function loadTables() {
       '<td>' + escapeHtml(String(t.capacity)) + '</td>' +
       '<td style="color:' + escapeHtml(statusColors[t.status] || '') + ';font-weight:600;">' + escapeHtml(t.status) + '</td>' +
       '<td>' + escapeHtml(t.waiter_name || '—') + '</td>' +
-      '<td class="actions"><button class="act edit">✏️</button> <button class="act del">🗑️</button></td>' +
+      '<td class="actions"><button class="act edit" onclick="editTable(' + t.id + ')">✏️</button> <button class="act del" onclick="deleteTable(' + t.id + ',\'' + escapeHtml(String(t.number)) + '\')">🗑️</button></td>' +
       '</tr>';
   }).join('');
 }
@@ -325,7 +328,7 @@ async function loadEmployees() {
     '<td>' + escapeHtml(e.area || '') + '</td>' +
     '<td style="font-size:10px;color:var(--sub);">' + escapeHtml(e.last_login || 'Nunca') + '</td>' +
     '<td><span class="badge ' + (e.active ? 'active' : 'inactive') + '">' + (e.active ? 'Activo' : 'Inactivo') + '</span></td>' +
-    '<td class="actions"><button class="act edit">✏️</button></td>' +
+    '<td class="actions"><button class="act edit" onclick="editEmployee(' + e.id + ')">✏️</button></td>' +
     '</tr>'
   ).join('');
 }
@@ -430,8 +433,53 @@ function openModal(type) {
       <div class="form-actions">
         <button class="form-btn cancel" onclick="closeModal()">Cancelar</button>
         <button class="form-btn primary" onclick="saveTable()">💾 Guardar Mesa</button>
+      </div>`,
+
+    happyhour: `<h3>🍺 Nuevo Happy Hour <span class="close" onclick="closeModal()">✕</span></h3>
+      <div class="form-group"><label>Nombre</label><input class="form-input" id="f-hh-name" placeholder="Ej: 2x1 Cervezas"></div>
+      <div class="form-row">
+        <div class="form-group"><label>Hora inicio</label><input class="form-input" id="f-hh-start" type="time" value="17:00"></div>
+        <div class="form-group"><label>Hora fin</label><input class="form-input" id="f-hh-end" type="time" value="19:00"></div>
+      </div>
+      <div class="form-group"><label>Descuento (%)</label><input class="form-input" id="f-hh-discount" type="number" value="50" min="1" max="100"></div>
+      <div class="form-group"><label>Dias (checkboxes)</label>
+        <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:4px;">
+          <label style="font-size:11px;display:flex;align-items:center;gap:3px;"><input type="checkbox" class="hh-day" value="*" checked> Todos</label>
+          <label style="font-size:11px;display:flex;align-items:center;gap:3px;"><input type="checkbox" class="hh-day" value="1"> L</label>
+          <label style="font-size:11px;display:flex;align-items:center;gap:3px;"><input type="checkbox" class="hh-day" value="2"> M</label>
+          <label style="font-size:11px;display:flex;align-items:center;gap:3px;"><input type="checkbox" class="hh-day" value="3"> Mi</label>
+          <label style="font-size:11px;display:flex;align-items:center;gap:3px;"><input type="checkbox" class="hh-day" value="4"> J</label>
+          <label style="font-size:11px;display:flex;align-items:center;gap:3px;"><input type="checkbox" class="hh-day" value="5"> V</label>
+          <label style="font-size:11px;display:flex;align-items:center;gap:3px;"><input type="checkbox" class="hh-day" value="6"> S</label>
+          <label style="font-size:11px;display:flex;align-items:center;gap:3px;"><input type="checkbox" class="hh-day" value="0"> D</label>
+        </div>
+      </div>
+      <div class="form-actions">
+        <button class="form-btn cancel" onclick="closeModal()">Cancelar</button>
+        <button class="form-btn primary" onclick="saveHappyHour()">💾 Guardar Happy Hour</button>
       </div>`
   };
+
+  // CSV import modal
+  if (type === 'csv-import') {
+    document.getElementById('modal-content').innerHTML = `<h3>📥 Importar Productos CSV <span class="close" onclick="closeModal()">✕</span></h3>
+      <p style="font-size:11px;color:var(--sub);margin-bottom:12px;">Formato: nombre, precio, costo, categoria<br>
+      <a href="#" onclick="downloadCsvTemplate();return false;" style="color:var(--cyan);">⬇️ Descargar plantilla CSV</a></p>
+      <div class="form-group"><label>Archivo CSV</label><input class="form-input" id="f-csv-file" type="file" accept=".csv" onchange="previewCsv(this)"></div>
+      <div id="csv-preview" style="max-height:250px;overflow-y:auto;margin-bottom:12px;"></div>
+      <div id="csv-progress" style="display:none;margin-bottom:12px;">
+        <div style="background:var(--surface);border-radius:8px;overflow:hidden;height:20px;">
+          <div id="csv-progress-bar" style="height:100%;background:linear-gradient(135deg,var(--orange),var(--amber));transition:width .3s;width:0%;"></div>
+        </div>
+        <p id="csv-progress-text" style="font-size:11px;color:var(--sub);margin-top:4px;"></p>
+      </div>
+      <div class="form-actions">
+        <button class="form-btn cancel" onclick="closeModal()">Cancelar</button>
+        <button class="form-btn primary" id="csv-import-btn" onclick="importCsv()" disabled>📥 Confirmar Importacion</button>
+      </div>`;
+    document.getElementById('modal-bg').classList.add('show');
+    return;
+  }
 
   document.getElementById('modal-content').innerHTML = modals[type] || '<p>Modal no disponible</p>';
   document.getElementById('modal-bg').classList.add('show');
@@ -500,12 +548,403 @@ async function saveTable() {
   } catch (e) { toast('Error de conexion', 'err'); }
 }
 
+// ═══ EDIT FUNCTIONS ═══
+async function editProduct(id) {
+  try {
+    const r = await fetch(API + '/pos/products/' + id, { headers: authHeaders() });
+    const d = await r.json();
+    if (!d.ok) { toast(d.error || 'Error al cargar producto', 'err'); return; }
+    const p = d.product;
+
+    // Load categories for dropdown
+    const rc = await fetch(API + '/pos/categories', { headers: authHeaders() });
+    const dc = await rc.json();
+    const catOptions = (dc.ok ? dc.categories : []).map(c =>
+      '<option value="' + c.id + '"' + (c.id === p.category_id ? ' selected' : '') + '>' + escapeHtml(c.name) + '</option>'
+    ).join('');
+
+    document.getElementById('modal-content').innerHTML =
+      '<h3>✏️ Editar Producto <span class="close" onclick="closeModal()">✕</span></h3>' +
+      '<div class="form-row">' +
+        '<div class="form-group"><label>Nombre</label><input class="form-input" id="f-name" value="' + escapeHtml(p.name) + '"></div>' +
+        '<div class="form-group"><label>Icon</label><input class="form-input" id="f-icon" value="' + escapeHtml(p.icon || '') + '" style="width:60px;text-align:center;"></div>' +
+      '</div>' +
+      '<div class="form-row">' +
+        '<div class="form-group"><label>Precio ($)</label><input class="form-input" id="f-price" type="number" value="' + p.price + '"></div>' +
+        '<div class="form-group"><label>Costo ($)</label><input class="form-input" id="f-cost" type="number" value="' + (p.cost || 0) + '"></div>' +
+      '</div>' +
+      '<div class="form-row">' +
+        '<div class="form-group"><label>Categoria</label><select class="form-input" id="f-category">' + catOptions + '</select></div>' +
+        '<div class="form-group"><label>Stock (-1=ilimitado)</label><input class="form-input" id="f-stock" type="number" value="' + (p.stock ?? -1) + '"></div>' +
+      '</div>' +
+      '<div class="form-actions">' +
+        '<button class="form-btn cancel" onclick="closeModal()">Cancelar</button>' +
+        '<button class="form-btn primary" onclick="updateProduct(' + id + ')">💾 Guardar Cambios</button>' +
+      '</div>';
+    document.getElementById('modal-bg').classList.add('show');
+  } catch (e) { toast('Error de conexion', 'err'); }
+}
+
+async function updateProduct(id) {
+  const data = {
+    name: document.getElementById('f-name').value.trim(),
+    icon: document.getElementById('f-icon').value.trim(),
+    price: parseFloat(document.getElementById('f-price').value),
+    cost: parseFloat(document.getElementById('f-cost').value) || 0,
+    category_id: parseInt(document.getElementById('f-category').value),
+    stock: parseInt(document.getElementById('f-stock').value)
+  };
+  if (!data.name || !data.price) { toast('Nombre y precio requeridos', 'err'); return; }
+  try {
+    const r = await fetch(API + '/pos/products/' + id, {
+      method: 'PUT', headers: authHeaders(), body: JSON.stringify(data)
+    });
+    const d = await r.json();
+    if (d.ok) { toast('Producto actualizado', 'ok'); closeModal(); loadProducts(); }
+    else { toast(d.error || 'Error al actualizar', 'err'); }
+  } catch (e) { toast('Error de conexion', 'err'); }
+}
+
+async function editCategory(id) {
+  try {
+    const r = await fetch(API + '/pos/categories/' + id, { headers: authHeaders() });
+    const d = await r.json();
+    if (!d.ok) { toast(d.error || 'Error al cargar categoria', 'err'); return; }
+    const c = d.category;
+
+    document.getElementById('modal-content').innerHTML =
+      '<h3>✏️ Editar Categoria <span class="close" onclick="closeModal()">✕</span></h3>' +
+      '<div class="form-group"><label>Nombre</label><input class="form-input" id="f-cat-name" value="' + escapeHtml(c.name) + '"></div>' +
+      '<div class="form-row">' +
+        '<div class="form-group"><label>Icon</label><input class="form-input" id="f-cat-icon" value="' + escapeHtml(c.icon || '') + '" style="width:60px;text-align:center;"></div>' +
+        '<div class="form-group"><label>Orden</label><input class="form-input" id="f-cat-order" type="number" value="' + (c.sort_order || 0) + '"></div>' +
+      '</div>' +
+      '<div class="form-actions">' +
+        '<button class="form-btn cancel" onclick="closeModal()">Cancelar</button>' +
+        '<button class="form-btn primary" onclick="updateCategory(' + id + ')">💾 Guardar Cambios</button>' +
+      '</div>';
+    document.getElementById('modal-bg').classList.add('show');
+  } catch (e) { toast('Error de conexion', 'err'); }
+}
+
+async function updateCategory(id) {
+  const data = {
+    name: document.getElementById('f-cat-name').value.trim(),
+    icon: document.getElementById('f-cat-icon').value.trim(),
+    sort_order: parseInt(document.getElementById('f-cat-order').value) || 0
+  };
+  if (!data.name) { toast('Nombre requerido', 'err'); return; }
+  try {
+    const r = await fetch(API + '/pos/categories/' + id, {
+      method: 'PUT', headers: authHeaders(), body: JSON.stringify(data)
+    });
+    const d = await r.json();
+    if (d.ok) { toast('Categoria actualizada', 'ok'); closeModal(); loadCategories(); }
+    else { toast(d.error || 'Error al actualizar', 'err'); }
+  } catch (e) { toast('Error de conexion', 'err'); }
+}
+
+async function editTable(id) {
+  try {
+    const r = await fetch(API + '/pos/tables/' + id, { headers: authHeaders() });
+    const d = await r.json();
+    if (!d.ok) { toast(d.error || 'Error al cargar mesa', 'err'); return; }
+    const t = d.table;
+
+    const areaOptions = ['salon', 'terraza', 'barra', 'vip'].map(a =>
+      '<option value="' + a + '"' + (a === t.area ? ' selected' : '') + '>' + a.charAt(0).toUpperCase() + a.slice(1) + '</option>'
+    ).join('');
+
+    document.getElementById('modal-content').innerHTML =
+      '<h3>✏️ Editar Mesa <span class="close" onclick="closeModal()">✕</span></h3>' +
+      '<div class="form-row">' +
+        '<div class="form-group"><label>Numero/ID</label><input class="form-input" id="f-tbl-number" value="' + escapeHtml(String(t.number)) + '"></div>' +
+        '<div class="form-group"><label>Capacidad</label><input class="form-input" id="f-tbl-capacity" type="number" value="' + t.capacity + '"></div>' +
+      '</div>' +
+      '<div class="form-group"><label>Area</label><select class="form-input" id="f-tbl-area">' + areaOptions + '</select></div>' +
+      '<div class="form-actions">' +
+        '<button class="form-btn cancel" onclick="closeModal()">Cancelar</button>' +
+        '<button class="form-btn primary" onclick="updateTable(' + id + ')">💾 Guardar Cambios</button>' +
+      '</div>';
+    document.getElementById('modal-bg').classList.add('show');
+  } catch (e) { toast('Error de conexion', 'err'); }
+}
+
+async function updateTable(id) {
+  const data = {
+    number: document.getElementById('f-tbl-number').value.trim(),
+    capacity: parseInt(document.getElementById('f-tbl-capacity').value),
+    area: document.getElementById('f-tbl-area').value
+  };
+  if (!data.number) { toast('Numero de mesa requerido', 'err'); return; }
+  try {
+    const r = await fetch(API + '/pos/tables/' + id, {
+      method: 'PUT', headers: authHeaders(), body: JSON.stringify(data)
+    });
+    const d = await r.json();
+    if (d.ok) { toast('Mesa actualizada', 'ok'); closeModal(); loadTables(); }
+    else { toast(d.error || 'Error al actualizar', 'err'); }
+  } catch (e) { toast('Error de conexion', 'err'); }
+}
+
+async function deleteTable(id, number) {
+  if (!confirm('¿Eliminar mesa #' + number + '? Esta accion no se puede deshacer.')) return;
+  try {
+    const r = await fetch(API + '/pos/tables/' + id, {
+      method: 'DELETE', headers: authHeaders()
+    });
+    const d = await r.json();
+    if (d.ok) { toast('Mesa #' + number + ' eliminada', 'ok'); loadTables(); }
+    else { toast(d.error || 'Error al eliminar', 'err'); }
+  } catch (e) { toast('Error de conexion', 'err'); }
+}
+
+async function editEmployee(id) {
+  try {
+    const r = await fetch(API + '/pos/employees/' + id, { headers: authHeaders() });
+    const d = await r.json();
+    if (!d.ok) { toast(d.error || 'Error al cargar empleado', 'err'); return; }
+    const e = d.employee;
+
+    const roles = ['mesero', 'bartender', 'cocinero', 'cajero', 'capitan', 'dj', 'seguridad', 'gerente', 'dueno'];
+    const roleOptions = roles.map(ro =>
+      '<option value="' + ro + '"' + (ro === e.role ? ' selected' : '') + '>' + ro.charAt(0).toUpperCase() + ro.slice(1) + '</option>'
+    ).join('');
+    const areas = ['salon', 'terraza', 'barra', 'cocina', 'entrada', 'karaoke', 'caja', 'todos'];
+    const areaOptions = areas.map(a =>
+      '<option value="' + a + '"' + (a === e.area ? ' selected' : '') + '>' + a.charAt(0).toUpperCase() + a.slice(1) + '</option>'
+    ).join('');
+
+    document.getElementById('modal-content').innerHTML =
+      '<h3>✏️ Editar Empleado <span class="close" onclick="closeModal()">✕</span></h3>' +
+      '<div class="form-group"><label>Nombre completo</label><input class="form-input" id="f-emp-name" value="' + escapeHtml(e.name) + '"></div>' +
+      '<div class="form-row">' +
+        '<div class="form-group"><label>PIN (dejar vacio para no cambiar)</label><input class="form-input" id="f-emp-pin" type="password" maxlength="6" placeholder="****"></div>' +
+        '<div class="form-group"><label>Avatar</label><input class="form-input" id="f-emp-avatar" value="' + escapeHtml(e.avatar || '') + '" style="width:60px;text-align:center;"></div>' +
+      '</div>' +
+      '<div class="form-row">' +
+        '<div class="form-group"><label>Rol</label><select class="form-input" id="f-emp-role">' + roleOptions + '</select></div>' +
+        '<div class="form-group"><label>Area</label><select class="form-input" id="f-emp-area">' + areaOptions + '</select></div>' +
+      '</div>' +
+      '<div class="form-actions">' +
+        '<button class="form-btn cancel" onclick="closeModal()">Cancelar</button>' +
+        '<button class="form-btn primary" onclick="updateEmployee(' + id + ')">💾 Guardar Cambios</button>' +
+      '</div>';
+    document.getElementById('modal-bg').classList.add('show');
+  } catch (e) { toast('Error de conexion', 'err'); }
+}
+
+async function updateEmployee(id) {
+  const data = {
+    name: document.getElementById('f-emp-name').value.trim(),
+    role: document.getElementById('f-emp-role').value,
+    area: document.getElementById('f-emp-area').value,
+    avatar: document.getElementById('f-emp-avatar').value.trim()
+  };
+  const pin = document.getElementById('f-emp-pin').value;
+  if (pin) data.pin = pin;
+  if (!data.name) { toast('Nombre requerido', 'err'); return; }
+  try {
+    const r = await fetch(API + '/pos/employees/' + id, {
+      method: 'PUT', headers: authHeaders(), body: JSON.stringify(data)
+    });
+    const d = await r.json();
+    if (d.ok) { toast('Empleado actualizado', 'ok'); closeModal(); loadEmployees(); }
+    else { toast(d.error || 'Error al actualizar', 'err'); }
+  } catch (e) { toast('Error de conexion', 'err'); }
+}
+
+// ═══ CSV IMPORT ═══
+let _csvRows = [];
+
+function downloadCsvTemplate() {
+  const csv = 'nombre,precio,costo,categoria\nCorona Extra,45,12,Cervezas\nMargarita,85,25,Cocktails\nNachos,65,18,Botanas\n';
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = 'plantilla_productos.csv'; a.click();
+  URL.revokeObjectURL(url);
+}
+
+function previewCsv(input) {
+  _csvRows = [];
+  const file = input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    const lines = e.target.result.split(/\r?\n/).filter(l => l.trim());
+    if (lines.length < 2) { toast('CSV vacio o sin datos', 'err'); return; }
+
+    // Parse header
+    const header = lines[0].toLowerCase().split(',').map(h => h.trim());
+    const nameIdx = header.indexOf('nombre');
+    const priceIdx = header.indexOf('precio');
+    const costIdx = header.indexOf('costo');
+    const catIdx = header.indexOf('categoria');
+
+    if (nameIdx === -1 || priceIdx === -1) {
+      toast('CSV debe tener columnas: nombre, precio', 'err'); return;
+    }
+
+    const rows = [];
+    const errors = [];
+    for (let i = 1; i < lines.length; i++) {
+      const cols = lines[i].split(',').map(c => c.trim());
+      const name = cols[nameIdx] || '';
+      const price = parseFloat(cols[priceIdx]);
+      const cost = costIdx >= 0 ? (parseFloat(cols[costIdx]) || 0) : 0;
+      const cat = catIdx >= 0 ? (cols[catIdx] || '') : '';
+
+      if (!name) { errors.push('Fila ' + (i + 1) + ': sin nombre'); continue; }
+      if (isNaN(price) || price <= 0) { errors.push('Fila ' + (i + 1) + ': precio invalido'); continue; }
+      rows.push({ name, price, cost, category: cat });
+    }
+
+    _csvRows = rows;
+
+    // Render preview table
+    let html = '<table class="tbl"><thead><tr><th>#</th><th>Nombre</th><th>Precio</th><th>Costo</th><th>Categoria</th></tr></thead><tbody>';
+    rows.forEach((r, i) => {
+      html += '<tr><td>' + (i + 1) + '</td><td>' + escapeHtml(r.name) + '</td><td style="color:var(--orange);">$' + r.price + '</td><td>$' + r.cost + '</td><td>' + escapeHtml(r.category) + '</td></tr>';
+    });
+    html += '</tbody></table>';
+    if (errors.length) {
+      html += '<p style="font-size:10px;color:var(--red);margin-top:6px;">⚠️ ' + errors.length + ' filas con errores (omitidas): ' + escapeHtml(errors.slice(0, 3).join(', ')) + '</p>';
+    }
+    html += '<p style="font-size:11px;color:var(--green);margin-top:4px;">✅ ' + rows.length + ' productos listos para importar</p>';
+    document.getElementById('csv-preview').innerHTML = html;
+    document.getElementById('csv-import-btn').disabled = rows.length === 0;
+  };
+  reader.readAsText(file);
+}
+
+async function importCsv() {
+  if (!_csvRows.length) return;
+
+  // Load categories to map names to IDs
+  const rc = await fetch(API + '/pos/categories', { headers: authHeaders() });
+  const dc = await rc.json();
+  const catMap = {};
+  if (dc.ok) dc.categories.forEach(c => { catMap[c.name.toLowerCase()] = c.id; });
+
+  const progressDiv = document.getElementById('csv-progress');
+  const progressBar = document.getElementById('csv-progress-bar');
+  const progressText = document.getElementById('csv-progress-text');
+  progressDiv.style.display = 'block';
+  document.getElementById('csv-import-btn').disabled = true;
+
+  let ok = 0;
+  let fail = 0;
+  const failDetails = [];
+
+  for (let i = 0; i < _csvRows.length; i++) {
+    const row = _csvRows[i];
+    const catId = catMap[row.category.toLowerCase()] || 1;
+    const pct = Math.round(((i + 1) / _csvRows.length) * 100);
+    progressBar.style.width = pct + '%';
+    progressText.textContent = (i + 1) + '/' + _csvRows.length + ' productos importados...';
+
+    try {
+      const r = await fetch(API + '/pos/products', {
+        method: 'POST', headers: authHeaders(),
+        body: JSON.stringify({ name: row.name, price: row.price, cost: row.cost, category_id: catId, stock: -1 })
+      });
+      const d = await r.json();
+      if (d.ok) ok++;
+      else { fail++; failDetails.push(row.name + ': ' + (d.error || 'error')); }
+    } catch (e) { fail++; failDetails.push(row.name + ': conexion'); }
+  }
+
+  progressBar.style.width = '100%';
+  if (fail === 0) {
+    toast('✅ ' + ok + ' productos importados exitosamente', 'ok');
+  } else {
+    toast(ok + ' importados, ' + fail + ' fallaron', fail > 0 ? 'err' : 'ok');
+    progressText.textContent = ok + ' importados, ' + fail + ' fallaron: ' + failDetails.slice(0, 3).join(', ');
+  }
+  loadProducts();
+  if (fail === 0) setTimeout(closeModal, 1500);
+}
+
+// ═══ HAPPY HOURS ═══
+async function loadHappyHours() {
+  try {
+    const r = await fetch(API + '/pos/happy-hours', { headers: authHeaders() });
+    const d = await r.json();
+    if (!d.ok) return;
+    const dayNames = { '*':'Todos', '0':'Dom', '1':'Lun', '2':'Mar', '3':'Mie', '4':'Jue', '5':'Vie', '6':'Sab' };
+    document.getElementById('happyhour-body').innerHTML = d.happy_hours.map(hh => {
+      const days = (hh.day_of_week || '*').split(',').map(d => dayNames[d.trim()] || d).join(', ');
+      return '<tr>' +
+        '<td><strong>' + escapeHtml(hh.name) + '</strong></td>' +
+        '<td>' + escapeHtml(days) + '</td>' +
+        '<td>' + escapeHtml(hh.start_time) + '</td>' +
+        '<td>' + escapeHtml(hh.end_time) + '</td>' +
+        '<td style="color:var(--green);font-weight:700;">' + escapeHtml(String(hh.discount_pct)) + '%</td>' +
+        '<td><span class="badge ' + (hh.active ? 'active' : 'inactive') + '">' + (hh.active ? 'Activo' : 'Inactivo') + '</span></td>' +
+        '<td class="actions">' +
+          '<button class="act edit" onclick="toggleHH(' + hh.id + ',' + (hh.active ? 0 : 1) + ')">' + (hh.active ? '⏸️' : '▶️') + '</button> ' +
+          '<button class="act del" onclick="deleteHH(' + hh.id + ')">🗑️</button>' +
+        '</td></tr>';
+    }).join('');
+  } catch (e) { /* API unavailable */ }
+}
+
+async function saveHappyHour() {
+  const dayChecks = document.querySelectorAll('.hh-day:checked');
+  const days = Array.from(dayChecks).map(c => c.value);
+  // If "Todos" (*) is checked, just use *
+  const dayStr = days.includes('*') ? '*' : days.join(',');
+  const data = {
+    name: document.getElementById('f-hh-name').value.trim(),
+    start_time: document.getElementById('f-hh-start').value,
+    end_time: document.getElementById('f-hh-end').value,
+    discount_percent: parseFloat(document.getElementById('f-hh-discount').value) || 50,
+    days: dayStr
+  };
+  if (!data.name || !data.start_time || !data.end_time) {
+    toast('Nombre, hora inicio y hora fin requeridos', 'err'); return;
+  }
+  try {
+    const r = await fetch(API + '/pos/happy-hours', {
+      method: 'POST', headers: authHeaders(), body: JSON.stringify(data)
+    });
+    const d = await r.json();
+    if (d.ok) { toast('Happy Hour "' + data.name + '" creado', 'ok'); closeModal(); loadHappyHours(); }
+    else { toast(d.error || 'Error al crear happy hour', 'err'); }
+  } catch (e) { toast('Error de conexion', 'err'); }
+}
+
+async function toggleHH(id, active) {
+  try {
+    const r = await fetch(API + '/pos/happy-hours/' + id, {
+      method: 'PUT', headers: authHeaders(), body: JSON.stringify({ active })
+    });
+    const d = await r.json();
+    if (d.ok) { toast(active ? 'Happy Hour activado' : 'Happy Hour pausado', 'ok'); loadHappyHours(); }
+    else { toast(d.error || 'Error', 'err'); }
+  } catch (e) { toast('Error de conexion', 'err'); }
+}
+
+async function deleteHH(id) {
+  if (!confirm('Eliminar este Happy Hour?')) return;
+  try {
+    const r = await fetch(API + '/pos/happy-hours/' + id, {
+      method: 'DELETE', headers: authHeaders()
+    });
+    const d = await r.json();
+    if (d.ok) { toast('Happy Hour eliminado', 'ok'); loadHappyHours(); }
+    else { toast(d.error || 'Error', 'err'); }
+  } catch (e) { toast('Error de conexion', 'err'); }
+}
+
 // ═══ INIT ═══
 document.addEventListener('DOMContentLoaded', () => {
   loadProducts();
   loadCategories();
   loadTables();
   loadEmployees();
+  loadHappyHours();
   loadSettings();
 });
 

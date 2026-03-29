@@ -372,7 +372,7 @@ function runMigrations(db) {
       table_id INTEGER,
       date TEXT NOT NULL,
       time TEXT NOT NULL,
-      status TEXT DEFAULT 'confirmada' CHECK(status IN ('confirmada','cancelada','completada','no_show')),
+      status TEXT DEFAULT 'pendiente' CHECK(status IN ('pendiente','confirmada','llego','cancelada','completada','no_show')),
       notes TEXT DEFAULT '',
       created_at TEXT DEFAULT (datetime('now')),
       FOREIGN KEY (table_id) REFERENCES tables(id)
@@ -455,10 +455,46 @@ function runMigrations(db) {
     // If bar_settings_v2 migration already ran or table structure is already correct
   }
 
+  // ═══ INVENTORY ADJUSTMENTS TABLE ═══
+  try {
+    db.exec(`
+      CREATE TABLE IF NOT EXISTS inventory_adjustments (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        product_id INTEGER NOT NULL,
+        type TEXT NOT NULL CHECK(type IN ('purchase','waste','adjustment','sale')),
+        quantity REAL NOT NULL,
+        notes TEXT DEFAULT '',
+        employee_id INTEGER,
+        bar_id TEXT NOT NULL DEFAULT 'default',
+        created_at TEXT DEFAULT (datetime('now')),
+        FOREIGN KEY (product_id) REFERENCES products(id),
+        FOREIGN KEY (employee_id) REFERENCES employees(id)
+      );
+      CREATE INDEX IF NOT EXISTS idx_inv_adj_bar ON inventory_adjustments(bar_id);
+      CREATE INDEX IF NOT EXISTS idx_inv_adj_product ON inventory_adjustments(product_id);
+    `);
+  } catch (_) { /* table/indexes already exist */ }
+
   // Make tables.number unique per bar (not globally) — drop old unique constraint safely
   try {
     db.exec(`CREATE UNIQUE INDEX IF NOT EXISTS idx_tables_number_bar ON tables(number, bar_id)`);
   } catch (_) { /* already exists */ }
+
+  // ═══ COVER DEPARTURE TIME MIGRATION ═══
+  try {
+    db.exec(`ALTER TABLE covers ADD COLUMN departure_time TEXT DEFAULT NULL`);
+    console.log('[POS-DB] Migration: added departure_time to covers');
+  } catch (_) { /* column already exists */ }
+
+  // ═══ HAPPY HOURS CATEGORIES MIGRATION ═══
+  try {
+    db.exec(`ALTER TABLE happy_hours ADD COLUMN categories TEXT DEFAULT '*'`);
+    console.log('[POS-DB] Migration: added categories to happy_hours');
+  } catch (_) { /* column already exists */ }
+
+  // ═══ RESERVATIONS STATUS MIGRATION (add pendiente/llego) ═══
+  // SQLite cannot ALTER CHECK constraints, but new rows will use the updated CREATE TABLE.
+  // Existing rows with old statuses remain valid.
 
   // Seed data if empty
   const empCount = db.prepare('SELECT COUNT(*) as c FROM employees').get().c;
