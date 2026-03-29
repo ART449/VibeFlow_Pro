@@ -289,8 +289,23 @@
   };
 
   lyrics.toggleAutoScroll = function() {
-    if (tpState.autoScrolling) lyrics.stopAutoScroll();
-    else lyrics.startAutoScroll();
+    if (tpState.autoScrolling) {
+      lyrics.stopAutoScroll();
+      // Also pause YouTube/audio if playing
+      if (typeof _ytPlayer !== 'undefined' && _ytPlayer && typeof _ytPlayer.pauseVideo === 'function') {
+        try { _ytPlayer.pauseVideo(); } catch(e) {}
+      }
+      var audioBar = document.getElementById('ab-audio');
+      if (audioBar && !audioBar.paused) audioBar.pause();
+    } else {
+      lyrics.startAutoScroll();
+      // Also resume YouTube/audio
+      if (typeof _ytPlayer !== 'undefined' && _ytPlayer && typeof _ytPlayer.playVideo === 'function') {
+        try { _ytPlayer.playVideo(); } catch(e) {}
+      }
+      var audioBar2 = document.getElementById('ab-audio');
+      if (audioBar2 && audioBar2.paused && audioBar2.src) audioBar2.play();
+    }
   };
 
   lyrics.startAutoScroll = function() {
@@ -357,7 +372,13 @@
     }
 
     tpState.lrcTimerId = setInterval(() => {
-      const elapsed = ((performance.now() - tpState.startTime) / 1000) * tpState.speed + tpState.syncOffset;
+      // Sync with YouTube player time if available, otherwise use internal clock
+      var elapsed;
+      if (typeof _ytPlayer !== 'undefined' && _ytPlayer && typeof _ytPlayer.getCurrentTime === 'function') {
+        try { elapsed = _ytPlayer.getCurrentTime() + tpState.syncOffset; } catch(e) { elapsed = 0; }
+      } else {
+        elapsed = ((performance.now() - tpState.startTime) / 1000) * tpState.speed + tpState.syncOffset;
+      }
       let activeLine = -1;
       for (let i = tpState.lrcData.length - 1; i >= 0; i--) {
         if (elapsed >= tpState.lrcData[i].time) {
