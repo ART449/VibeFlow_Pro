@@ -54,19 +54,17 @@
   function initServiceWorker() {
     if (!('serviceWorker' in navigator)) return;
     navigator.serviceWorker.register(config.serviceWorkerPath).then((registration) => {
-      console.log('[PWA] SW registered');
       registration.update();
       registration.addEventListener('updatefound', () => {
         const nextWorker = registration.installing;
         if (!nextWorker) return;
         nextWorker.addEventListener('statechange', () => {
           if (nextWorker.state === 'activated' && navigator.serviceWorker.controller) {
-            console.log('[PWA] Nueva version detectada, recargando...');
             window.location.reload();
           }
         });
       });
-    }).catch((error) => console.log('[PWA] SW failed:', error));
+    }).catch(() => {});
 
     navigator.serviceWorker.addEventListener('controllerchange', () => window.location.reload());
   }

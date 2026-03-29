@@ -8,6 +8,140 @@
 
 Dejar claro que trabajo ya venia construido, que trabajo detecte en progreso, que cambie yo hoy, y donde conviene retomar sin duplicar esfuerzos.
 
+---
+
+## ACTUALIZACION 2 - Modularizacion Prioridad 1 (index.html -> public/js/modules)
+
+### Alcance de esta pasada
+
+Esta segunda pasada de Codex fue estrictamente sobre modularizar `public/index.html`.
+
+No toque:
+
+- `server.js`
+- `pos/`
+- `public/pos.html`
+- `public/bares-v2.html`
+- `public/pos-admin.html`
+
+### Objetivo cumplido
+
+Se completo la extraccion de los 10 modulos pendientes que Arturo marco en `docs/CODEX_CONTEXT.md`.
+
+### Modulos creados en esta pasada
+
+- `public/js/modules/search.js`
+- `public/js/modules/player.js`
+- `public/js/modules/queue.js`
+- `public/js/modules/studio.js`
+- `public/js/modules/gflow.js`
+- `public/js/modules/settings.js`
+- `public/js/modules/auth.js`
+- `public/js/modules/socket.js`
+- `public/js/modules/youtube.js`
+- `public/js/modules/lyrics.js`
+
+### Patron usado
+
+Todos siguen el patron ya acordado:
+
+```js
+(function(VF) {
+  'use strict';
+  const modName = VF.modules.modName = {};
+  modName.functionName = function() { /* ... */ };
+})(window.VibeFlow);
+```
+
+### Lo que cambie en index.html
+
+En `public/index.html`:
+
+- Reemplace funciones grandes del monolito por wrappers del tipo:
+  - `function x() { return window.VibeFlow.modules.algo.x.apply(this, arguments); }`
+- Agregue los nuevos `<script src="/js/modules/...">` antes de `app.js`
+- Quite overrides viejos que ya duplicaban comportamiento:
+  - `_origActivar`
+  - `_origRenderCola`
+  - `_origSiguiente`
+  - remanente `_origAgregarCola`
+
+### Comportamiento importante preservado
+
+- `getMyRoomId()` se quedo inline porque `_myRoomId` se resuelve antes de cargar modulos externos.
+- `tpState` se queda inline como estado compartido del teleprompter.
+- `_wordToLine` se queda inline como mapa global usado por lyrics.
+- `ytApiKey`, `ytResults`, `currentMusicSource`, `JAMENDO_CLIENT_ID`, `jmAudio` se mantienen inline para compatibilidad con codigo restante.
+- `audioCtx`, `fxGain`, `fxEqLow`, `fxEqHigh`, `fxDelay`, `fxDelayGain`, `fxSource`, `abAudio`, `localAudio` siguen como estado inline compartido.
+
+### Ajuste importante en cola
+
+Movi la logica de promo/jingle al flujo de `public/js/modules/queue.js` para que `siguienteCantante()` ya resuelva:
+
+- auto promo entre cantantes
+- jingle
+- avance a siguiente cantante
+
+Con eso pude borrar el override viejo del monolito y dejar una sola fuente de verdad.
+
+### Scripts cargados al final
+
+El bloque final ahora carga:
+
+- `pwa.js`
+- `bar-mode.js`
+- `ui.js`
+- `ads.js`
+- `search.js`
+- `player.js`
+- `queue.js`
+- `studio.js`
+- `gflow.js`
+- `settings.js`
+- `auth.js`
+- `socket.js`
+- `youtube.js`
+- `lyrics.js`
+- `app.js`
+
+### Validacion que ya hice
+
+- `node --check` sobre todos los archivos de `public/js/modules/*.js`
+- validacion del script inline restante de `public/index.html` con `new Function(...)`
+- revision de que los wrappers existen y que los overrides viejos ya no quedaron colgados
+
+### Riesgo / nota para Claude
+
+No movi los scripts al `head` aunque la instruccion original lo decia, porque en el estado actual eso rompe dependencias del script inline enorme.
+
+Si Claude quiere mover todo al `head`, primero tiene que hacer una refactorizacion mas profunda del boot order.
+
+### Lo que Claude debe asumir al retomar
+
+- La modularizacion de Prioridad 1 ya quedo hecha para esos 10 dominios.
+- El siguiente paso NO es volver a extraer estas mismas funciones.
+- Lo correcto ahora es:
+  1. smoke test funcional en navegador
+  2. detectar wrappers o globals heredados que aun convenga adelgazar
+  3. seguir modularizando otras zonas no-POS si Arturo lo pide
+  4. no tocar POS desde aqui si sigue la division actual con Codex
+
+### Archivos tocados en esta pasada
+
+- `C:\BYFLOW\VibeFlow_Pro\public\index.html`
+- `C:\BYFLOW\VibeFlow_Pro\public\js\modules\search.js`
+- `C:\BYFLOW\VibeFlow_Pro\public\js\modules\player.js`
+- `C:\BYFLOW\VibeFlow_Pro\public\js\modules\queue.js`
+- `C:\BYFLOW\VibeFlow_Pro\public\js\modules\studio.js`
+- `C:\BYFLOW\VibeFlow_Pro\public\js\modules\gflow.js`
+- `C:\BYFLOW\VibeFlow_Pro\public\js\modules\settings.js`
+- `C:\BYFLOW\VibeFlow_Pro\public\js\modules\auth.js`
+- `C:\BYFLOW\VibeFlow_Pro\public\js\modules\socket.js`
+- `C:\BYFLOW\VibeFlow_Pro\public\js\modules\youtube.js`
+- `C:\BYFLOW\VibeFlow_Pro\public\js\modules\lyrics.js`
+- `C:\BYFLOW\VibeFlow_Pro\public\js\modules\pwa.js`
+- `C:\BYFLOW\VibeFlow_Pro\docs\HANDOFF_CODEX_A_CLAUDE_2026-03-29.md`
+
 ## Lo que ya estaba construido antes de esta intervencion
 
 Esto lo infiero por commits recientes, estado actual del codigo y documentacion del repo:
