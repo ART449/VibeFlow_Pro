@@ -472,6 +472,13 @@ function registerRoutes(app) {
 
     const roleLevel = auth.ROLE_LEVELS[role];
     const hashedPin = auth.hashPin(pin);
+
+    // Validar PIN unico — no permitir 2 empleados con el mismo PIN
+    const existing = db.prepare('SELECT id, name FROM employees WHERE pin = ? AND is_active = 1').get(hashedPin);
+    if (existing) {
+      return res.json({ ok: false, error: 'Ese PIN ya esta en uso por otro empleado. Elige uno diferente.' });
+    }
+
     const result = db.prepare(
       'INSERT INTO employees (name, pin, role, role_level, area, avatar) VALUES (?,?,?,?,?,?)'
     ).run(sanitize(name, 100), hashedPin, role, roleLevel, sanitize(area, 50) || 'salon', sanitize(avatar, 10) || '👤');
