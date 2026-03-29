@@ -210,6 +210,29 @@ function checkRateLimit(ip, maxAttempts = 5, windowMs = 60000) {
   return true;
 }
 
+// ── Room-based auth middleware (backward compatible) ─────────────────────────
+// If X-Room-ID header is present, validate it matches an active room.
+// If no header, allow request (backward compatible with older clients).
+function requireRoomAuth(req, res, next) {
+  const roomId = req.headers['x-room-id'];
+  if (!roomId) return next(); // backward compatible — no header = allow
+  if (rooms[roomId]) return next(); // valid active room
+  return res.status(403).json({ error: 'Room ID inválido o inactivo' });
+}
+
+// ── AI rate limiter (per IP, 10 requests/hour) ──────────────────────────────
+const _aiRateLimits = {};
+function checkAiRateLimit(ip) {
+  const now = Date.now();
+  const WINDOW = 3600000; // 1 hour
+  const MAX = 10;
+  if (!_aiRateLimits[ip]) _aiRateLimits[ip] = [];
+  _aiRateLimits[ip] = _aiRateLimits[ip].filter(t => now - t < WINDOW);
+  if (_aiRateLimits[ip].length >= MAX) return false;
+  _aiRateLimits[ip].push(now);
+  return true;
+}
+
 // ── Security Shield — Analizador de datos entrantes ─────────────────────────
 const SECURITY_LOG_FILE = path.join(DATA_DIR, 'security_log.json');
 const securityLog = loadJSON('security_log.json', { blocked: [], summary: { total: 0, byType: {} } });
@@ -311,16 +334,27 @@ app.set('trust proxy', 1);  // Railway/nginx — necesario para rate limiting co
 try {
   const helmet = require('helmet');
   app.use(helmet({
-    contentSecurityPolicy: false, // We use inline scripts
-    crossOriginEmbedderPolicy: false,
-    crossOriginResourcePolicy: { policy: 'cross-origin' }
+    contentSecurityPolicy: {
+      directives: {
+        defaultSrc: ["'self'"],
+        scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'", "https://www.youtube.com", "https://s.ytimg.com", "https://www.gstatic.com", "https://apis.google.com", "https://cdn.socket.io", "https://www.googletagmanager.com", "https://*.firebaseapp.com"],
+        styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
+        fontSrc: ["'self'", "https://fonts.gstatic.com"],
+        imgSrc: ["'self'", "data:", "blob:", "https:", "http:"],
+        frameSrc: ["'self'", "https://www.youtube.com", "https://w.soundcloud.com", "https://*.firebaseapp.com", "https://js.stripe.com"],
+        connectSrc: ["'self'", "https:", "wss:", "ws:"],
+        mediaSrc: ["'self'", "https:", "blob:"],
+        workerSrc: ["'self'", "blob:"]
+      }
+    },
+    crossOriginEmbedderPolicy: false
   }));
 } catch(e) { console.log('[Security] helmet not loaded:', e.message); }
 const server = http.createServer(app);
 // ── CORS & Allowed Origins ─────────────────────────────────────────────────
 const ALLOWED_ORIGINS = process.env.CORS_ORIGINS
   ? process.env.CORS_ORIGINS.split(',').map(s => s.trim())
-  : ['*'];
+  : ['https://byflowapp.up.railway.app', 'http://localhost:3333', 'http://localhost:8080'];
 const corsOptions = ALLOWED_ORIGINS.includes('*')
   ? {}
   : { origin: ALLOWED_ORIGINS };
@@ -488,8 +522,9 @@ const state = {
   globalPromo:  loadJSON('global_promo.json', { active: false, features: [], expiresAt: null, label: '' })
 };
 
-// ── Auto-activar promo de lanzamiento si no hay promo activa ─────────────────
-if (!state.globalPromo.active) {
+// ── Auto-activar promo de lanzamiento SOLO si NUNCA existió una promo ────────
+// Check activatedAt to know if a promo was ever created (even if now expired/inactive)
+if (!state.globalPromo.active && !state.globalPromo.activatedAt) {
   const LAUNCH_DAYS = 7;
   state.globalPromo = {
     active: true,
@@ -500,6 +535,8 @@ if (!state.globalPromo.active) {
   };
   saveJSON('global_promo.json', state.globalPromo);
   console.log(`[PROMO] Semana PRO gratis activada automaticamente — expira ${state.globalPromo.expiresAt}`);
+} else if (!state.globalPromo.active) {
+  console.log('[PROMO] Promo anterior encontrada (expirada/desactivada). No se reactiva automaticamente.');
 }
 
 // ── Rooms (aislamiento por sesion) ──────────────────────────────────────────
@@ -528,6 +565,9 @@ setInterval(() => {
   }
   for (const ip of Object.keys(_rateLimits)) {
     if (!_rateLimits[ip].length || now - _rateLimits[ip][0] > 120000) delete _rateLimits[ip];
+  }
+  for (const ip of Object.keys(_aiRateLimits)) {
+    if (!_aiRateLimits[ip].length || now - _aiRateLimits[ip][0] > 3600000) delete _aiRateLimits[ip];
   }
 }, 600000);  // cada 10 min
 
@@ -565,7 +605,7 @@ app.post('/api/cola', (req, res) => {
   res.json(entry);
 });
 
-app.delete('/api/cola/:id', (req, res) => {
+app.delete('/api/cola/:id', requireRoomAuth, (req, res) => {
   state.cola = state.cola.filter(c => c.id !== req.params.id);
   debouncedSave('cola.json', state.cola);
   io.emit('cola_update', state.cola);
@@ -599,7 +639,7 @@ app.post('/api/cola/reorder', (req, res) => {
 });
 
 // Limpiar terminados de la cola
-app.post('/api/cola/clean', (req, res) => {
+app.post('/api/cola/clean', requireRoomAuth, (req, res) => {
   state.cola = state.cola.filter(c => c.estado !== 'terminado');
   debouncedSave('cola.json', state.cola);
   io.emit('cola_update', state.cola);
@@ -657,7 +697,7 @@ app.patch('/api/canciones/:id', (req, res) => {
   res.json(song);
 });
 
-app.delete('/api/canciones/:id', (req, res) => {
+app.delete('/api/canciones/:id', requireRoomAuth, (req, res) => {
   const idx = state.canciones.findIndex(s => s.id === req.params.id);
   if (idx === -1) return res.status(404).json({ error: 'Canción no encontrada' });
   state.canciones.splice(idx, 1);
@@ -1063,9 +1103,11 @@ const GROK_API_URL = 'https://api.x.ai/v1/chat/completions';
 const GROK_MODEL   = process.env.GROK_MODEL || 'grok-3-mini';
 
 app.post('/api/ai/chat', async (req, res) => {
-  // License check — si GROK_API_KEY está configurada, el dueño del server paga la IA
-  // No bloquear a nadie — es tu server, tu key, tu decisión
-  // TODO: agregar rate limiting por IP para evitar abuso
+  // Rate limit: max 10 requests/hour per IP
+  const clientIp = req.ip || req.connection?.remoteAddress || 'unknown';
+  if (!checkAiRateLimit(clientIp)) {
+    return res.status(429).json({ error: 'Límite de IA alcanzado (10/hora). Intenta más tarde.' });
+  }
   const { prompt, system } = req.body;
   if (!prompt || typeof prompt !== 'string') {
     return res.status(400).json({ error: 'prompt requerido' });

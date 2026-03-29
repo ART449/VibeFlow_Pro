@@ -336,8 +336,9 @@ function registerRoutes(app) {
     const items = db.prepare(`
       SELECT oi.*, p.name as product_name, p.icon as product_icon
       FROM order_items oi JOIN products p ON oi.product_id = p.id
-      WHERE oi.order_id = ? ORDER BY oi.created_at
-    `).all(orderId);
+      JOIN orders o ON oi.order_id = o.id
+      WHERE oi.order_id = ? AND o.bar_id = ? ORDER BY oi.created_at
+    `).all(orderId, barId);
     res.json({ ok: true, order, items });
   });
 
@@ -357,8 +358,9 @@ function registerRoutes(app) {
     const items = db.prepare(`
       SELECT oi.*, p.name as product_name, p.icon as product_icon
       FROM order_items oi JOIN products p ON oi.product_id = p.id
-      WHERE oi.order_id = ? AND oi.status != 'cancelado' ORDER BY oi.created_at
-    `).all(order.id);
+      JOIN orders o ON oi.order_id = o.id
+      WHERE oi.order_id = ? AND o.bar_id = ? AND oi.status != 'cancelado' ORDER BY oi.created_at
+    `).all(order.id, barId);
     res.json({ ok: true, order, items });
   });
 
@@ -733,7 +735,7 @@ function recalcOrder(db, orderId, barId) {
   const tax = Math.round(subtotal * taxRate * 100) / 100;
   const total = subtotal + tax;
 
-  db.prepare('UPDATE orders SET subtotal = ?, tax = ?, total = ? WHERE id = ?').run(subtotal, tax, total, orderId);
+  db.prepare('UPDATE orders SET subtotal = ?, tax = ?, total = ? WHERE id = ? AND bar_id = ?').run(subtotal, tax, total, orderId, effectiveBarId);
 }
 
 module.exports = { registerRoutes };
