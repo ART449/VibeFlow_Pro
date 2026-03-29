@@ -14,12 +14,9 @@
 <!-- Firebase Auth SDK (same config as main app) -->
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+<script src="/js/pos-auth.js"></script>
 <script>
-  firebase.initializeApp({
-    apiKey: "AIzaSyCrdTH1CvJj-kHX_LR5kzPmlxVG8fkaQpM",
-    authDomain: "byflow-d3a0f.firebaseapp.com",
-    projectId: "byflow-d3a0f"
-  });
+  firebase.initializeApp(PosAuth.firebaseConfig);
   const _fbAuth = firebase.auth();
 </script>
 <style>
@@ -269,16 +266,8 @@ function escapeHtml(str) {
 // ═══ MULTI-TENANT: bar_id from owner auth ═══
 let _currentBarId = sessionStorage.getItem('pos_bar_id') || 'default';
 
-/**
- * Generate a deterministic bar_id from an email address (SHA-256 hash, first 16 hex chars)
- */
-async function emailToBarId(email) {
-  const encoder = new TextEncoder();
-  const data = encoder.encode(email.toLowerCase().trim());
-  const hashBuffer = await crypto.subtle.digest('SHA-256', data);
-  const hashArray = Array.from(new Uint8Array(hashBuffer));
-  return 'bar_' + hashArray.slice(0, 8).map(b => b.toString(16).padStart(2, '0')).join('');
-}
+// emailToBarId — uses shared PosAuth module
+const emailToBarId = PosAuth.emailToBarId;
 
 // ═══ ROLE SELECTION FLOW ═══
 function showRoleSelect() {

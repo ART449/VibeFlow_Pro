@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 <title>ByFlow Bares — POS + Karaoke + Eatertainment</title>
 <link href="https://fonts.googleapis.com/css2?family=Great+Vibes&family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+<script src="/js/pos-auth.js"></script>
 <style>
 *{margin:0;padding:0;box-sizing:border-box;}
 :root{
@@ -1376,22 +1377,10 @@ document.addEventListener('DOMContentLoaded', () => {
 // API INTEGRATION — Real data from POS backend
 // ═══════════════════════════════════════════════
 
-function getToken() {
-  return sessionStorage.getItem('pos_token') ||
-    new URLSearchParams(location.search).get('token') ||
-    '';
-}
-
-function getBarId() {
-  return sessionStorage.getItem('pos_bar_id') || 'default';
-}
-
-function authHeaders() {
-  return {
-    'Authorization': 'Bearer ' + getToken(),
-    'X-Bar-ID': getBarId()
-  };
-}
+// ═══ AUTH (shared module from /js/pos-auth.js) ═══
+const getToken = PosAuth.getToken;
+const getBarId = PosAuth.getBarId;
+const authHeaders = PosAuth.authHeaders;
 
 // ── Auth guard ──────────────────────────────────
 (function checkAuth() {

@@ -7,6 +7,7 @@
 <link rel="manifest" href="/pos-manifest.json">
 <meta name="theme-color" content="#ff8a00">
 <link href="https://fonts.googleapis.com/css2?family=Great+Vibes&family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+<script src="/js/pos-auth.js"></script>
 <style>
 *{margin:0;padding:0;box-sizing:border-box;}
 :root{--bg:#0a0a0f;--surface:rgba(255,255,255,.04);--surface2:rgba(255,255,255,.07);--border:rgba(255,255,255,.08);--text:#e8e8f0;--sub:rgba(255,255,255,.4);--orange:#ff8a00;--green:#34d399;--red:#ef4444;--pink:#ff6b9d;--purple:#c084fc;--cyan:#22d3ee;--blue:#60a5fa;--amber:#fbbf24;}
@@ -230,18 +231,10 @@ function escapeHtml(str) {
   return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#039;');
 }
 
-// ═══ AUTH ═══
-function getToken() { return sessionStorage.getItem('pos_token') || ''; }
-function authHeaders() {
-  return { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + getToken() };
-}
-
-// Auth gate — redirect if no token
-(function() {
-  if (!sessionStorage.getItem('pos_token')) {
-    window.location.href = '/pos.html';
-  }
-})();
+// ═══ AUTH (shared module) ═══
+const getToken = PosAuth.getToken;
+const authHeaders = PosAuth.authHeaders;
+PosAuth.requireAuth();
 
 // ═══ NAVIGATION ═══
 function showSec(id, el) {
