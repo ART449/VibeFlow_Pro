@@ -917,7 +917,7 @@ body:has(.center.tp-fullscreen) #audio-bar{
   color:rgba(255,255,255,.85);
 }
 .ia-msg.user .ia-msg-text{background:rgba(255,0,110,.07);border-color:rgba(255,0,110,.15);}
-.ia-msg-text.typing::after{content:'â–‹';animation:blink .7s infinite;}
+.ia-msg-text.typing::after{content:'▋';animation:blink .7s infinite;}
 @keyframes blink{0%,100%{opacity:1;}50%{opacity:0;}}
 .ia-chips{display:flex;flex-wrap:wrap;gap:5px;padding:8px 12px 4px;}
 .ia-chip{
@@ -2307,15 +2307,15 @@ input:focus-visible,textarea:focus-visible{
         <svg class="usearch-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
         <input class="usearch-input" id="usearch-input" placeholder="Buscar letras, musica, beats..."
                onkeydown="if(event.key==='Enter')uSearch()" autocomplete="off">
-        <button class="usearch-btn" onclick="uSearch()" title="Buscar" aria-label="Buscar">âŽ</button>
-        <button class="usearch-close" id="usearch-close" onclick="uSearchClose()" style="display:none;" title="Cerrar" aria-label="Cerrar busqueda">âœ•</button>
+        <button class="usearch-btn" onclick="uSearch()" title="Buscar" aria-label="Buscar">âŽ</button>
+        <button class="usearch-close" id="usearch-close" onclick="uSearchClose()" style="display:none;" title="Cerrar" aria-label="Cerrar busqueda">&#x2715;</button>
       </div>
       <div class="usearch-results" id="usearch-results" style="display:none;"></div>
     </div>
 
     <div style="display:flex;align-items:center;gap:8px;">
-      <span id="online-count" title="Dispositivos en tu sala" style="font-size:10px;color:var(--g);display:none;">â— <span id="online-num">0</span></span>
-      <span id="room-badge" title="Tu sala — comparte este codigo" style="font-size:9px;background:var(--card2);border:1px solid var(--border);padding:2px 6px;border-radius:6px;cursor:pointer;display:none;" onclick="copyRoomLink()">ðŸ”— <span id="room-id-display">---</span></span>
+      <span id="online-count" title="Dispositivos en tu sala" style="font-size:10px;color:var(--g);display:none;">â— <span id="online-num">0</span></span>
+      <span id="room-badge" title="Tu sala — comparte este codigo" style="font-size:9px;background:var(--card2);border:1px solid var(--border);padding:2px 6px;border-radius:6px;cursor:pointer;display:none;" onclick=”copyRoomLink()”>&#x1F517; <span id="room-id-display">---</span></span>
       <button id="btn-open-display" onclick="openKaraokeDisplay()" title="Abrir pantalla de karaoke en ventana separada (para TV/proyector)" aria-label="Abrir pantalla de karaoke en ventana separada" style="display:none;align-items:center;gap:3px;padding:3px 8px;border-radius:6px;border:1px solid rgba(0,229,255,.2);background:rgba(0,229,255,.06);color:rgba(0,229,255,.8);font-size:10px;font-weight:600;cursor:pointer;white-space:nowrap;transition:all .2s;">
         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
         <span class="topbar-action-label">Abrir Pantalla</span>
@@ -2369,7 +2369,7 @@ input:focus-visible,textarea:focus-visible{
         </button>
       </div>
       <div class="scrollable" id="lista-cola">
-        <div class="empty-state"><span>ðŸŽ¤</span><p>Agrega el primer cantante para empezar</p></div>
+        <div class="empty-state"><span>&#x1F3A4;</span><p>Agrega el primer cantante para empezar</p></div>
       </div>
       <!-- Mesas Pendientes (auto-populated from cola) -->
       <div class="pending-section" id="pending-section" style="display:none;">
@@ -2434,10 +2434,10 @@ input:focus-visible,textarea:focus-visible{
       </div>
       <span id="tp-mode-badge" class="tp-lrc-badge manual" title="Tipo de letra cargada: LRC sincronizado o modo manual (scroll libre)" style="display:inline-block;font-size:11px;padding:2px 8px;border-radius:8px;background:rgba(255,255,255,.08);color:var(--sub);margin:4px 0 0 8px;"></span>
       <span class="tp-sync-controls" id="tp-sync-controls" title="Ajuste de sincronizacion: adelantar o retrasar la letra respecto al audio">
-        <button class="tp-sync-btn" onclick="tpSyncNudge(-0.5)" title="Retrasar letra 0.5s" aria-label="Retrasar letra 0.5s">âˆ’</button>
+        <button class="tp-sync-btn" onclick="tpSyncNudge(-0.5)" title="Retrasar letra 0.5s" aria-label="Retrasar letra 0.5s">&#x2212;</button>
         <span class="tp-sync-label" id="tp-sync-label" title="Offset de sincronizacion en segundos">0.0s</span>
         <button class="tp-sync-btn" onclick="tpSyncNudge(0.5)" title="Adelantar letra 0.5s" aria-label="Adelantar letra 0.5s">+</button>
-        <button class="tp-sync-btn" onclick="tpSyncReset()" title="Resetear offset a 0" aria-label="Resetear offset a 0" style="font-size:10px;width:auto;padding:0 6px;">â†º</button>
+        <button class="tp-sync-btn" onclick="tpSyncReset()" title="Resetear offset a 0" aria-label="Resetear offset a 0" style="font-size:10px;width:auto;padding:0 6px;">&#x21BA;</button>
       </span>
 
       <!-- Effects -->
@@ -2569,15 +2569,15 @@ input:focus-visible,textarea:focus-visible{
       <div class="ia-msgs" id="ia-msgs">
         <div class="ia-msg">
           <div class="ia-msg-avatar">&#129302;</div>
-          <div class="ia-msg-text">Â¡Hola! Soy el asistente IA de BYFLOW. Puedo ayudarte a generar letras, sugerir canciones o responder preguntas sobre tu show.</div>
+          <div class="ia-msg-text">&#161;Hola! Soy el asistente IA de BYFLOW. Puedo ayudarte a generar letras, sugerir canciones o responder preguntas sobre tu show.</div>
         </div>
       </div>
       <div class="ia-chips" id="ia-chips">
-        <span class="ia-chip" onclick="iaQuick('Genera una letra de rap consciente estilo ArT-AtR sobre tecnologia y superacion, con rimas AABB')">ðŸŽ¤ Rap ArT-AtR</span>
-        <span class="ia-chip" onclick="iaQuick('Genera una letra de reggaeton con metaforas de hacking y desamor')">ðŸ’” Trap & Desamor</span>
-        <span class="ia-chip" onclick="iaQuick('Genera una balada de redencion y familia, estilo sentimental con terminologia de software')">ðŸ™ Redencion</span>
-        <span class="ia-chip" onclick="iaQuick('Sugiere 5 canciones populares para karaoke')">ðŸŽµ Sugerir canciones</span>
-        <span class="ia-chip" onclick="openLyricStudio()">âœï¸ Estudio de Letras</span>
+        <span class="ia-chip" onclick="iaQuick('Genera una letra de rap consciente estilo ArT-AtR sobre tecnologia y superacion, con rimas AABB')">&#x1F3A4; Rap ArT-AtR</span>
+        <span class="ia-chip" onclick="iaQuick('Genera una letra de reggaeton con metaforas de hacking y desamor’)”>&#x1F494; Trap &amp; Desamor</span>
+        <span class="ia-chip" onclick="iaQuick('Genera una balada de redencion y familia, estilo sentimental con terminologia de software')">™ Redencion</span>
+        <span class="ia-chip" onclick="iaQuick('Sugiere 5 canciones populares para karaoke')">&#x1F3B5; Sugerir canciones</span>
+        <span class="ia-chip" onclick="openLyricStudio()">âœï¸ Estudio de Letras</span>
       </div>
       <div class="ia-input-row">
         <input class="ia-input" id="ia-input" placeholder="Pregúntame algo..."
@@ -2624,7 +2624,7 @@ input:focus-visible,textarea:focus-visible{
           </button>
         </div>
         <div id="sc-results" class="yt-results">
-          <div class="yt-empty">ðŸŽµ Busca canciones en SoundCloud</div>
+          <div class="yt-empty">&#x1F3B5; Busca canciones en SoundCloud</div>
         </div>
       </div>
       <!-- Jamendo Section -->
@@ -2637,19 +2637,19 @@ input:focus-visible,textarea:focus-visible{
           </button>
         </div>
         <div id="jm-results" class="yt-results">
-          <div class="yt-empty">ðŸŽµ Musica libre con licencia Creative Commons</div>
+          <div class="yt-empty">&#x1F3B5; Musica libre con licencia Creative Commons</div>
         </div>
       </div>
       <!-- Source Tabs -->
       <div style="display:flex;gap:4px;margin-top:8px;padding:0 8px;">
-        <button class="yt-src-tab active" id="tab-yt" onclick="switchMusicSource('youtube')" style="flex:1;padding:6px;border-radius:6px;border:1px solid var(--border);background:var(--card);color:var(--text);cursor:pointer;font-size:.7rem;">â–¶ YouTube</button>
-        <button class="yt-src-tab" id="tab-sc" onclick="switchMusicSource('soundcloud')" style="flex:1;padding:6px;border-radius:6px;border:1px solid var(--border);background:transparent;color:var(--sub);cursor:pointer;font-size:.7rem;">â˜ SoundCloud</button>
-        <button class="yt-src-tab" id="tab-jm" onclick="switchMusicSource('jamendo')" style="flex:1;padding:6px;border-radius:6px;border:1px solid var(--border);background:transparent;color:var(--sub);cursor:pointer;font-size:.7rem;">â™« Jamendo</button>
+        <button class="yt-src-tab active" id="tab-yt" onclick="switchMusicSource('youtube')" style="flex:1;padding:6px;border-radius:6px;border:1px solid var(--border);background:var(--card);color:var(--text);cursor:pointer;font-size:.7rem;">&#x25B6; YouTube</button>
+        <button class="yt-src-tab" id="tab-sc" onclick="switchMusicSource('soundcloud')" style="flex:1;padding:6px;border-radius:6px;border:1px solid var(--border);background:transparent;color:var(--sub);cursor:pointer;font-size:.7rem;">â˜ SoundCloud</button>
+        <button class="yt-src-tab" id="tab-jm" onclick="switchMusicSource('jamendo')" style="flex:1;padding:6px;border-radius:6px;border:1px solid var(--border);background:transparent;color:var(--sub);cursor:pointer;font-size:.7rem;">&#x266B; Jamendo</button>
       </div>
       <!-- Embedded Player -->
       <div id="music-player-embed" style="display:none;padding:8px;">
         <div id="embed-container"></div>
-        <button onclick="closeEmbed()" style="margin-top:6px;padding:4px 12px;border-radius:4px;border:1px solid var(--border);background:var(--card);color:var(--text);cursor:pointer;font-size:.75rem;">âœ• Cerrar reproductor</button>
+        <button onclick="closeEmbed()" style="margin-top:6px;padding:4px 12px;border-radius:4px;border:1px solid var(--border);background:var(--card);color:var(--text);cursor:pointer;font-size:.75rem;">&#x2715; Cerrar reproductor</button>
       </div>
       <div style="padding:8px;text-align:center;font-size:.7rem;color:var(--sub);opacity:.6;">
         ByFlow no descarga musica. Todo se reproduce via streaming respetando derechos de autor.
@@ -2692,13 +2692,13 @@ input:focus-visible,textarea:focus-visible{
               <div class="pricing-price">$0</div>
               <div class="pricing-period">para siempre</div>
               <div class="pricing-features">
-                âœ“ Karaoke completo<br>
-                âœ“ Teleprompter<br>
-                âœ“ Cola de cantantes<br>
-                âœ“ Letras LRC sync<br>
-                âœ— <span class="disabled">Streaming musica</span><br>
-                âœ— <span class="disabled">Gestion bares</span><br>
-                âœ— <span class="disabled">IA Studio</span>
+                &#x2714;Karaoke completo<br>
+                &#x2714;Teleprompter<br>
+                &#x2714;Cola de cantantes<br>
+                &#x2714;Letras LRC sync<br>
+                &#x2717;<span class="disabled">Streaming musica</span><br>
+                &#x2717;<span class="disabled">Gestion bares</span><br>
+                &#x2717;<span class="disabled">IA Studio</span>
               </div>
             </div>
 
@@ -2709,13 +2709,13 @@ input:focus-visible,textarea:focus-visible{
               <div class="pricing-price">$199</div>
               <div class="pricing-period">MXN/mes · 3 dispositivos</div>
               <div class="pricing-features">
-                âœ“ Todo lo gratis<br>
-                âœ“ YouTube streaming<br>
-                âœ“ SoundCloud embed<br>
-                âœ“ Jamendo musica CC<br>
-                âœ“ IA Studio (Ollama)<br>
-                âœ“ Control remoto QR<br>
-                âœ— <span class="disabled">Gestion bares</span>
+                &#x2714;Todo lo gratis<br>
+                &#x2714;YouTube streaming<br>
+                &#x2714;SoundCloud embed<br>
+                &#x2714;Jamendo musica CC<br>
+                &#x2714;IA Studio (Ollama)<br>
+                &#x2714;Control remoto QR<br>
+                &#x2717;<span class="disabled">Gestion bares</span>
               </div>
             </div>
 
@@ -2725,13 +2725,13 @@ input:focus-visible,textarea:focus-visible{
               <div class="pricing-price">$799</div>
               <div class="pricing-period">MXN/mes · 5 dispositivos</div>
               <div class="pricing-features">
-                âœ“ Todo lo PRO<br>
-                âœ“ Gestion de bares<br>
-                âœ“ Mesas y peticiones<br>
-                âœ“ Promos automaticas<br>
-                âœ“ DJ Soundboard<br>
-                âœ“ Estadisticas uso<br>
-                âœ“ Soporte prioritario
+                &#x2714;Todo lo PRO<br>
+                &#x2714;Gestion de bares<br>
+                &#x2714;Mesas y peticiones<br>
+                &#x2714;Promos automaticas<br>
+                &#x2714;DJ Soundboard<br>
+                &#x2714;Estadisticas uso<br>
+                &#x2714;Soporte prioritario
               </div>
             </div>
 
@@ -2849,44 +2849,44 @@ input:focus-visible,textarea:focus-visible{
             </div>
             <div class="dj-pads">
               <div class="dj-pad" onclick="djPlay('airhorn')" data-sfx="airhorn">
-                <div class="dj-pad-icon">ðŸ“¯</div>
+                <div class="dj-pad-icon”>&#x1F4EF;</div>
                 <div class="dj-pad-label">Airhorn</div>
               </div>
               <div class="dj-pad" onclick="djPlay('applause')" data-sfx="applause">
-                <div class="dj-pad-icon">ðŸ‘</div>
+                <div class="dj-pad-icon">‘</div>
                 <div class="dj-pad-label">Aplausos</div>
               </div>
               <div class="dj-pad" onclick="djPlay('drumroll')" data-sfx="drumroll">
-                <div class="dj-pad-icon">ðŸ¥</div>
+                <div class="dj-pad-icon"></div>
                 <div class="dj-pad-label">Redoble</div>
               </div>
               <div class="dj-pad" onclick="djPlay('record_scratch')" data-sfx="record_scratch">
-                <div class="dj-pad-icon">ðŸ’¿</div>
+                <div class="dj-pad-icon">&#x1F4BF;</div>
                 <div class="dj-pad-label">Scratch</div>
               </div>
               <div class="dj-pad" onclick="djPlay('crowd_cheer')" data-sfx="crowd_cheer">
-                <div class="dj-pad-icon">ðŸŽ‰</div>
+                <div class="dj-pad-icon">&#x1F389;</div>
                 <div class="dj-pad-label">Ovacion</div>
               </div>
               <div class="dj-pad" onclick="djPlay('bell')" data-sfx="bell">
-                <div class="dj-pad-icon">ðŸ””</div>
+                <div class="dj-pad-icon”>&#x1F514;</div>
                 <div class="dj-pad-label">Campana</div>
               </div>
               <div class="dj-pad" onclick="djPlay('siren')" data-sfx="siren">
-                <div class="dj-pad-icon">ðŸš¨</div>
+                <div class="dj-pad-icon">&#x1F6A8;</div>
                 <div class="dj-pad-label">Sirena</div>
               </div>
               <div class="dj-pad" onclick="djPlay('bass_drop')" data-sfx="bass_drop">
-                <div class="dj-pad-icon">ðŸ’¥</div>
+                <div class="dj-pad-icon">&#x1F4A5;</div>
                 <div class="dj-pad-label">Bass Drop</div>
               </div>
               <div class="dj-pad" onclick="djPlay('woosh')" data-sfx="woosh">
-                <div class="dj-pad-icon">ðŸ’¨</div>
+                <div class="dj-pad-icon">&#x1F4A8;</div>
                 <div class="dj-pad-label">Woosh</div>
               </div>
             </div>
             <div class="dj-vol-row">
-              <label>ðŸ”Š Vol. SFX</label>
+              <label>&#x1F4CA; Vol. SFX</label>
               <input type="range" id="dj-sfx-vol" min="0" max="100" value="70" oninput="djSetVolume(this.value)">
               <span style="font-size:10px;color:var(--sub);min-width:28px;text-align:right;" id="dj-vol-label">70%</span>
             </div>
@@ -3073,15 +3073,15 @@ input:focus-visible,textarea:focus-visible{
               </div>
             </div>
             <div style="margin-bottom:8px;">
-              <div style="font-size:9px;color:var(--sub);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">ðŸ† Top Canciones</div>
+              <div style="font-size:9px;color:var(--sub);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">† Top Canciones</div>
               <div id="stat-top-songs" style="font-size:10px;color:var(--sub);opacity:.5;">Agrega canciones para ver tus stats</div>
             </div>
             <div style="margin-bottom:8px;">
-              <div style="font-size:9px;color:var(--sub);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">ðŸŽ¤ Top Cantantes</div>
+              <div style="font-size:9px;color:var(--sub);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">&#x1F3A4; Top Cantantes</div>
               <div id="stat-top-singers" style="font-size:10px;color:var(--sub);opacity:.5;">Agrega cantantes para ver tus stats</div>
             </div>
             <div>
-              <div style="font-size:9px;color:var(--sub);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">ðŸ“Š Ultimos 7 dias</div>
+              <div style="font-size:9px;color:var(--sub);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;”>&#x1F4CA; Ultimos 7 dias</div>
               <div id="stat-chart" style="display:flex;align-items:flex-end;gap:3px;height:50px;"></div>
             </div>
           </div>
@@ -3177,14 +3177,14 @@ input:focus-visible,textarea:focus-visible{
         </a>
       </div>
       <h3 style="background:linear-gradient(135deg,var(--p),var(--a));-webkit-background-clip:text;-webkit-text-fill-color:transparent;">
-        âœï¸ Estudio de Letras — ARTATR
+        âœï¸ Estudio de Letras &#8212; ARTATR
       </h3>
       <div style="font-size:9px;color:rgba(0,229,255,.5);font-style:italic;margin-bottom:8px;">ART: que suene bonito | ATR: que tenga metrica perfecta — El arte de rimarte</div>
       <!-- Tabs -->
       <div style="display:flex;gap:3px;margin-bottom:12px;background:rgba(255,255,255,.04);padding:3px;border-radius:10px;">
-        <button onclick="lsTab('gen')" id="ls-tab-gen" class="mode-btn active" style="flex:1;padding:6px 10px;font-size:11px;border:none;border-radius:8px;">âœ¨ Generar</button>
-        <button onclick="lsTab('mis')" id="ls-tab-mis" class="mode-btn" style="flex:1;padding:6px 10px;font-size:11px;border:none;border-radius:8px;">ðŸ“‚ Mis Letras</button>
-        <button onclick="lsTab('suno')" id="ls-tab-suno" class="mode-btn" style="flex:1;padding:6px 10px;font-size:11px;border:none;border-radius:8px;">ðŸŽµ Suno</button>
+        <button onclick="lsTab('gen')" id="ls-tab-gen" class="mode-btn active" style="flex:1;padding:6px 10px;font-size:11px;border:none;border-radius:8px;">&#x2728; Generar</button>
+        <button onclick="lsTab('mis')" id="ls-tab-mis" class="mode-btn" style="flex:1;padding:6px 10px;font-size:11px;border:none;border-radius:8px;”>&#x1F4C2; Mis Letras</button>
+        <button onclick="lsTab('suno')" id="ls-tab-suno" class="mode-btn" style="flex:1;padding:6px 10px;font-size:11px;border:none;border-radius:8px;">&#x1F3B5; Suno</button>
       </div>
 
       <!-- TAB: Generar -->
@@ -3194,25 +3194,25 @@ input:focus-visible,textarea:focus-visible{
         <div>
           <label style="font-size:10px;color:var(--sub);display:block;margin-bottom:3px;">Tema</label>
           <select id="ls-theme" class="catalog-search" style="padding:7px 10px;">
-            <option value="amor">â¤ï¸ Amor y Romance</option>
-            <option value="desamor">ðŸ’” Desamor y Realidad</option>
-            <option value="superacion">ðŸš€ Superacion Personal</option>
-            <option value="calle">ðŸ™ï¸ Calle y Urbano</option>
-            <option value="tech">ðŸ’» Tecnologia y Trap</option>
-            <option value="redencion">ðŸ™ Redencion y Familia</option>
-            <option value="fiesta">ðŸŽ‰ Fiesta y Celebracion</option>
-            <option value="melanc">ðŸŒ§ï¸ Melancolia</option>
+            <option value="amor">â¤ï¸ Amor y Romance</option>
+            <option value="desamor">’” Desamor y Realidad</option>
+            <option value="superacion">&#x1F680; Superacion Personal</option>
+            <option value="calle">™ï¸ Calle y Urbano</option>
+            <option value="tech">&#x1F4BB; Tecnologia y Trap</option>
+            <option value="redencion">™ Redencion y Familia</option>
+            <option value="fiesta">&#x1F389; Fiesta y Celebracion</option>
+            <option value="melanc">ï¸ Melancolia</option>
           </select>
         </div>
         <div>
           <label style="font-size:10px;color:var(--sub);display:block;margin-bottom:3px;">Estilo</label>
           <select id="ls-style" class="catalog-search" style="padding:7px 10px;">
-            <option value="rap">ðŸŽ¤ Rap Consciente</option>
-            <option value="trap">ðŸ”¥ Trap Latino</option>
-            <option value="reggaeton">ðŸ’ƒ Reggaeton</option>
-            <option value="balada">ðŸ’– Balada</option>
-            <option value="rock">ðŸŽ¸ Rock</option>
-            <option value="pop">ðŸŽµ Pop</option>
+            <option value="rap">&#x1F3A4; Rap Consciente</option>
+            <option value="trap">”¥ Trap Latino</option>
+            <option value="reggaeton">’ƒ Reggaeton</option>
+            <option value="balada">’– Balada</option>
+            <option value="rock">&#x1F3B8; Rock</option>
+            <option value="pop">&#x1F3B5; Pop</option>
           </select>
         </div>
         <div>
@@ -3233,7 +3233,7 @@ input:focus-visible,textarea:focus-visible{
       <input class="catalog-search" id="ls-custom" placeholder="Prompt extra: ej. 'metaforas del mar', 'dedicada a mi padre'..." style="width:100%;margin-bottom:8px;">
       <div style="display:flex;gap:8px;margin-top:4px;">
         <button class="tp-search-lyrics-btn" onclick="generateOfflineLyrics()" style="flex:1;justify-content:center;background:linear-gradient(135deg,var(--p),var(--a));">
-          âœ¨ Generar Offline
+          &#x2728; Generar Offline
         </button>
         <button class="tp-search-lyrics-btn" id="ls-grok-btn" onclick="generateGrokLyrics()" style="flex:1;justify-content:center;background:linear-gradient(135deg,#8b5cf6,#06b6d4);opacity:.5;cursor:not-allowed;" disabled title="Requiere GFlow online (PRO)">
           &#129302; GFlow PRO
@@ -3394,8 +3394,8 @@ input:focus-visible,textarea:focus-visible{
           <button class="est-genre-btn" onclick="estGenreSearch(this,'latin trap beat')">Latin</button>
         </div>
         <div class="est-favs-toggle">
-          <button class="active" id="est-tab-search" onclick="estShowSearch()">ðŸ” Buscar</button>
-          <button id="est-tab-favs" onclick="estShowFavs()">â¤ï¸ Favoritos</button>
+          <button class="active" id="est-tab-search" onclick="estShowSearch()">” Buscar</button>
+          <button id="est-tab-favs" onclick="estShowFavs()">â¤ï¸ Favoritos</button>
         </div>
       </div>
       <div class="est-results" id="est-results">
@@ -3494,7 +3494,7 @@ input:focus-visible,textarea:focus-visible{
       <!-- Left: Chat con GFlow -->
       <div style="display:flex;flex-direction:column;border-right:1px solid var(--border);overflow:hidden;">
         <div style="padding:12px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;">
-          <div style="width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,#ff2d78,#8b5cf6);display:flex;align-items:center;justify-content:center;font-size:18px;">ðŸŽ§</div>
+          <div style="width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,#ff2d78,#8b5cf6);display:flex;align-items:center;justify-content:center;font-size:18px;"></div>
           <div>
             <div style="font-size:13px;font-weight:700;color:var(--text);">GFlow</div>
             <div style="font-size:10px;color:var(--sub);" id="gflow-est-status">DJ IA · <span id="gflow-est-backend">Listo</span></div>
@@ -3502,15 +3502,15 @@ input:focus-visible,textarea:focus-visible{
         </div>
         <div class="ia-msgs" id="gflow-est-msgs" style="flex:1;overflow-y:auto;padding:12px;">
           <div class="ia-msg">
-            <div class="ia-msg-avatar">ðŸŽ§</div>
-            <div class="ia-msg-text">Â¡Qué onda! Soy GFlow, tu DJ IA. Estoy aquí en el estudio para ayudarte: genera letras, busca rimas, sugiere beats o pregúntame lo que sea. Â¡Dale flow! ðŸŽ§</div>
+            <div class="ia-msg-avatar"></div>
+            <div class="ia-msg-text">&#161;Qu&#233; onda! Soy GFlow, tu DJ IA. Estoy aqu&#237; en el estudio para ayudarte: genera letras, busca rimas, sugiere beats o preg&#250;ntame lo que sea. &#161;Dale flow! &#127911;</div>
           </div>
         </div>
         <div style="padding:8px 12px;display:flex;gap:4px;flex-wrap:wrap;border-top:1px solid var(--border);">
-          <span class="ia-chip" onclick="gflowEstQuick('Genera una letra de rap sobre tecnología y superación, rimas AABB')">ðŸŽ¤ Rap tech</span>
-          <span class="ia-chip" onclick="gflowEstQuick('Dame 5 ideas de temas para escribir una canción')">ðŸ’¡ Ideas</span>
-          <span class="ia-chip" onclick="gflowEstQuick('Sugiere rimas para: corazón, razón, ilusión')">ðŸ”¤ Rimas</span>
-          <span class="ia-chip" onclick="openLyricStudio()">âœï¸ Generador offline</span>
+          <span class="ia-chip" onclick="gflowEstQuick('Genera una letra de rap sobre tecnología y superación, rimas AABB')"> Rap tech</span>
+          <span class="ia-chip" onclick="gflowEstQuick('Dame 5 ideas de temas para escribir una canción')">’¡ Ideas</span>
+          <span class="ia-chip" onclick="gflowEstQuick('Sugiere rimas para: corazón, razón, ilusión')">”¤ Rimas</span>
+          <span class="ia-chip" onclick="openLyricStudio()">âœï¸ Generador offline</span>
         </div>
         <div class="ia-input-row" style="border-top:1px solid var(--border);">
           <input class="ia-input" id="gflow-est-input" placeholder="Pregúntale al GFlow..."
@@ -3528,8 +3528,8 @@ input:focus-visible,textarea:focus-visible{
         </div>
         <textarea class="est-letra-area" id="gflow-est-letra" placeholder="Escribe tu letra aquí o pídele al GFlow que genere una...&#10;&#10;Verso 1:&#10;..." style="flex:1;border:none;resize:none;"></textarea>
         <div style="padding:8px 12px;border-top:1px solid var(--border);display:flex;gap:6px;">
-          <button class="est-search-btn" onclick="gflowEstLoadTP()" style="flex:1;">ðŸ“º Cargar al Teleprompter</button>
-          <button class="est-search-btn" onclick="gflowEstSaveLetter()" style="flex:1;background:var(--s);">ðŸ’¾ Guardar</button>
+          <button class="est-search-btn" onclick="gflowEstLoadTP()” style=”flex:1;”>&#x1F4FA; Cargar al Teleprompter</button>
+          <button class="est-search-btn" onclick="gflowEstSaveLetter()" style="flex:1;background:var(--s);">&#x1F4BE; Guardar</button>
         </div>
       </div>
     </div>
@@ -4238,7 +4238,7 @@ function baresSetupBar() {
   baresState.mesas    = Array.from({length: num}, (_,i) => ({num: i+1, estado:'libre'}));
   baresRenderGrid();
   baresUpdateStats();
-  showToast('âœ… Bar configurado: ' + name + ' (' + num + ' mesas)');
+  showToast('\u2705 Bar configurado: ' + name + ' (' + num + ' mesas)');
 }
 
 function baresRenderGrid() {
@@ -4279,13 +4279,13 @@ function baresAddOrder() {
   const textEl = document.getElementById('bares-order-text');
   const mesa   = parseInt(mesaEl.value);
   const text   = textEl.value.trim();
-  if (!mesa || !text) { showToast('âš ï¸ Completa mesa y orden'); return; }
+  if (!mesa || !text) { showToast('âš ï¸ Completa mesa y orden'); return; }
   baresState.orders.unshift({ id: Date.now(), mesa, text, time: new Date() });
   mesaEl.value = '';
   textEl.value = '';
   baresRenderOrders();
   baresUpdateStats();
-  showToast('ðŸ“ Orden agregada — Mesa ' + mesa);
+  showToast('“ Orden agregada - Mesa ' + mesa);
 }
 
 function baresDeleteOrder(id) {
@@ -4374,7 +4374,7 @@ function menuRender() {
   if (_menuActiveCategory >= menu.length) _menuActiveCategory = 0;
 
   tabsEl.innerHTML = menu.map((cat, i) =>
-    `<div class="menu-tab${i === _menuActiveCategory ? ' active' : ''}" onclick="menuSelectTab(${i})">${escHtml(cat.name)}${_menuEditMode ? ' <span class="menu-item-del" style="display:inline;position:static;width:auto;height:auto;background:none;color:#f87171;font-size:10px;cursor:pointer;margin-left:2px;" onclick="event.stopPropagation();menuDeleteCategory(${i})">âœ•</span>' : ''}</div>`
+    `<div class="menu-tab${i === _menuActiveCategory ? ' active' : ''}" onclick="menuSelectTab(${i})">${escHtml(cat.name)}${_menuEditMode ? ' <span class="menu-item-del" style="display:inline;position:static;width:auto;height:auto;background:none;color:#f87171;font-size:10px;cursor:pointer;margin-left:2px;" onclick="event.stopPropagation();menuDeleteCategory(${i})">\u2715</span>' : ''}</div>`
   ).join('');
 
   const cat = menu[_menuActiveCategory];
@@ -4384,7 +4384,7 @@ function menuRender() {
   }
   gridEl.innerHTML = cat.items.map((item, idx) =>
     `<div class="menu-item-card">
-      <button class="menu-item-del" onclick="menuDeleteItem(${_menuActiveCategory},${idx})">âœ•</button>
+      <button class="menu-item-del" onclick="menuDeleteItem(${_menuActiveCategory},${idx})">\u2715</button>
       <div class="menu-item-name">${escHtml(item.name)}</div>
       ${item.desc ? '<div class="menu-item-desc">' + escHtml(item.desc) + '</div>' : ''}
       <div class="menu-item-price">$${Number(item.price).toFixed(0)} MXN</div>
@@ -4461,7 +4461,7 @@ function menuAddCategory() {
 function menuDeleteCategory(catIdx) {
   const menu = menuGetAll();
   if (menu.length <= 1) { showToast('Debe haber al menos una categoría'); return; }
-  if (!confirm('Â¿Eliminar categoría "' + menu[catIdx].name + '" y todos sus items?')) return;
+  if (!confirm('\u00bfEliminar categor\u00eda "' + menu[catIdx].name + '" y todos sus items?')) return;
   const updatedMenu = menu.filter(function(_, i) { return i !== catIdx; });
   menuSave(updatedMenu);
   if (_menuActiveCategory >= updatedMenu.length) _menuActiveCategory = 0;
@@ -4838,7 +4838,7 @@ function updateClock() {
 function escHtml(s) { const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
 function showToast(msg, type) {
   const t = document.getElementById('toast');
-  const icons = { success:'âœ“', error:'âœ•', warning:'!', info:'â„¹' };
+  const icons = { success:'\u2714', error:'\u2715', warning:'!', info:'\u2139' };
   t.className = ''; // reset classes
   if (type && icons[type]) {
     t.innerHTML = '<span class="t-icon">' + icons[type] + '</span><span class="t-msg">' + escHtml(msg) + '</span>';
@@ -4914,7 +4914,7 @@ function renderCatalog(filter) {
   }
   el.innerHTML = list.map(s => `
     <div class="catalog-item">
-      <div class="ci-icon">ðŸŽµ</div>
+      <div class="ci-icon">&#x1F3B5;</div>
       <div class="ci-info">
         <div class="ci-title">${escHtml(s.titulo)}</div>
         <div class="ci-artist">${escHtml(s.artista || 'Sin artista')}</div>
@@ -4937,9 +4937,9 @@ async function loadSong(id) {
   if (song.letra) {
     setLyrics(song.letra);
     if (socket) socket.emit('tp_lyrics', { lyrics: song.letra });
-    showToast('ðŸŽµ Cargada: ' + song.titulo);
+    showToast(' Cargada: ' + song.titulo);
   } else {
-    showToast('âš ï¸ "' + song.titulo + '" no tiene letra');
+    showToast('âš ï¸ "' + song.titulo + '" no tiene letra');
   }
   closeCatalog();
 }
@@ -4949,7 +4949,7 @@ async function deleteSong(id) {
     await fetch('/api/canciones/' + id, { method:'DELETE' });
     allSongs = allSongs.filter(s => s.id !== id);
     renderCatalog(document.getElementById('catalog-search').value.trim());
-    showToast('ðŸ—‘ï¸ Canción eliminada');
+    showToast('—‘ï¸ Canción eliminada');
   } catch {}
 }
 
@@ -5264,7 +5264,7 @@ function saveBarPromosFromEditor() {
   const promos = ta.value.split('\n').map(l => l.trim()).filter(l => l.length > 0);
   saveBarPromos(promos);
   if (timeInp) localStorage.setItem('bar_promo_time', timeInp.value);
-  showToast('âœ… ' + promos.length + ' promos guardadas');
+  showToast('\u2705 ' + promos.length + ' promos guardadas');
 }
 
 function testPromo() {
@@ -5665,7 +5665,7 @@ async function estSearchBeats() {
           <div class="est-result-title" title="${escHtml(title)}">${escHtml(title)}</div>
           <div class="est-result-channel">&#127908; ${escHtml(channel)}</div>
         </div>
-        <button class="est-like-btn ${isLiked ? 'liked' : ''}" onclick="estToggleLike(event,'${vid}',\`${title.replace(/`/g,"'")}\`,'${channel}','${thumb}')" title="${isLiked ? 'Quitar de favoritos' : 'Agregar a favoritos'}">â¤ï¸</button>
+        <button class="est-like-btn ${isLiked ? 'liked' : ''}" onclick="estToggleLike(event,'${vid}',\`${title.replace(/`/g,"'")}\`,'${channel}','${thumb}')" title="${isLiked ? 'Quitar de favoritos' : 'Agregar a favoritos'}">â¤ï¸</button>
         <button class="est-result-use" onclick="estSelectBeat('${vid}',\`${title.replace(/`/g,"'")}\`,'${channel}')">Usar Beat</button>
       `;
       container.appendChild(div);
@@ -5696,13 +5696,13 @@ function estToggleLike(event, videoId, title, channel, thumb) {
     _estSaveLikedBeats(updated);
     btn.classList.remove('liked');
     btn.title = 'Agregar a favoritos';
-    showToast('ðŸ’” Beat removido de favoritos');
+    showToast('’” Beat removido de favoritos');
   } else {
     const newBeat = { videoId, title, channel, thumb, likedAt: Date.now() };
     _estSaveLikedBeats([newBeat, ...beats]);
     btn.classList.add('liked');
     btn.title = 'Quitar de favoritos';
-    showToast('â¤ï¸ Beat guardado en favoritos');
+    showToast('â¤ï¸ Beat guardado en favoritos');
   }
 }
 function estShowSearch() {
@@ -5716,7 +5716,7 @@ function estShowFavs() {
   const beats = _estGetLikedBeats();
   const container = document.getElementById('est-results');
   if (beats.length === 0) {
-    container.innerHTML = '<div class="est-empty">No tienes beats favoritos aun. Dale â¤ï¸ a un beat para guardarlo.</div>';
+    container.innerHTML = '<div class="est-empty">No tienes beats favoritos aun. Dale â¤ï¸ a un beat para guardarlo.</div>';
     return;
   }
   container.innerHTML = '';
@@ -5727,9 +5727,9 @@ function estShowFavs() {
       <img class="est-result-thumb" src="${b.thumb}" alt="" loading="lazy">
       <div class="est-result-info">
         <div class="est-result-title" title="${b.title}">${b.title}</div>
-        <div class="est-result-channel">ðŸŽ™ ${b.channel}</div>
+        <div class="est-result-channel">™ ${b.channel}</div>
       </div>
-      <button class="est-like-btn liked" onclick="estToggleLikeFav(event,'${b.videoId}')" title="Quitar de favoritos">â¤ï¸</button>
+      <button class="est-like-btn liked" onclick="estToggleLikeFav(event,'${b.videoId}')" title="Quitar de favoritos">â¤ï¸</button>
       <button class="est-result-use" onclick="estSelectBeat('${b.videoId}',\`${b.title.replace(/`/g,"'")}\`,'${b.channel}')">Usar Beat</button>
     `;
     container.appendChild(div);
@@ -5740,7 +5740,7 @@ function estToggleLikeFav(event, videoId) {
   const beats = _estGetLikedBeats();
   const updated = beats.filter(b => b.videoId !== videoId);
   _estSaveLikedBeats(updated);
-  showToast('ðŸ’” Beat removido de favoritos');
+  showToast('’” Beat removido de favoritos');
   estShowFavs(); // refresh list
 }
 
