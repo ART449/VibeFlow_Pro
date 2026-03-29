@@ -1,5 +1,5 @@
 <!--
-  ByFlow â€” "Vive Cantando con ByFlow"
+  ByFlow — "Vive Cantando con ByFlow"
   Copyright (c) 2024-2026 Arturo Torres (ArT-AtR) / IArtLabs
   Todos los derechos reservados.
 
@@ -48,9 +48,9 @@
   const _fbAuth = firebase.auth();
   let _fbUser = null;
 </script>
-<title>ByFlow â€” Vive Cantando</title>
+<title>ByFlow — Vive Cantando</title>
 <style>
-/* â”€â”€ Reset & Variables â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* ── Reset & Variables ───────────────────────────────────────────────── */
 *{margin:0;padding:0;box-sizing:border-box;}
 :root{
   --bg:#07070d;--card:#0e0e18;--card2:#13131f;--border:rgba(255,255,255,.07);
@@ -91,10 +91,10 @@ input,textarea,select{font-family:inherit;}
 ::-webkit-scrollbar-track{background:transparent;}
 ::-webkit-scrollbar-thumb{background:rgba(255,255,255,.12);border-radius:4px;}
 
-/* â”€â”€ Layout â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* ── Layout ──────────────────────────────────────────────────────────── */
 .app{display:flex;flex-direction:column;height:100vh;height:100dvh;height:var(--vh,100vh);}
 
-/* â”€â”€ Topbar â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* ── Topbar ──────────────────────────────────────────────────────────── */
 .topbar{
   height:54px;
   background:rgba(7,7,13,.92);
@@ -117,7 +117,7 @@ input,textarea,select{font-family:inherit;}
 }
 .brand-sub{font-size:10px;color:var(--sub);letter-spacing:1.6px;text-transform:uppercase;}
 .mode-switch{display:flex;gap:3px;margin-left:auto;background:rgba(255,255,255,.04);padding:4px;border-radius:12px;border:1px solid var(--border);}
-/* â”€â”€ Buscador Universal â”€â”€ */
+/* ── Buscador Universal ── */
 .usearch-wrap{position:relative;margin-left:8px;flex-shrink:1;min-width:0;}
 .usearch-bar{display:flex;align-items:center;background:var(--card2);border:1px solid var(--border);border-radius:10px;padding:0 8px;gap:4px;height:34px;}
 .usearch-icon{width:14px;height:14px;opacity:.4;flex-shrink:0;}
@@ -161,7 +161,7 @@ input,textarea,select{font-family:inherit;}
 .mode-btn.vistas-btn.active{background:linear-gradient(135deg,var(--a),var(--g));box-shadow:0 3px 16px rgba(58,134,255,.3);}
 .mode-btn.estudio-btn.active{background:linear-gradient(135deg,#06b6d4,#3b82f6);box-shadow:0 3px 16px rgba(6,182,212,.3);}
 
-/* â”€â”€ Mode More Dropdown â”€â”€ */
+/* ── Mode More Dropdown ── */
 .mode-more{position:relative;}
 .mode-more-btn{color:var(--sub)!important;}
 .mode-dropdown{
@@ -176,7 +176,7 @@ input,textarea,select{font-family:inherit;}
 .mode-dropdown .mode-btn{width:100%;justify-content:flex-start;padding:10px 14px;border-radius:8px;font-size:12px;}
 .mode-dropdown .mode-btn:hover{background:rgba(255,255,255,.06);}
 
-/* â”€â”€ Tutorial Overlay â”€â”€ */
+/* ── Tutorial Overlay ── */
 .tutorial-overlay{
   position:fixed;inset:0;z-index:10000;background:rgba(0,0,0,.85);
   display:none;align-items:center;justify-content:center;
@@ -206,7 +206,7 @@ input,textarea,select{font-family:inherit;}
 .tutorial-btn.secondary{background:rgba(255,255,255,.06);color:var(--sub);border:1px solid var(--border);}
 .tutorial-btn.secondary:hover{background:rgba(255,255,255,.1);color:var(--text);}
 
-/* â”€â”€ Panel Vistas (DJ Dashboard) â”€â”€ */
+/* ── Panel Vistas (DJ Dashboard) ── */
 .vistas-panel{
   display:none;overflow:hidden;
   grid-template-columns:280px 1fr 300px;grid-template-rows:auto 1fr auto;
@@ -301,7 +301,7 @@ input,textarea,select{font-family:inherit;}
   .vp-right{grid-row:auto;max-height:200px;border-left:none;border-top:1px solid var(--border);}
 }
 
-/* â”€â”€ Mode-based accent system (inspirado v7.1) â”€â”€ */
+/* ── Mode-based accent system (inspirado v7.1) ── */
 body.mode-bares .topbar::after{background:linear-gradient(90deg,transparent,#f59e0b,#ef4444,transparent);}
 body.mode-bares .brand{background:linear-gradient(135deg,#f59e0b,#ef4444);-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
 body.mode-bares .btn-add{background:linear-gradient(135deg,#f59e0b,#ef4444);box-shadow:0 2px 10px rgba(245,158,11,.25);}
@@ -314,7 +314,7 @@ body.mode-estudio .topbar::after{background:linear-gradient(90deg,transparent,#0
 body.mode-estudio .brand{background:linear-gradient(135deg,#06b6d4,#3b82f6);-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
 body.mode-estudio .btn-add{background:linear-gradient(135deg,#06b6d4,#3b82f6);box-shadow:0 2px 10px rgba(6,182,212,.25);}
 
-/* â”€â”€ Estudio Panel â”€â”€ */
+/* ── Estudio Panel ── */
 .estudio-panel{
   display:none;position:fixed;top:48px;left:0;right:0;bottom:0;z-index:50;
   background:var(--bg);overflow:hidden;box-sizing:border-box;width:100%;
@@ -535,10 +535,10 @@ body.mode-estudio .btn-add{background:linear-gradient(135deg,#06b6d4,#3b82f6);bo
 }
 #datetime{font-size:10px;color:var(--sub);white-space:nowrap;font-variant-numeric:tabular-nums;}
 
-/* â”€â”€ Main â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* ── Main ────────────────────────────────────────────────────────────── */
 .main{flex:1;display:flex;overflow:hidden;}
 
-/* â”€â”€ Sidebar â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* ── Sidebar ─────────────────────────────────────────────────────────── */
 .sidebar{width:256px;background:var(--card);border-right:1px solid var(--border);display:flex;flex-direction:column;flex-shrink:0;}
 .sidebar-head{padding:12px;border-bottom:1px solid var(--border);}
 .sidebar-head h3{font-size:11px;color:var(--sub);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:10px;font-weight:700;}
@@ -604,7 +604,7 @@ select.inp{cursor:pointer;}
 .mesa-label{font-size:10px;color:var(--sub);margin-top:1px;text-transform:uppercase;letter-spacing:.5px;}
 .mesa-cell.ocupada .mesa-label{color:rgba(131,56,236,.9);}
 
-/* â”€â”€ Center â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* ── Center ──────────────────────────────────────────────────────────── */
 .center{flex:1;display:flex;flex-direction:column;position:relative;overflow:hidden;}
 .visualizer-canvas{position:absolute;inset:0;opacity:.18;pointer-events:none;z-index:0;}
 .tp-area{
@@ -617,7 +617,7 @@ select.inp{cursor:pointer;}
   font-weight:300;letter-spacing:.01em;position:relative;
   padding-top:10vh;padding-bottom:30vh;word-break:break-word;
 }
-/* â”€â”€ Teleprompter Lines â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* ── Teleprompter Lines ──────────────────────────────────────────────── */
 .tp-line{
   display:block;margin-bottom:14px;position:relative;
   transition:opacity .4s ease, transform .3s ease;
@@ -628,7 +628,7 @@ select.inp{cursor:pointer;}
 .tp-line.tp-line-done{opacity:.18;}
 .tp-line-break{display:block;height:24px;}
 
-/* â”€â”€ Teleprompter Words â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* ── Teleprompter Words ──────────────────────────────────────────────── */
 .tp-word{
   opacity:.6;transition:all .18s ease-out;cursor:pointer;
   padding:2px 5px;border-radius:6px;display:inline-block;
@@ -646,7 +646,7 @@ select.inp{cursor:pointer;}
 }
 .tp-word.tp-done{opacity:.45;color:var(--s);transition:opacity .4s, color .4s;}
 
-/* â”€â”€ Progress bar for teleprompter â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* ── Progress bar for teleprompter ───────────────────────────────────── */
 .tp-progress{
   position:absolute;top:0;left:0;right:0;height:3px;z-index:10;
   background:rgba(255,255,255,.05);
@@ -658,7 +658,7 @@ select.inp{cursor:pointer;}
   box-shadow:0 0 8px var(--glow-p);
 }
 
-/* â”€â”€ Fullscreen teleprompter â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* ── Fullscreen teleprompter ─────────────────────────────────────────── */
 .center.tp-fullscreen{
   position:fixed;inset:0;z-index:9999;background:var(--bg);
 }
@@ -685,7 +685,7 @@ body:has(.center.tp-fullscreen) #audio-bar{
 .tp-fullscreen-btn:hover{background:rgba(255,255,255,.1);color:#fff;}
 .tp-fullscreen-btn svg{width:16px;height:16px;}
 
-/* â”€â”€ LRC timestamp badge â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* ── LRC timestamp badge ─────────────────────────────────────────────── */
 .tp-lrc-badge{
   display:inline-flex;align-items:center;gap:4px;
   padding:3px 8px;border-radius:12px;font-size:9px;font-weight:700;
@@ -694,7 +694,7 @@ body:has(.center.tp-fullscreen) #audio-bar{
 }
 .tp-lrc-badge.manual{background:rgba(131,56,236,.1);color:var(--s);border-color:rgba(131,56,236,.2);}
 
-/* â”€â”€ Sync offset controls â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* ── Sync offset controls ──────────────────────────────────────────── */
 .tp-sync-controls{
   display:inline-flex;align-items:center;gap:4px;margin-left:8px;vertical-align:middle;
   opacity:.15;transition:opacity .3s;
@@ -721,7 +721,7 @@ body:has(.center.tp-fullscreen) #audio-bar{
 .tp-sync-label.negative{color:#ff6b6b;}
 .tp-sync-label.positive{color:#51cf66;}
 
-/* â”€â”€ Search lyrics button â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* ── Search lyrics button ────────────────────────────────────────────── */
 .tp-search-lyrics-btn{
   padding:8px 14px;border:1px solid rgba(0,245,160,.2);border-radius:8px;
   background:rgba(0,245,160,.08);color:var(--g);font-size:11px;font-weight:700;
@@ -784,7 +784,7 @@ body:has(.center.tp-fullscreen) #audio-bar{
   content:'';position:absolute;top:0;left:10%;right:10%;height:1px;
   background:linear-gradient(90deg,transparent,rgba(0,229,255,.4),rgba(0,184,212,.4),transparent);
 }
-/* Now Playing Info â€” left zone */
+/* Now Playing Info — left zone */
 .now-playing-info{display:flex;align-items:center;gap:10px;min-width:180px;flex-shrink:0;}
 .now-playing-cover{width:44px;height:44px;border-radius:50%;background:linear-gradient(135deg,#00e5ff,#00b8d4);display:flex;align-items:center;justify-content:center;overflow:hidden;box-shadow:0 0 16px rgba(0,229,255,.25);flex-shrink:0;}
 .now-playing-cover svg{width:20px;height:20px;color:#fff;}
@@ -792,7 +792,7 @@ body:has(.center.tp-fullscreen) #audio-bar{
 .now-playing-text{display:flex;flex-direction:column;gap:2px;overflow:hidden;}
 .now-playing-title{font-size:13px;font-weight:600;color:#f0f0f0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:140px;}
 .now-playing-artist{font-size:11px;color:rgba(0,229,255,.6);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:140px;}
-/* Progress/Waveform â€” center zone */
+/* Progress/Waveform — center zone */
 .player-progress-zone{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;min-width:0;}
 .player-waveform-wrap{width:100%;height:32px;position:relative;cursor:pointer;border-radius:4px;overflow:hidden;}
 .player-waveform-wrap canvas{width:100%;height:100%;display:block;}
@@ -800,7 +800,7 @@ body:has(.center.tp-fullscreen) #audio-bar{
 .player-progress-fill{height:100%;background:linear-gradient(90deg,#00e5ff,#00b8d4);border-radius:2px;width:0%;transition:width .1s linear;box-shadow:0 0 8px rgba(0,229,255,.4);}
 .player-time-row{display:flex;justify-content:space-between;width:100%;padding:0 2px;}
 .player-time{font-size:10px;color:rgba(255,255,255,.35);font-variant-numeric:tabular-nums;font-family:monospace;}
-/* Controls â€” right zone */
+/* Controls — right zone */
 .player-bar-toggle{
   width:40px;height:16px;border-radius:8px 8px 0 0;margin:0 auto;display:flex;
   background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.06);border-bottom:none;
@@ -850,7 +850,7 @@ body:has(.center.tp-fullscreen) #audio-bar{
   font-variant-numeric:tabular-nums;font-weight:700;letter-spacing:.3px;
 }
 
-/* â”€â”€ Right Panel â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* ── Right Panel ─────────────────────────────────────────────────────── */
 .right-panel{
   width:215px;background:var(--card);border-left:1px solid var(--border);
   display:flex;flex-direction:column;align-items:center;
@@ -875,7 +875,7 @@ body:has(.center.tp-fullscreen) #audio-bar{
 }
 .rp-btn:hover{box-shadow:0 4px 20px var(--glow-p);transform:translateY(-1px);}
 
-/* â”€â”€ IA Panel â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* ── IA Panel ────────────────────────────────────────────────────────── */
 .ia-panel{
   width:320px;background:var(--card);border-left:1px solid var(--border);
   display:none;flex-direction:column;flex-shrink:0;
@@ -947,7 +947,7 @@ body:has(.center.tp-fullscreen) #audio-bar{
 .ia-send:hover{box-shadow:0 4px 16px var(--glow-s);transform:scale(1.08);}
 .ia-send svg{width:14px;height:14px;}
 
-/* â”€â”€ YouTube Panel â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* ── YouTube Panel ───────────────────────────────────────────────────── */
 .yt-panel{
   width:340px;background:var(--card);border-left:1px solid var(--border);
   display:none;flex-direction:column;flex-shrink:0;
@@ -1039,7 +1039,7 @@ body:has(.center.tp-fullscreen) #audio-bar{
 .yt-lib-play:hover{background:#ff4444;}
 .yt-lib-play svg{width:10px;height:10px;}
 
-/* â”€â”€ Bares Panel â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* ── Bares Panel ─────────────────────────────────────────────────────── */
 .bares-panel{
   width:360px;background:var(--card);border-left:1px solid var(--border);
   display:none;flex-direction:column;flex-shrink:0;overflow:hidden;
@@ -1252,7 +1252,7 @@ body:has(.center.tp-fullscreen) #audio-bar{
 }
 .oem-reset:hover{color:rgba(239,68,68,.5);}
 
-/* â”€â”€ BYFLOW Ideology bar â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* ── BYFLOW Ideology bar ─────────────────────────────────────────────── */
 .byflow-bar{
   position:absolute;bottom:0;right:0;
   padding:4px 10px;
@@ -1267,7 +1267,7 @@ body:has(.center.tp-fullscreen) #audio-bar{
   font-weight:800;opacity:.5;
 }
 
-/* â”€â”€ Toast â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* ── Toast ────────────────────────────────────────────────────────────── */
 #toast{
   position:fixed;bottom:24px;left:50%;
   transform:translateX(-50%) translateY(20px);
@@ -1297,12 +1297,12 @@ body:has(.center.tp-fullscreen) #audio-bar{
 #toast.t-warning{--toast-clr:#ff9800;border-color:rgba(255,152,0,.3);}
 #toast.t-info{--toast-clr:var(--p);border-color:rgba(255,0,110,.3);}
 
-/* â”€â”€ Empty state â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* ── Empty state ─────────────────────────────────────────────────────── */
 .empty-state{display:flex;flex-direction:column;align-items:center;gap:8px;padding:32px;opacity:.5;}
 .empty-state span{font-size:36px;}
 .empty-state p{font-size:12px;color:var(--sub);}
 
-/* â”€â”€ Song Catalog Modal â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* ── Song Catalog Modal ──────────────────────────────────────────────── */
 .catalog-overlay{
   position:fixed;inset:0;background:rgba(0,0,0,.7);backdrop-filter:blur(8px);
   z-index:9000;display:flex;align-items:center;justify-content:center;
@@ -1362,7 +1362,7 @@ body:has(.center.tp-fullscreen) #audio-bar{
 .catalog-close:hover{background:rgba(255,60,60,.2);border-color:rgba(255,60,60,.3);}
 .catalog-count{font-size:10px;color:var(--sub);margin-top:6px;}
 
-/* â”€â”€ Audio Player Bar â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* ── Audio Player Bar ───────────────────────────────────────────────── */
 .audio-bar{
   display:none;align-items:center;gap:12px;
   padding:8px 20px;background:rgba(255,68,68,.06);
@@ -1394,7 +1394,7 @@ body:has(.center.tp-fullscreen) #audio-bar{
 .ab-close:hover{background:rgba(255,60,60,.25);}
 .ab-close svg{width:10px;height:10px;}
 
-/* â”€â”€ Mobile Bottom Nav â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* ── Mobile Bottom Nav ──────────────────────────────────────────────── */
 .mobile-nav{
   display:none;
   background:rgba(7,7,13,.97);backdrop-filter:blur(20px);
@@ -1413,7 +1413,7 @@ body:has(.center.tp-fullscreen) #audio-bar{
 .mnav-btn.active{color:var(--p);}
 .mnav-btn:active{transform:scale(.92);}
 
-/* â”€â”€ Mobile Cola Modal â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* ── Mobile Cola Modal ────────────────────────────────────────────── */
 .cola-modal-overlay{
   position:fixed;inset:0;z-index:500;background:rgba(0,0,0,.7);
   display:none;align-items:center;justify-content:center;padding:16px;
@@ -1443,9 +1443,9 @@ body:has(.center.tp-fullscreen) #audio-bar{
 .cola-modal-add .btn-add{width:38px;height:38px;border-radius:10px;flex-shrink:0;
   background:linear-gradient(135deg,var(--p),var(--s));border:none;color:#fff;font-size:20px;cursor:pointer;}
 
-/* â”€â”€ Drag reorder (enhanced in UI improvements section) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* ── Drag reorder (enhanced in UI improvements section) ─────────────── */
 
-/* â”€â”€ Collapsible Mesas Toggle â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* ── Collapsible Mesas Toggle ──────────────────────────────────────── */
 .mesas-toggle{
   display:flex;align-items:center;justify-content:space-between;
   cursor:pointer;padding:8px 12px 4px;user-select:none;
@@ -1457,7 +1457,7 @@ body:has(.center.tp-fullscreen) #audio-bar{
 .mesas-toggle-icon.collapsed{transform:rotate(-90deg);}
 .tables-grid.collapsed{display:none;}
 
-/* â”€â”€ Promo Banner (between songs) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* ── Promo Banner (between songs) ──────────────────────────────────── */
 .promo-banner{
   display:none;position:absolute;inset:0;z-index:20;
   background:radial-gradient(ellipse at center,rgba(7,7,13,.97),rgba(7,7,13,.99));
@@ -1493,7 +1493,7 @@ body:has(.center.tp-fullscreen) #audio-bar{
 }
 .promo-skip:hover{border-color:var(--p);color:#fff;background:rgba(255,0,110,.1);}
 
-/* â”€â”€ Pending Songs Queue (sidebar) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* ── Pending Songs Queue (sidebar) ─────────────────────────────────── */
 .pending-section{border-top:1px solid var(--border);padding:6px 0;}
 .pending-title{
   font-size:10px;text-transform:uppercase;letter-spacing:1.5px;
@@ -1514,13 +1514,13 @@ body:has(.center.tp-fullscreen) #audio-bar{
 }
 .pending-item .pi-song{flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 
-/* â”€â”€ Bar-mode visibility â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* ── Bar-mode visibility ─────────────────────────────────────────── */
 body:not(.bar-context) .sidebar .mesas-toggle,
 body:not(.bar-context) .sidebar #grid-mesas,
 body:not(.bar-context) .sidebar #pending-section,
 body:not(.bar-context) .sidebar #input-mesa{display:none!important;}
 
-/* â”€â”€ Ad System â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* ── Ad System ───────────────────────────────────────────────────── */
 .ad-interstitial{
   position:fixed;inset:0;z-index:99999;
   background:rgba(0,0,0,.85);backdrop-filter:blur(16px);
@@ -1579,7 +1579,7 @@ body:not(.bar-context) .sidebar #input-mesa{display:none!important;}
 }
 .ad-search-banner-label{font-size:7px;color:rgba(255,255,255,.2);letter-spacing:1px;text-transform:uppercase;}
 
-/* â”€â”€ Welcome Overlay â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* ── Welcome Overlay ──────────────────────────────────────────────── */
 .welcome-overlay{
   position:fixed;inset:0;z-index:9000;
   background:#07070d;
@@ -1668,7 +1668,7 @@ body:not(.bar-context) .sidebar #input-mesa{display:none!important;}
 }
 .welcome-skip:hover{border-color:var(--p);color:#fff;}
 
-/* â”€â”€ Hideable Panels â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* ── Hideable Panels ─────────────────────────────────────────────── */
 .sidebar.panel-hidden{width:0;min-width:0;padding:0;overflow:hidden;border:none;opacity:0;pointer-events:none;transition:all .3s;}
 .right-panel.panel-hidden{width:0;min-width:0;padding:0;overflow:hidden;border:none;opacity:0;pointer-events:none;transition:all .3s;}
 .sidebar{transition:all .3s;}
@@ -1687,7 +1687,7 @@ body:not(.bar-context) .sidebar #input-mesa{display:none!important;}
 .panel-toggle-left{left:0;}
 .main{position:relative;}
 
-/* â”€â”€ Legal Modal â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* ── Legal Modal ───────────────────────────────────────────────────── */
 .legal-overlay{
   position:fixed;inset:0;z-index:9999;
   background:rgba(0,0,0,.85);backdrop-filter:blur(10px);
@@ -1720,7 +1720,7 @@ body:not(.bar-context) .sidebar #input-mesa{display:none!important;}
 .legal-section a:hover{text-decoration:underline;}
 .legal-divider{height:1px;background:var(--border);margin:14px 0;}
 
-/* â”€â”€ Song catalog button in sidebar â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* ── Song catalog button in sidebar ─────────────────────────────────── */
 .btn-catalog{
   width:100%;padding:8px;margin-top:6px;
   background:linear-gradient(135deg,rgba(131,56,236,.15),rgba(58,134,255,.1));
@@ -1732,7 +1732,7 @@ body:not(.bar-context) .sidebar #input-mesa{display:none!important;}
 .btn-catalog:hover{background:linear-gradient(135deg,rgba(131,56,236,.25),rgba(58,134,255,.15));border-color:rgba(131,56,236,.4);}
 .btn-catalog svg{width:14px;height:14px;}
 
-/* â”€â”€ Now Singing banner â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* ── Now Singing banner ─────────────────────────────────────────────── */
 .now-singing{
   display:none;align-items:center;gap:10px;
   padding:8px 20px;
@@ -1755,7 +1755,7 @@ body:not(.bar-context) .sidebar #input-mesa{display:none!important;}
 }
 .ns-next-btn:hover{box-shadow:0 4px 16px var(--glow-p);transform:translateY(-1px);}
 
-/* â”€â”€ Settings Panel â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* ── Settings Panel ─────────────────────────────────────────────────── */
 .settings-panel{
   width:340px;background:var(--card);border-left:1px solid var(--border);
   display:none;flex-direction:column;flex-shrink:0;overflow-y:auto;
@@ -1810,7 +1810,7 @@ body:not(.bar-context) .sidebar #input-mesa{display:none!important;}
 }
 .settings-toggle.on::after{transform:translateX(16px);}
 
-/* â”€â”€ DJ Soundboard â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* ── DJ Soundboard ──────────────────────────────────────────────────── */
 .dj-soundboard{
   background:rgba(255,255,255,.025);border:1px solid var(--border);
   border-radius:10px;padding:12px;
@@ -1840,7 +1840,7 @@ body:not(.bar-context) .sidebar #input-mesa{display:none!important;}
 .dj-vol-row input[type=range]{flex:1;height:3px;-webkit-appearance:none;appearance:none;background:rgba(255,255,255,.1);border-radius:4px;outline:none;cursor:pointer;}
 .dj-vol-row input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;height:14px;border-radius:50%;background:var(--p);box-shadow:0 0 6px var(--glow-p);cursor:pointer;}
 
-/* â”€â”€ Topbar Settings Btn â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* ── Topbar Settings Btn ──────────────────────────────────────────── */
 .topbar-settings{
   width:32px;height:32px;border:1px solid var(--border);border-radius:8px;
   background:rgba(255,255,255,.04);color:var(--sub);
@@ -1851,7 +1851,7 @@ body:not(.bar-context) .sidebar #input-mesa{display:none!important;}
 .topbar-settings svg{width:16px;height:16px;}
 .topbar-action-label,.login-label{display:inline;}
 
-/* â”€â”€ Mobile â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* ── Mobile ──────────────────────────────────────────────────────────── */
 @media(max-width:900px){
   /* iOS fix: UN solo contenedor scrollable para evitar scroll atrapado */
   html,body{overflow:hidden;overscroll-behavior:none;touch-action:manipulation;}
@@ -1859,7 +1859,7 @@ body:not(.bar-context) .sidebar #input-mesa{display:none!important;}
   .right-panel{display:none;}
   /* iOS: disable expensive backdrop-filter on mobile */
   .topbar,.fx-bar,.player-bar,.mobile-nav{-webkit-backdrop-filter:none!important;backdrop-filter:none!important;}
-  /* â”€â”€â”€ Topbar: limpio, compacto, sin overflow â”€â”€â”€ */
+  /* ─── Topbar: limpio, compacto, sin overflow ─── */
   .topbar{padding:0 8px;height:48px;gap:8px;overflow:hidden;flex-wrap:nowrap;}
   .brand-wrap{flex-shrink:1;max-width:92px;}
   .brand{font-size:15px;}
@@ -1889,14 +1889,14 @@ body:not(.bar-context) .sidebar #input-mesa{display:none!important;}
   #bf-logout-btn{padding:4px 6px!important;font-size:10px!important;flex-shrink:0;}
   .gflow-estudio{grid-template-columns:1fr!important;}
   .gflow-estudio > div:last-child{max-height:200px;}
-  /* â”€â”€â”€ Mobile nav: fijo abajo â”€â”€â”€ */
+  /* ─── Mobile nav: fijo abajo ─── */
   .mobile-nav{display:block;position:fixed;bottom:0;left:0;right:0;z-index:200;}
   .mnav-btn{padding:6px 4px;min-width:0;}
   .mnav-btn svg{width:18px;height:18px;}
   .mnav-btn span{font-size:11px;letter-spacing:0;}
   .mnav-btn[data-mode="vistas"]{display:none!important;}
   .mnav-btn[data-mode="remote"]{display:none!important;}
-  /* â”€â”€â”€ Player bar: fijo arriba del nav, compacto â”€â”€â”€ */
+  /* ─── Player bar: fijo arriba del nav, compacto ─── */
   .player-bar{position:fixed;bottom:56px;left:0;right:0;z-index:199;min-height:44px;padding:4px 8px;gap:4px;}
   .player-bar .now-playing-info{min-width:auto;gap:4px;}
   .player-bar .now-playing-title{max-width:60px;font-size:10px;}
@@ -1910,7 +1910,7 @@ body:not(.bar-context) .sidebar #input-mesa{display:none!important;}
   .player-bar .ctrl-btn.play{width:40px;height:40px;}
   .player-bar .player-time-row{display:none;}
   .fx-bar{display:none;}
-  /* â”€â”€â”€ Paneles: entre topbar(46px) y player(44px)+nav(56px) â”€â”€â”€ */
+  /* ─── Paneles: entre topbar(46px) y player(44px)+nav(56px) ─── */
   .ia-panel{display:none;}
   .ia-panel.active{display:flex!important;position:fixed;top:48px;left:0;right:0;bottom:100px;width:100%;z-index:90;border-left:none;overflow-y:auto;-webkit-overflow-scrolling:touch;}
   .bares-panel{display:none;}
@@ -1920,11 +1920,11 @@ body:not(.bar-context) .sidebar #input-mesa{display:none!important;}
   .settings-panel{display:none!important;}
   .settings-panel.active{display:flex!important;position:fixed;top:48px;left:0;right:0;bottom:100px;width:100%;z-index:90;border-left:none;overflow-y:auto;-webkit-overflow-scrolling:touch;}
   #tp-display{font-size:2rem;}
-  /* â”€â”€â”€ Layout: center scrollea â”€â”€â”€ */
+  /* ─── Layout: center scrollea ─── */
   .main{overflow:hidden;touch-action:manipulation;}
   .center{overflow-y:auto;-webkit-overflow-scrolling:touch;touch-action:manipulation;padding-bottom:120px;}
   .scrollable{-webkit-overflow-scrolling:touch;touch-action:manipulation;}
-  /* â”€â”€â”€ Welcome screen mobile â”€â”€â”€ */
+  /* ─── Welcome screen mobile ─── */
   .welcome-cards{grid-template-columns:1fr;max-width:360px;gap:12px;}
   .welcome-card{padding:18px 16px;flex-direction:row;gap:14px;text-align:left;}
   .welcome-card .wc-glow{display:none;}
@@ -1979,7 +1979,7 @@ body:not(.bar-context) .sidebar #input-mesa{display:none!important;}
   .welcome-footer{margin-top:8px;}
 }
 
-/* â”€â”€ UI Interaction Improvements â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* ── UI Interaction Improvements ─────────────────────────────────────── */
 
 /* 1. Focus-visible indicators for keyboard accessibility */
 *:focus-visible{
@@ -2213,7 +2213,7 @@ input:focus-visible,textarea:focus-visible{
   transition:transform .08s;
 }
 
-/* â”€â”€ Pricing Plans â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* ── Pricing Plans ──────────────────────────────────────────────────── */
 .pricing-wrap{margin-top:20px;border-top:1px solid rgba(255,255,255,.08);padding-top:16px;}
 .pricing-title{text-align:center;font-size:12px;font-weight:800;text-transform:uppercase;letter-spacing:1.5px;color:var(--sub);margin-bottom:12px;}
 .pricing-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;}
@@ -2252,7 +2252,7 @@ input:focus-visible,textarea:focus-visible{
 <body>
 <div class="app">
 
-  <!-- â•â•â• TOPBAR â•â•â• -->
+  <!-- ═══ TOPBAR ═══ -->
   <div class="topbar">
     <button id="mobile-back-btn" onclick="mobileSetMode('karaoke',document.querySelector('.mnav-btn[data-mode=karaoke]'))" style="display:none;background:none;border:none;color:var(--p);font-size:18px;padding:4px 4px;cursor:pointer;flex-shrink:0;" title="Volver a Karaoke" aria-label="Volver a Karaoke">&#x25C0;</button>
     <div class="brand-wrap">
@@ -2282,7 +2282,7 @@ input:focus-visible,textarea:focus-visible{
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M11 5H6a2 2 0 0 0-2 2v11a2 2 0 0 0 2 2h11a2 2 0 0 0 2-2v-5"/><path d="M18 2l4 4-10 10H8v-4L18 2z"/></svg>
             Estudio
           </button>
-          <button class="mode-btn ia-btn" data-mode="ia" onclick="toggleMode('ia');closeModeMore()" title="GFlow â€” DJ IA para letras y sets">
+          <button class="mode-btn ia-btn" data-mode="ia" onclick="toggleMode('ia');closeModeMore()" title="GFlow — DJ IA para letras y sets">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 2a9 9 0 0 1 9 9c0 4.56-2.87 8.5-7 9.7V22h-4v-1.3C5.87 19.5 3 15.56 3 11a9 9 0 0 1 9-9z"/><circle cx="9" cy="11" r="1" fill="currentColor"/><circle cx="15" cy="11" r="1" fill="currentColor"/></svg>
             IA Studio
           </button>
@@ -2301,7 +2301,7 @@ input:focus-visible,textarea:focus-visible{
         </div>
       </div>
     </div>
-    <!-- â•â•â• BUSCADOR UNIVERSAL â•â•â• -->
+    <!-- ═══ BUSCADOR UNIVERSAL ═══ -->
     <div class="usearch-wrap" id="usearch-wrap">
       <div class="usearch-bar">
         <svg class="usearch-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
@@ -2315,7 +2315,7 @@ input:focus-visible,textarea:focus-visible{
 
     <div style="display:flex;align-items:center;gap:8px;">
       <span id="online-count" title="Dispositivos en tu sala" style="font-size:10px;color:var(--g);display:none;">â— <span id="online-num">0</span></span>
-      <span id="room-badge" title="Tu sala â€” comparte este codigo" style="font-size:9px;background:var(--card2);border:1px solid var(--border);padding:2px 6px;border-radius:6px;cursor:pointer;display:none;" onclick="copyRoomLink()">ðŸ”— <span id="room-id-display">---</span></span>
+      <span id="room-badge" title="Tu sala — comparte este codigo" style="font-size:9px;background:var(--card2);border:1px solid var(--border);padding:2px 6px;border-radius:6px;cursor:pointer;display:none;" onclick="copyRoomLink()">ðŸ”— <span id="room-id-display">---</span></span>
       <button id="btn-open-display" onclick="openKaraokeDisplay()" title="Abrir pantalla de karaoke en ventana separada (para TV/proyector)" aria-label="Abrir pantalla de karaoke en ventana separada" style="display:none;align-items:center;gap:3px;padding:3px 8px;border-radius:6px;border:1px solid rgba(0,229,255,.2);background:rgba(0,229,255,.06);color:rgba(0,229,255,.8);font-size:10px;font-weight:600;cursor:pointer;white-space:nowrap;transition:all .2s;">
         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
         <span class="topbar-action-label">Abrir Pantalla</span>
@@ -2346,7 +2346,7 @@ input:focus-visible,textarea:focus-visible{
 
   <div class="main">
 
-    <!-- â•â•â• SIDEBAR: Cola + Mesas â•â•â• -->
+    <!-- ═══ SIDEBAR: Cola + Mesas ═══ -->
     <button class="panel-toggle panel-toggle-left" id="toggle-sidebar" onclick="toggleSidebar()" title="Esconder/mostrar cola" aria-label="Esconder/mostrar cola">&#x25C0;</button>
     <div class="sidebar">
       <div class="sidebar-head">
@@ -2386,15 +2386,15 @@ input:focus-visible,textarea:focus-visible{
       <div class="tables-grid" id="grid-mesas"></div>
     </div>
 
-    <!-- â•â•â• CENTER: Teleprompter + Player â•â•â• -->
+    <!-- ═══ CENTER: Teleprompter + Player ═══ -->
     <div class="center">
       <!-- Now Singing Banner -->
       <div class="now-singing" id="now-singing">
         <div class="ns-pulse"></div>
         <div class="ns-info">
           <div class="ns-label">Cantando ahora</div>
-          <div class="ns-name" id="ns-name">â€”</div>
-          <div class="ns-song" id="ns-song">â€”</div>
+          <div class="ns-name" id="ns-name">—</div>
+          <div class="ns-song" id="ns-song">—</div>
         </div>
         <button class="ns-next-btn" onclick="siguienteCantante()" title="Terminar con el cantante actual y pasar al siguiente en la cola">Siguiente &#x25B6;</button>
       </div>
@@ -2406,7 +2406,7 @@ input:focus-visible,textarea:focus-visible{
         <div class="promo-text" id="promo-text">Configura tus promociones en el modo Bares</div>
         <div class="promo-next" id="promo-next-info">
           <span>Siguiente:</span>
-          <span class="next-name" id="promo-next-name">â€”</span>
+          <span class="next-name" id="promo-next-name">—</span>
         </div>
         <button class="promo-skip" onclick="skipPromo()">Saltar &#x25B6;</button>
       </div>
@@ -2423,7 +2423,7 @@ input:focus-visible,textarea:focus-visible{
           <div id="tp-welcome" style="opacity:.5;font-size:1rem;max-width:500px;text-align:center;line-height:2;">
             <div style="font-size:4rem;margin-bottom:12px;opacity:.4;">&#x1F3A4;</div>
             <div style="font-size:1.1rem;color:rgba(255,255,255,.5);font-weight:600;margin-bottom:8px;">Vive Cantando con ByFlow</div>
-            <div style="font-size:.7rem;color:rgba(0,229,255,.4);font-style:italic;margin-bottom:12px;letter-spacing:.5px;">"ART en el arte de rimarte â€” quien se encasilla en un genero es por tibio"</div>
+            <div style="font-size:.7rem;color:rgba(0,229,255,.4);font-style:italic;margin-bottom:12px;letter-spacing:.5px;">"ART en el arte de rimarte — quien se encasilla en un genero es por tibio"</div>
             <div style="font-size:.85rem;color:var(--sub);margin-bottom:16px;">Agrega un cantante en la cola o selecciona una cancion del catalogo</div>
             <button class="tp-search-lyrics-btn" onclick="openLyricsSearch()" style="margin:0 auto;">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
@@ -2456,7 +2456,7 @@ input:focus-visible,textarea:focus-visible{
           <svg id="ab-ico-pause" viewBox="0 0 24 24" fill="currentColor" style="display:none"><path d="M6 19h4V5H6zm8-14v14h4V5z"/></svg>
         </button>
         <div class="ab-info">
-          <div class="ab-name" id="ab-name">â€”</div>
+          <div class="ab-name" id="ab-name">—</div>
           <div class="ab-progress" onclick="abSeek(event)">
             <div class="ab-fill" id="ab-fill"></div>
           </div>
@@ -2538,7 +2538,7 @@ input:focus-visible,textarea:focus-visible{
       </div>
     </div>
 
-    <!-- â•â•â• RIGHT PANEL: QR + Agregar Canción â•â•â• -->
+    <!-- ═══ RIGHT PANEL: QR + Agregar Canción ═══ -->
     <button class="panel-toggle panel-toggle-right" id="toggle-right" onclick="toggleRightPanel()" title="Esconder/mostrar panel derecho" aria-label="Esconder/mostrar panel derecho">&#x25B6;</button>
     <div class="right-panel">
       <h4 title="Escanea este QR desde otro celular para controlar el karaoke remotamente">Control Remoto (QR)</h4>
@@ -2553,14 +2553,14 @@ input:focus-visible,textarea:focus-visible{
       <button class="rp-btn" onclick="buscarLetraYoutube()" title="Buscar letra automaticamente usando el titulo" style="margin-top:6px;background:rgba(255,68,68,.15);border-color:rgba(255,68,68,.3);color:var(--text);cursor:pointer;">&#9654; Buscar Letra Online</button>
     </div>
 
-    <!-- â•â•â• IA PANEL â•â•â• -->
+    <!-- ═══ IA PANEL ═══ -->
     <div class="ia-panel" id="ia-panel">
       <div class="ia-header">
         <div class="ia-title">
           <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14H9V8h2v8zm4 0h-2V8h2v8z" fill="var(--s)"/></svg>
           GFlow DJ
         </div>
-        <div class="ia-subtitle">DJ IA Multigenero â€” Solo mezcla, cero rimas â€” powered by IArtLabs</div>
+        <div class="ia-subtitle">DJ IA Multigenero — Solo mezcla, cero rimas — powered by IArtLabs</div>
         <div class="ia-status offline" id="ia-status">
           <div class="ia-status-dot"></div>
           <span id="ia-status-text">IA Disponible</span>
@@ -2588,7 +2588,7 @@ input:focus-visible,textarea:focus-visible{
       </div>
     </div>
 
-    <!-- â•â•â• YOUTUBE PANEL â•â•â• -->
+    <!-- ═══ YOUTUBE PANEL ═══ -->
     <div class="yt-panel" id="yt-panel">
       <div class="yt-header">
         <div class="yt-title">
@@ -2656,7 +2656,7 @@ input:focus-visible,textarea:focus-visible{
       </div>
     </div>
 
-    <!-- â•â•â• BARES PANEL â•â•â• -->
+    <!-- ═══ BARES PANEL ═══ -->
     <div class="bares-panel" id="bares-panel">
 
       <!-- License Gate (shown when locked) -->
@@ -2681,7 +2681,7 @@ input:focus-visible,textarea:focus-visible{
         <div class="oem-hint">Contacta a <span>licencias@iartlabs.com</span> para obtener tu licencia PRO</div>
         <span class="oem-reset" onclick="licenseDeactivate()" title="Desactivar licencia">&#x27F3; desactivar</span>
 
-        <!-- â”€â”€ Planes y Precios â”€â”€ -->
+        <!-- ── Planes y Precios ── -->
         <div class="pricing-wrap">
           <div class="pricing-title">Planes ByFlow</div>
           <div class="pricing-grid">
@@ -2782,7 +2782,7 @@ input:focus-visible,textarea:focus-visible{
           <div class="bares-section">
             <div class="bares-section-title">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="21" x2="9" y2="9"/></svg>
-              Mapa de Mesas â€” Click para cambiar estado
+              Mapa de Mesas — Click para cambiar estado
             </div>
             <div class="bares-grid" id="bares-grid"></div>
           </div>
@@ -2845,7 +2845,7 @@ input:focus-visible,textarea:focus-visible{
           <div class="bares-section dj-soundboard">
             <div class="dj-section-title">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px;opacity:.5;"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="3"/><line x1="12" y1="2" x2="12" y2="5"/></svg>
-              DJ Soundboard â€” Efectos en Vivo
+              DJ Soundboard — Efectos en Vivo
             </div>
             <div class="dj-pads">
               <div class="dj-pad" onclick="djPlay('airhorn')" data-sfx="airhorn">
@@ -2934,7 +2934,7 @@ input:focus-visible,textarea:focus-visible{
 
     </div>
 
-    <!-- â•â•â• SETTINGS PANEL â•â•â• -->
+    <!-- ═══ SETTINGS PANEL ═══ -->
     <div class="settings-panel" id="settings-panel">
       <div class="settings-header">
         <div class="settings-title">
@@ -3142,7 +3142,7 @@ input:focus-visible,textarea:focus-visible{
   </div><!-- /main -->
 </div><!-- /app -->
 
-<!-- â•â•â• LYRICS SEARCH MODAL â•â•â• -->
+<!-- ═══ LYRICS SEARCH MODAL ═══ -->
 <div class="catalog-overlay" id="lyrics-overlay" onclick="if(event.target===this)closeLyricsSearch()">
   <div class="catalog-modal" style="position:relative;max-width:560px;">
     <button class="catalog-close" onclick="closeLyricsSearch()" aria-label="Cerrar busqueda de letras">&times;</button>
@@ -3166,7 +3166,7 @@ input:focus-visible,textarea:focus-visible{
   </div>
 </div>
 
-<!-- â•â•â• LYRIC STUDIO (Offline Generator) â•â•â• -->
+<!-- ═══ LYRIC STUDIO (Offline Generator) ═══ -->
 <div class="catalog-overlay" id="lyric-studio-overlay" onclick="if(event.target===this)closeLyricStudio()">
   <div class="catalog-modal" style="position:relative;max-width:620px;">
     <button class="catalog-close" onclick="closeLyricStudio()" aria-label="Cerrar estudio de letras">&times;</button>
@@ -3177,9 +3177,9 @@ input:focus-visible,textarea:focus-visible{
         </a>
       </div>
       <h3 style="background:linear-gradient(135deg,var(--p),var(--a));-webkit-background-clip:text;-webkit-text-fill-color:transparent;">
-        âœï¸ Estudio de Letras â€” ARTATR
+        âœï¸ Estudio de Letras — ARTATR
       </h3>
-      <div style="font-size:9px;color:rgba(0,229,255,.5);font-style:italic;margin-bottom:8px;">ART: que suene bonito | ATR: que tenga metrica perfecta â€” El arte de rimarte</div>
+      <div style="font-size:9px;color:rgba(0,229,255,.5);font-style:italic;margin-bottom:8px;">ART: que suene bonito | ATR: que tenga metrica perfecta — El arte de rimarte</div>
       <!-- Tabs -->
       <div style="display:flex;gap:3px;margin-bottom:12px;background:rgba(255,255,255,.04);padding:3px;border-radius:10px;">
         <button onclick="lsTab('gen')" id="ls-tab-gen" class="mode-btn active" style="flex:1;padding:6px 10px;font-size:11px;border:none;border-radius:8px;">âœ¨ Generar</button>
@@ -3189,7 +3189,7 @@ input:focus-visible,textarea:focus-visible{
 
       <!-- TAB: Generar -->
       <div id="ls-panel-gen">
-      <div style="font-size:10px;color:var(--sub);margin-bottom:12px;">Motor ARTATR v3 â€” Letras 100% puras de ArT-AtR. Procedural, sin contaminacion. Funciona offline siempre.</div>
+      <div style="font-size:10px;color:var(--sub);margin-bottom:12px;">Motor ARTATR v3 — Letras 100% puras de ArT-AtR. Procedural, sin contaminacion. Funciona offline siempre.</div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px;">
         <div>
           <label style="font-size:10px;color:var(--sub);display:block;margin-bottom:3px;">Tema</label>
@@ -3218,7 +3218,7 @@ input:focus-visible,textarea:focus-visible{
         <div>
           <label style="font-size:10px;color:var(--sub);display:block;margin-bottom:3px;">Estructura</label>
           <select id="ls-structure" class="catalog-search" style="padding:7px 10px;">
-            <option value="verse-chorus">Verso â€” Coro â€” Verso</option>
+            <option value="verse-chorus">Verso — Coro — Verso</option>
             <option value="aabb">AABB (Pareada)</option>
             <option value="abab">ABAB (Alterna)</option>
             <option value="free">Libre / Freestyle</option>
@@ -3261,13 +3261,13 @@ input:focus-visible,textarea:focus-visible{
   </div>
 </div>
 
-<!-- â•â•â• WELCOME OVERLAY â•â•â• -->
+<!-- ═══ WELCOME OVERLAY ═══ -->
 <div class="welcome-overlay" id="welcome-overlay">
   <div class="welcome-brand">powered by IArtLabs</div>
   <div class="welcome-logo">ByFlow</div>
   <div class="welcome-sub">Vive Cantando</div>
 
-  <!-- Login primero â€” lo mas importante -->
+  <!-- Login primero — lo mas importante -->
   <div style="display:flex;flex-direction:column;align-items:center;gap:8px;width:100%;max-width:340px;">
     <button id="btn-google-login" style="display:flex;align-items:center;justify-content:center;gap:8px;width:100%;padding:12px 20px;border-radius:12px;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.06);color:#fff;font-size:13px;font-weight:600;cursor:pointer;transition:all .2s;" onmouseover="this.style.background='rgba(255,255,255,.12)'" onmouseout="this.style.background='rgba(255,255,255,.06)'">
       <svg width="18" height="18" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
@@ -3311,7 +3311,7 @@ input:focus-visible,textarea:focus-visible{
       <div class="wc-desc">YouTube, SoundCloud y Jamendo</div>
       <span class="wc-tag pro">PRO</span>
     </div>
-    <!-- Bares/POS removido del menu publico â€” acceso solo via /pos.html o link abajo -->
+    <!-- Bares/POS removido del menu publico — acceso solo via /pos.html o link abajo -->
     <div class="welcome-card" data-mode="ia" onclick="welcomeSelect('ia')">
       <div class="wc-glow"></div>
       <div class="wc-icon ia">&#x2728;</div>
@@ -3340,7 +3340,7 @@ input:focus-visible,textarea:focus-visible{
   </div>
 </div>
 
-<!-- â•â•â• SONG CATALOG MODAL â•â•â• -->
+<!-- ═══ SONG CATALOG MODAL ═══ -->
 <div class="catalog-overlay" id="catalog-overlay" onclick="if(event.target===this)closeCatalog()">
   <div class="catalog-modal" style="position:relative;">
     <button class="catalog-close" onclick="closeCatalog()" aria-label="Cerrar catalogo">&times;</button>
@@ -3356,7 +3356,7 @@ input:focus-visible,textarea:focus-visible{
   </div>
 </div>
 
-<!-- â•â•â• PANEL ESTUDIO DE BEATS â•â•â• -->
+<!-- ═══ PANEL ESTUDIO DE BEATS ═══ -->
 <div class="estudio-panel" id="estudio-panel">
   <div class="est-header">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px;height:16px;opacity:.6;"><path d="M11 5H6a2 2 0 0 0-2 2v11a2 2 0 0 0 2 2h11a2 2 0 0 0 2-2v-5"/><path d="M18 2l4 4-10 10H8v-4L18 2z"/></svg>
@@ -3543,14 +3543,14 @@ input:focus-visible,textarea:focus-visible{
       <button class="est-rec-btn" id="est-rec-btn" onclick="estToggleRec()" title="Grabar voz">&#9679;</button>
     </div>
     <div class="est-disclaimer" id="est-disclaimer" style="display:none;">
-      &#127925; Beat por: <a id="est-disc-link" href="#" target="_blank"><span id="est-disc-name"></span></a> â€” Apoya al productor
+      &#127925; Beat por: <a id="est-disc-link" href="#" target="_blank"><span id="est-disc-name"></span></a> — Apoya al productor
     </div>
     <button class="est-save-btn" onclick="estSaveLetter()">Guardar Letra</button>
   </div>
 </div>
 
-<!-- â•â•â• MOBILE BOTTOM NAV â•â•â• -->
-<!-- â•â•â• PANEL VISTAS (DJ Dashboard) â•â•â• -->
+<!-- ═══ MOBILE BOTTOM NAV ═══ -->
+<!-- ═══ PANEL VISTAS (DJ Dashboard) ═══ -->
 <div class="vistas-panel" id="vistas-panel">
   <div class="vp-header">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px;height:16px;opacity:.6;"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
@@ -3570,8 +3570,8 @@ input:focus-visible,textarea:focus-visible{
     <div class="vp-now" id="vp-now" style="display:none;">
       <div class="vp-now-pulse"></div>
       <div class="vp-now-info">
-        <div class="vp-now-name" id="vp-now-name">â€”</div>
-        <div class="vp-now-song" id="vp-now-song">â€”</div>
+        <div class="vp-now-name" id="vp-now-name">—</div>
+        <div class="vp-now-song" id="vp-now-song">—</div>
       </div>
     </div>
   </div>
@@ -3644,7 +3644,7 @@ input:focus-visible,textarea:focus-visible{
   </div>
 </div>
 
-<!-- â•â•â• TUTORIAL OVERLAY â•â•â• -->
+<!-- ═══ TUTORIAL OVERLAY ═══ -->
 <div class="tutorial-overlay" id="tutorial-overlay">
   <div class="tutorial-card">
     <div class="tutorial-step active" data-step="0">
@@ -3680,7 +3680,7 @@ input:focus-visible,textarea:focus-visible{
   </div>
 </div>
 
-<!-- â•â•â• LEGAL MODAL â•â•â• -->
+<!-- ═══ LEGAL MODAL ═══ -->
 <div class="legal-overlay" id="legal-overlay" onclick="if(event.target===this)closeLegalModal()">
   <div class="legal-modal">
     <button class="legal-close" onclick="closeLegalModal()" aria-label="Cerrar informacion legal">&times;</button>
@@ -3740,9 +3740,9 @@ input:focus-visible,textarea:focus-visible{
 <div id="toast" role="status" aria-live="polite"></div>
 
 <script>
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
-// BYFLOW â€” Vive Cantando (powered by IArtLabs)
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// ═══════════════════════════════════════════════════════════════════════════
+// BYFLOW — Vive Cantando (powered by IArtLabs)
+// ═══════════════════════════════════════════════════════════════════════════
 
 const SOCKET_URL = location.origin;
 var socket = null;
@@ -3763,7 +3763,7 @@ function loadSocketIO() {
   });
 }
 
-// â”€â”€ Room ID: cada dispositivo tiene su sesion aislada â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── Room ID: cada dispositivo tiene su sesion aislada ───────────────────────
 // DJ genera roomId unico. Remote se une al room del DJ via ?room=XXXX en URL.
 function getMyRoomId() {
   // Check URL param first (Remote mode joins DJ's room)
@@ -3801,7 +3801,7 @@ const tpState = {
   syncOffset: 0,    // user-adjustable offset in seconds (+ = lyrics earlier, - = lyrics later)
 };
 
-// â”€â”€ Sync offset controls â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── Sync offset controls ─────────────────────────────────────────────
 let _wordToLine = {};
 function tpSyncNudge() { return window.VibeFlow.modules.lyrics.tpSyncNudge.apply(this, arguments); }
 function tpSyncReset() { return window.VibeFlow.modules.lyrics.tpSyncReset.apply(this, arguments); }
@@ -3869,7 +3869,7 @@ async function toggleMesa(num) {
   } catch {}
 }
 
-// â”€â”€ Canciones â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── Canciones ─────────────────────────────────────────────────────────────
 async function agregarCancion() {
   const titulo  = document.getElementById('new-song-title').value.trim();
   const letra   = document.getElementById('new-song-letra').value.trim();
@@ -3908,12 +3908,12 @@ async function buscarLetraYoutube() {
       if (local) { letraEl.value = local.letra; showToast('Letra local: ' + local.titulo, 'success'); return; }
     }
     showToast('No se encontro letra para "' + titulo + '"', 'warning');
-  } catch { showToast('Error buscando letra â€” sin conexion', 'error'); }
+  } catch { showToast('Error buscando letra — sin conexion', 'error'); }
 }
 
-// â”€â”€ Mode Switch â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── Mode Switch ───────────────────────────────────────────────────────────
 let currentMode = 'karaoke';
-// Toggle â€” si ya estas en ese modo, vuelve al anterior
+// Toggle — si ya estas en ese modo, vuelve al anterior
 let _previousMode = 'karaoke';
 function toggleMode(mode) {
   if (currentMode === mode) {
@@ -3941,7 +3941,7 @@ function setMode(mode) {
   // Bloquear PRO sin licencia
   const proModes = ['youtube', 'bares', 'ia'];
   if (proModes.includes(mode) && typeof isPremium === 'function' && !isPremium()) {
-    showToast('Modo PRO â€” Necesitas licencia activa', 'warning');
+    showToast('Modo PRO — Necesitas licencia activa', 'warning');
     return;
   }
 
@@ -3992,7 +3992,7 @@ function setMode(mode) {
   const centerEl = document.querySelector('.center');
   if (nsNext) nsNext.style.display = '';
   if (fsBtn) fsBtn.style.display = '';
-  // embed (music-player-embed) only shown in youtube mode â€” not restored here
+  // embed (music-player-embed) only shown in youtube mode — not restored here
   if (tpWelcome) tpWelcome.style.display = '';
   if (mobileNavEl) mobileNavEl.style.display = '';
   if (centerEl) centerEl.style.paddingBottom = '';
@@ -4032,7 +4032,7 @@ function setMode(mode) {
     if (sidebar && !isMobile)    sidebar.style.display    = 'flex';
     if (ytPanel)    { ytPanel.classList.add('active'); ytPanel.style.display = 'flex'; }
   } else if (mode === 'bares') {
-    // Sidebar oculto â€” la cola se gestiona desde Mesas Pendientes
+    // Sidebar oculto — la cola se gestiona desde Mesas Pendientes
     if (baresPanel) { baresPanel.classList.add('active'); baresPanel.style.display = 'flex'; }
     baresInit();
   } else if (mode === 'estudio') {
@@ -4057,7 +4057,7 @@ function setMode(mode) {
   }
 }
 
-// â”€â”€ License System (Online Activation) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── License System (Online Activation) ────────────────────────────────────
 const OEM_LS_BAR = 'byflow_bar_name';
 const OEM_LS_NUM = 'byflow_bar_mesas';
 
@@ -4155,11 +4155,11 @@ async function licenseActivate() {
       showToast(data.error || 'Error de activacion');
       return;
     }
-    // Save user token in localStorage â€” THIS is what makes it per-user
+    // Save user token in localStorage — THIS is what makes it per-user
     if (data.token) setLicenseToken(data.token);
     licenseState = { activated: true, features: data.features, owner: data.owner, keyFragment: data.keyFragment };
     updatePremiumUI();
-    showToast('Licencia PRO activada â€” ' + (data.owner || 'Bienvenido'));
+    showToast('Licencia PRO activada — ' + (data.owner || 'Bienvenido'));
     baresShowContent(key);
   } catch (e) {
     showToast('Error de conexion con el servidor');
@@ -4285,7 +4285,7 @@ function baresAddOrder() {
   textEl.value = '';
   baresRenderOrders();
   baresUpdateStats();
-  showToast('ðŸ“ Orden agregada â€” Mesa ' + mesa);
+  showToast('ðŸ“ Orden agregada — Mesa ' + mesa);
 }
 
 function baresDeleteOrder(id) {
@@ -4320,7 +4320,7 @@ function baresRenderOrders() {
 // Actualizar tiempos de órdenes cada minuto
 setInterval(() => { if (baresState.orders.length) baresRenderOrders(); }, 60000);
 
-// â”€â”€ Menú del Establecimiento â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── Menú del Establecimiento ──────────────────────────────────────────────
 const MENU_LS_KEY = 'byflow_bar_menu';
 const MENU_DEFAULT = [
   { id: 1, name: 'Bebidas', items: [
@@ -4490,7 +4490,7 @@ function menuInit() {
   menuRender();
 }
 
-// â”€â”€ Noches de Talento (FASE 3) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── Noches de Talento (FASE 3) ────────────────────────────────────────────
 async function talentCreateEvent() {
   const nombre = document.getElementById('talent-nombre').value.trim();
   const fecha = document.getElementById('talent-fecha').value;
@@ -4532,14 +4532,14 @@ async function talentLoadEvents() {
       const estadoBadge = ev.estado === 'en_vivo' ? '<span style="background:#ef4444;color:#fff;padding:2px 6px;border-radius:8px;font-size:9px;animation:pulse 1s infinite;">EN VIVO</span>'
         : ev.estado === 'cerrado' ? '<span style="background:var(--border);color:var(--sub);padding:2px 6px;border-radius:8px;font-size:9px;">CERRADO</span>'
         : '<span style="background:rgba(245,158,11,.2);color:#f59e0b;padding:2px 6px;border-radius:8px;font-size:9px;">ABIERTO</span>';
-      const inscritosStr = ev.inscritos.map(i => `<div style="font-size:10px;color:var(--sub);padding:2px 0;">&#9998; ${escapeHtml(i.alias)} â€” ${escapeHtml(i.titulo || 'Sin titulo')}</div>`).join('');
+      const inscritosStr = ev.inscritos.map(i => `<div style="font-size:10px;color:var(--sub);padding:2px 0;">&#9998; ${escapeHtml(i.alias)} — ${escapeHtml(i.titulo || 'Sin titulo')}</div>`).join('');
       const qrLink = window.location.origin + '/?evento=' + ev.id;
       return `<div style="background:var(--card2);border:1px solid var(--border);border-radius:10px;padding:12px;margin-bottom:8px;">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
           <div style="font-weight:700;font-size:13px;color:var(--text);">${escapeHtml(ev.nombre)}</div>
           ${estadoBadge}
         </div>
-        <div style="font-size:10px;color:var(--sub);margin-bottom:4px;">${fechaStr} ${ev.hora} ${ev.tema ? 'â€” ' + escapeHtml(ev.tema) : ''}</div>
+        <div style="font-size:10px;color:var(--sub);margin-bottom:4px;">${fechaStr} ${ev.hora} ${ev.tema ? '— ' + escapeHtml(ev.tema) : ''}</div>
         <div style="font-size:10px;color:#f59e0b;margin-bottom:6px;">${ev.inscritos.length}/${ev.maxParticipantes} inscritos</div>
         ${inscritosStr}
         <div style="display:flex;gap:4px;margin-top:8px;flex-wrap:wrap;">
@@ -4562,7 +4562,7 @@ async function talentSetEstado(id, estado) {
       body: JSON.stringify({ estado })
     });
     if (res.ok) {
-      showToast(estado === 'en_vivo' ? 'Evento EN VIVO â€” votacion abierta' : 'Votacion cerrada', estado === 'en_vivo' ? 'success' : 'info');
+      showToast(estado === 'en_vivo' ? 'Evento EN VIVO — votacion abierta' : 'Votacion cerrada', estado === 'en_vivo' ? 'success' : 'info');
       talentLoadEvents();
     }
   } catch { showToast('Error', 'error'); }
@@ -4582,7 +4582,7 @@ async function talentShowResults(id) {
         <div style="font-size:20px;min-width:30px;text-align:center;">${medal}</div>
         <div style="flex:1;">
           <div style="font-weight:700;color:var(--text);font-size:13px;">${escapeHtml(r.alias)}</div>
-          <div style="font-size:10px;color:var(--sub);">${escapeHtml(r.titulo)}${r.beat ? ' â€” ' + escapeHtml(r.beat.canal) : ''}</div>
+          <div style="font-size:10px;color:var(--sub);">${escapeHtml(r.titulo)}${r.beat ? ' — ' + escapeHtml(r.beat.canal) : ''}</div>
         </div>
         <div style="font-size:18px;font-weight:700;color:#f59e0b;">${r.votos}</div>
       </div>`;
@@ -4672,7 +4672,7 @@ async function talentVoteFor(eventoId, alias) {
   } catch { showToast('Error de conexion', 'error'); }
 }
 
-// â”€â”€ QR â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── QR ────────────────────────────────────────────────────────────────────
 async function loadQR() {
   const img = document.getElementById('qr-img');
   const url = document.getElementById('qr-url');
@@ -4686,13 +4686,13 @@ async function loadQR() {
       url.innerHTML = 'Escanea para controlar desde otro dispositivo<br><a href="' + remoteUrl + '" target="_blank" style="color:var(--a);text-decoration:underline;">' + escHtml(displayUrl) + '</a>';
     }
   } catch {
-    // No QR endpoint or failed â€” show URL as text fallback
+    // No QR endpoint or failed — show URL as text fallback
     if (img) img.style.display = 'none';
     if (url) url.innerHTML = 'Escanea para controlar desde otro dispositivo<br><a href="' + remoteUrl + '" target="_blank" style="color:var(--a);text-decoration:underline;">' + escHtml(location.origin) + '</a><br><span style="font-size:8px;opacity:.5;">Abre este link desde otro celular en la misma red WiFi</span>';
   }
 }
 
-// â”€â”€ IA â€” Grok + Ollama Integration â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── IA — Grok + Ollama Integration ────────────────────────────────────────
 const OLLAMA_URL = 'http://localhost:11434';
 var iaOnline     = false;
 var iaBackend    = 'none'; // 'grok' | 'ollama' | 'none'
@@ -4745,7 +4745,7 @@ const _artLetras = [
 window.__artLetrasData = _artLetras;
 window.__artLetrasReady = true;
 
-// Suno catalog (titles + metadata, no full lyrics â€” those live on suno.com)
+// Suno catalog (titles + metadata, no full lyrics — those live on suno.com)
 const _sunoTracks = [
   { titulo:'SENTIDO PERDIDO', genero:'Rap, R&B', tema:'Desamor / Identidad', plays:3, nota:'Letra 100% original ArT-AtR. Intro hablado.' },
   { titulo:'LA BACHA [A-R-T-A-T-R]', genero:'Melodic Trap, Heavy 808', tema:'Desamor crudo', plays:20, nota:'Version musicalizada de Perro.' },
@@ -4834,7 +4834,7 @@ function updateClock() {
     new Date().toLocaleTimeString('es-MX', {hour:'2-digit',minute:'2-digit',second:'2-digit'});
 }
 
-// â”€â”€ Utils â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── Utils ─────────────────────────────────────────────────────────────────
 function escHtml(s) { const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
 function showToast(msg, type) {
   const t = document.getElementById('toast');
@@ -4853,7 +4853,7 @@ function showToast(msg, type) {
   t._timer = setTimeout(() => t.classList.remove('show'), 2800);
 }
 
-// â”€â”€ Keyboard shortcuts â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── Keyboard shortcuts ────────────────────────────────────────────────────
 document.addEventListener('keydown', (e) => {
   if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
   switch (e.key) {
@@ -4876,7 +4876,7 @@ document.addEventListener('keydown', (e) => {
   }
 });
 
-// â”€â”€ Song Catalog â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── Song Catalog ──────────────────────────────────────────────────────
 let allSongs = [];
 
 async function fetchSongs() {
@@ -4953,7 +4953,7 @@ async function deleteSong(id) {
   } catch {}
 }
 
-// â”€â”€ Now Singing Banner â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── Now Singing Banner ────────────────────────────────────────────────
 function updateNowSinging() { return window.VibeFlow.modules.queue.updateNowSinging.apply(this, arguments); }
 function siguienteCantante() { return window.VibeFlow.modules.queue.siguienteCantante.apply(this, arguments); }
 function playJingle() { return window.VibeFlow.modules.queue.playJingle.apply(this, arguments); }
@@ -5008,7 +5008,7 @@ function makeDraggable(el, id) {
   });
 }
 
-// â”€â”€ Mobile Mode â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── Mobile Mode ───────────────────────────────────────────────────────
 function mobileSetMode(mode, btn) {
   if (mode === 'bares' && !isBarMode) {
     showToast('Modo Bares disponible solo desde POS o enlace de bar', 'info');
@@ -5043,7 +5043,7 @@ function mobileSetMode(mode, btn) {
   document.body.className = document.body.className.replace(/mode-\S+/g, '').trim();
   document.body.classList.add('mode-' + mode);
 
-  // Panel modes â€” activate panel (CSS .active rule handles fullscreen on mobile)
+  // Panel modes — activate panel (CSS .active rule handles fullscreen on mobile)
   if (mode === 'youtube' && ytPanel) {
     ytPanel.classList.add('active'); ytPanel.style.display = 'flex';
     currentMode = 'youtube';
@@ -5086,11 +5086,11 @@ document.addEventListener('keydown', (e) => {
   if (e.key === 'Escape') { closeCatalog(); closeLegalModal(); closeLyricsSearch(); closeColaModal(); closeLyricStudio(); }
 }, true);
 
-// â”€â”€ Legal Modal â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── Legal Modal ───────────────────────────────────────────────────────────
 function openLegalModal() { document.getElementById('legal-overlay').classList.add('open'); }
 function closeLegalModal() { document.getElementById('legal-overlay').classList.remove('open'); }
 
-// â”€â”€ Collapsible Mesas â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── Collapsible Mesas ─────────────────────────────────────────────────────
 let mesasCollapsed = localStorage.getItem('mesas_collapsed') !== 'false'; // collapsed by default
 
 function toggleMesasPanel() {
@@ -5106,7 +5106,7 @@ function applyMesasCollapse() {
   if (icon) icon.classList.toggle('collapsed', mesasCollapsed);
 }
 
-// â”€â”€ Promo/Announcement System (between songs) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── Promo/Announcement System (between songs) ────────────────────────────
 let promoState = {
   active: false,
   timer: null,
@@ -5122,7 +5122,7 @@ function getBarPromos() {
   if (saved) try { return JSON.parse(saved); } catch {}
   return [
     '2x1 en cervezas de 9pm a 11pm',
-    'Viernes de karaoke â€” canta gratis toda la noche',
+    'Viernes de karaoke — canta gratis toda la noche',
     'Pregunta por nuestros combos y promociones',
     'Siguenos en redes sociales para ofertas exclusivas'
   ];
@@ -5148,7 +5148,7 @@ function showPromoBanner(nextSinger) {
   // Set next singer info
   if (nextSinger) {
     document.getElementById('promo-next-name').textContent =
-      nextSinger.cantante + (nextSinger.cancion ? ' â€” ' + nextSinger.cancion : '');
+      nextSinger.cantante + (nextSinger.cancion ? ' — ' + nextSinger.cancion : '');
     document.getElementById('promo-next-info').style.display = '';
   } else {
     document.getElementById('promo-next-info').style.display = 'none';
@@ -5241,14 +5241,14 @@ function renderPendingMesas() {
     byMesa[mesa].forEach(c => {
       html += '<div class="pending-item">' +
         '<span class="pi-mesa">M' + escHtml(mesa) + '</span>' +
-        '<span class="pi-song">' + escHtml(c.cantante) + (c.cancion ? ' â€” ' + escHtml(c.cancion) : '') + '</span>' +
+        '<span class="pi-song">' + escHtml(c.cantante) + (c.cancion ? ' — ' + escHtml(c.cancion) : '') + '</span>' +
       '</div>';
     });
   });
   list.innerHTML = html;
 }
 
-// â”€â”€ Promo Editor (Bares panel) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── Promo Editor (Bares panel) ────────────────────────────────────────────
 function loadPromosEditor() {
   const ta = document.getElementById('bares-promos-text');
   const timeInp = document.getElementById('bares-promo-time');
@@ -5278,7 +5278,7 @@ function getPromoTime() {
   return saved ? parseInt(saved) || 10 : 10;
 }
 
-// â”€â”€ Settings Panel â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── Settings Panel ────────────────────────────────────────────────────────
 function saveUserProfile() { return window.VibeFlow.modules.settings.saveUserProfile.apply(this, arguments); }
 function settingsActivateLicense() { return window.VibeFlow.modules.settings.settingsActivateLicense.apply(this, arguments); }
 function updateLicenseUI() { return window.VibeFlow.modules.settings.updateLicenseUI.apply(this, arguments); }
@@ -5376,8 +5376,8 @@ function djInit() {
   djPreloadSfx();
 }
 
-// â”€â”€ Welcome Overlay â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-// â”€â”€ Estadísticas de uso â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── Welcome Overlay ───────────────────────────────────────────────────────
+// ── Estadísticas de uso ───────────────────────────────────────────────────
 function loadStats() { return window.VibeFlow.modules.settings.loadStats.apply(this, arguments); }
 
 const _palabrasProhibidas = ['puta','puto','mierda','coño','pendejo','culero','chinga','verga','idiota','fuck','shit','bitch','asshole'];
@@ -5387,7 +5387,7 @@ function textoLimpio(texto) {
   return !_palabrasProhibidas.some(p => lower.includes(p));
 }
 
-// â”€â”€ Local Audio Player (MP3 desde la laptop) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── Local Audio Player (MP3 desde la laptop) ─────────────────────────────
 let localAudio = null;
 
 function openLocalAudio() { return window.VibeFlow.modules.player.openLocalAudio.apply(this, arguments); }
@@ -5437,7 +5437,7 @@ function welcomeSelect(mode) {
   setTimeout(() => { _forceCloseWelcome(); try { dismissWelcome(); } catch(e) {} setMode(mode); }, 150);
 }
 
-// â”€â”€ Firebase Auth â€” Login real con Google/Email â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── Firebase Auth — Login real con Google/Email ───────────────────────────
 function socialLogin() { return window.VibeFlow.modules.auth.socialLogin.apply(this, arguments); }
 function emailLogin() { return window.VibeFlow.modules.auth.emailLogin.apply(this, arguments); }
 function bfLogout() { return window.VibeFlow.modules.auth.bfLogout.apply(this, arguments); }
@@ -5456,7 +5456,7 @@ document.addEventListener('click', (e) => {
   if (!e.target.closest('.mode-more')) closeModeMore();
 });
 
-// â”€â”€ Player Bar Toggle â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── Player Bar Toggle ─────────────────────────────────────────────────────
 function togglePlayerBar() {
   const pb = document.getElementById('player-bar-main');
   const fx = document.querySelector('.fx-bar');
@@ -5475,7 +5475,7 @@ if (localStorage.getItem('byflow_player_hidden') === '1') {
   if (btn) btn.innerHTML = '&#x25B2;';
 }
 
-// â”€â”€ Waveform Visualization (Producer.ai style) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── Waveform Visualization (Producer.ai style) ───────────────────────────
 (function initWaveform() {
   const canvas = document.getElementById('waveform-canvas');
   if (!canvas) return;
@@ -5532,7 +5532,7 @@ function seekPlayerProgress(e) {
   if (fill) fill.style.width = pct + '%';
 }
 
-// â”€â”€ Sidebar / Right Panel Toggle â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── Sidebar / Right Panel Toggle ──────────────────────────────────────────
 function toggleSidebar() {
   const sb = document.querySelector('.sidebar');
   const btn = document.getElementById('toggle-sidebar');
@@ -5559,7 +5559,7 @@ if (localStorage.getItem('byflow_right_hidden') === '1') {
   if (btn) btn.innerHTML = '&#x25C0;';
 }
 
-// â”€â”€ Tutorial â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── Tutorial ──────────────────────────────────────────────────────────────
 let _tutorialStep = 0;
 const TUTORIAL_STEPS = 5;
 function openTutorial() {
@@ -5626,7 +5626,7 @@ setTimeout(function() {
   });
 })();
 
-// â”€â”€ Estudio de Beats functions â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── Estudio de Beats functions ────────────────────────────────────────────
 let _estBeatPlayer = null;
 let _estBeatInfo = null; // { videoId, titulo, canal, canalUrl }
 let _estMediaRecorder = null;
@@ -5675,7 +5675,7 @@ async function estSearchBeats() {
   }
 }
 
-// â”€â”€ Beat Likes / Favoritos â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── Beat Likes / Favoritos ────────────────────────────────────────────────
 function _estGetLikedBeats() {
   try { return JSON.parse(localStorage.getItem('byflow_liked_beats') || '[]'); }
   catch { return []; }
@@ -5855,7 +5855,7 @@ async function estSaveLetter() {
   }
 }
 
-// â”€â”€ Estudio Tabs + Ranking + Mis Letras â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── Estudio Tabs + Ranking + Mis Letras ──────────────────────────────────
 let _estVotedIds = new Set(JSON.parse(localStorage.getItem('byflow_voted') || '[]'));
 
 function estSwitchTab(tab, btn) {
@@ -5902,7 +5902,7 @@ async function estLoadRanking(period, btn) {
     filtered.forEach((item, i) => {
       const posClass = i === 0 ? 'top1' : i === 1 ? 'top2' : i === 2 ? 'top3' : '';
       const voted = _estVotedIds.has(item.id);
-      const beatLine = item.beat ? `<div class="est-ranking-beat">&#127908; <a href="${item.beat.canalUrl || '#'}" target="_blank">${item.beat.canal || 'Beat'}</a> â€” ${item.beat.titulo || ''}</div>` : '';
+      const beatLine = item.beat ? `<div class="est-ranking-beat">&#127908; <a href="${item.beat.canalUrl || '#'}" target="_blank">${item.beat.canal || 'Beat'}</a> — ${item.beat.titulo || ''}</div>` : '';
       const fecha = new Date(item.fecha).toLocaleDateString('es-MX', { day:'numeric', month:'short' });
       const div = document.createElement('div');
       div.className = 'est-ranking-item';
@@ -6022,7 +6022,7 @@ function escapeHtml(str) {
   return div.innerHTML;
 }
 
-// â”€â”€ Actividad Feed (FASE 2.5) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── Actividad Feed (FASE 2.5) ─────────────────────────────────────────────
 async function estLoadActividad() {
   const container = document.getElementById('est-actividad-list');
   if (!container) return;
@@ -6070,7 +6070,7 @@ function _timeAgo(dateStr) {
   return new Date(dateStr).toLocaleDateString('es-MX', { day:'numeric', month:'short' });
 }
 
-// â”€â”€ Perfiles de Creador (FASE 2.5) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── Perfiles de Creador (FASE 2.5) ───────────────────────────────────────
 var _creatorToken = localStorage.getItem('byflow_creator_token') || null;
 var _creatorAlias = localStorage.getItem('byflow_creator_alias') || null;
 
@@ -6225,9 +6225,9 @@ async function estViewCreator(alias) {
 }
 
 // Socket.IO: listen for activity events (real-time notifications)
-// Deferred â€” added to _setupEventoListeners which runs after socket connects
+// Deferred — added to _setupEventoListeners which runs after socket connects
 
-// â”€â”€ Panel Vistas (DJ Dashboard) functions â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── Panel Vistas (DJ Dashboard) functions ─────────────────────────────────
 function vpRefresh() {
   // Sync cola
   const list = document.getElementById('vp-cola-list');
@@ -6257,8 +6257,8 @@ function vpRefresh() {
   const vpPlaying = document.getElementById('vp-playing');
   if (singing) {
     if (vpNow) vpNow.style.display = 'flex';
-    if (vpNowName) vpNowName.textContent = singing.cantante || 'â€”';
-    if (vpNowSong) vpNowSong.textContent = singing.cancion || 'â€”';
+    if (vpNowName) vpNowName.textContent = singing.cantante || '—';
+    if (vpNowSong) vpNowSong.textContent = singing.cancion || '—';
     if (vpPlaying) vpPlaying.textContent = singing.cantante;
   } else {
     if (vpNow) vpNow.style.display = 'none';
@@ -6270,7 +6270,7 @@ function vpRefresh() {
   if (vpTp && tpDisplay) {
     const text = tpDisplay.textContent.trim();
     if (text && text !== 'Buscar letra en internet' && text !== 'Vive Cantando con ByFlow') {
-      // Render clean lines â€” no copiar HTML con spans individuales
+      // Render clean lines — no copiar HTML con spans individuales
       const lines = tpState.lines || [];
       if (lines.length > 0) {
         const currentLine = tpState.currentLine >= 0 ? tpState.currentLine : 0;
@@ -6326,7 +6326,7 @@ async function vpSearch() {
         const title = escHtml((item.trackName || item.name || q));
         const artist = escHtml(item.artistName || item.artist || '');
         return '<div class="vp-result-item" onclick="loadLyricsDirect(' + idx + ')">' +
-          '<div class="vp-result-title" title="' + title + (artist ? ' â€” ' + artist : '') + '">' + title + (artist ? ' <span style="font-size:9px;opacity:.6;">â€” ' + artist + '</span>' : '') + '</div>' +
+          '<div class="vp-result-title" title="' + title + (artist ? ' — ' + artist : '') + '">' + title + (artist ? ' <span style="font-size:9px;opacity:.6;">— ' + artist + '</span>' : '') + '</div>' +
           '<button class="vp-result-play" title="Cargar letra">&#9654;</button>' +
           '</div>';
       }).join('');
@@ -6360,8 +6360,8 @@ function vpPlay(videoId, title) {
   }
 }
 
-// â”€â”€ Init â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-// â”€â”€ PWA Install Prompt â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── Init ──────────────────────────────────────────────────────────────────
+// ── PWA Install Prompt ────────────────────────────────────────────────────
 </script>
 <script src="/js/core/namespace.js"></script>
 <script src="/js/core/config.js"></script>

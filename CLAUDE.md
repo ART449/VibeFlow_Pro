@@ -110,7 +110,7 @@ El Estudio de Letras tiene 3 pestanyas:
 
 ## Git/Deploy
 - Push directo a main con --force (proyecto personal, no team)
-- Token GitHub en el historial del chat (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)
+- Token GitHub: REVOCADO — usar GitHub CLI (gh auth login) o SSH keys
 - Secretos (.license_secret, .admin_secret, licenses.json) en .gitignore
 
 ## Proyectos paralelos (otras ubicaciones)
