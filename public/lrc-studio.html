@@ -200,6 +200,8 @@ pre.payload{margin:0;max-height:220px;overflow:auto;border-radius:18px;padding:1
           <div class="panel-head"><div><h3>Export y sync</h3><div class="panel-sub">Compatibilidad con el catalogo actual y payload listo para el gemelo independiente.</div></div></div>
           <div class="panel-body stack">
             <div class="button-row">
+              <button id="lrc-open-twin" class="primary" type="button">Abrir Twin Player</button>
+              <button id="lrc-copy-twin-link" class="ghost" type="button">Copiar link gemelo</button>
               <button id="lrc-save-local" class="primary" type="button">Guardar package local</button>
               <button id="lrc-save-catalog" class="accent" type="button">Guardar al catalogo</button>
               <button id="lrc-export-lrc" class="ghost" type="button">Descargar .lrc</button>
@@ -207,6 +209,8 @@ pre.payload{margin:0;max-height:220px;overflow:auto;border-radius:18px;padding:1
               <button id="lrc-copy-lrc" class="ghost" type="button">Copiar LRC</button>
               <button id="lrc-copy-twin" class="ghost" type="button">Copiar payload gemelo</button>
             </div>
+            <div class="mini-note">Sesion gemelo: <strong id="twin-session-label">-</strong></div>
+            <div class="mini-note" id="twin-link-label" style="word-break:break-all">-</div>
             <pre id="twin-payload" class="payload"></pre>
             <div class="footnote">Si guardas al catalogo karaoke, ByFlow actual puede seguir usando la letra. Si el timeline esta completo, guarda LRC; si no, guarda texto plano.</div>
           </div>
@@ -220,6 +224,7 @@ pre.payload{margin:0;max-height:220px;overflow:auto;border-radius:18px;padding:1
   <script src="/js/core/namespace.js"></script>
   <script src="/js/modules/lrc-engine.js"></script>
   <script src="/js/modules/song-package.js"></script>
+  <script src="/js/modules/twin-sync.js"></script>
   <script src="/js/modules/lrc-editor.js"></script>
   <script>
     window.addEventListener('DOMContentLoaded', function() {

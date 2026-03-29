@@ -10,8 +10,13 @@
     catalogSongs: [],
     activeIdx: 0,
     objectUrl: '',
-    lastPreviewIdx: -1
+    lastPreviewIdx: -1,
+    twinSessionId: '',
+    twinTransport: null,
+    twinWindow: null,
+    twinLastSentAt: 0
   };
+  const LAST_SESSION_KEY = 'byflow_twin_last_session_v1';
 
   function engine() {
     return VF.modules.lrcEngine;
@@ -94,6 +99,68 @@
     return state.pkg;
   }
 
+  function getTwinSync() {
+    return VF.modules.twinSync;
+  }
+
+  function ensureTwinSession() {
+    if (state.twinSessionId) return state.twinSessionId;
+    const cached = localStorage.getItem(LAST_SESSION_KEY);
+    state.twinSessionId = cached || (getTwinSync() && typeof getTwinSync().createSessionId === 'function'
+      ? getTwinSync().createSessionId()
+      : ('twin_' + Date.now().toString(36)));
+    localStorage.setItem(LAST_SESSION_KEY, state.twinSessionId);
+    renderTwinMeta();
+    return state.twinSessionId;
+  }
+
+  function ensureTwinTransport() {
+    const twinSync = getTwinSync();
+    if (!twinSync || state.twinTransport) return state.twinTransport;
+    state.twinTransport = twinSync.createTransport(ensureTwinSession());
+    return state.twinTransport;
+  }
+
+  function twinUrl() {
+    return location.origin + '/twin-player.html?session=' + encodeURIComponent(ensureTwinSession());
+  }
+
+  function renderTwinMeta() {
+    const sessionEl = el('twin-session-label');
+    const linkEl = el('twin-link-label');
+    if (sessionEl) sessionEl.textContent = ensureTwinSession();
+    if (linkEl) linkEl.textContent = twinUrl();
+  }
+
+  function broadcastTwinState(kind) {
+    const transport = ensureTwinTransport();
+    if (!transport) return;
+
+    const now = Date.now();
+    if (kind === 'tick' && now - state.twinLastSentAt < 180) return;
+    state.twinLastSentAt = now;
+
+    const payload = packages().toTwinPayload(refreshDerived(), currentPlayback());
+    payload.kind = kind || 'state';
+    payload.sessionId = ensureTwinSession();
+    transport.send('state', payload);
+  }
+
+  function openTwinWindow() {
+    const url = twinUrl();
+    ensureTwinTransport();
+    broadcastTwinState('snapshot');
+    if (state.twinWindow && !state.twinWindow.closed) {
+      state.twinWindow.focus();
+      return;
+    }
+    state.twinWindow = window.open(url, 'byflow-twin-player', 'width=1600,height=900,menubar=no,toolbar=no,location=no,status=no');
+  }
+
+  function copyTwinLink() {
+    copyText(twinUrl(), 'Link del gemelo copiado');
+  }
+
   function firstSuggestedIdx(cues) {
     const issues = engine().collectIssues(cues);
     if (!issues.total) return 0;
@@ -116,6 +183,7 @@
     el('pkg-audio-name').textContent = state.pkg.sourceAudioName || 'Sin audio de referencia';
 
     renderEverything();
+    broadcastTwinState('package');
   }
 
   function currentPlayback() {
@@ -137,6 +205,7 @@
     if (playBtn) playBtn.textContent = audio && !audio.paused ? 'Pausar' : 'Play';
 
     updatePreview();
+    broadcastTwinState('tick');
   }
 
   function setActiveIdx(idx) {
@@ -161,6 +230,7 @@
     renderEditorList();
     updatePreview();
     renderStats();
+    broadcastTwinState('cue');
   }
 
   function rebuildFromTextarea() {
@@ -183,6 +253,7 @@
     refreshDerived();
     renderEverything();
     toast('Lineas listas para sincronizar', 'ok');
+    broadcastTwinState('rebuild');
   }
 
   function captureCurrentTime(targetIdx) {
@@ -215,6 +286,7 @@
     refreshDerived();
     renderEverything();
     toast('Timeline limpiada', 'ok');
+    broadcastTwinState('clear');
   }
 
   function autoSpread() {
@@ -228,6 +300,7 @@
     refreshDerived();
     renderEverything();
     toast('Borrador de tiempos generado', 'ok');
+    broadcastTwinState('draft');
   }
 
   function normalizeTimeline() {
@@ -235,6 +308,7 @@
     refreshDerived();
     renderEverything();
     toast('Timeline normalizada', 'ok');
+    broadcastTwinState('normalize');
   }
 
   function saveLocalPackage() {
@@ -246,6 +320,7 @@
     state.pkg = packages().saveLocal(pkg);
     renderLibrary();
     toast('Song Package guardado localmente', 'ok');
+    broadcastTwinState('save-local');
   }
 
   async function saveToCatalog() {
@@ -287,6 +362,7 @@
       state.pkg.sourceRef = state.pkg.sourceSongId;
       await fetchCatalog();
       toast('Catalogo karaoke actualizado', 'ok');
+      broadcastTwinState('save-catalog');
     } catch (error) {
       toast(error.message, 'warn');
     }
@@ -357,6 +433,7 @@
 
     const twinPayload = packages().toTwinPayload(pkg, playback);
     el('twin-payload').textContent = JSON.stringify(twinPayload, null, 2);
+    renderTwinMeta();
   }
 
   function renderLibrary() {
@@ -434,6 +511,7 @@
     state.pkg.sourceKind = 'local-audio';
     state.pkg.sourceAudioName = file.name;
     toast('Audio listo para sincronizar', 'ok');
+    broadcastTwinState('audio');
   }
 
   function handleImportFile(file) {
@@ -628,6 +706,8 @@
       const pkg = refreshDerived();
       copyText(JSON.stringify(packages().toTwinPayload(pkg, currentPlayback()), null, 2), 'Payload gemelo copiado');
     });
+    el('lrc-open-twin').addEventListener('click', openTwinWindow);
+    el('lrc-copy-twin-link').addEventListener('click', copyTwinLink);
 
     el('lrc-audio-file').addEventListener('change', (event) => loadLocalAudio(event.target.files && event.target.files[0]));
     el('lrc-import-file').addEventListener('change', (event) => handleImportFile(event.target.files && event.target.files[0]));
@@ -639,6 +719,7 @@
         refreshDerived();
         renderStats();
         updatePreview();
+        broadcastTwinState('meta');
       });
     });
 
@@ -647,6 +728,9 @@
       audio.addEventListener(eventName, updatePlaybackUi);
     });
 
+    ensureTwinSession();
+    ensureTwinTransport();
+    renderTwinMeta();
     fetchCatalog();
   };
 })(window.VibeFlow);

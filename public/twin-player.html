@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5">
+<meta name="theme-color" content="#06060b">
+<title>ByFlow | Twin Player</title>
+<style>
+*{box-sizing:border-box}
+:root{
+  --bg:#06060b;--panel:#0f0f18;--panel2:#171726;--line:rgba(255,255,255,.07);--text:#f7f7fb;--sub:rgba(255,255,255,.56);
+  --pink:#ff006e;--cyan:#00d5ff;--good:#00e59b;
+}
+html,body{margin:0;padding:0;height:100%;overflow:hidden;background:
+  radial-gradient(circle at top left,rgba(255,0,110,.16),transparent 28%),
+  radial-gradient(circle at top right,rgba(0,213,255,.14),transparent 26%),
+  linear-gradient(180deg,#090910,#06060b 52%,#040409);color:var(--text);font-family:"Segoe UI",Tahoma,sans-serif}
+.wrap{height:100%;display:grid;grid-template-rows:auto 1fr auto}
+.topbar{
+  display:flex;justify-content:space-between;align-items:flex-start;gap:18px;padding:18px 22px;border-bottom:1px solid var(--line);
+  background:linear-gradient(180deg,rgba(255,255,255,.04),rgba(255,255,255,.02))
+}
+.title h1{margin:0;font-size:clamp(28px,3vw,42px);line-height:.95;letter-spacing:-.04em}
+.title p{margin:8px 0 0;color:var(--sub);font-size:14px}
+.meta{display:flex;gap:10px;flex-wrap:wrap;justify-content:flex-end}
+.pill{
+  display:inline-flex;align-items:center;gap:8px;padding:9px 12px;border-radius:999px;background:rgba(255,255,255,.05);
+  border:1px solid rgba(255,255,255,.08);font-size:12px;font-weight:700
+}
+.dot{width:8px;height:8px;border-radius:50%;background:#555}.dot.ok{background:var(--good)}
+.stage{position:relative;overflow:auto;padding:7vh 8vw 28vh;scroll-behavior:smooth}
+.twin-lines{max-width:1120px;margin:0 auto;text-align:center}
+.twin-line{
+  font-size:clamp(30px,4vw,64px);line-height:1.42;padding:14px 0;color:rgba(255,255,255,.36);
+  transition:transform .18s ease,color .18s ease,text-shadow .18s ease,opacity .18s ease
+}
+.twin-line.past{color:rgba(255,255,255,.18)}
+.twin-line.active{color:#fff;transform:scale(1.02);text-shadow:0 0 24px rgba(255,0,110,.30),0 0 40px rgba(0,213,255,.12)}
+.twin-empty{
+  padding:80px 20px;text-align:center;color:var(--sub);font-size:20px;line-height:1.7;border:1px dashed rgba(255,255,255,.12);
+  border-radius:26px;background:rgba(255,255,255,.03)
+}
+.footer{
+  display:flex;justify-content:space-between;align-items:center;gap:16px;padding:14px 22px;border-top:1px solid var(--line);
+  background:linear-gradient(180deg,rgba(255,255,255,.02),rgba(255,255,255,.04))
+}
+.clock{font-size:28px;font-weight:800;font-variant-numeric:tabular-nums}
+.submeta{font-size:12px;color:var(--sub)}
+.progress{flex:1;height:6px;border-radius:999px;background:rgba(255,255,255,.06);overflow:hidden}
+.progress-fill{height:100%;width:0;background:linear-gradient(90deg,var(--pink),var(--cyan));transition:width .18s linear}
+@media (max-width:900px){
+  .topbar{flex-direction:column}
+  .meta{justify-content:flex-start}
+  .footer{flex-direction:column;align-items:flex-start}
+  .clock{font-size:22px}
+}
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <header class="topbar">
+      <div class="title">
+        <h1 id="twin-title">Esperando package...</h1>
+        <p id="twin-artist">Sin artista</p>
+      </div>
+      <div class="meta">
+        <div class="pill"><span class="dot" id="twin-conn-dot"></span><span id="twin-conn-text">Conectando...</span></div>
+        <div class="pill">Sesion: <span id="twin-session">-</span></div>
+        <div class="pill">Estado: <span id="twin-mode">En espera</span></div>
+      </div>
+    </header>
+
+    <main class="stage">
+      <div id="twin-lines" class="twin-lines">
+        <div class="twin-empty">Abre el Twin Player desde LRC Studio Pro para recibir el Song Package y el reloj en vivo.</div>
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div>
+        <div class="clock" id="twin-clock">00:00.00</div>
+        <div class="submeta">Offset global: <span id="twin-offset">0ms</span></div>
+      </div>
+      <div class="progress"><div id="twin-progress-fill" class="progress-fill"></div></div>
+    </footer>
+  </div>
+
+  <script src="/js/core/namespace.js"></script>
+  <script src="/js/modules/lrc-engine.js"></script>
+  <script src="/js/modules/twin-sync.js"></script>
+  <script src="/js/modules/twin-player.js"></script>
+  <script>
+    window.addEventListener('DOMContentLoaded', function() {
+      window.VibeFlow.modules.twinPlayer.init();
+    });
+  </script>
+</body>
+</html>

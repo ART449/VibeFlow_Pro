@@ -10,6 +10,7 @@
     if (ns.BarMode && typeof ns.BarMode.applyBarMode === 'function') ns.BarMode.applyBarMode();
     if (ns.UI && typeof ns.UI.enhanceAccessibility === 'function') ns.UI.enhanceAccessibility();
     if (ns.Ads && typeof ns.Ads.fetchFromServer === 'function') ns.Ads.fetchFromServer();
+    if (ns.modules && ns.modules.twinBridge && typeof ns.modules.twinBridge.init === 'function') ns.modules.twinBridge.init();
 
     updateClock();
     setInterval(updateClock, 1000);

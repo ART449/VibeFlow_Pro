@@ -156,18 +156,31 @@
 
   songPackage.toTwinPayload = function(pkg, playback) {
     const normalized = songPackage.normalize(pkg);
+    const durationMs = Math.max(0, Math.round(Number(playback && playback.durationMs) || 0));
+    const activeLineIndex = Number.isFinite(Number(playback && playback.activeLineIndex))
+      ? Math.round(Number(playback.activeLineIndex))
+      : -1;
+    const activeWordIndex = Number.isFinite(Number(playback && playback.activeWordIndex))
+      ? Math.round(Number(playback.activeWordIndex))
+      : -1;
     return {
       schemaVersion: 1,
       songId: normalized.id,
       title: normalized.title,
       artist: normalized.artist,
+      sourceKind: normalized.sourceKind,
+      sourceRef: normalized.sourceRef,
+      sourceAudioName: normalized.sourceAudioName,
       timingMode: normalized.timingMode,
       globalOffsetMs: normalized.globalOffsetMs,
       lrcText: normalized.lrcText || '',
       lyricsPlain: normalized.lyricsPlain,
       currentTimeMs: Math.max(0, Math.round(Number(playback && playback.currentTimeMs) || 0)),
+      durationMs,
       playing: !!(playback && playback.playing),
       rate: Number(playback && playback.rate) || 1,
+      activeLineIndex,
+      activeWordIndex,
       updatedAt: now()
     };
   };

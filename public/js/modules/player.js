@@ -4,6 +4,10 @@
   VF.modules = VF.modules || {};
   const player = VF.modules.player = {};
 
+  function bridge() {
+    return VF.modules.twinBridge;
+  }
+
   player.initAudioFX = function() {
     if (audioCtx) return;
     audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -131,24 +135,51 @@
   };
 
   player.abPlay = function(url, filename) {
+    _playerEndIsCleanup = true;
+    onPlayerEnd(_activePlayerType);
+    _playerEndIsCleanup = false;
     if (abAudio) abAudio.pause();
     abAudio = new Audio(url);
-    abAudio.play().catch((e) => showToast('Error: ' + e.message));
     const name = filename.replace(/\.[^.]+$/, '');
+    if (bridge() && typeof bridge().setTrackMeta === 'function') {
+      bridge().setTrackMeta({
+        title: name,
+        artist: '',
+        sourceKind: 'audio-url',
+        sourceRef: url,
+        sourceAudioName: filename
+      });
+    }
     document.getElementById('ab-name').textContent = name;
     document.getElementById('audio-bar').classList.add('active');
     document.getElementById('ab-ico-play').style.display = 'none';
     document.getElementById('ab-ico-pause').style.display = 'block';
+    try {
+      player.connectAudioToFX(abAudio);
+    } catch {}
+    abAudio.addEventListener('play', () => {
+      onPlayerPlay('audio');
+      document.getElementById('ab-ico-play').style.display = 'none';
+      document.getElementById('ab-ico-pause').style.display = 'block';
+    });
+    abAudio.addEventListener('pause', () => {
+      onPlayerPause('audio');
+      document.getElementById('ab-ico-play').style.display = 'block';
+      document.getElementById('ab-ico-pause').style.display = 'none';
+    });
     abAudio.addEventListener('timeupdate', () => {
       if (!abAudio || !abAudio.duration) return;
       const pct = (abAudio.currentTime / abAudio.duration) * 100;
       document.getElementById('ab-fill').style.width = pct + '%';
       document.getElementById('ab-time').textContent = player.fmtTime(abAudio.currentTime) + ' / ' + player.fmtTime(abAudio.duration);
+      if (_twinMode && tpState.isLRC && tpState.autoScrolling) _feedTimeToLRC(abAudio.currentTime);
     });
     abAudio.addEventListener('ended', () => {
+      onPlayerEnd('audio');
       document.getElementById('ab-ico-play').style.display = 'block';
       document.getElementById('ab-ico-pause').style.display = 'none';
     });
+    abAudio.play().catch((e) => showToast('Error: ' + e.message));
   };
 
   player.abToggle = function() {
@@ -208,6 +239,15 @@
     const url = URL.createObjectURL(file);
     localAudio = new Audio(url);
     const filename = file.name.replace(/\.[^.]+$/, '');
+    if (bridge() && typeof bridge().setTrackMeta === 'function') {
+      bridge().setTrackMeta({
+        title: filename,
+        artist: '',
+        sourceKind: 'local-audio',
+        sourceRef: filename,
+        sourceAudioName: file.name
+      });
+    }
 
     document.getElementById('ab-name').textContent = filename;
     document.getElementById('audio-bar').classList.add('active');

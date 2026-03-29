@@ -10,6 +10,302 @@ Dejar claro que trabajo ya venia construido, que trabajo detecte en progreso, qu
 
 ---
 
+## ACTUALIZACION 6 - Fase 3 del gemelo (karaoke principal -> contrato nuevo)
+
+### Alcance de esta pasada
+
+Esta sexta pasada conecta el karaoke principal de `public/index.html` con el contrato nuevo del gemelo, pero sigue siendo 100% frontend.
+
+No toque:
+
+- `server.js`
+- `routes/`
+- `pos/`
+- `public/pos.html`
+- `public/bares-v2.html`
+- `public/pos-admin.html`
+
+### Objetivo cumplido
+
+Ahora el karaoke principal ya puede emitir `Song Package + reloj` al gemelo nuevo sin depender del backend ni de `currentWord` como contrato principal.
+
+Esta fase deja listo:
+
+1. bridge del karaoke principal al `Twin Player`
+2. botones en `index.html` para abrir/copiar el gemelo
+3. emision de metadata, playback y progreso desde el player real
+4. fallback por `activeLineIndex` para letras sin timing completo
+5. restauracion modular de hooks legacy que el frontend principal seguia usando
+
+### Archivos creados
+
+- `public/js/modules/twin-bridge.js`
+
+### Archivos actualizados
+
+- `public/index.html`
+- `public/js/app.js`
+- `public/js/modules/lyrics.js`
+- `public/js/modules/player.js`
+- `public/js/modules/youtube.js`
+- `public/js/modules/song-package.js`
+- `public/js/modules/twin-player.js`
+- `docs/HANDOFF_CODEX_A_CLAUDE_2026-03-29.md`
+
+### Lo que hace cada pieza nueva
+
+`public/js/modules/twin-bridge.js`
+
+- crea y mantiene la sesion local del gemelo desde el karaoke principal
+- restaura los hooks que el frontend seguia esperando:
+  - `onPlayerPlay`
+  - `onPlayerPause`
+  - `onPlayerEnd`
+  - `_startTwinSync`
+  - `_stopTwinSync`
+  - `_feedTimeToLRC`
+  - `addToHistory`
+- construye `Song Package` vivo desde `tpState` + metadata del track
+- emite snapshots / ticks al gemelo por `twin-sync`
+- actualiza progreso y reloj del player principal
+- habilita abrir/copiar el `Twin Player` desde `index.html`
+
+### Integracion nueva en el karaoke principal
+
+En `public/index.html` ahora se cargan:
+
+- `public/js/modules/lrc-engine.js`
+- `public/js/modules/song-package.js`
+- `public/js/modules/twin-sync.js`
+- `public/js/modules/twin-bridge.js`
+
+Y en la topbar principal ya quedaron:
+
+- boton `Twin`
+- boton `Link Twin`
+
+### Cambios funcionales importantes
+
+`public/js/modules/lyrics.js`
+
+- notifica al bridge cuando cambia:
+  - la letra cargada
+  - el offset de sync
+  - la linea activa
+  - el estado play/pause del teleprompter
+- guarda el badge base para que el bridge pueda sobreescribirlo sin perder el estado normal
+
+`public/js/modules/player.js`
+
+- `abPlay()` ya entra al flujo del gemelo
+- el player de audio generico ahora emite play/pause/end
+- el audio local registra metadata para el package vivo
+
+`public/js/modules/youtube.js`
+
+- YouTube, SoundCloud y Jamendo ya registran metadata del track en el bridge
+- el package vivo ahora sabe mejor que fuente esta reproduciendo
+
+`public/js/modules/song-package.js`
+
+- el payload del gemelo ahora puede incluir:
+  - `durationMs`
+  - `activeLineIndex`
+  - `activeWordIndex`
+  - `sourceKind`
+  - `sourceRef`
+  - `sourceAudioName`
+
+`public/js/modules/twin-player.js`
+
+- si no hay timing suficiente, puede usar `activeLineIndex` como fallback visual
+- esto evita que el gemelo se quede completamente "ciego" con letra plana
+
+### Decision tecnica importante
+
+Esta fase NO migra `remote.html` ni Socket.IO.
+
+Lo que si deja claro es el modelo correcto del karaoke principal:
+
+- el gemelo nuevo puede vivir en paralelo al remoto legado
+- el player principal ya emite estado por tiempo real
+- el backend futuro debe portar este contrato, no reinventarlo
+
+### Nota importante para Claude
+
+Si Claude mueve esto a backend / red real, la base correcta ya no es:
+
+- `currentWord`
+
+La base correcta ahora es algo de esta forma:
+
+- `songId`
+- `title`
+- `artist`
+- `sourceKind`
+- `sourceRef`
+- `lrcText`
+- `lyricsPlain`
+- `currentTimeMs`
+- `durationMs`
+- `playing`
+- `rate`
+- `globalOffsetMs`
+- `activeLineIndex`
+- `updatedAt`
+
+`activeLineIndex` debe verse como fallback visual para modos sin timing fino.
+La verdad principal sigue siendo tiempo real cuando existe LRC.
+
+### Riesgo / decision para Claude
+
+Hay dos caminos posibles y conviene que Claude decida explicitamente:
+
+1. migrar `remote.html` para que consuma este mismo contrato nuevo
+2. dejar `remote.html` como legado y reservar `twin-player.html` para el gemelo serio
+
+Yo no tome esa decision en frontend para no meterme en su carril de backend / socket.
+
+### Verificacion que ya hice
+
+- `node --check` sobre:
+  - `public/js/modules/twin-bridge.js`
+  - `public/js/modules/lyrics.js`
+  - `public/js/modules/player.js`
+  - `public/js/modules/youtube.js`
+  - `public/js/modules/song-package.js`
+  - `public/js/modules/twin-player.js`
+  - `public/js/app.js`
+- validacion de que `public/index.html` ya carga los scripts nuevos y expone botones del gemelo
+
+### Siguiente paso natural para Claude
+
+1. portar este contrato nuevo a Socket.IO / backend
+2. decidir el destino de `remote.html`
+3. si quiere segunda maquina real, transmitir este payload nuevo por sala
+
+---
+
+## ACTUALIZACION 5 - Fase 2 del gemelo (frontend local entre ventanas)
+
+### Alcance de esta pasada
+
+Esta quinta pasada de Codex continua el trabajo del sistema LRC / gemelo, pero se mantuvo 100% del lado frontend.
+
+No toque:
+
+- `server.js`
+- `routes/`
+- `pos/`
+- `public/pos.html`
+- `public/bares-v2.html`
+- `public/pos-admin.html`
+
+### Objetivo cumplido
+
+Se creo la fase 2 frontend para el gemelo:
+
+1. sincronizacion local entre ventanas basada en `Song Package`
+2. pagina dedicada `Twin Player`
+3. emision continua de estado temporal desde `lrc-studio.html`
+4. consumo del package y reloj en vivo en una segunda ventana
+
+### Archivos creados
+
+- `public/js/modules/twin-sync.js`
+- `public/js/modules/twin-player.js`
+- `public/twin-player.html`
+
+### Archivos actualizados
+
+- `public/js/modules/lrc-editor.js`
+- `public/lrc-studio.html`
+- `docs/HANDOFF_CODEX_A_CLAUDE_2026-03-29.md`
+
+### Lo que hace cada pieza nueva
+
+`public/js/modules/twin-sync.js`
+
+- crea sesiones locales para el gemelo
+- usa `BroadcastChannel` con fallback por `localStorage`
+- guarda snapshots locales por sesion
+- permite pasar estado entre ventanas sin tocar backend
+
+`public/js/modules/twin-player.js`
+
+- consume snapshots / ticks del estudio
+- interpreta `Song Package` y reloj de reproduccion
+- resuelve la linea activa por tiempo real con `lrc-engine`
+- actualiza progreso, reloj, offset y estado
+
+`public/twin-player.html`
+
+- pantalla dedicada para el gemelo
+- recibe `session` por query string
+- reconstruye el estado desde snapshot local si abre tarde
+- renderiza el teleprompter por lineas desde el package
+
+### Integracion nueva en el estudio LRC
+
+En `public/lrc-studio.html` y `public/js/modules/lrc-editor.js` ahora existe:
+
+- boton `Abrir Twin Player`
+- boton `Copiar link gemelo`
+- `sessionId` visible
+- link de sesion visible
+- broadcast de estado cuando cambia:
+  - metadata
+  - timeline
+  - playback
+  - package
+  - audio cargado
+
+### Decision tecnica importante
+
+Esta fase NO intenta reemplazar todavia el flujo Socket.IO del karaoke principal.
+
+Lo que si hace es demostrar y dejar funcional la arquitectura correcta del gemelo del lado frontend:
+
+- `Song Package` como fuente de verdad
+- tiempo real como base de resolucion
+- segunda ventana consumiendo paquete + reloj
+
+### Nota importante para Claude
+
+El gemelo nuevo funciona localmente entre ventanas del mismo navegador/equipo.
+
+Para llevarlo a red real o segunda maquina, Claude solo necesita portar este mismo contrato al backend en vez de inventar otro:
+
+- `songId`
+- `title`
+- `artist`
+- `lrcText`
+- `lyricsPlain`
+- `currentTimeMs`
+- `playing`
+- `rate`
+- `globalOffsetMs`
+- `updatedAt`
+
+La clave es NO volver a `currentWord` como contrato principal.
+
+### Verificacion que ya hice
+
+- `node --check` sobre:
+  - `public/js/modules/twin-sync.js`
+  - `public/js/modules/twin-player.js`
+  - `public/js/modules/lrc-editor.js`
+- validacion automatica de que `public/lrc-studio.html` contiene todos los IDs que usa el editor
+- validacion de ASCII limpio en los archivos nuevos / modificados de esta fase
+
+### Siguiente paso natural para Claude
+
+1. mapear el contrato nuevo del gemelo a Socket.IO / backend
+2. decidir si `remote.html` se migra a este modelo o si vive aparte como legado
+3. si Arturo quiere segunda maquina real, usar este payload como base para sync distribuido
+
+---
+
 ## ACTUALIZACION 4 - LRC Studio Pro y Song Package (base para karaoke + gemelo)
 
 ### Alcance de esta pasada

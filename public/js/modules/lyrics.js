@@ -4,6 +4,12 @@
   VF.modules = VF.modules || {};
   const lyrics = VF.modules.lyrics = {};
 
+  function notifyTwinBridge(method) {
+    const bridge = VF.modules.twinBridge;
+    if (!bridge || typeof bridge[method] !== 'function') return;
+    bridge[method]();
+  }
+
   function updateSyncLabel() {
     const el = document.getElementById('tp-sync-label');
     if (!el) return;
@@ -16,11 +22,13 @@
     tpState.syncOffset = Math.round((tpState.syncOffset + delta) * 10) / 10;
     tpState.syncOffset = Math.max(-30, Math.min(30, tpState.syncOffset));
     updateSyncLabel();
+    notifyTwinBridge('onSyncOffsetChanged');
   };
 
   lyrics.tpSyncReset = function() {
     tpState.syncOffset = 0;
     updateSyncLabel();
+    notifyTwinBridge('onSyncOffsetChanged');
   };
 
   lyrics.parseLRC = function(text) {
@@ -58,6 +66,7 @@
       if (welcome) welcome.style.display = '';
       lyrics.updateProgress(0);
       lyrics.updateModeBadge();
+      notifyTwinBridge('onLyricsChanged');
       return;
     }
     if (welcome) welcome.style.display = 'none';
@@ -74,6 +83,7 @@
     lyrics.updateWordCounter();
     lyrics.updateProgress(0);
     lyrics.updateModeBadge();
+    notifyTwinBridge('onLyricsChanged');
   };
 
   lyrics.buildLRCDisplay = function(lrcLines, el) {
@@ -151,6 +161,7 @@
           tpState.syncOffset = Math.round((playerTime - lrcTime) * 10) / 10;
           tpState.syncOffset = Math.max(-30, Math.min(30, tpState.syncOffset));
           updateSyncLabel();
+          notifyTwinBridge('onSyncOffsetChanged');
           showToast('Sync ajustado: ' + (tpState.syncOffset >= 0 ? '+' : '') + tpState.syncOffset.toFixed(1) + 's', 'success');
         }
       }
@@ -160,6 +171,7 @@
 
   lyrics.highlightWord = function(idx) {
     if (idx < 0 || idx >= tpState.words.length) return;
+    const prevLineIdx = tpState.currentLine;
 
     const prev = document.getElementById('tw-' + tpState.currentIdx);
     if (prev) {
@@ -194,6 +206,7 @@
     if (socket && socket.connected) {
       socket.emit('tp_scroll', { currentWord: idx, isPlaying: tpState.autoScrolling });
     }
+    if (tpState.currentLine !== prevLineIdx) notifyTwinBridge('onCursorChanged');
   };
 
   lyrics.updateLineHighlights = function(activeLineIdx) {
@@ -225,6 +238,8 @@
       badge.className = 'tp-lrc-badge manual';
       badge.textContent = 'Sin letra';
     }
+    badge.dataset.baseLabel = badge.textContent;
+    badge.dataset.baseClass = badge.className;
   };
 
   lyrics.tpNext = function() {
@@ -288,6 +303,7 @@
 
     tpState.autoScrolling = true;
     lyrics.updatePlayBtn();
+    notifyTwinBridge('onAutoScrollChanged');
 
     if (tpState.isLRC && tpState.lrcData) lyrics.startLRCPlayback();
     else lyrics.startManualScroll();
@@ -399,6 +415,7 @@
       tpState.pauseOffset = performance.now() - tpState.startTime;
     }
     lyrics.updatePlayBtn();
+    notifyTwinBridge('onAutoScrollChanged');
   };
 
   lyrics.updatePlayBtn = function() {

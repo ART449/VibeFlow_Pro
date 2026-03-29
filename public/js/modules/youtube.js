@@ -4,6 +4,10 @@
   VF.modules = VF.modules || {};
   const youtube = VF.modules.youtube = {};
 
+  function bridge() {
+    return VF.modules.twinBridge;
+  }
+
   function ensureScript(src) {
     if (document.querySelector('script[src="' + src + '"]')) return;
     const script = document.createElement('script');
@@ -235,6 +239,14 @@
     }
     track = track.replace(/\s*[\(\[](official|video|lyrics|audio|hd|hq|ft\.?|feat\.?|prod\.?|music video|visualizer|clip oficial|video oficial|letra)[^\)\]]*[\)\]]/gi, '').trim();
     artist = artist.replace(/\s*[\(\[](official|vevo|topic)[^\)\]]*[\)\]]/gi, '').trim();
+    if (bridge() && typeof bridge().setTrackMeta === 'function') {
+      bridge().setTrackMeta({
+        title: track || title,
+        artist,
+        sourceKind: 'youtube',
+        sourceRef: videoId
+      });
+    }
 
     try {
       let url = 'https://lrclib.net/api/search?track_name=' + encodeURIComponent(track);
@@ -399,6 +411,14 @@
 
     const container = document.getElementById('embed-container');
     const player = document.getElementById('music-player-embed');
+    if (bridge() && typeof bridge().setTrackMeta === 'function') {
+      bridge().setTrackMeta({
+        title,
+        artist: '',
+        sourceKind: 'youtube',
+        sourceRef: videoId
+      });
+    }
     container.innerHTML = `<div id="yt-api-player"></div>
       <div style="font-size:.75rem;color:var(--sub);margin-top:4px;text-align:center;">${escHtml(title)}</div>`;
     player.style.display = 'block';
@@ -435,6 +455,14 @@
     const player = document.getElementById('music-player-embed');
     const encoded = encodeURIComponent(trackUrl);
     const iframeId = 'sc-widget-iframe';
+    if (bridge() && typeof bridge().setTrackMeta === 'function') {
+      bridge().setTrackMeta({
+        title,
+        artist: '',
+        sourceKind: 'soundcloud',
+        sourceRef: trackUrl
+      });
+    }
     container.innerHTML = `<iframe id="${iframeId}" width="100%" height="166" scrolling="no" frameborder="no" allow="autoplay"
       style="border-radius:8px;"
       src="https://w.soundcloud.com/player/?url=${encoded}&color=%23ff5500&auto_play=true&hide_related=true&show_comments=false&show_user=true&show_reposts=false&show_teaser=false"></iframe>
@@ -569,6 +597,14 @@
     const container = document.getElementById('embed-container');
     const player = document.getElementById('music-player-embed');
     const jmLink = trackId ? 'https://www.jamendo.com/track/' + trackId : 'https://www.jamendo.com';
+    if (bridge() && typeof bridge().setTrackMeta === 'function') {
+      bridge().setTrackMeta({
+        title,
+        artist,
+        sourceKind: 'jamendo',
+        sourceRef: trackId || audioUrl
+      });
+    }
     container.innerHTML = `<div style="background:var(--card);border-radius:8px;padding:12px;text-align:center;">
       <div style="font-size:.8rem;font-weight:600;margin-bottom:4px;">${escHtml(title)}</div>
       <div style="font-size:.7rem;color:var(--sub);margin-bottom:8px;">por ${escHtml(artist || 'Artista')}</div>
