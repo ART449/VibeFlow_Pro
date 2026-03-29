@@ -1528,10 +1528,13 @@ app.get('/api/actividad', (req, res) => {
 
 // ── LRCLIB proxy (evita CORS issues en algunos navegadores) ──────────────
 app.get('/api/lrclib/search', async (req, res) => {
-  const { track_name, artist_name } = req.query;
-  if (!track_name) return res.status(400).json({ error: 'track_name requerido' });
+  const track_name = typeof req.query.track_name === 'string' ? req.query.track_name.trim() : '';
+  const artist_name = typeof req.query.artist_name === 'string' ? req.query.artist_name.trim() : '';
+  const q = typeof req.query.q === 'string' ? req.query.q.trim() : '';
+  const searchTrack = track_name || q;
+  if (!searchTrack) return res.status(400).json({ error: 'track_name o q requerido' });
   try {
-    const params = new URLSearchParams({ track_name });
+    const params = new URLSearchParams({ track_name: searchTrack });
     if (artist_name) params.append('artist_name', artist_name);
     const r = await fetch(`https://lrclib.net/api/search?${params}`, { signal: AbortSignal.timeout(8000) });
     if (!r.ok) return res.status(r.status).json({ error: `LRCLIB responded with ${r.status}` });
@@ -1578,10 +1581,32 @@ app.get('/api/config/keys', (req, res) => {
   });
 });
 
+app.get('/api/ads', (req, res) => {
+  const defaults = [
+    { id: 'pro', title: 'ByFlow PRO', text: 'Quita los anuncios y desbloquea todo. Desde $49/mes', cta: 'Activar PRO', url: '#pro', bg: 'linear-gradient(135deg, #ff006e, #7c4dff)' },
+    { id: 'negocio', title: 'Anuncia tu negocio aqui', text: 'Llega a miles de usuarios en Aguascalientes. WhatsApp: 449-491-7648', cta: 'Contactar', url: 'https://wa.me/524494917648', bg: 'linear-gradient(135deg, #00b4d8, #0077b6)' },
+    { id: 'espacio', title: 'Tu anuncio aqui', text: 'Espacio disponible para tu bar, restaurante o negocio local', cta: 'Mas info', url: 'https://wa.me/524494917648', bg: 'linear-gradient(135deg, #f97316, #ea580c)' }
+  ];
+  const rawAds = loadJSON('ads.json', defaults);
+  const ads = (Array.isArray(rawAds) ? rawAds : defaults)
+    .filter(ad => ad && typeof ad === 'object')
+    .slice(0, 12)
+    .map((ad, idx) => ({
+      id: clampStr(ad.id || `ad_${idx + 1}`, 40),
+      title: clampStr(ad.title || 'ByFlow', 80),
+      text: clampStr(ad.text || '', 200),
+      cta: clampStr(ad.cta || 'Ver', 40),
+      url: clampStr(ad.url || '#', 300),
+      bg: clampStr(ad.bg || defaults[0].bg, 120)
+    }));
+  res.json(ads.length ? ads : defaults);
+});
+
 // Health
 app.get('/api/health', (req, res) => res.json({
   status: 'ok', version: '2.1.0-shield', uptime: process.uptime(),
-  ip: getLocalIp(), port: PORT,
+  ip: getLocalIp(),
+  port: (typeof server.address() === 'object' && server.address()) ? server.address().port : PORT,
   songs: state.canciones.length,
   queue: state.cola.length,
   shield: true,
@@ -1800,13 +1825,14 @@ process.on('unhandledRejection', (reason) => {
 // ── Arranque (await POS async init before listening) ─────────────────────
 _posReady.then(() => server.listen(PORT, HOST, () => {
   const ip = getLocalIp();
+  const boundPort = (typeof server.address() === 'object' && server.address()) ? server.address().port : PORT;
   const activeLic = getActiveLicense();
   console.log('');
   console.log('  =============================================');
   console.log('   BYFLOW — Vive Cantando — SERVIDOR ACTIVO');
   console.log('  =============================================');
-  console.log(`   Local:    http://localhost:${PORT}`);
-  console.log(`   Red LAN:  http://${ip}:${PORT}`);
+  console.log(`   Local:    http://localhost:${boundPort}`);
+  console.log(`   Red LAN:  http://${ip}:${boundPort}`);
   console.log(`   Canciones: ${state.canciones.length} | Cola: ${state.cola.length}`);
   console.log(`   Licencia:  ${activeLic ? 'PRO activa (' + activeLic.owner + ')' : 'FREE'}`);
   console.log('  ---------------------------------------------');
