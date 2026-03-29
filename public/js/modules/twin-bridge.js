@@ -606,6 +606,19 @@
     renderSessionHistory();
     updateTwinBadge();
     syncProgressUi();
+
+    // Auto-detect YouTube player and start sync
+    setInterval(function() {
+      if (window._ytPlayer && typeof _ytPlayer.getCurrentTime === 'function' && typeof _ytPlayer.getPlayerState === 'function') {
+        try {
+          var ytState = _ytPlayer.getPlayerState();
+          if (ytState === 1 && !window._twinMode) {
+            twinBridge.onPlayerPlay('youtube');
+            twinBridge.startPlayerSync();
+          }
+        } catch(e) {}
+      }
+    }, 2000);
   };
 
   ensureGlobals();
