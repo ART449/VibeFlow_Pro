@@ -21,6 +21,18 @@
     loadQR();
     fetchCola();
     fetchSongs();
+    // Load API keys from server (YouTube, Jamendo)
+    try {
+      const kr = await fetch('/api/config/keys');
+      const kd = await kr.json();
+      if (kd.youtube && !localStorage.getItem('yt_api_key')) localStorage.setItem('yt_api_key', kd.youtube);
+      if (kd.jamendo && !localStorage.getItem('jamendo_client_id')) localStorage.setItem('jamendo_client_id', kd.jamendo);
+      if (kd.youtube) ytApiKey = kd.youtube;
+      // Configure GA4 dynamically
+      if (kd.ga && kd.ga !== 'GA_MEASUREMENT_ID' && typeof gtag === 'function') {
+        gtag('config', kd.ga);
+      }
+    } catch (e) {}
     ytInit();
     djInit();
     await checkLicenseStatus();

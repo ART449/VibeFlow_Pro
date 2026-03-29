@@ -4776,7 +4776,7 @@ function _updateGrokLyricBtn() { return window.VibeFlow.modules.studio._updateGr
 function lsLoadToTeleprompter() { return window.VibeFlow.modules.studio.lsLoadToTeleprompter.apply(this, arguments); }
 function lsCopyLyrics() { return window.VibeFlow.modules.studio.lsCopyLyrics.apply(this, arguments); }
 
-let ytApiKey  = localStorage.getItem('yt_api_key') || YT_DEFAULT_KEY;
+let ytApiKey  = localStorage.getItem('yt_api_key') || '';
 let ytResults = [];
 
 function ytInit() { return window.VibeFlow.modules.youtube.ytInit.apply(this, arguments); }
@@ -5602,7 +5602,7 @@ async function estSearchBeats() {
   const container = document.getElementById('est-results');
   container.innerHTML = '<div class="est-empty">Buscando beats...</div>';
   try {
-    const apiKey = localStorage.getItem('byflow_yt_api_key') || 'AIzaSyBTFWSrpFCNagcOgPPGt0BZA5A8v5TgT7w';
+    const apiKey = localStorage.getItem('byflow_yt_api_key') || localStorage.getItem('yt_api_key') || '';
     const url = `https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&maxResults=15&q=${encodeURIComponent(searchQ)}&key=${apiKey}`;
     const res = await fetch(url);
     const data = await res.json();
@@ -5622,8 +5622,8 @@ async function estSearchBeats() {
       div.innerHTML = `
         <img class="est-result-thumb" src="${thumb}" alt="" loading="lazy">
         <div class="est-result-info">
-          <div class="est-result-title" title="${title}">${title}</div>
-          <div class="est-result-channel">&#127908; ${channel}</div>
+          <div class="est-result-title" title="${escHtml(title)}">${escHtml(title)}</div>
+          <div class="est-result-channel">&#127908; ${escHtml(channel)}</div>
         </div>
         <button class="est-like-btn ${isLiked ? 'liked' : ''}" onclick="estToggleLike(event,'${vid}',\`${title.replace(/`/g,"'")}\`,'${channel}','${thumb}')" title="${isLiked ? 'Quitar de favoritos' : 'Agregar a favoritos'}">â¤ï¸</button>
         <button class="est-result-use" onclick="estSelectBeat('${vid}',\`${title.replace(/`/g,"'")}\`,'${channel}')">Usar Beat</button>
@@ -6342,5 +6342,12 @@ function vpPlay(videoId, title) {
 <script src="/js/modules/youtube.js"></script>
 <script src="/js/modules/lyrics.js"></script>
 <script src="/js/app.js"></script>
+<div id="cookie-consent" style="display:none;position:fixed;bottom:0;left:0;right:0;background:rgba(10,10,15,.95);border-top:1px solid rgba(255,255,255,.1);padding:12px 20px;z-index:99999;font-size:13px;color:rgba(255,255,255,.7);backdrop-filter:blur(10px);">
+<div style="max-width:900px;margin:0 auto;display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
+<span style="flex:1;min-width:200px;">Usamos cookies para mejorar tu experiencia. <a href="/privacy.html" style="color:#ff6b9d;">Politica de privacidad</a></span>
+<button onclick="document.getElementById('cookie-consent').style.display='none';localStorage.setItem('byflow_cookies','1');" style="background:#ff6b9d;color:#fff;border:none;padding:8px 20px;border-radius:20px;cursor:pointer;font-size:13px;white-space:nowrap;">Aceptar</button>
+<button onclick="document.getElementById('cookie-consent').style.display='none';localStorage.setItem('byflow_cookies','0');" style="background:transparent;color:rgba(255,255,255,.5);border:1px solid rgba(255,255,255,.2);padding:8px 16px;border-radius:20px;cursor:pointer;font-size:13px;white-space:nowrap;">Rechazar</button>
+</div></div>
+<script>if(!localStorage.getItem('byflow_cookies'))document.getElementById('cookie-consent').style.display='block';</script>
 </body>
 </html>

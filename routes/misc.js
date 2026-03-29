@@ -108,8 +108,9 @@ function registerRoutes(app, state, helpers) {
   // API Keys endpoint
   app.get('/api/config/keys', (req, res) => {
     res.json({
-      youtube_api_key: process.env.YOUTUBE_API_KEY || '',
-      jamendo_client_id: process.env.JAMENDO_CLIENT_ID || ''
+      youtube: process.env.YOUTUBE_API_KEY || '',
+      jamendo: process.env.JAMENDO_CLIENT_ID || '',
+      ga: process.env.GA_MEASUREMENT_ID || ''
     });
   });
 

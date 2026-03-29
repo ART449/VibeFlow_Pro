@@ -1,0 +1,10 @@
+User-agent: *
+Allow: /
+Disallow: /pos.html
+Disallow: /pos-admin.html
+Disallow: /bares-v2.html
+Disallow: /cuenta.html
+Disallow: /api/
+Disallow: /pos/
+
+Sitemap: https://byflowapp.up.railway.app/sitemap.xml
