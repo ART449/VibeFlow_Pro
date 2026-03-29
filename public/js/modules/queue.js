@@ -203,6 +203,7 @@
   };
 
   queue.siguienteCantante = async function() {
+    if (typeof adOnSongChange === 'function') adOnSongChange();
     const promoEnabled = localStorage.getItem('byflow_autopromo') !== '0';
     if (promoEnabled) {
       const nextIdx = colaCache.findIndex((c) => c.estado === 'esperando');

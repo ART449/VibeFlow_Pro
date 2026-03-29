@@ -145,6 +145,33 @@ function registerRoutes(app, state, helpers) {
     shield: true,
     blocked_total: securityLog.summary.total
   }));
+
+  // ── Error tracking from client ─────────────────
+  const _clientErrors = [];
+  const MAX_CLIENT_ERRORS = 200;
+
+  app.post('/api/errors', (req, res) => {
+    const { message, source, line, col, stack, url, ua } = req.body || {};
+    if (!message) return res.json({ ok: false });
+    _clientErrors.push({
+      message: String(message).substring(0, 500),
+      source: String(source || '').substring(0, 200),
+      line: parseInt(line) || 0,
+      col: parseInt(col) || 0,
+      stack: String(stack || '').substring(0, 1000),
+      url: String(url || '').substring(0, 200),
+      ua: String(ua || '').substring(0, 200),
+      ip: req.ip,
+      ts: new Date().toISOString()
+    });
+    if (_clientErrors.length > MAX_CLIENT_ERRORS) _clientErrors.shift();
+    res.json({ ok: true });
+  });
+
+  app.get('/api/errors', (req, res) => {
+    if (req.headers['x-admin-key'] !== ADMIN_SECRET) return res.status(403).json({ ok: false });
+    res.json({ ok: true, errors: _clientErrors, count: _clientErrors.length });
+  });
 }
 
 module.exports = { registerRoutes };

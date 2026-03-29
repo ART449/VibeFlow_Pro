@@ -1,0 +1,11 @@
+node_modules
+.claude
+.git
+tests
+docs
+*.md
+!package.json
+.env
+data/*.db
+data/*.db-wal
+data/*.db-shm

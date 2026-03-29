@@ -15,11 +15,27 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5">
 <meta name="theme-color" content="#07070d">
+<meta name="description" content="ByFlow es karaoke inteligente para bares y eventos con teleprompter, musica, letras, IA y herramientas comerciales en una sola plataforma.">
+<meta property="og:title" content="ByFlow | Karaoke inteligente y herramientas para bares">
+<meta property="og:description" content="Teleprompter, letras, musica, IA y flujos para entretenimiento en vivo y operacion de bares.">
+<meta property="og:type" content="website">
+<meta property="og:image" content="/icon-512.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="ByFlow | Karaoke inteligente y herramientas para bares">
+<meta name="twitter:description" content="Teleprompter, letras, musica, IA y flujos para entretenimiento en vivo y operacion de bares.">
+<meta name="twitter:image" content="/icon-512.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="ByFlow">
-<link rel="apple-touch-icon" href="/icon-192.svg">
+<link rel="apple-touch-icon" href="/icon-192.png">
 <link rel="manifest" href="/manifest.json">
+<script async src="https://www.googletagmanager.com/gtag/js?id=GA_MEASUREMENT_ID"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'GA_MEASUREMENT_ID');
+</script>
 <!-- Firebase Auth SDK (CDN) -->
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
@@ -2231,6 +2247,7 @@ input:focus-visible,textarea:focus-visible{
 }
 
 </style>
+<script>window.onerror=function(m,s,l,c,e){fetch('/api/errors',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({message:m,source:s,line:l,col:c,stack:e&&e.stack,url:location.href,ua:navigator.userAgent})}).catch(function(){});}</script>
 </head>
 <body>
 <div class="app">
@@ -3624,9 +3641,9 @@ input:focus-visible,textarea:focus-visible{
       <div class="tutorial-desc">Agrega cantantes a la cola, busca canciones en YouTube/SoundCloud y las letras se cargan automaticamente en el teleprompter.</div>
     </div>
     <div class="tutorial-step" data-step="2">
-      <div class="tutorial-icon">&#127867;</div>
-      <div class="tutorial-title">Modo Bares</div>
-      <div class="tutorial-desc">Gestiona mesas, lanza promos entre canciones y usa el soundboard DJ. Tus clientes piden canciones desde su mesa.</div>
+      <div class="tutorial-icon">&#127911;</div>
+      <div class="tutorial-title">Estudio de Letras</div>
+      <div class="tutorial-desc">Escribe tus propias letras, graba tu voz sobre beats de YouTube, publica y sube al ranking. Tu creatividad sin limites.</div>
     </div>
     <div class="tutorial-step" data-step="3">
       <div class="tutorial-icon">&#10024;</div>
