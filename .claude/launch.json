@@ -6,7 +6,8 @@
       "runtimeExecutable": "node",
       "runtimeArgs": ["server.js"],
       "port": 3333,
-      "autoPort": true
+      "autoPort": true,
+      "env": { "PORT": "3333" }
     }
   ]
 }
