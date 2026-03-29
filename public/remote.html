@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ByFlow — Pantalla de Karaoke</title>
+  <link rel="icon" href="/icon-192.svg" type="image/svg+xml">
+  <style>
+    :root {
+      --p: #ff006e;
+      --s: #8338ec;
+      --a: #00e5ff;
+      --bg: #0a0a0f;
+      --card: #12121a;
+      --sub: rgba(255,255,255,.45);
+      --glow-p: rgba(255,0,110,.35);
+    }
+    * { margin:0; padding:0; box-sizing:border-box; }
+    html, body {
+      width:100%; height:100%; overflow:hidden;
+      background:var(--bg); color:#fff;
+      font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
+      cursor:none;
+      user-select:none;
+    }
+
+    /* ── Fullscreen container ─────────────────────────────────────── */
+    .display-wrap {
+      width:100vw; height:100vh;
+      display:flex; flex-direction:column;
+      position:relative;
+    }
+
+    /* ── Visualizer canvas (background) ──────────────────────────── */
+    .viz-canvas {
+      position:absolute; inset:0; opacity:.18; pointer-events:none; z-index:0;
+    }
+
+    /* ── Now Singing Banner ──────────────────────────────────────── */
+    .ns-banner {
+      display:none; align-items:center; gap:14px;
+      padding:12px 28px;
+      background:linear-gradient(135deg,rgba(255,0,110,.1),rgba(131,56,236,.07));
+      border-bottom:1px solid rgba(255,0,110,.15);
+      flex-shrink:0; z-index:5;
+    }
+    .ns-banner.active { display:flex; }
+    .ns-pulse {
+      width:12px; height:12px; border-radius:50%; background:var(--p);
+      box-shadow:0 0 10px var(--glow-p);
+      animation:pulse 1.5s infinite; flex-shrink:0;
+    }
+    @keyframes pulse {
+      0%,100% { opacity:1; transform:scale(1); }
+      50% { opacity:.5; transform:scale(.85); }
+    }
+    .ns-info { flex:1; min-width:0; }
+    .ns-label {
+      font-size:11px; color:var(--sub); text-transform:uppercase;
+      letter-spacing:1.5px; font-weight:700;
+    }
+    .ns-name {
+      font-size:18px; font-weight:800; white-space:nowrap;
+      overflow:hidden; text-overflow:ellipsis;
+    }
+    .ns-song {
+      font-size:13px; color:var(--sub); white-space:nowrap;
+      overflow:hidden; text-overflow:ellipsis;
+    }
+
+    /* ── Teleprompter Area ────────────────────────────────────────── */
+    .tp-area {
+      flex:1; overflow-y:auto; position:relative; z-index:1;
+      display:flex; align-items:flex-start; justify-content:center;
+      padding:40px 20px 60px;
+      scroll-behavior:smooth;
+      -ms-overflow-style:none; scrollbar-width:none;
+    }
+    .tp-area::-webkit-scrollbar { display:none; }
+
+    #tp-display {
+      max-width:900px; width:100%;
+      font-size:2rem; line-height:2.2;
+      text-align:center; color:rgba(255,255,255,.85);
+      letter-spacing:.3px;
+    }
+    #tp-display .word {
+      display:inline; cursor:default;
+      transition:color .15s, text-shadow .15s;
+    }
+    #tp-display .word.active {
+      color:#fff;
+      text-shadow:0 0 20px var(--glow-p), 0 0 40px rgba(255,0,110,.2);
+    }
+    #tp-display .word.past {
+      color:rgba(255,255,255,.3);
+    }
+
+    /* ── Progress bar ─────────────────────────────────────────────── */
+    .tp-progress {
+      position:absolute; bottom:0; left:0; right:0; height:3px;
+      background:rgba(255,255,255,.05); z-index:10;
+    }
+    .tp-progress-fill {
+      height:100%; width:0;
+      background:linear-gradient(90deg,var(--p),var(--s));
+      transition:width .3s;
+    }
+
+    /* ── Welcome state ────────────────────────────────────────────── */
+    .welcome-state {
+      display:flex; flex-direction:column; align-items:center;
+      justify-content:center; height:100%; text-align:center;
+      opacity:.5;
+    }
+    .welcome-icon { font-size:6rem; margin-bottom:20px; opacity:.4; }
+    .welcome-title {
+      font-size:1.6rem; color:rgba(255,255,255,.5);
+      font-weight:600; margin-bottom:10px;
+    }
+    .welcome-sub {
+      font-size:.9rem; color:rgba(0,229,255,.4);
+      font-style:italic; letter-spacing:.5px;
+    }
+
+    /* ── Connection status ────────────────────────────────────────── */
+    .conn-status {
+      position:absolute; top:10px; right:14px; z-index:20;
+      font-size:10px; color:var(--sub);
+      display:flex; align-items:center; gap:5px;
+      opacity:.6; transition:opacity .3s;
+    }
+    .conn-dot {
+      width:6px; height:6px; border-radius:50%;
+      background:#555; transition:background .3s;
+    }
+    .conn-dot.ok { background:#00e676; }
+
+    /* ── ByFlow branding ──────────────────────────────────────────── */
+    .brand-watermark {
+      position:absolute; bottom:12px; right:16px; z-index:20;
+      font-size:10px; color:rgba(255,255,255,.12);
+      letter-spacing:1px; font-weight:600;
+    }
+
+    /* Auto-hide cursor after inactivity */
+    body.cursor-visible { cursor:default; }
+  </style>
+</head>
+<body>
+  <div class="display-wrap">
+    <canvas class="viz-canvas" id="viz-canvas"></canvas>
+
+    <!-- Now Singing Banner -->
+    <div class="ns-banner" id="ns-banner">
+      <div class="ns-pulse"></div>
+      <div class="ns-info">
+        <div class="ns-label">Cantando ahora</div>
+        <div class="ns-name" id="ns-name"></div>
+        <div class="ns-song" id="ns-song"></div>
+      </div>
+    </div>
+
+    <!-- Teleprompter -->
+    <div class="tp-area" id="tp-area">
+      <div id="tp-display">
+        <div class="welcome-state" id="welcome-state">
+          <div class="welcome-icon">&#x1F3A4;</div>
+          <div class="welcome-title">Vive Cantando con ByFlow</div>
+          <div class="welcome-sub">Esperando letra del controlador...</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Progress bar -->
+    <div class="tp-progress"><div class="tp-progress-fill" id="tp-progress-fill"></div></div>
+
+    <!-- Connection indicator -->
+    <div class="conn-status">
+      <div class="conn-dot" id="conn-dot"></div>
+      <span id="conn-label">Conectando...</span>
+    </div>
+
+    <div class="brand-watermark">ByFlow &mdash; powered by IArtLabs</div>
+  </div>
+
+  <script>
+    // ═══════════════════════════════════════════════════════════════════
+    // ByFlow Remote Karaoke Display
+    // Pure teleprompter view — no controls, TV/projector optimized
+    // ═══════════════════════════════════════════════════════════════════
+
+    const params = new URLSearchParams(location.search);
+    const roomId = params.get('room');
+    if (!roomId) {
+      document.getElementById('tp-display').innerHTML =
+        '<div class="welcome-state"><div class="welcome-icon">&#x26A0;</div>' +
+        '<div class="welcome-title">Sin sala especificada</div>' +
+        '<div class="welcome-sub">Abre esta pantalla desde el boton "Abrir Pantalla" en el control de ByFlow</div></div>';
+    }
+
+    // ── State ────────────────────────────────────────────────────────
+    let words = [];
+    let currentWord = -1;
+    let rawText = '';
+
+    // ── Socket.IO connection ─────────────────────────────────────────
+    function loadSocketIO() {
+      return new Promise((resolve) => {
+        const s = document.createElement('script');
+        s.src = '/socket.io/socket.io.js';
+        s.onload = () => resolve(true);
+        s.onerror = () => {
+          const s2 = document.createElement('script');
+          s2.src = 'https://cdn.socket.io/4.7.4/socket.io.min.js';
+          s2.onload = () => resolve(true);
+          s2.onerror = () => resolve(false);
+          document.head.appendChild(s2);
+        };
+        document.head.appendChild(s);
+      });
+    }
+
+    async function init() {
+      if (!roomId) return;
+      const loaded = await loadSocketIO();
+      if (!loaded || typeof io === 'undefined') {
+        setConnStatus(false, 'Socket.IO no disponible');
+        return;
+      }
+
+      const socket = io(location.origin, {
+        reconnectionDelay: 2000,
+        reconnectionDelayMax: 10000
+      });
+
+      socket.on('connect', () => {
+        setConnStatus(true, 'Sala ' + roomId);
+        socket.emit('join_room', { roomId: roomId });
+      });
+
+      socket.on('room_joined', (data) => {
+        if (data.teleprompter && data.teleprompter.lyrics) {
+          setLyrics(data.teleprompter.lyrics);
+        }
+        if (data.teleprompter && data.teleprompter.currentWord >= 0) {
+          highlightWord(data.teleprompter.currentWord);
+        }
+      });
+
+      socket.on('tp_update', (tp) => {
+        if (tp.lyrics && tp.lyrics !== rawText) {
+          setLyrics(tp.lyrics);
+        }
+        if (tp.currentWord >= 0) {
+          highlightWord(tp.currentWord);
+        }
+      });
+
+      socket.on('tp_speed_update', (d) => {
+        // Speed changes — remote display doesn't need to act on this
+      });
+
+      socket.on('singer_changed', (singer) => {
+        updateSinger(singer);
+      });
+
+      socket.on('disconnect', () => {
+        setConnStatus(false, 'Reconectando...');
+      });
+
+      socket.on('reconnect', () => {
+        setConnStatus(true, 'Sala ' + roomId);
+      });
+    }
+
+    // ── Connection status indicator ──────────────────────────────────
+    function setConnStatus(ok, label) {
+      const dot = document.getElementById('conn-dot');
+      const lbl = document.getElementById('conn-label');
+      if (dot) dot.classList.toggle('ok', ok);
+      if (lbl) lbl.textContent = label;
+    }
+
+    // ── Singer banner ────────────────────────────────────────────────
+    function updateSinger(singer) {
+      const banner = document.getElementById('ns-banner');
+      const nameEl = document.getElementById('ns-name');
+      const songEl = document.getElementById('ns-song');
+      if (!singer || !singer.cantante) {
+        if (banner) banner.classList.remove('active');
+        return;
+      }
+      if (nameEl) nameEl.textContent = singer.cantante;
+      if (songEl) songEl.textContent = singer.cancion || '';
+      if (banner) banner.classList.add('active');
+    }
+
+    // ── Teleprompter rendering ───────────────────────────────────────
+    function setLyrics(text) {
+      rawText = text || '';
+      const display = document.getElementById('tp-display');
+      const welcome = document.getElementById('welcome-state');
+      if (!text || !text.trim()) {
+        if (welcome) welcome.style.display = '';
+        return;
+      }
+      if (welcome) welcome.style.display = 'none';
+
+      // Strip LRC timestamps for display
+      const cleanText = text.replace(/\[\d{2}:\d{2}\.\d{2,3}\]/g, '').trim();
+      const lines = cleanText.split('\n');
+      let html = '';
+      let wordIdx = 0;
+
+      for (let i = 0; i < lines.length; i++) {
+        const line = lines[i].trim();
+        if (!line) {
+          html += '<br>';
+          continue;
+        }
+        const lineWords = line.split(/\s+/);
+        for (let j = 0; j < lineWords.length; j++) {
+          html += '<span class="word" data-idx="' + wordIdx + '">' +
+                  escapeHtml(lineWords[j]) + '</span> ';
+          wordIdx++;
+        }
+        html += '<br>';
+      }
+
+      display.innerHTML = html;
+      words = display.querySelectorAll('.word');
+      currentWord = -1;
+      updateProgress();
+    }
+
+    function highlightWord(idx) {
+      if (idx < 0 || !words.length) return;
+      currentWord = idx;
+
+      for (let i = 0; i < words.length; i++) {
+        const w = words[i];
+        if (i < idx) {
+          w.classList.add('past');
+          w.classList.remove('active');
+        } else if (i === idx) {
+          w.classList.add('active');
+          w.classList.remove('past');
+          // Auto-scroll to keep active word visible
+          scrollToWord(w);
+        } else {
+          w.classList.remove('past', 'active');
+        }
+      }
+      updateProgress();
+    }
+
+    function scrollToWord(el) {
+      const area = document.getElementById('tp-area');
+      if (!area || !el) return;
+      const areaRect = area.getBoundingClientRect();
+      const elRect = el.getBoundingClientRect();
+      const targetY = elRect.top - areaRect.top - areaRect.height * 0.35;
+      if (Math.abs(targetY) > 40) {
+        area.scrollBy({ top: targetY, behavior: 'smooth' });
+      }
+    }
+
+    function updateProgress() {
+      const fill = document.getElementById('tp-progress-fill');
+      if (!fill || !words.length) return;
+      const pct = words.length > 0 ? Math.min(100, ((currentWord + 1) / words.length) * 100) : 0;
+      fill.style.width = pct + '%';
+    }
+
+    function escapeHtml(str) {
+      const d = document.createElement('div');
+      d.textContent = str;
+      return d.innerHTML;
+    }
+
+    // ── Ambient visualizer ───────────────────────────────────────────
+    function initVisualizer() {
+      const canvas = document.getElementById('viz-canvas');
+      if (!canvas) return;
+      const ctx = canvas.getContext('2d');
+      let w, h;
+
+      function resize() {
+        w = canvas.width = canvas.offsetWidth;
+        h = canvas.height = canvas.offsetHeight;
+      }
+      resize();
+      window.addEventListener('resize', resize);
+
+      // Gentle ambient bars (no audio input needed)
+      const bars = 32;
+      const barVals = new Float32Array(bars);
+      for (let i = 0; i < bars; i++) barVals[i] = Math.random() * 0.3;
+
+      function draw() {
+        ctx.clearRect(0, 0, w, h);
+        const barW = w / bars;
+        for (let i = 0; i < bars; i++) {
+          // Gentle drift
+          barVals[i] += (Math.random() - 0.5) * 0.02;
+          barVals[i] = Math.max(0.05, Math.min(0.6, barVals[i]));
+          const barH = barVals[i] * h;
+          const gradient = ctx.createLinearGradient(0, h - barH, 0, h);
+          gradient.addColorStop(0, 'rgba(255,0,110,0.3)');
+          gradient.addColorStop(1, 'rgba(131,56,236,0.1)');
+          ctx.fillStyle = gradient;
+          ctx.fillRect(i * barW, h - barH, barW - 2, barH);
+        }
+        requestAnimationFrame(draw);
+      }
+      draw();
+    }
+
+    // ── Auto-hide cursor ─────────────────────────────────────────────
+    let cursorTimeout;
+    document.addEventListener('mousemove', () => {
+      document.body.classList.add('cursor-visible');
+      clearTimeout(cursorTimeout);
+      cursorTimeout = setTimeout(() => {
+        document.body.classList.remove('cursor-visible');
+      }, 3000);
+    });
+
+    // ── Auto-fullscreen on double-click ──────────────────────────────
+    document.addEventListener('dblclick', () => {
+      if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen().catch(() => {});
+      } else {
+        document.exitFullscreen().catch(() => {});
+      }
+    });
+
+    // ── Init ─────────────────────────────────────────────────────────
+    initVisualizer();
+    init();
+  </script>
+</body>
+</html>

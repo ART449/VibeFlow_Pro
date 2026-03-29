@@ -2224,6 +2224,10 @@ input:focus-visible,textarea:focus-visible{
     <div style="display:flex;align-items:center;gap:8px;">
       <span id="online-count" title="Dispositivos en tu sala" style="font-size:10px;color:var(--g);display:none;">● <span id="online-num">0</span></span>
       <span id="room-badge" title="Tu sala — comparte este codigo" style="font-size:9px;background:var(--card2);border:1px solid var(--border);padding:2px 6px;border-radius:6px;cursor:pointer;display:none;" onclick="copyRoomLink()">🔗 <span id="room-id-display">---</span></span>
+      <button id="btn-open-display" onclick="openKaraokeDisplay()" title="Abrir pantalla de karaoke en ventana separada (para TV/proyector)" style="display:none;align-items:center;gap:3px;padding:3px 8px;border-radius:6px;border:1px solid rgba(0,229,255,.2);background:rgba(0,229,255,.06);color:rgba(0,229,255,.8);font-size:9px;font-weight:600;cursor:pointer;white-space:nowrap;transition:all .2s;">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+        Abrir Pantalla
+      </button>
       <div id="datetime">--</div>
     </div>
     <!-- User avatar / login -->
@@ -3685,6 +3689,25 @@ function showRoomBadge() {
   const display = document.getElementById('room-id-display');
   if (badge) badge.style.display = '';
   if (display) display.textContent = _myRoomId;
+  const btnDisplay = document.getElementById('btn-open-display');
+  if (btnDisplay) btnDisplay.style.display = 'flex';
+}
+
+// Open karaoke teleprompter in a separate window (for TV/second monitor)
+var _karaokeDisplayWin = null;
+function openKaraokeDisplay() {
+  const url = location.origin + '/remote?room=' + _myRoomId;
+  if (_karaokeDisplayWin && !_karaokeDisplayWin.closed) {
+    _karaokeDisplayWin.focus();
+    showToast('Pantalla de karaoke ya esta abierta — enfocada');
+    return;
+  }
+  _karaokeDisplayWin = window.open(url, 'byflow-karaoke-display', 'width=1920,height=1080,menubar=no,toolbar=no,location=no,status=no');
+  if (_karaokeDisplayWin) {
+    showToast('Pantalla de karaoke abierta — arrastrala al segundo monitor');
+  } else {
+    showToast('Popup bloqueado — permite ventanas emergentes para ByFlow', 'warning');
+  }
 }
 
 async function connectSocket() {
