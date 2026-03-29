@@ -10,6 +10,189 @@ Dejar claro que trabajo ya venia construido, que trabajo detecte en progreso, qu
 
 ---
 
+## ACTUALIZACION 8 - Show Control Lab base en frontend
+
+### Alcance de esta pasada
+
+Esta pasada aterriza la investigacion de show control en una base utilizable dentro del frontend.
+
+No toque:
+
+- `server.js`
+- `routes/`
+- `pos/`
+- `public/pos.html`
+- `public/bares-v2.html`
+- `public/pos-admin.html`
+
+### Archivos nuevos
+
+- `public/show-control.html`
+- `public/js/modules/midi.js`
+- `public/js/modules/show-scenes.js`
+- `public/js/modules/show-control.js`
+
+### Archivos actualizados
+
+- `public/index.html`
+- `docs/HANDOFF_CODEX_A_CLAUDE_2026-03-29.md`
+
+### Que deja listo
+
+1. pagina separada `Show Control Lab`
+2. deteccion de capacidades del browser:
+   - Web MIDI
+   - WebHID
+   - Web Serial
+3. conexion Web MIDI y captura de mensajes
+4. `MIDI Learn` base para mappings
+5. modelo local de:
+   - shows
+   - escenas
+   - cue stack
+   - control mappings
+6. presets para:
+   - bar karaoke
+   - DJ night
+   - conciertos
+7. simulacion local de cues para validar flujo operativo
+8. acceso rapido desde `public/index.html` por `Show Lab`
+
+### Decision de arquitectura que deja muy clara
+
+El frontend ya refleja la tesis completa:
+
+- browser para consola y UX
+- Web MIDI como MVP inmediato
+- bridge local para mixers / luces / OBS / OSC / Art-Net / sACN
+
+En otras palabras: ya no es solo documento. Ya hay una superficie de producto para probar el modelo.
+
+### Lo importante para Claude
+
+Si Claude toma esto hacia implementacion real, los siguientes pasos duros ya estan bien definidos:
+
+1. llevar `show-scenes` a persistencia compartida si hace falta multioperador
+2. crear `ByFlow Control Bridge`
+3. conectar bridge con:
+   - QLC+
+   - OLA
+   - OBS WebSocket
+   - OSC
+   - mixers digitales
+4. decidir si `remote.html` y `twin-player.html` se convierten en stage displays del modo conciertos
+5. agregar roles y seguridad operacional:
+   - panic stop
+   - blackout
+   - mute global
+
+### Nota de producto
+
+Con esta base, ByFlow ya tiene cuatro verticales mas claras:
+
+- karaoke
+- teleprompter
+- DJ / host
+- show control / conciertos
+
+---
+
+## ACTUALIZACION 7 - investigacion de show control DJ / luces / MIDI / conciertos
+
+### Alcance de esta pasada
+
+Esta pasada no cambia backend ni POS.
+Fue investigacion tecnica y aterrizaje de arquitectura para la expansion de ByFlow hacia:
+
+- DJ control
+- MIDI
+- mixers
+- luces
+- show control
+- version conciertos
+
+No toque:
+
+- `server.js`
+- `routes/`
+- `pos/`
+- `public/pos.html`
+- `public/bares-v2.html`
+- `public/pos-admin.html`
+
+### Archivo nuevo
+
+- `docs/BYFLOW_SHOW_CONTROL_RESEARCH_2026-03-29.md`
+
+### Lo que contiene
+
+Ese documento deja ya aterrizado:
+
+1. que tiene ByFlow hoy realmente para DJ / karaoke / teleprompter
+2. por que el navegador solo no basta para un sistema escenico serio
+3. arquitectura recomendada:
+   - web UI
+   - control bridge local
+   - engines externos
+4. protocolos recomendados:
+   - MIDI / MIDI 2.0
+   - OSC
+   - Art-Net
+   - sACN / E1.31
+   - OS2L
+   - Ableton Link
+   - OBS WebSocket
+5. por que QLC+ y OLA son los motores correctos para luces
+6. fases recomendadas de producto
+7. propuesta concreta para una version Conciertos
+
+### Resumen ejecutivo para Claude
+
+Mi recomendacion fuerte es:
+
+- ByFlow no debe intentar controlar todo el hardware profesional solo desde browser
+- hace falta un `ByFlow Control Bridge` local
+- la web debe ser la consola de operador
+- el bridge debe traducir a MIDI / HID / OSC / serial / lighting
+- QLC+ u OLA deben usarse como motor de luces antes de inventar una consola DMX propia
+- OBS debe ser el camino para video / streaming / overlays
+
+### Decision tecnica que le dejo servida a Claude
+
+Si esto avanza a implementacion real, los siguientes bloques importantes estan claros:
+
+1. `MIDI MVP` dentro de frontend
+2. `Scene` + `Cue Stack` como modelo
+3. `ByFlow Control Bridge` como servicio local
+4. integracion con `QLC+` u `OLA`
+5. integracion con `OBS`
+6. modo `Conciertos`
+
+### Fuentes
+
+El documento nuevo ya lista las fuentes oficiales consultadas:
+
+- MDN
+- MIDI Association
+- Art-Net oficial
+- QLC+ docs
+- OLA docs
+- OS2L oficial
+- Ableton Link oficial
+- OBS WebSocket oficial
+
+### Nota de producto
+
+Este documento sirve muy bien como base para:
+
+- PRD
+- roadmap tecnico
+- arquitectura del bridge
+- comparativa QLC+ vs OLA
+- definicion del modo conciertos
+
+---
+
 ## ACTUALIZACION 6 - Fase 3 del gemelo (karaoke principal -> contrato nuevo)
 
 ### Alcance de esta pasada

@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5">
+<meta name="theme-color" content="#06060b">
+<title>ByFlow | Show Control Lab</title>
+<style>
+*{box-sizing:border-box}
+:root{
+  --bg:#06060b;--panel:#101019;--panel2:#171726;--line:rgba(255,255,255,.08);--text:#f4f4f8;--sub:rgba(255,255,255,.62);
+  --pink:#ff006e;--cyan:#00d5ff;--gold:#fbbf24;--green:#00e59b;--red:#ff6b6b;--shadow:0 30px 90px rgba(0,0,0,.34);
+}
+html,body{margin:0;padding:0;min-height:100%;background:
+  radial-gradient(circle at top left,rgba(255,0,110,.18),transparent 24%),
+  radial-gradient(circle at top right,rgba(0,213,255,.16),transparent 22%),
+  linear-gradient(180deg,#090910,#06060b 46%,#05050a);color:var(--text);font-family:"Segoe UI",Tahoma,sans-serif}
+body{padding:0 0 28px}
+.shell{max-width:1760px;margin:0 auto;padding:26px 18px 0}
+.hero{position:relative;overflow:hidden;border-radius:30px;padding:28px;border:1px solid rgba(255,255,255,.08);background:
+  linear-gradient(135deg,rgba(255,0,110,.14),rgba(0,213,255,.12)),
+  linear-gradient(180deg,rgba(255,255,255,.04),rgba(255,255,255,.02));box-shadow:var(--shadow)}
+.hero::after{content:"";position:absolute;width:420px;height:420px;right:-90px;bottom:-180px;border-radius:50%;
+  background:radial-gradient(circle,rgba(251,191,36,.24),transparent 68%);filter:blur(18px);pointer-events:none}
+.eyebrow{display:inline-flex;gap:8px;align-items:center;padding:8px 12px;border-radius:999px;border:1px solid rgba(255,255,255,.08);
+  background:rgba(255,255,255,.05);font-size:12px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--green)}
+.hero-grid{display:grid;grid-template-columns:1.3fr .9fr;gap:22px;align-items:end}
+.hero h1{margin:14px 0 12px;font-size:clamp(40px,6vw,84px);line-height:.92;letter-spacing:-.05em}
+.hero p{max-width:860px;margin:0;color:var(--sub);font-size:18px;line-height:1.68}
+.hero-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:22px}
+.hero-actions a,.hero-actions button{display:inline-flex;align-items:center;justify-content:center;padding:12px 16px;border-radius:14px;border:none;text-decoration:none;font-weight:800;font-size:14px;cursor:pointer}
+.primary{background:linear-gradient(135deg,var(--pink),#ff4d6d);color:#fff}
+.ghost{background:rgba(255,255,255,.05);border:1px solid var(--line);color:var(--text)}
+.accent{background:linear-gradient(135deg,var(--cyan),#0084ff);color:#04111b}
+.hero-stack{display:grid;gap:10px}
+.hero-note{padding:14px 16px;border-radius:18px;border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.04)}
+.hero-note strong{display:block;font-size:13px;letter-spacing:.04em;text-transform:uppercase;color:var(--sub);margin-bottom:6px}
+.hero-note p{font-size:14px;line-height:1.55;color:var(--text);margin:0}
+.grid{display:grid;grid-template-columns:320px minmax(0,1fr) 420px;gap:18px;margin-top:24px;align-items:start}
+.panel{border:1px solid var(--line);border-radius:24px;background:
+  linear-gradient(180deg,rgba(255,255,255,.04),rgba(255,255,255,.02)),
+  linear-gradient(180deg,var(--panel),var(--panel2));box-shadow:var(--shadow)}
+.panel-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;padding:18px 18px 12px;border-bottom:1px solid rgba(255,255,255,.06)}
+.panel-head h2,.panel-head h3{margin:0;font-size:15px;letter-spacing:.02em}
+.panel-sub{font-size:12px;color:var(--sub);line-height:1.5}
+.panel-body{padding:16px 18px 18px}
+.stack{display:grid;gap:16px}
+.caps{display:grid;gap:10px}
+.cap-card{padding:14px;border-radius:18px;border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.03)}
+.cap-card.ok{box-shadow:0 0 0 1px rgba(0,229,155,.18) inset}
+.cap-card.warn{box-shadow:0 0 0 1px rgba(251,191,36,.18) inset}
+.cap-card.bridge{box-shadow:0 0 0 1px rgba(0,213,255,.18) inset}
+.cap-label{font-size:11px;color:var(--sub);text-transform:uppercase;letter-spacing:.08em;font-weight:800}
+.cap-state{margin-top:8px;font-size:17px;font-weight:900}
+.cap-card p{margin:8px 0 0;font-size:13px;line-height:1.55;color:var(--sub)}
+.button-row{display:flex;flex-wrap:wrap;gap:8px}
+.button-row button{appearance:none;border:none;padding:11px 13px;border-radius:14px;font-weight:800;font-size:13px;cursor:pointer}
+.field{display:grid;gap:6px}
+.field label,.field span{font-size:12px;color:var(--sub);font-weight:800;letter-spacing:.04em;text-transform:uppercase}
+.field input,.field textarea,.field select{width:100%;border-radius:14px;border:1px solid rgba(255,255,255,.08);background:rgba(0,0,0,.24);color:var(--text);padding:12px 14px;font:inherit}
+.field textarea{min-height:110px;resize:vertical;line-height:1.55}
+.mini-pill{display:inline-flex;align-items:center;padding:8px 10px;border-radius:999px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);font-size:12px;font-weight:800}
+.show-list,.scene-list,.mapping-list,.cue-list,.device-list,.log-list,.bp-grid{display:grid;gap:10px}
+.show-card,.scene-card{width:100%;border:none;border-radius:18px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07);padding:12px 14px;text-align:left;color:var(--text);cursor:pointer}
+.show-card.active,.scene-card.active{box-shadow:0 0 0 1px rgba(0,213,255,.22) inset;background:linear-gradient(180deg,rgba(0,213,255,.08),rgba(255,255,255,.02))}
+.show-card-title{display:block;font-size:14px;font-weight:900}
+.show-card-meta,.scene-main span{display:block;margin-top:5px;font-size:12px;color:var(--sub)}
+.scene-card{display:flex;align-items:center;gap:12px}
+.scene-dot{width:14px;height:14px;border-radius:50%;box-shadow:0 0 18px currentColor}
+.scene-main{display:grid}
+.device-stats{display:flex;flex-wrap:wrap;gap:8px}
+.device-pill{display:inline-flex;align-items:center;padding:8px 10px;border-radius:999px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);font-size:12px;font-weight:800}
+.device-pill.ok{color:var(--green)}
+.device-group{display:grid;gap:8px}
+.device-group h4{margin:0;font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--sub)}
+.device-row{padding:12px 14px;border-radius:16px;border:1px solid rgba(255,255,255,.07);background:rgba(255,255,255,.03)}
+.device-row strong{display:block;font-size:14px}
+.device-row span{display:block;margin-top:5px;font-size:12px;color:var(--sub)}
+.hint{font-size:12px;color:var(--sub);line-height:1.6}
+.cue-card,.mapping-card,.bp-card{padding:14px;border-radius:20px;border:1px solid rgba(255,255,255,.07);background:rgba(255,255,255,.03)}
+.cue-head{display:flex;justify-content:space-between;gap:10px;align-items:flex-start;margin-bottom:12px}
+.cue-head strong{font-size:14px}
+.cue-actions{display:flex;gap:8px;flex-wrap:wrap}
+.cue-actions button{appearance:none;border:none;border-radius:12px;padding:9px 11px;background:rgba(255,255,255,.05);color:var(--text);font-size:12px;font-weight:800;cursor:pointer}
+.cue-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.cue-grid label{display:grid;gap:6px}
+.cue-grid input,.cue-grid textarea,.cue-grid select{width:100%;border-radius:14px;border:1px solid rgba(255,255,255,.08);background:#090911;color:var(--text);padding:11px 12px;font:inherit}
+.cue-grid textarea{min-height:88px;resize:vertical}
+.cue-span-2{grid-column:1 / -1}
+.empty-card{padding:20px;border-radius:18px;border:1px dashed rgba(255,255,255,.12);background:rgba(255,255,255,.03);text-align:center;color:var(--sub);line-height:1.6}
+.empty-card.small{padding:16px;font-size:12px}
+.bp-card h4{margin:0 0 8px;font-size:14px}
+.bp-card p{margin:0;font-size:13px;line-height:1.55;color:var(--sub)}
+.checklist{margin:0;padding-left:18px;display:grid;gap:10px;color:var(--text)}
+.checklist li{line-height:1.6}
+.show-toast{position:fixed;right:18px;bottom:18px;opacity:0;pointer-events:none;transform:translateY(18px);padding:12px 14px;border-radius:14px;background:#0d0d14;border:1px solid rgba(255,255,255,.08);box-shadow:var(--shadow);transition:all .2s ease;z-index:99}
+.show-toast.show{opacity:1;transform:translateY(0)}
+.show-toast.ok{border-color:rgba(0,229,155,.34)}
+.show-toast.warn{border-color:rgba(255,107,107,.34)}
+.log-row{display:grid;grid-template-columns:74px minmax(0,1fr);gap:12px;padding:12px 14px;border-radius:16px;border:1px solid rgba(255,255,255,.07);background:rgba(255,255,255,.03)}
+.log-row strong{font-size:12px;color:var(--sub)}
+.log-row span{font-size:13px;line-height:1.55}
+.log-row.ok{box-shadow:0 0 0 1px rgba(0,229,155,.16) inset}
+.log-row.warn{box-shadow:0 0 0 1px rgba(255,107,107,.16) inset}
+::-webkit-scrollbar{width:10px;height:10px}
+::-webkit-scrollbar-thumb{background:rgba(255,255,255,.12);border-radius:999px}
+::-webkit-scrollbar-track{background:transparent}
+@media (max-width:1380px){.grid{grid-template-columns:1fr}.hero-grid{grid-template-columns:1fr}}
+@media (max-width:760px){.shell{padding:16px 14px 0}.hero{padding:22px}.hero h1{font-size:42px}.cue-grid{grid-template-columns:1fr}.cue-span-2{grid-column:auto}}
+</style>
+</head>
+<body>
+  <div class="shell">
+    <section class="hero">
+      <div class="hero-grid">
+        <div>
+          <div class="eyebrow">ByFlow Show Control Lab</div>
+          <h1>DJ, karaoke, teleprompter y conciertos bajo una sola consola.</h1>
+          <p>Este laboratorio aterriza la siguiente capa de ByFlow: escenas, cue stack, mappings MIDI y la arquitectura correcta para integrar mixers, luces, OBS y software de show control sin obligar al navegador a cargar solo con todo el trabajo pesado.</p>
+          <div class="hero-actions">
+            <a class="primary" href="/index.html">Volver a ByFlow</a>
+            <a class="ghost" href="/lrc-studio.html">Abrir LRC Studio Pro</a>
+            <a class="ghost" href="/twin-player.html" target="_blank" rel="noopener">Abrir Twin Player</a>
+          </div>
+        </div>
+        <aside class="hero-stack">
+          <div class="hero-note">
+            <strong>Mi opinion</strong>
+            <p>La web debe ser la consola. El hardware real debe pasar por un bridge local que hable MIDI, OSC, luces, mixers y video con estabilidad de escenario.</p>
+          </div>
+          <div class="hero-note">
+            <strong>Camino correcto</strong>
+            <p>MIDI Learn primero, escenas y cue stack despues, QLC+ y OBS en el siguiente paso, y modo conciertos cuando el timeline y la operacion ya sean confiables.</p>
+          </div>
+        </aside>
+      </div>
+    </section>
+
+    <section class="grid">
+      <aside class="stack">
+        <section class="panel">
+          <div class="panel-head">
+            <div>
+              <h2>Capacidades</h2>
+              <div class="panel-sub">Que puede hacer el browser directo y que conviene mandar al bridge local.</div>
+            </div>
+          </div>
+          <div class="panel-body">
+            <div id="show-capabilities" class="caps"></div>
+          </div>
+        </section>
+
+        <section class="panel">
+          <div class="panel-head">
+            <div>
+              <h2>Shows</h2>
+              <div class="panel-sub">Presets para bar karaoke, DJ night y conciertos.</div>
+            </div>
+          </div>
+          <div class="panel-body stack">
+            <div class="button-row">
+              <button id="show-create-bar" class="primary" type="button">Preset bar</button>
+              <button id="show-create-dj" class="ghost" type="button">Preset DJ</button>
+              <button id="show-create-concert" class="accent" type="button">Preset concierto</button>
+            </div>
+            <div id="show-list" class="show-list"></div>
+          </div>
+        </section>
+
+        <section class="panel">
+          <div class="panel-head">
+            <div>
+              <h2>MIDI y hardware</h2>
+              <div class="panel-sub">Web MIDI para MVP. Mixers, luces y video siguen pidiendo bridge local.</div>
+            </div>
+          </div>
+          <div class="panel-body stack">
+            <div class="button-row">
+              <button id="midi-connect" class="primary" type="button">Conectar MIDI</button>
+              <button id="midi-refresh" class="ghost" type="button">Refrescar</button>
+              <button id="capture-midi" class="ghost" type="button">Capturar mensaje</button>
+            </div>
+            <div id="device-stats" class="device-stats"></div>
+            <div id="device-list" class="device-list"></div>
+            <div class="field">
+              <label>Ultimo mensaje MIDI</label>
+              <div id="last-midi" class="empty-card small">Sin mensaje MIDI capturado todavia.</div>
+            </div>
+            <div id="device-hint" class="hint"></div>
+          </div>
+        </section>
+      </aside>
+
+      <main class="stack">
+        <section class="panel">
+          <div class="panel-head">
+            <div>
+              <h2>Show activo</h2>
+              <div class="panel-sub">Define el perfil del venue, su tono operativo y el nivel de automatizacion.</div>
+            </div>
+            <div class="mini-pill" id="show-bridge">Bridge local recomendado</div>
+          </div>
+          <div class="panel-body stack">
+            <div class="field">
+              <label for="show-name">Nombre del show</label>
+              <input id="show-name" type="text" placeholder="Ej. Bar Karaoke Viernes">
+            </div>
+            <div class="field">
+              <label for="show-venue">Tipo de venue</label>
+              <select id="show-venue">
+                <option value="bar-karaoke">Bar Karaoke</option>
+                <option value="dj-night">DJ Night</option>
+                <option value="concert-stage">Concierto</option>
+                <option value="rehearsal">Ensayo</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="show-notes">Notas del operador</label>
+              <textarea id="show-notes" placeholder="Equipo, riesgos, transiciones, cues criticas, etc."></textarea>
+            </div>
+            <div class="button-row">
+              <button id="show-save" class="primary" type="button">Guardar show</button>
+              <button id="show-delete" class="ghost" type="button">Eliminar show</button>
+            </div>
+          </div>
+        </section>
+
+        <section class="panel">
+          <div class="panel-head">
+            <div>
+              <h2>Escenas</h2>
+              <div class="panel-sub">Cada escena representa un estado operativo: bienvenida, cantante en vivo, break DJ, apertura o finale.</div>
+            </div>
+            <div class="button-row">
+              <button id="scene-add" class="primary" type="button">Agregar escena</button>
+              <button id="scene-duplicate" class="ghost" type="button">Duplicar</button>
+              <button id="scene-remove" class="ghost" type="button">Eliminar</button>
+            </div>
+          </div>
+          <div class="panel-body stack">
+            <div id="scene-list" class="scene-list"></div>
+            <div class="cue-grid">
+              <label><span>Nombre</span><input id="scene-name" type="text" placeholder="Nombre de escena"></label>
+              <label><span>Modo</span><input id="scene-mode" type="text" placeholder="karaoke, dj, concert..."></label>
+              <label><span>Color</span><input id="scene-color" type="color" value="#00d5ff"></label>
+              <label class="cue-span-2"><span>Notas</span><textarea id="scene-notes" placeholder="Que debe pasar en esta escena."></textarea></label>
+            </div>
+          </div>
+        </section>
+
+        <section class="panel">
+          <div class="panel-head">
+            <div>
+              <h2>Cue Stack</h2>
+              <div class="panel-sub">Aqui defines el orden de acciones: luces, mixer, SFX, teleprompter, macros y video.</div>
+            </div>
+            <div class="button-row">
+              <button id="cue-add" class="accent" type="button">Agregar cue</button>
+            </div>
+          </div>
+          <div class="panel-body">
+            <div id="cue-list" class="cue-list"></div>
+          </div>
+        </section>
+
+        <section class="panel">
+          <div class="panel-head">
+            <div>
+              <h2>Live log</h2>
+              <div class="panel-sub">Simula escenas y cues antes de mover hardware real.</div>
+            </div>
+          </div>
+          <div class="panel-body">
+            <div id="show-live-log" class="log-list"></div>
+          </div>
+        </section>
+      </main>
+
+      <aside class="stack">
+        <section class="panel">
+          <div class="panel-head">
+            <div>
+              <h3>Mappings</h3>
+              <div class="panel-sub">MIDI Learn para pads, knobs, faders o footswitches.</div>
+            </div>
+            <div class="button-row">
+              <button id="mapping-add" class="primary" type="button">Agregar mapping</button>
+            </div>
+          </div>
+          <div class="panel-body">
+            <div id="mapping-list" class="mapping-list"></div>
+          </div>
+        </section>
+
+        <section class="panel">
+          <div class="panel-head">
+            <div>
+              <h3>Blueprint</h3>
+              <div class="panel-sub">El orden en que yo lo construiria para volverlo sistema serio.</div>
+            </div>
+          </div>
+          <div class="panel-body">
+            <div id="show-blueprint" class="bp-grid"></div>
+          </div>
+        </section>
+
+        <section class="panel">
+          <div class="panel-head">
+            <div>
+              <h3>Lo que yo anadiria</h3>
+              <div class="panel-sub">Capas que vuelven a ByFlow un sistema de venue y conciertos, no solo una app bonita.</div>
+            </div>
+          </div>
+          <div class="panel-body">
+            <ul id="show-additions" class="checklist"></ul>
+          </div>
+        </section>
+      </aside>
+    </section>
+  </div>
+
+  <div id="show-toast" class="show-toast"></div>
+
+  <script src="/js/core/namespace.js"></script>
+  <script src="/js/modules/midi.js"></script>
+  <script src="/js/modules/show-scenes.js"></script>
+  <script src="/js/modules/show-control.js"></script>
+  <script>
+    window.addEventListener('DOMContentLoaded', function() {
+      window.VibeFlow.modules.showControl.init();
+    });
+  </script>
+</body>
+</html>
