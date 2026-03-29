@@ -117,11 +117,6 @@
   };
 
   auth.dismissWelcome = function() {
-    const uid = localStorage.getItem('byflow_user_uid');
-    if (!uid && !_fbUser) {
-      showToast('Inicia sesion para usar ByFlow', 'warning');
-      return;
-    }
     const ov = document.getElementById('welcome-overlay');
     if (ov) {
       ov.style.opacity = '0';
