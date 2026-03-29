@@ -115,12 +115,15 @@ function verifyPin(pin, hash) {
 }
 
 /**
- * Authenticate employee by PIN
+ * Authenticate employee by PIN, scoped to a specific bar
  * @param {string} pin - 4-6 digit PIN
  * @param {string} ip - client IP for rate limiting
+ * @param {string} [barId='default'] - bar_id for multi-tenant isolation
  * @returns {object|null} employee record or null
  */
-function authenticate(pin, ip) {
+function authenticate(pin, ip, barId) {
+  const effectiveBarId = barId || 'default';
+
   // Rate limit check
   if (ip) {
     const rateCheck = checkLoginRate(ip);
@@ -129,10 +132,10 @@ function authenticate(pin, ip) {
 
   const db = getDb();
 
-  // Get all active employees and compare PINs with bcrypt
+  // Get active employees scoped to this bar and compare PINs with bcrypt
   const employees = db.prepare(
-    'SELECT id, name, pin, role, role_level, active, area, avatar FROM employees WHERE active = 1'
-  ).all();
+    'SELECT id, name, pin, role, role_level, active, area, avatar, bar_id FROM employees WHERE active = 1 AND bar_id = ?'
+  ).all(effectiveBarId);
 
   let matched = null;
   for (const emp of employees) {
@@ -147,8 +150,8 @@ function authenticate(pin, ip) {
 
     // Audit log failed attempt
     db.prepare(
-      "INSERT INTO audit_log (employee_id, action, details) VALUES (NULL, 'login_failed', ?)"
-    ).run(`Failed login attempt from ${ip || 'unknown'}`);
+      "INSERT INTO audit_log (employee_id, action, details, bar_id) VALUES (NULL, 'login_failed', ?, ?)"
+    ).run(`Failed login attempt from ${ip || 'unknown'}`, effectiveBarId);
 
     return null;
   }
@@ -160,30 +163,32 @@ function authenticate(pin, ip) {
 
   // Audit log
   db.prepare(
-    "INSERT INTO audit_log (employee_id, action, details) VALUES (?, 'login', ?)"
-  ).run(matched.id, `Login: ${matched.name} (${matched.role}) from ${ip || 'unknown'}`);
+    "INSERT INTO audit_log (employee_id, action, details, bar_id) VALUES (?, 'login', ?, ?)"
+  ).run(matched.id, `Login: ${matched.name} (${matched.role}) from ${ip || 'unknown'}`, effectiveBarId);
 
-  // Generate and store token
-  const token = generateToken(matched.id, matched.role, matched.role_level);
+  // Generate and store token (includes bar_id)
+  const token = generateToken(matched.id, matched.role, matched.role_level, effectiveBarId);
 
   // Return without pin hash
   const { pin: _, ...safe } = matched;
   return {
     ...safe,
+    bar_id: effectiveBarId,
     permissions: getPermissions(matched.role),
     token
   };
 }
 
 /**
- * Generate and store a session token
+ * Generate and store a session token (includes bar_id for multi-tenant)
  */
-function generateToken(employeeId, role, roleLevel) {
+function generateToken(employeeId, role, roleLevel, barId) {
   const token = crypto.randomBytes(32).toString('hex');
   tokenStore.set(token, {
     employeeId,
     role,
     role_level: roleLevel,
+    bar_id: barId || 'default',
     expiresAt: Date.now() + TOKEN_EXPIRY_MS
   });
   return token;
@@ -206,17 +211,23 @@ function validateToken(token) {
 }
 
 /**
- * Express middleware: require valid token on all POS routes
+ * Express middleware: require valid token on all POS routes.
+ * Attaches req.posSession (with bar_id) and req.barId for tenant isolation.
  */
 function authMiddleware(req, res, next) {
-  // Skip auth for login and authorize routes
+  // Skip auth for login, authorize, and first-time owner setup routes
   if (req.path === '/auth/login' || req.path === '/pos/auth/login') return next();
   if (req.path === '/auth/authorize' || req.path === '/pos/auth/authorize') return next();
+  if (req.path === '/auth/setup-owner' || req.path === '/pos/auth/setup-owner') return next();
 
   // Skip auth for GET on public-ish routes (products, categories for menu display)
   const publicGets = ['/products', '/categories', '/happy-hour/active',
                       '/pos/products', '/pos/categories', '/pos/happy-hour/active'];
-  if (req.method === 'GET' && publicGets.includes(req.path)) return next();
+  if (req.method === 'GET' && publicGets.includes(req.path)) {
+    // Even for public GETs, resolve bar_id from header for tenant scoping
+    req.barId = resolveBarId(req);
+    return next();
+  }
 
   const authHeader = req.headers.authorization;
   const token = authHeader ? authHeader.replace('Bearer ', '') : req.query.token;
@@ -232,7 +243,16 @@ function authMiddleware(req, res, next) {
 
   // Attach session to request
   req.posSession = session;
+  // bar_id priority: token session > X-Bar-ID header > 'default'
+  req.barId = session.bar_id || req.headers['x-bar-id'] || 'default';
   next();
+}
+
+/**
+ * Resolve bar_id from request headers (for unauthenticated or public routes)
+ */
+function resolveBarId(req) {
+  return req.headers['x-bar-id'] || 'default';
 }
 
 /**
@@ -251,9 +271,11 @@ function getPermissions(role) {
 
 /**
  * Authorize a protected action with a supervisor's PIN
+ * @param {string} barId - bar_id for multi-tenant scoping
  * @returns {object} { authorized, authorizer, error }
  */
-function authorizeAction(action, supervisorPin, requesterId) {
+function authorizeAction(action, supervisorPin, requesterId, barId) {
+  const effectiveBarId = barId || 'default';
   const req = AUTH_REQUIREMENTS[action];
 
   // FIXED: Unknown actions are DENIED, not auto-approved
@@ -261,8 +283,8 @@ function authorizeAction(action, supervisorPin, requesterId) {
 
   const db = getDb();
   const employees = db.prepare(
-    'SELECT id, name, pin, role, role_level FROM employees WHERE active = 1'
-  ).all();
+    'SELECT id, name, pin, role, role_level FROM employees WHERE active = 1 AND bar_id = ?'
+  ).all(effectiveBarId);
 
   let supervisor = null;
   for (const emp of employees) {

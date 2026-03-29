@@ -11,6 +11,17 @@
 <meta name="apple-mobile-web-app-title" content="ByFlow POS">
 <link rel="apple-touch-icon" href="/pos-icon-192.svg">
 <link href="https://fonts.googleapis.com/css2?family=Great+Vibes&family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+<!-- Firebase Auth SDK (same config as main app) -->
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+<script>
+  firebase.initializeApp({
+    apiKey: "AIzaSyCrdTH1CvJj-kHX_LR5kzPmlxVG8fkaQpM",
+    authDomain: "byflow-d3a0f.firebaseapp.com",
+    projectId: "byflow-d3a0f"
+  });
+  const _fbAuth = firebase.auth();
+</script>
 <style>
 *{margin:0;padding:0;box-sizing:border-box;}
 :root{--bg:#0a0a0f;--surface:rgba(255,255,255,.04);--border:rgba(255,255,255,.08);--text:#e8e8f0;--sub:rgba(255,255,255,.4);--orange:#ff8a00;--green:#34d399;--red:#ef4444;--pink:#ff6b9d;}
@@ -103,9 +114,50 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--t
 .session-chip:hover{background:rgba(255,138,0,.08);border-color:rgba(255,138,0,.2);color:var(--text);}
 .session-chip .sc-dot{width:5px;height:5px;border-radius:50%;background:var(--green);}
 
+/* ═══ ROLE SELECTION SCREEN ═══ */
+.role-select{position:relative;z-index:1;display:flex;flex-direction:column;align-items:center;gap:20px;width:340px;}
+.role-select .role-title{font-size:14px;font-weight:600;color:var(--sub);text-align:center;}
+.role-btns{display:flex;flex-direction:column;gap:10px;width:100%;}
+.role-btn{
+  display:flex;align-items:center;gap:14px;padding:16px 20px;border-radius:14px;
+  border:1px solid var(--border);background:var(--surface);color:var(--text);
+  cursor:pointer;transition:all .2s;user-select:none;-webkit-tap-highlight-color:transparent;
+}
+.role-btn:hover{background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.15);}
+.role-btn:active{transform:scale(.97);}
+.role-btn .rb-icon{font-size:28px;width:40px;text-align:center;}
+.role-btn .rb-text{flex:1;}
+.role-btn .rb-label{font-size:14px;font-weight:700;}
+.role-btn .rb-desc{font-size:10px;color:var(--sub);margin-top:2px;}
+.role-btn.owner{border-color:rgba(255,138,0,.3);background:rgba(255,138,0,.06);}
+.role-btn.owner:hover{background:rgba(255,138,0,.12);border-color:rgba(255,138,0,.5);}
+.role-btn.owner .rb-label{color:var(--orange);}
+
+/* Google Sign-In overlay */
+.google-login{
+  position:fixed;inset:0;z-index:90;display:none;
+  background:rgba(10,10,15,.97);backdrop-filter:blur(20px);
+  align-items:center;justify-content:center;flex-direction:column;gap:20px;
+}
+.google-login.show{display:flex;animation:fadeIn .3s ease;}
+.google-login .gl-title{font-size:16px;font-weight:700;text-align:center;}
+.google-login .gl-sub{font-size:11px;color:var(--sub);text-align:center;max-width:280px;}
+.gl-btn{
+  display:flex;align-items:center;gap:10px;padding:14px 28px;border-radius:12px;
+  background:#fff;color:#333;font-size:14px;font-weight:600;cursor:pointer;
+  border:none;transition:all .2s;box-shadow:0 2px 12px rgba(0,0,0,.3);
+}
+.gl-btn:hover{transform:translateY(-1px);box-shadow:0 4px 20px rgba(0,0,0,.4);}
+.gl-btn:active{transform:scale(.97);}
+.gl-btn img{width:20px;height:20px;}
+.gl-back{font-size:12px;color:var(--sub);cursor:pointer;margin-top:8px;transition:color .2s;}
+.gl-back:hover{color:var(--text);}
+.gl-status{font-size:11px;color:var(--orange);min-height:16px;text-align:center;}
+
 /* Responsive */
 @media(max-width:400px){
   .login-container{width:300px;}
+  .role-select{width:300px;}
   .numpad{width:240px;}
   .num-btn{width:72px;height:56px;font-size:20px;border-radius:12px;}
   .logo{font-size:2.8rem;}
@@ -116,7 +168,47 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--t
 
 <div class="bg"><div class="orb"></div><div class="orb"></div></div>
 
-<div class="login-container">
+<!-- ═══ STEP 1: Role Selection ═══ -->
+<div class="role-select" id="role-select">
+  <div class="logo-area">
+    <div class="logo">ByFlow</div>
+    <div class="tagline">Punto de Venta + Eatertainment</div>
+    <div class="pos-label">POS TERMINAL</div>
+  </div>
+  <div class="role-title">Selecciona tu acceso</div>
+  <div class="role-btns">
+    <div class="role-btn owner" onclick="showOwnerLogin()">
+      <div class="rb-icon">&#x1F451;</div>
+      <div class="rb-text">
+        <div class="rb-label">Soy Dueno / Gerente</div>
+        <div class="rb-desc">Accede con tu cuenta Google para vincular tu bar</div>
+      </div>
+    </div>
+    <div class="role-btn" onclick="showEmployeeLogin()">
+      <div class="rb-icon">&#x1F464;</div>
+      <div class="rb-text">
+        <div class="rb-label">Soy Empleado</div>
+        <div class="rb-desc">Ingresa con tu PIN de 4-6 digitos</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ STEP 1b: Google Sign-In for Owner ═══ -->
+<div class="google-login" id="google-login">
+  <div class="logo" style="font-family:'Great Vibes',cursive;font-size:2.5rem;background:linear-gradient(135deg,var(--orange),#fbbf24);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">ByFlow</div>
+  <div class="gl-title">Acceso de Dueno / Gerente</div>
+  <div class="gl-sub">Inicia sesion con tu cuenta Google. Verificaremos tu licencia POS para vincular tu bar.</div>
+  <button class="gl-btn" onclick="signInWithGoogle()">
+    <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="G">
+    Continuar con Google
+  </button>
+  <div class="gl-status" id="gl-status"></div>
+  <div class="gl-back" onclick="showRoleSelect()">&#x2190; Volver</div>
+</div>
+
+<!-- ═══ STEP 2: Employee PIN Login (hidden initially) ═══ -->
+<div class="login-container" id="login-container" style="display:none;">
   <div class="logo-area">
     <div class="logo">ByFlow</div>
     <div class="tagline">Punto de Venta + Eatertainment</div>
@@ -172,6 +264,145 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--t
 function escapeHtml(str) {
   if (typeof str !== 'string') return '';
   return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#039;');
+}
+
+// ═══ MULTI-TENANT: bar_id from owner auth ═══
+let _currentBarId = sessionStorage.getItem('pos_bar_id') || 'default';
+
+/**
+ * Generate a deterministic bar_id from an email address (SHA-256 hash, first 16 hex chars)
+ */
+async function emailToBarId(email) {
+  const encoder = new TextEncoder();
+  const data = encoder.encode(email.toLowerCase().trim());
+  const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+  const hashArray = Array.from(new Uint8Array(hashBuffer));
+  return 'bar_' + hashArray.slice(0, 8).map(b => b.toString(16).padStart(2, '0')).join('');
+}
+
+// ═══ ROLE SELECTION FLOW ═══
+function showRoleSelect() {
+  document.getElementById('role-select').style.display = 'flex';
+  document.getElementById('login-container').style.display = 'none';
+  document.getElementById('google-login').classList.remove('show');
+}
+
+function showOwnerLogin() {
+  document.getElementById('role-select').style.display = 'none';
+  document.getElementById('login-container').style.display = 'none';
+  document.getElementById('google-login').classList.add('show');
+  document.getElementById('gl-status').textContent = '';
+}
+
+function showEmployeeLogin() {
+  document.getElementById('role-select').style.display = 'none';
+  document.getElementById('google-login').classList.remove('show');
+  document.getElementById('login-container').style.display = 'flex';
+}
+
+// ═══ GOOGLE SIGN-IN (Firebase Auth) ═══
+async function signInWithGoogle() {
+  const statusEl = document.getElementById('gl-status');
+  statusEl.textContent = 'Conectando con Google...';
+
+  try {
+    const provider = new firebase.auth.GoogleAuthProvider();
+    const result = await _fbAuth.signInWithPopup(provider);
+    const user = result.user;
+    const email = user.email;
+
+    statusEl.textContent = 'Verificando licencia POS...';
+
+    // Check POS license for this email
+    const licResp = await fetch('/api/pos/license?email=' + encodeURIComponent(email));
+    const licData = await licResp.json();
+
+    if (!licData.ok || !licData.active) {
+      // No license — redirect to demo
+      statusEl.textContent = 'Sin licencia activa. Redirigiendo a demo...';
+      sessionStorage.setItem('pos_bar_id', 'default');
+      setTimeout(() => {
+        window.location.href = '/pos-demo.html?email=' + encodeURIComponent(email);
+      }, 1500);
+      return;
+    }
+
+    // Licensed! Generate bar_id from email hash
+    const barId = await emailToBarId(email);
+    _currentBarId = barId;
+
+    // Store owner info
+    sessionStorage.setItem('pos_bar_id', barId);
+    sessionStorage.setItem('pos_owner_email', email);
+    sessionStorage.setItem('pos_owner_name', user.displayName || email);
+    sessionStorage.setItem('pos_owner_photo', user.photoURL || '');
+    localStorage.setItem('pos_bar_email', email);
+
+    statusEl.textContent = 'Licencia activa! Accediendo como dueno...';
+    statusEl.style.color = '#34d399';
+
+    // Try to login with default owner PIN first
+    let loginResp = await fetch('/pos/auth/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-Bar-ID': barId },
+      body: JSON.stringify({ pin: '000000', bar_id: barId })
+    });
+    let loginData = await loginResp.json();
+
+    if (!loginData.ok) {
+      // First-time setup: no employees for this bar yet — seed the owner
+      statusEl.textContent = 'Configurando tu bar por primera vez...';
+
+      // Use the setup endpoint (no auth required) to create the first owner employee
+      await fetch('/pos/auth/setup-owner', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'X-Bar-ID': barId },
+        body: JSON.stringify({
+          name: user.displayName || email.split('@')[0],
+          pin: '000000',
+          bar_id: barId,
+          email: email
+        })
+      });
+
+      // Now login again
+      loginResp = await fetch('/pos/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'X-Bar-ID': barId },
+        body: JSON.stringify({ pin: '000000', bar_id: barId })
+      });
+      loginData = await loginResp.json();
+    }
+
+    if (loginData.ok) {
+      sessionStorage.setItem('pos_employee', JSON.stringify(loginData.employee));
+      sessionStorage.setItem('pos_token', loginData.token);
+      sessionStorage.setItem('pos_license', JSON.stringify({ active: true, plan: licData.plan, email }));
+
+      // Seed bar settings with owner's name (now with valid token)
+      try {
+        await fetch('/pos/settings', {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + loginData.token,
+            'X-Bar-ID': barId
+          },
+          body: JSON.stringify({ bar_name: 'Mi Bar — ' + (user.displayName || email.split('@')[0]) })
+        });
+      } catch (_) { /* non-critical */ }
+
+      showGreeting(loginData.employee, loginData.defaultView, { active: true, plan: licData.plan });
+    } else {
+      // Fallback: show PIN login for this bar
+      showEmployeeLogin();
+    }
+
+  } catch (err) {
+    console.error('[POS] Google sign-in error:', err);
+    statusEl.textContent = 'Error: ' + (err.message || 'No se pudo conectar');
+    statusEl.style.color = '#ef4444';
+  }
 }
 
 let pin = '';
@@ -237,8 +468,8 @@ async function submitPin() {
   try {
     const resp = await fetch('/pos/auth/login', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ pin })
+      headers: { 'Content-Type': 'application/json', 'X-Bar-ID': _currentBarId },
+      body: JSON.stringify({ pin, bar_id: _currentBarId })
     });
     const data = await resp.json();
 
@@ -250,14 +481,21 @@ async function submitPin() {
     // Success! Check license before deciding destination
     const emp = data.employee;
     sessionStorage.setItem('pos_employee', JSON.stringify(emp));
-    sessionStorage.setItem('pos_token', emp.token);
+    sessionStorage.setItem('pos_token', data.token);
+    // Store bar_id from server response (or keep existing)
+    if (data.bar_id) {
+      _currentBarId = data.bar_id;
+      sessionStorage.setItem('pos_bar_id', data.bar_id);
+    }
 
     // Check POS license
     const email = emp.email || localStorage.getItem('pos_bar_email') || '';
     let licenseData = { active: false };
     if (email) {
       try {
-        const licResp = await fetch('/api/pos/license?email=' + encodeURIComponent(email));
+        const licResp = await fetch('/api/pos/license?email=' + encodeURIComponent(email), {
+          headers: { 'X-Bar-ID': _currentBarId }
+        });
         const licJson = await licResp.json();
         if (licJson.ok && licJson.active) {
           licenseData = { active: true, plan: licJson.plan || 'POS', email: licJson.email };
@@ -300,7 +538,7 @@ function showGreeting(emp, defaultView, licenseData) {
   // Redirect after 2 seconds based on license status
   setTimeout(() => {
     if (isLicensed) {
-      // Licensed: go to the real POS dashboard
+      // Licensed: go to the real POS dashboard (bar_id is in sessionStorage)
       window.location.href = '/bares-v2.html?role=' + emp.role + '&employee=' + emp.id + '&view=' + defaultView + '&licensed=1';
     } else {
       // No license: go to demo/sales page
@@ -334,6 +572,17 @@ function quickSwitch() {
 }
 
 loadSessions();
+
+// ═══ AUTO-DETECT: if bar_id already set (returning user), skip role selection ═══
+(function autoDetectBar() {
+  const savedBarId = sessionStorage.getItem('pos_bar_id');
+  const savedToken = sessionStorage.getItem('pos_token');
+  if (savedBarId && savedBarId !== 'default' && savedToken) {
+    // Returning user with a bar — go directly to PIN login
+    _currentBarId = savedBarId;
+    showEmployeeLogin();
+  }
+})();
 
 // ═══ LICENSE BADGE CHECK ═══
 (function checkLicenseBadge() {

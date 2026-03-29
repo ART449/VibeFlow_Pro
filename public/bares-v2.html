@@ -1120,7 +1120,7 @@ function showViewDirect(id) {
 
 // ═══ INIT: Fetch Happy Hour status ═══
 document.addEventListener('DOMContentLoaded', () => {
-  fetch('/pos/happy-hour/active')
+  fetch('/pos/happy-hour/active', { headers: { 'X-Bar-ID': getBarId() } })
     .then(r => r.ok ? r.json() : null)
     .then(data => { if (data) { isHappyHour = !!data.is_happy_hour; updateTotals(); } })
     .catch(() => {});
@@ -1145,8 +1145,15 @@ function getToken() {
     '';
 }
 
+function getBarId() {
+  return sessionStorage.getItem('pos_bar_id') || 'default';
+}
+
 function authHeaders() {
-  return { 'Authorization': 'Bearer ' + getToken() };
+  return {
+    'Authorization': 'Bearer ' + getToken(),
+    'X-Bar-ID': getBarId()
+  };
 }
 
 // ── Auth guard ──────────────────────────────────
@@ -1557,13 +1564,23 @@ function wizardFinish() {
   toast('Bar configurado! Bienvenido a ByFlow POS', 'success');
 }
 
-// Load saved bar name on page load
+// Load saved bar name on page load (also fetch from server settings for multi-tenant)
 (function loadBarName() {
   var barName = localStorage.getItem('pos_bar_name');
   if (barName) {
     var barNameEl = document.querySelector('.topbar .bar-name');
     if (barNameEl) barNameEl.textContent = barName;
   }
+  // Also try to load from server settings (multi-tenant bar name)
+  fetch('/pos/settings', { headers: authHeaders() })
+    .then(function(r) { return r.ok ? r.json() : null; })
+    .then(function(data) {
+      if (data && data.ok && data.settings && data.settings.bar_name) {
+        var el = document.querySelector('.topbar .bar-name');
+        if (el) el.textContent = data.settings.bar_name;
+      }
+    })
+    .catch(function() {});
 })();
 </script>
 </body>

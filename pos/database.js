@@ -407,6 +407,59 @@ function runMigrations(db) {
     CREATE INDEX IF NOT EXISTS idx_audit_employee ON audit_log(employee_id);
   `);
 
+  // ═══ MULTI-TENANT MIGRATION: Add bar_id to all tenant-scoped tables ═══
+  // Uses ALTER TABLE ... ADD COLUMN which is safe (SQLite ignores if column exists via try/catch)
+  const tenantTables = [
+    'employees', 'tables', 'categories', 'products', 'orders', 'payments',
+    'covers', 'karaoke_queue', 'happy_hours', 'reservations', 'shifts',
+    'audit_log', 'bar_settings'
+  ];
+  for (const table of tenantTables) {
+    try {
+      db.exec(`ALTER TABLE ${table} ADD COLUMN bar_id TEXT NOT NULL DEFAULT 'default'`);
+      console.log(`[POS-DB] Migration: added bar_id to ${table}`);
+    } catch (_) {
+      // Column already exists — expected for subsequent runs
+    }
+  }
+
+  // bar_id indexes for query performance
+  for (const table of tenantTables) {
+    if (table === 'bar_settings') continue; // bar_settings handled separately below
+    try {
+      db.exec(`CREATE INDEX IF NOT EXISTS idx_${table}_bar_id ON ${table}(bar_id)`);
+    } catch (_) { /* index may already exist */ }
+  }
+
+  // bar_settings migration: change from single-key PK to composite (key, bar_id)
+  // Check if migration is needed by looking at table schema
+  try {
+    const hasNewTable = db.prepare("SELECT name FROM sqlite_master WHERE type='table' AND name='bar_settings_v2'").get();
+    if (!hasNewTable) {
+      // Create new table with composite primary key
+      db.exec(`
+        CREATE TABLE IF NOT EXISTS bar_settings_v2 (
+          key TEXT NOT NULL,
+          value TEXT NOT NULL,
+          bar_id TEXT NOT NULL DEFAULT 'default',
+          PRIMARY KEY (key, bar_id)
+        );
+        INSERT OR IGNORE INTO bar_settings_v2 (key, value, bar_id)
+          SELECT key, value, bar_id FROM bar_settings;
+        DROP TABLE bar_settings;
+        ALTER TABLE bar_settings_v2 RENAME TO bar_settings;
+      `);
+      console.log('[POS-DB] Migration: bar_settings upgraded to composite PK (key, bar_id)');
+    }
+  } catch (_) {
+    // If bar_settings_v2 migration already ran or table structure is already correct
+  }
+
+  // Make tables.number unique per bar (not globally) — drop old unique constraint safely
+  try {
+    db.exec(`CREATE UNIQUE INDEX IF NOT EXISTS idx_tables_number_bar ON tables(number, bar_id)`);
+  } catch (_) { /* already exists */ }
+
   // Seed data if empty
   const empCount = db.prepare('SELECT COUNT(*) as c FROM employees').get().c;
   if (empCount === 0) seedData(db);
@@ -418,18 +471,18 @@ function hashPin(pin) {
 
 function seedData(db) {
   // ═══ EMPLOYEES ═══
-  const insertEmp = db.prepare('INSERT INTO employees (name, pin, role, role_level, area, avatar) VALUES (?,?,?,?,?,?)');
+  const insertEmp = db.prepare('INSERT INTO employees (name, pin, role, role_level, area, avatar, bar_id) VALUES (?,?,?,?,?,?,?)');
   const employees = [
-    ['Arturo Torres', hashPin('000000'), 'dueno', 0, 'todos', ''],
-    ['Ana Garcia', hashPin('1111'), 'gerente', 1, 'todos', ''],
-    ['Luis Mendez', hashPin('2222'), 'capitan', 2, 'salon', ''],
-    ['Juan Perez', hashPin('3333'), 'mesero', 4, 'salon', ''],
-    ['Maria Lopez', hashPin('4444'), 'bartender', 5, 'barra', ''],
-    ['Roberto Diaz', hashPin('5555'), 'cocinero', 6, 'cocina', ''],
-    ['Carlos Ruiz', hashPin('6666'), 'mesero', 4, 'terraza', ''],
-    ['DJ Memo', hashPin('7777'), 'dj', 7, 'karaoke', ''],
-    ['Oscar Torres', hashPin('8888'), 'seguridad', 8, 'entrada', ''],
-    ['Sandra Rios', hashPin('9999'), 'cajero', 3, 'caja', ''],
+    ['Arturo Torres', hashPin('000000'), 'dueno', 0, 'todos', '', 'default'],
+    ['Ana Garcia', hashPin('1111'), 'gerente', 1, 'todos', '', 'default'],
+    ['Luis Mendez', hashPin('2222'), 'capitan', 2, 'salon', '', 'default'],
+    ['Juan Perez', hashPin('3333'), 'mesero', 4, 'salon', '', 'default'],
+    ['Maria Lopez', hashPin('4444'), 'bartender', 5, 'barra', '', 'default'],
+    ['Roberto Diaz', hashPin('5555'), 'cocinero', 6, 'cocina', '', 'default'],
+    ['Carlos Ruiz', hashPin('6666'), 'mesero', 4, 'terraza', '', 'default'],
+    ['DJ Memo', hashPin('7777'), 'dj', 7, 'karaoke', '', 'default'],
+    ['Oscar Torres', hashPin('8888'), 'seguridad', 8, 'entrada', '', 'default'],
+    ['Sandra Rios', hashPin('9999'), 'cajero', 3, 'caja', '', 'default'],
   ];
   const insertMany = db.transaction(() => {
     for (const e of employees) insertEmp.run(...e);
@@ -517,28 +570,28 @@ function seedData(db) {
   })();
 
   // ═══ BAR SETTINGS ═══
-  const insertSetting = db.prepare('INSERT OR REPLACE INTO bar_settings (key, value) VALUES (?,?)');
+  const insertSetting = db.prepare('INSERT OR REPLACE INTO bar_settings (key, value, bar_id) VALUES (?,?,?)');
   db.transaction(() => {
-    insertSetting.run('bar_name', 'La Cantina del Code');
-    insertSetting.run('tax_rate', '0.16');
-    insertSetting.run('tip_suggested', '0.15');
-    insertSetting.run('cover_general', '150');
-    insertSetting.run('cover_vip', '250');
-    insertSetting.run('cover_includes', '2 bebidas nacionales');
-    insertSetting.run('max_capacity', '120');
-    insertSetting.run('cfdi_rfc', '');
-    insertSetting.run('cfdi_razon_social', '');
-    insertSetting.run('whatsapp', '');
-    insertSetting.run('email_contacto', 'contacto@iartlabs.com');
-    insertSetting.run('instagram', '');
-    insertSetting.run('facebook', '');
+    insertSetting.run('bar_name', 'La Cantina del Code', 'default');
+    insertSetting.run('tax_rate', '0.16', 'default');
+    insertSetting.run('tip_suggested', '0.15', 'default');
+    insertSetting.run('cover_general', '150', 'default');
+    insertSetting.run('cover_vip', '250', 'default');
+    insertSetting.run('cover_includes', '2 bebidas nacionales', 'default');
+    insertSetting.run('max_capacity', '120', 'default');
+    insertSetting.run('cfdi_rfc', '', 'default');
+    insertSetting.run('cfdi_razon_social', '', 'default');
+    insertSetting.run('whatsapp', '', 'default');
+    insertSetting.run('email_contacto', 'contacto@iartlabs.com', 'default');
+    insertSetting.run('instagram', '', 'default');
+    insertSetting.run('facebook', '', 'default');
     // API Keys (configurar desde admin o env vars — NUNCA hardcodear)
-    insertSetting.run('youtube_api_key', '');
-    insertSetting.run('jamendo_client_id', '');
+    insertSetting.run('youtube_api_key', '', 'default');
+    insertSetting.run('jamendo_client_id', '', 'default');
     // Freno de gasto API
-    insertSetting.run('api_daily_limit', '500');
-    insertSetting.run('api_calls_today', '0');
-    insertSetting.run('api_limit_action', 'block');
+    insertSetting.run('api_daily_limit', '500', 'default');
+    insertSetting.run('api_calls_today', '0', 'default');
+    insertSetting.run('api_limit_action', 'block', 'default');
   })();
 
   console.log('[POS] Seed data created: 10 employees, 7 categories, 40 products, 17 tables, 3 happy hours');

@@ -214,11 +214,11 @@ function decrypt(encryptedStr) {
  */
 function ensureBarId() {
   const db = getDb();
-  let barId = db.prepare("SELECT value FROM bar_settings WHERE key = 'bar_id'").get();
+  let barId = db.prepare("SELECT value FROM bar_settings WHERE key = 'bar_id' AND bar_id = 'default'").get();
 
   if (!barId) {
     const newId = crypto.randomBytes(8).toString('hex');
-    db.prepare("INSERT OR REPLACE INTO bar_settings (key, value) VALUES ('bar_id', ?)").run(newId);
+    db.prepare("INSERT OR REPLACE INTO bar_settings (key, value, bar_id) VALUES ('bar_id', ?, 'default')").run(newId);
     console.log(`[POS-SECURITY] Bar ID generated: ${newId}`);
     return newId;
   }
@@ -237,11 +237,11 @@ function exportBarData() {
   const data = {
     bar_id: barId,
     exported_at: new Date().toISOString(),
-    settings: db.prepare('SELECT * FROM bar_settings').all(),
-    employees: db.prepare('SELECT id, name, role, role_level, area, active, created_at, last_login FROM employees').all(),
-    tables: db.prepare('SELECT * FROM tables').all(),
-    categories: db.prepare('SELECT * FROM categories').all(),
-    products: db.prepare('SELECT * FROM products').all(),
+    settings: db.prepare("SELECT * FROM bar_settings WHERE bar_id = 'default'").all(),
+    employees: db.prepare("SELECT id, name, role, role_level, area, active, created_at, last_login FROM employees WHERE bar_id = 'default'").all(),
+    tables: db.prepare("SELECT * FROM tables WHERE bar_id = 'default'").all(),
+    categories: db.prepare("SELECT * FROM categories WHERE bar_id = 'default'").all(),
+    products: db.prepare("SELECT * FROM products WHERE bar_id = 'default'").all(),
     orders_count: db.prepare('SELECT COUNT(*) as c FROM orders').get().c,
     payments_count: db.prepare('SELECT COUNT(*) as c FROM payments').get().c,
     total_revenue: db.prepare("SELECT SUM(total) as t FROM orders WHERE status = 'pagada'").get().t || 0
