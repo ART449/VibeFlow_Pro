@@ -10,6 +10,96 @@ Dejar claro que trabajo ya venia construido, que trabajo detecte en progreso, qu
 
 ---
 
+## ACTUALIZACION 3 - Prioridad 2 para mercado (privacidad, terminos, SEO, analytics, iconos)
+
+### Alcance de esta pasada
+
+Esta tercera pasada de Codex fue solo sobre archivos publicos para dejar el proyecto mas listo para publicacion y proveedores externos.
+
+No toque:
+
+- `server.js`
+- `routes/`
+- `pos/`
+- `public/pos.html`
+- `public/bares-v2.html`
+- `public/pos-admin.html`
+
+### Objetivo cumplido
+
+Se cubrio la Prioridad 2 pedida por Arturo:
+
+1. pagina de privacidad en espanol
+2. pagina de terminos en espanol
+3. meta tags SEO/social en `index.html`
+4. snippet de Google Analytics con placeholder
+5. iconos PNG para PWA POS a partir del SVG existente
+
+### Archivos creados
+
+- `public/privacy.html`
+- `public/terms.html`
+- `public/pos-icon-192.png`
+- `public/pos-icon-512.png`
+- `public/icon-192.png`
+- `public/icon-512.png`
+
+### Archivos actualizados
+
+- `public/index.html`
+- `public/manifest.json`
+- `public/pos-manifest.json`
+- `docs/HANDOFF_CODEX_A_CLAUDE_2026-03-29.md`
+
+### Lo que cambie en esta pasada
+
+En `public/index.html`:
+
+- agregue `meta name="description"`
+- agregue `og:title`, `og:description`, `og:type`, `og:image`
+- agregue `twitter:card`, `twitter:title`, `twitter:description`, `twitter:image`
+- inserte `gtag.js` con placeholder `GA_MEASUREMENT_ID`
+- deje `apple-touch-icon` apuntando a `icon-192.png`
+
+En `public/manifest.json`:
+
+- cambie los iconos principales de SVG a PNG donde ya existen (`icon-192.png`, `icon-512.png`)
+- actualice shortcuts para usar PNG tambien
+
+En `public/pos-manifest.json`:
+
+- reemplace referencias SVG por `pos-icon-192.png` y `pos-icon-512.png`
+
+En `public/privacy.html`:
+
+- deje una politica de privacidad en espanol pensada para cubrir requisitos basicos de Stripe, Google Analytics y Google AdSense
+
+En `public/terms.html`:
+
+- deje terminos de servicio en espanol alineados con SaaS / web app / karaoke / pagos
+
+### Nota importante para Claude
+
+- El snippet de Analytics quedo intencionalmente con `GA_MEASUREMENT_ID` como placeholder.
+- Si Claude conecta produccion, solo tiene que sustituir ese valor por el ID real de GA4.
+- No meti integracion server-side nueva ni cambie flujos de Stripe.
+- Los iconos PNG se generaron a partir del arte SVG ya existente para evitar cambiar branding.
+
+### Verificacion que ya hice
+
+- valide que `pos-icon-192.png` mida `192x192`
+- valide que `pos-icon-512.png` mida `512x512`
+- revise el `head` de `public/index.html` para confirmar meta tags y snippet
+- revise que `privacy.html` y `terms.html` existan en `public/`
+
+### Siguiente paso natural para Claude
+
+1. enlazar `privacy.html` y `terms.html` desde footer o pantallas comerciales si Arturo lo pide
+2. sustituir `GA_MEASUREMENT_ID` por el ID real cuando ya exista cuenta de produccion
+3. revisar si tambien quieren pagina de contacto / soporte / cancelaciones para onboarding de pagos
+
+---
+
 ## ACTUALIZACION 2 - Modularizacion Prioridad 1 (index.html -> public/js/modules)
 
 ### Alcance de esta pasada
