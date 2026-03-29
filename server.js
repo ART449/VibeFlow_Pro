@@ -286,7 +286,8 @@ try {
         frameSrc: ["'self'", "https://www.youtube.com", "https://w.soundcloud.com", "https://*.firebaseapp.com", "https://js.stripe.com"],
         connectSrc: ["'self'", "https:", "wss:", "ws:"],
         mediaSrc: ["'self'", "https:", "blob:"],
-        workerSrc: ["'self'", "blob:"]
+        workerSrc: ["'self'", "blob:"],
+        scriptSrcAttr: ["'unsafe-inline'"]
       }
     },
     crossOriginEmbedderPolicy: false
