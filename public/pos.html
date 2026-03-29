@@ -78,6 +78,17 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--t
 @keyframes bounceIn{0%{transform:scale(0);opacity:0;}50%{transform:scale(1.2);}100%{transform:scale(1);opacity:1;}}
 @keyframes fadeIn{from{opacity:0;}to{opacity:1;}}
 
+/* License badge */
+.license-badge{display:inline-flex;align-items:center;gap:5px;padding:4px 12px;border-radius:8px;font-size:10px;font-weight:700;letter-spacing:1px;margin-top:8px;transition:all .3s;}
+.license-badge.active{background:rgba(52,211,153,.1);color:#34d399;border:1px solid rgba(52,211,153,.2);}
+.license-badge.demo{background:rgba(251,191,36,.08);color:#fbbf24;border:1px solid rgba(251,191,36,.2);}
+.license-badge.checking{background:rgba(255,255,255,.04);color:rgba(255,255,255,.3);border:1px solid rgba(255,255,255,.06);}
+.license-badge .lb-dot{width:6px;height:6px;border-radius:50%;}
+.license-badge.active .lb-dot{background:#34d399;box-shadow:0 0 6px rgba(52,211,153,.5);}
+.license-badge.demo .lb-dot{background:#fbbf24;}
+.license-badge.checking .lb-dot{background:rgba(255,255,255,.3);animation:pulse 1.5s infinite;}
+@keyframes pulse{0%,100%{opacity:1;}50%{opacity:.3;}}
+
 /* Quick switch hint */
 .devices-hint{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);font-size:10px;color:rgba(255,255,255,.15);text-align:center;z-index:1;}
 .devices-hint a{color:rgba(255,255,255,.25);text-decoration:none;}
@@ -110,6 +121,7 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--t
     <div class="logo">ByFlow</div>
     <div class="tagline">Punto de Venta + Eatertainment</div>
     <div class="pos-label">POS TERMINAL</div>
+    <div class="license-badge checking" id="license-badge"><span class="lb-dot"></span> Verificando...</div>
   </div>
 
   <div class="pin-display">
@@ -235,8 +247,26 @@ async function submitPin() {
       return;
     }
 
-    // Success! Show greeting
-    showGreeting(data.employee, data.defaultView);
+    // Success! Check license before deciding destination
+    const emp = data.employee;
+    sessionStorage.setItem('pos_employee', JSON.stringify(emp));
+    sessionStorage.setItem('pos_token', emp.token);
+
+    // Check POS license
+    const email = emp.email || localStorage.getItem('pos_bar_email') || '';
+    let licenseData = { active: false };
+    if (email) {
+      try {
+        const licResp = await fetch('/api/pos/license?email=' + encodeURIComponent(email));
+        const licJson = await licResp.json();
+        if (licJson.ok && licJson.active) {
+          licenseData = { active: true, plan: licJson.plan || 'POS', email: licJson.email };
+          sessionStorage.setItem('pos_license', JSON.stringify(licenseData));
+        }
+      } catch (_) { /* license check failed, treat as demo */ }
+    }
+
+    showGreeting(emp, data.defaultView, licenseData);
 
   } catch (err) {
     showError('Error de conexion');
@@ -244,7 +274,7 @@ async function submitPin() {
   }
 }
 
-function showGreeting(emp, defaultView) {
+function showGreeting(emp, defaultView, licenseData) {
   const roleNames = {
     dueno: 'Dueño', gerente: 'Gerente', capitan: 'Capitán',
     cajero: 'Cajero', mesero: 'Mesero', bartender: 'Bartender',
@@ -265,14 +295,17 @@ function showGreeting(emp, defaultView) {
   const greeting = document.getElementById('greeting');
   greeting.classList.add('show');
 
-  // Store session
-  sessionStorage.setItem('pos_employee', JSON.stringify(emp));
-  sessionStorage.setItem('pos_token', emp.token);
+  const isLicensed = licenseData && licenseData.active;
 
-  // Redirect after 2 seconds
+  // Redirect after 2 seconds based on license status
   setTimeout(() => {
-    // For now, go to bares-v2.html (later this will be the actual POS app)
-    window.location.href = '/bares-v2.html?role=' + emp.role + '&employee=' + emp.id + '&view=' + defaultView;
+    if (isLicensed) {
+      // Licensed: go to the real POS dashboard
+      window.location.href = '/bares-v2.html?role=' + emp.role + '&employee=' + emp.id + '&view=' + defaultView + '&licensed=1';
+    } else {
+      // No license: go to demo/sales page
+      window.location.href = '/pos-demo.html?role=' + emp.role + '&employee=' + emp.id;
+    }
   }, 2000);
 }
 
@@ -301,6 +334,32 @@ function quickSwitch() {
 }
 
 loadSessions();
+
+// ═══ LICENSE BADGE CHECK ═══
+(function checkLicenseBadge() {
+  const badge = document.getElementById('license-badge');
+  const email = localStorage.getItem('pos_bar_email') || '';
+  if (!email) {
+    badge.className = 'license-badge demo';
+    badge.innerHTML = '<span class="lb-dot"></span> Demo';
+    return;
+  }
+  fetch('/api/pos/license?email=' + encodeURIComponent(email))
+    .then(r => r.ok ? r.json() : null)
+    .then(data => {
+      if (data && data.ok && data.active) {
+        badge.className = 'license-badge active';
+        badge.innerHTML = '<span class="lb-dot"></span> Licencia Activa';
+      } else {
+        badge.className = 'license-badge demo';
+        badge.innerHTML = '<span class="lb-dot"></span> Demo';
+      }
+    })
+    .catch(() => {
+      badge.className = 'license-badge demo';
+      badge.innerHTML = '<span class="lb-dot"></span> Demo';
+    });
+})();
 
 // ═══ PWA: Service Worker + Install Prompt ═══
 if ('serviceWorker' in navigator) {

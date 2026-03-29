@@ -346,6 +346,14 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--t
     <div class="sb-stat"><div class="ss-l">Canciones</div><div class="ss-v" style="color:var(--pink);">47</div></div>
     <div class="sb-stat"><div class="ss-l">Entradas</div><div class="ss-v" style="color:var(--cyan);">43</div></div>
   </div>
+  <!-- License footer -->
+  <div class="sb-license" id="sb-license" style="display:none;margin-top:auto;padding:8px;border-top:1px solid var(--border);">
+    <div style="display:flex;align-items:center;gap:5px;padding:6px 8px;border-radius:8px;background:rgba(52,211,153,.06);border:1px solid rgba(52,211,153,.12);font-size:10px;color:var(--green);font-weight:600;">
+      <span style="font-size:12px;">&#x2705;</span>
+      <span id="sb-license-plan">Licencia</span>
+    </div>
+    <a href="/pos-admin.html" id="sb-setup-link" style="display:none;margin-top:6px;padding:5px 8px;border-radius:6px;background:rgba(255,138,0,.06);border:1px solid rgba(255,138,0,.12);font-size:9px;color:var(--orange);text-decoration:none;text-align:center;font-weight:600;cursor:pointer;">&#x2699;&#xFE0F; Primera vez? Configura tu bar</a>
+  </div>
 </div>
 
 <!-- VIEW: MESAS -->
@@ -1311,5 +1319,252 @@ document.addEventListener('DOMContentLoaded', function() {
 
 <!-- Tour Start Button -->
 <button class="tour-start" onclick="startTour()">&#x1F3AF; Tour Guiado del Sistema</button>
+
+<!-- ═══ SETUP WIZARD (first-time licensed users) ═══ -->
+<div class="setup-wizard" id="setup-wizard">
+  <div class="sw-backdrop"></div>
+  <div class="sw-card">
+    <div class="sw-header">
+      <div style="font-family:'Great Vibes',cursive;font-size:2rem;background:linear-gradient(135deg,var(--orange),var(--amber));-webkit-background-clip:text;-webkit-text-fill-color:transparent;">ByFlow</div>
+      <div style="font-size:12px;color:var(--sub);margin-top:2px;">Configura tu bar en 3 pasos</div>
+      <div class="sw-steps" id="sw-steps">
+        <div class="sw-step active" data-step="1"><span>1</span></div>
+        <div class="sw-line"></div>
+        <div class="sw-step" data-step="2"><span>2</span></div>
+        <div class="sw-line"></div>
+        <div class="sw-step" data-step="3"><span>3</span></div>
+      </div>
+    </div>
+    <!-- Step 1 -->
+    <div class="sw-body active" id="sw-step-1">
+      <div style="font-size:28px;text-align:center;margin-bottom:8px;">&#x1F37B;</div>
+      <h3 style="font-size:16px;font-weight:800;text-align:center;margin-bottom:4px;">Tu Bar</h3>
+      <p style="font-size:11px;color:var(--sub);text-align:center;margin-bottom:16px;">Como se llama tu negocio?</p>
+      <label class="sw-label">Nombre del bar</label>
+      <input class="sw-input" id="sw-bar-name" placeholder="Ej: La Cantina del Code" maxlength="60">
+      <label class="sw-label" style="margin-top:10px;">Direccion</label>
+      <input class="sw-input" id="sw-bar-address" placeholder="Ej: Av. Reforma 123, CDMX" maxlength="120">
+      <button class="sw-btn primary" onclick="wizardNext(2)">Siguiente &#x2192;</button>
+    </div>
+    <!-- Step 2 -->
+    <div class="sw-body" id="sw-step-2">
+      <div style="font-size:28px;text-align:center;margin-bottom:8px;">&#x1F4E6;</div>
+      <h3 style="font-size:16px;font-weight:800;text-align:center;margin-bottom:4px;">Tus Productos</h3>
+      <p style="font-size:11px;color:var(--sub);text-align:center;margin-bottom:16px;">Agrega cervezas, comida, cocktails y mas desde el panel de admin.</p>
+      <a href="/pos-admin.html#products" class="sw-link-card">
+        <span style="font-size:18px;">&#x1F4CB;</span>
+        <div>
+          <div style="font-size:12px;font-weight:700;">Agregar Productos</div>
+          <div style="font-size:10px;color:var(--sub);">Nombre, precio, categoria, icono</div>
+        </div>
+        <span style="margin-left:auto;color:var(--orange);">&#x2192;</span>
+      </a>
+      <p style="font-size:10px;color:var(--sub);text-align:center;margin-top:10px;">Puedes hacerlo despues desde Admin &gt; Productos</p>
+      <div style="display:flex;gap:8px;margin-top:12px;">
+        <button class="sw-btn secondary" onclick="wizardBack(1)">&#x2190; Atras</button>
+        <button class="sw-btn primary" onclick="wizardNext(3)">Siguiente &#x2192;</button>
+      </div>
+    </div>
+    <!-- Step 3 -->
+    <div class="sw-body" id="sw-step-3">
+      <div style="font-size:28px;text-align:center;margin-bottom:8px;">&#x1F465;</div>
+      <h3 style="font-size:16px;font-weight:800;text-align:center;margin-bottom:4px;">Tu Equipo</h3>
+      <p style="font-size:11px;color:var(--sub);text-align:center;margin-bottom:16px;">Registra meseros, cajeros y bartenders con su PIN de acceso.</p>
+      <a href="/pos-admin.html#employees" class="sw-link-card">
+        <span style="font-size:18px;">&#x1F464;</span>
+        <div>
+          <div style="font-size:12px;font-weight:700;">Agregar Empleados</div>
+          <div style="font-size:10px;color:var(--sub);">Nombre, rol, PIN, area asignada</div>
+        </div>
+        <span style="margin-left:auto;color:var(--orange);">&#x2192;</span>
+      </a>
+      <p style="font-size:10px;color:var(--sub);text-align:center;margin-top:10px;">Tambien puedes agregar equipo despues</p>
+      <div style="display:flex;gap:8px;margin-top:12px;">
+        <button class="sw-btn secondary" onclick="wizardBack(2)">&#x2190; Atras</button>
+        <button class="sw-btn primary" onclick="wizardFinish()">&#x2705; Listo, empezar!</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+/* ═══ SETUP WIZARD ═══ */
+.setup-wizard{display:none;position:fixed;inset:0;z-index:600;align-items:center;justify-content:center;}
+.setup-wizard.open{display:flex;}
+.sw-backdrop{position:absolute;inset:0;background:rgba(10,10,15,.92);backdrop-filter:blur(20px);}
+.sw-card{position:relative;z-index:1;width:380px;max-width:92vw;background:rgba(20,20,30,.98);border:1px solid var(--border);border-radius:20px;overflow:hidden;box-shadow:0 30px 80px rgba(0,0,0,.5);}
+.sw-header{padding:20px 24px 16px;text-align:center;border-bottom:1px solid var(--border);}
+.sw-steps{display:flex;align-items:center;justify-content:center;gap:0;margin-top:14px;}
+.sw-step{width:28px;height:28px;border-radius:50%;background:var(--surface);border:2px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:var(--sub);transition:all .3s;}
+.sw-step.active{background:rgba(255,138,0,.15);border-color:var(--orange);color:var(--orange);}
+.sw-step.done{background:rgba(52,211,153,.15);border-color:var(--green);color:var(--green);}
+.sw-line{width:30px;height:2px;background:var(--border);}
+.sw-body{display:none;padding:20px 24px 24px;}
+.sw-body.active{display:block;animation:fadeIn .3s ease;}
+.sw-label{display:block;font-size:10px;font-weight:600;color:var(--sub);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;}
+.sw-input{width:100%;padding:10px 12px;border-radius:10px;background:var(--surface);border:1px solid var(--border);color:var(--text);font-size:13px;font-family:inherit;transition:border-color .2s;}
+.sw-input:focus{outline:none;border-color:rgba(255,138,0,.4);box-shadow:0 0 0 3px rgba(255,138,0,.08);}
+.sw-btn{flex:1;padding:10px 16px;border-radius:10px;border:none;font-size:12px;font-weight:700;cursor:pointer;transition:all .15s;font-family:inherit;}
+.sw-btn:hover{transform:translateY(-1px);}
+.sw-btn.primary{background:linear-gradient(135deg,var(--orange2),var(--orange));color:#fff;}
+.sw-btn.secondary{background:var(--surface);color:var(--text);border:1px solid var(--border);}
+.sw-link-card{display:flex;align-items:center;gap:10px;padding:12px 14px;border-radius:12px;background:var(--surface);border:1px solid var(--border);text-decoration:none;color:var(--text);transition:all .2s;}
+.sw-link-card:hover{background:var(--surface2);border-color:rgba(255,138,0,.2);}
+
+/* ═══ CLEAN STATE (no demo data) ═══ */
+.clean-empty{text-align:center;padding:40px 20px;color:var(--sub);}
+.clean-empty .ce-icon{font-size:48px;margin-bottom:12px;opacity:.5;}
+.clean-empty .ce-title{font-size:14px;font-weight:700;color:var(--text);margin-bottom:4px;}
+.clean-empty .ce-sub{font-size:11px;max-width:300px;margin:0 auto;}
+</style>
+
+<script>
+// ═══ LICENSE-AWARE INIT ═══
+(function initLicenseState() {
+  var params = new URLSearchParams(location.search);
+  var isLicensed = params.get('licensed') === '1';
+  var licenseData = null;
+
+  try { licenseData = JSON.parse(sessionStorage.getItem('pos_license')); } catch(_) {}
+
+  if (isLicensed || (licenseData && licenseData.active)) {
+    // Show license badge in sidebar
+    var sbLicense = document.getElementById('sb-license');
+    if (sbLicense) {
+      sbLicense.style.display = 'block';
+      var planName = (licenseData && licenseData.plan) || 'POS';
+      document.getElementById('sb-license-plan').textContent = 'Licencia: ' + planName;
+    }
+
+    // Show setup link if NOT yet configured
+    var setupComplete = localStorage.getItem('pos_setup_complete');
+    if (!setupComplete) {
+      var setupLink = document.getElementById('sb-setup-link');
+      if (setupLink) setupLink.style.display = 'block';
+
+      // Show welcome wizard for first-time users
+      document.getElementById('setup-wizard').classList.add('open');
+    }
+
+    // Clean state: replace demo data with empty state when no real data loaded
+    cleanDemoState();
+
+    // Hide demo banners / "Proximamente" toasts by overriding the nav items
+    overrideProximamente();
+  }
+})();
+
+function cleanDemoState() {
+  // Only clean if there's no real data (no API override happened yet)
+  // We mark it so the API data fetch can skip cleaning
+  window._posLicensedClean = true;
+
+  // Replace demo promo banner text
+  var promoTitle = document.querySelector('.promo .p-title');
+  if (promoTitle && promoTitle.textContent.indexOf('Happy Hour') !== -1) {
+    // Keep the promo structure but make it configurable
+    var promoSub = document.querySelector('.promo .p-sub');
+    if (promoSub) promoSub.textContent = 'Configura tus promociones desde Admin';
+  }
+
+  // Replace hardcoded demo employee data with clean state
+  var empGrid = document.querySelector('#v-empleados .emp-grid');
+  if (empGrid) {
+    empGrid.innerHTML =
+      '<div class="clean-empty" style="grid-column:1/-1;">' +
+      '<div class="ce-icon">&#x1F465;</div>' +
+      '<div class="ce-title">Sin empleados registrados</div>' +
+      '<div class="ce-sub">Agrega tu equipo desde Admin para que puedan entrar con su PIN</div>' +
+      '<a href="/pos-admin.html#employees" style="display:inline-block;margin-top:12px;padding:8px 16px;border-radius:8px;background:linear-gradient(135deg,var(--orange2),var(--orange));color:#fff;text-decoration:none;font-size:11px;font-weight:700;">+ Agregar Empleados</a>' +
+      '</div>';
+  }
+
+  // Replace hardcoded sidebar stats with zeros for clean start
+  var sidebarStats = document.querySelectorAll('.sb-stat .ss-v');
+  sidebarStats.forEach(function(el) {
+    if (el.textContent.indexOf('$') === 0) el.textContent = '$0';
+    else if (!isNaN(parseInt(el.textContent))) el.textContent = '0';
+  });
+  var sidebarChanges = document.querySelectorAll('.sb-stat .ss-c');
+  sidebarChanges.forEach(function(el) { el.textContent = '—'; });
+}
+
+function overrideProximamente() {
+  // Remove "Proximamente" toast calls — replace with actual navigation
+  var navItems = document.querySelectorAll('.nav[onclick*="Proximamente"]');
+  navItems.forEach(function(nav) {
+    // Extract the view name from the toast message
+    var onclick = nav.getAttribute('onclick') || '';
+    nav.removeAttribute('onclick');
+    nav.style.cursor = 'pointer';
+    nav.addEventListener('click', function() {
+      toast('Modulo disponible pronto con tu licencia activa', 'info');
+    });
+  });
+}
+
+// ═══ SETUP WIZARD LOGIC ═══
+function wizardNext(step) {
+  // Validate step 1
+  if (step === 2) {
+    var barName = document.getElementById('sw-bar-name').value.trim();
+    if (!barName) {
+      document.getElementById('sw-bar-name').style.borderColor = 'var(--red)';
+      document.getElementById('sw-bar-name').focus();
+      return;
+    }
+    localStorage.setItem('pos_bar_name', barName);
+    localStorage.setItem('pos_bar_address', document.getElementById('sw-bar-address').value.trim());
+    // Update topbar with actual bar name
+    var barNameEl = document.querySelector('.topbar .bar-name');
+    if (barNameEl) barNameEl.textContent = barName;
+  }
+
+  // Update step indicators
+  var steps = document.querySelectorAll('.sw-step');
+  steps.forEach(function(s) {
+    var sNum = parseInt(s.getAttribute('data-step'));
+    if (sNum < step) { s.className = 'sw-step done'; s.innerHTML = '<span>&#x2713;</span>'; }
+    else if (sNum === step) { s.className = 'sw-step active'; }
+    else { s.className = 'sw-step'; }
+  });
+
+  // Show correct body
+  document.querySelectorAll('.sw-body').forEach(function(b) { b.classList.remove('active'); });
+  var target = document.getElementById('sw-step-' + step);
+  if (target) target.classList.add('active');
+}
+
+function wizardBack(step) {
+  wizardNext(step);
+}
+
+function wizardFinish() {
+  localStorage.setItem('pos_setup_complete', '1');
+  document.getElementById('setup-wizard').classList.remove('open');
+
+  // Hide the setup link in sidebar
+  var setupLink = document.getElementById('sb-setup-link');
+  if (setupLink) setupLink.style.display = 'none';
+
+  // Update bar name in topbar if set
+  var barName = localStorage.getItem('pos_bar_name');
+  if (barName) {
+    var barNameEl = document.querySelector('.topbar .bar-name');
+    if (barNameEl) barNameEl.textContent = barName;
+  }
+
+  toast('Bar configurado! Bienvenido a ByFlow POS', 'success');
+}
+
+// Load saved bar name on page load
+(function loadBarName() {
+  var barName = localStorage.getItem('pos_bar_name');
+  if (barName) {
+    var barNameEl = document.querySelector('.topbar .bar-name');
+    if (barNameEl) barNameEl.textContent = barName;
+  }
+})();
+</script>
 </body>
 </html>
