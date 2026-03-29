@@ -431,7 +431,11 @@ function getRoom(roomId) {
   if (!roomId) return null;
   if (!rooms[roomId]) {
     rooms[roomId] = {
-      teleprompter: { lyrics: '', currentWord: -1, scrollSpeed: 1, isPlaying: false },
+      teleprompter: {
+        lyrics: '', currentWord: -1, currentTime: 0,
+        scrollSpeed: 1, isPlaying: false,
+        singer: '', song: '', lastUpdate: 0
+      },
       lastActive: Date.now()
     };
   }
@@ -517,24 +521,45 @@ io.on('connection', (socket) => {
     canciones: state.canciones
   });
 
+  // ── Sync por tiempo real (Fase 4 karaoke rework) ──
   socket.on('tp_scroll', (data) => {
     const word = typeof data.currentWord === 'number' ? data.currentWord : undefined;
     const playing = typeof data.isPlaying === 'boolean' ? data.isPlaying : undefined;
+    const currentTime = typeof data.currentTime === 'number' ? data.currentTime : undefined;
     if (myRoom) {
       const room = getRoom(myRoom);
       if (word !== undefined) room.teleprompter.currentWord = word;
       if (playing !== undefined) room.teleprompter.isPlaying = playing;
+      if (currentTime !== undefined) room.teleprompter.currentTime = currentTime;
+      room.teleprompter.lastUpdate = Date.now();
       socket.to(myRoom).emit('tp_update', room.teleprompter);
     }
   });
 
   socket.on('tp_lyrics', (data) => {
     const lyrics = typeof data.lyrics === 'string' ? data.lyrics.slice(0, 50000) : '';
+    const singer = typeof data.singer === 'string' ? data.singer.slice(0, 100) : '';
+    const song = typeof data.song === 'string' ? data.song.slice(0, 200) : '';
     if (myRoom) {
       const room = getRoom(myRoom);
       room.teleprompter.lyrics = lyrics;
       room.teleprompter.currentWord = -1;
+      room.teleprompter.currentTime = 0;
+      if (singer) room.teleprompter.singer = singer;
+      if (song) room.teleprompter.song = song;
       io.to(myRoom).emit('tp_update', room.teleprompter);
+    }
+  });
+
+  // Snapshot request — remoto pide estado actual al reconectar
+  socket.on('state:request', () => {
+    if (myRoom) {
+      const room = getRoom(myRoom);
+      socket.emit('state:snapshot', {
+        teleprompter: room.teleprompter,
+        cola: state.cola,
+        roomId: myRoom
+      });
     }
   });
 
