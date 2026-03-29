@@ -5389,10 +5389,15 @@ let localAudio = null;
 function openLocalAudio() { return window.VibeFlow.modules.player.openLocalAudio.apply(this, arguments); }
 function handleLocalAudio() { return window.VibeFlow.modules.player.handleLocalAudio.apply(this, arguments); }
 
+function _forceCloseWelcome() {
+  const ov = document.getElementById('welcome-overlay');
+  if (ov) { ov.style.opacity = '0'; ov.style.transition = 'opacity .3s'; setTimeout(() => ov.classList.add('hidden'), 300); }
+}
 function welcomeSelect(mode) {
   // Remote mode no necesita login
   if (mode === 'remote') {
-    dismissWelcome();
+    _forceCloseWelcome();
+    if (typeof dismissWelcome === 'function') dismissWelcome();
     setMode(mode);
     return;
   }
@@ -5425,7 +5430,7 @@ function welcomeSelect(mode) {
     card.appendChild(ripple);
     setTimeout(() => ripple.remove(), 500);
   }
-  setTimeout(() => { dismissWelcome(); setMode(mode); }, 150);
+  setTimeout(() => { _forceCloseWelcome(); try { dismissWelcome(); } catch(e) {} setMode(mode); }, 150);
 }
 
 // â”€â”€ Firebase Auth â€” Login real con Google/Email â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
@@ -5590,6 +5595,13 @@ function updateTutorial() {
 if (!localStorage.getItem('byflow_tutorial_done')) {
   setTimeout(openTutorial, 1500);
 }
+// FAILSAFE: si el welcome overlay sigue visible despues de 10s, cerrarlo
+setTimeout(function() {
+  var ov = document.getElementById('welcome-overlay');
+  if (ov && !ov.classList.contains('hidden') && ov.style.display !== 'none') {
+    ov.classList.add('hidden');
+  }
+}, 10000);
 
 // â”€â”€ Estudio de Beats functions â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 let _estBeatPlayer = null;
