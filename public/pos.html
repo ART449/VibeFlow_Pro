@@ -537,15 +537,9 @@ function showGreeting(emp, defaultView, licenseData) {
 
   const isLicensed = licenseData && licenseData.active;
 
-  // Redirect after 2 seconds based on license status
+  // Redirect after 2 seconds — PIN valido = siempre al POS real
   setTimeout(() => {
-    if (isLicensed) {
-      // Licensed: go to the real POS dashboard (bar_id is in sessionStorage)
-      window.location.href = '/bares-v2.html?role=' + emp.role + '&employee=' + emp.id + '&view=' + defaultView + '&licensed=1';
-    } else {
-      // No license: go to demo/sales page
-      window.location.href = '/pos-demo.html?role=' + emp.role + '&employee=' + emp.id;
-    }
+    window.location.href = '/bares-v2.html?role=' + emp.role + '&employee=' + emp.id + '&view=' + defaultView + (isLicensed ? '&licensed=1' : '');
   }, 2000);
 }
 
