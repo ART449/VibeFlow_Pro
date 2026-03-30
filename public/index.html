@@ -4305,17 +4305,6 @@ function baresAddOrder() {
   baresUpdateStats();
   showToast('\u2705 Orden agregada - Mesa ' + mesa);
 }
-/* CLEANUP-BLOCK-START
-  void(0 &&'âš ï¸ Completa mesa y orden'); return; }
-  baresState.orders.unshift({ id: Date.now(), mesa, text, time: new Date() });
-  mesaEl.value = '';
-  textEl.value = '';
-  baresRenderOrders();
-  baresUpdateStats();
-  showToast('“ Orden agregada - Mesa ' + mesa);
-}
-
-CLEANUP-BLOCK-END */
 function baresDeleteOrder(id) {
   baresState.orders = baresState.orders.filter(o => o.id !== id);
   baresRenderOrders();
@@ -4971,13 +4960,7 @@ async function loadSong(id) {
   }
   closeCatalog();
 }
-/* EMOJI-FIX-REMOVE:'
-    showToast('âš ï¸ "' + song.titulo + '" no tiene letra');
-  }
-  closeCatalog();
-}
 
-EMOJI-FIX-END */
 async function deleteSong(id) {
   try {
     await fetch('/api/canciones/' + id, { method:'DELETE' });
@@ -4986,12 +4969,7 @@ async function deleteSong(id) {
     showToast('\u{1F5D1}\uFE0F Cancion eliminada');
   } catch {}
 }
-/* EMOJI-FIX2:'
-    showToast('—‘ï¸ Canción eliminada');
-  } catch {}
-}
 
-EMOJI-FIX2-END */
 // ── Now Singing Banner ────────────────────────────────────────────────
 function updateNowSinging() { return window.VibeFlow.modules.queue.updateNowSinging.apply(this, arguments); }
 function siguienteCantante() { return window.VibeFlow.modules.queue.siguienteCantante.apply(this, arguments); }
@@ -5744,16 +5722,7 @@ function estToggleLike(event, videoId, title, channel, thumb) {
     showToast('\u2764\uFE0F Beat guardado en favoritos');
   }
 }
-/* EMOJI-FIX3:'’” Beat removido de favoritos');
-  } else {
-    const newBeat = { videoId, title, channel, thumb, likedAt: Date.now() };
-    _estSaveLikedBeats([newBeat, ...beats]);
-    btn.classList.add('liked');
-    btn.title = 'Quitar de favoritos';
-    showToast('â¤ï¸ Beat guardado en favoritos');
-  }
-}
-EMOJI-FIX3-END */
+
 function estShowSearch() {
   document.getElementById('est-tab-search').classList.add('active');
   document.getElementById('est-tab-favs').classList.remove('active');
@@ -5768,11 +5737,7 @@ function estShowFavs() {
     container.innerHTML = '<div class="est-empty">No tienes beats favoritos aun. Dale &#x2764;&#xFE0F; a un beat para guardarlo.</div>';
     return;
   }
-  /* EMOJI-FIX4: replaced broken emoji line
-  container.innerHTML = old_line_with_broken_Dale â¤ï¸ a un beat para guardarlo.</div>';
-    return;
-  }
-  EMOJI-FIX4-END */
+  
   container.innerHTML = '';
   beats.forEach(b => {
     const div = document.createElement('div');
@@ -5789,16 +5754,7 @@ function estShowFavs() {
     container.appendChild(div);
   });
 }
-/* EMOJI-FIX5: removed broken channel/heart template
-        <div class="est-result-channel-OLD">™ ${b.channel}</div>
-      </div>
-      <button class="est-like-btn liked" onclick="estToggleLikeFav(event,'${b.videoId}')" title="Quitar de favoritos">â¤ï¸</button>
-      <button class="est-result-use" onclick="estSelectBeat('${b.videoId}',\`${b.title.replace(/`/g,"'")}\`,'${b.channel}')">Usar Beat</button>
-    `;
-    container.appendChild(div);
-  });
-}
-EMOJI-FIX5-END */
+
 function estToggleLikeFav(event, videoId) {
   event.stopPropagation();
   const beats = _estGetLikedBeats();
@@ -5807,12 +5763,7 @@ function estToggleLikeFav(event, videoId) {
   showToast('\u{1F494} Beat removido de favoritos');
   estShowFavs();
 }
-/* EMOJI-FIX6:'
-  showToast('’” Beat removido de favoritos');
-  estShowFavs(); // refresh list
-}
 
-EMOJI-FIX6-END */
 function estGenreSearch(btn, query) {
   document.querySelectorAll('.est-genre-btn').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
