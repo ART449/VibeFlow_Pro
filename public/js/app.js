@@ -27,10 +27,16 @@
       const kr = await fetch('/api/config/keys');
       const kd = await kr.json();
       if (kd.youtube && !localStorage.getItem('yt_api_key')) localStorage.setItem('yt_api_key', kd.youtube);
-      if (kd.jamendo && !localStorage.getItem('jamendo_client_id')) localStorage.setItem('jamendo_client_id', kd.jamendo);
+      if (kd.jamendo && !localStorage.getItem('byflow_jamendo_id')) localStorage.setItem('byflow_jamendo_id', kd.jamendo);
       if (kd.youtube) ytApiKey = kd.youtube;
-      // Configure GA4 dynamically
+      // Configure GA4 dynamically — load script + config
       if (kd.ga && kd.ga !== 'GA_MEASUREMENT_ID' && typeof gtag === 'function') {
+        if (!document.querySelector('script[src*="googletagmanager"]')) {
+          var gaScript = document.createElement('script');
+          gaScript.async = true;
+          gaScript.src = 'https://www.googletagmanager.com/gtag/js?id=' + kd.ga;
+          document.head.appendChild(gaScript);
+        }
         gtag('config', kd.ga);
       }
     } catch (e) {}

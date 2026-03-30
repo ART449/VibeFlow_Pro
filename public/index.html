@@ -29,12 +29,11 @@
 <meta name="apple-mobile-web-app-title" content="ByFlow">
 <link rel="apple-touch-icon" href="/icon-192.png">
 <link rel="manifest" href="/manifest.json">
-<script async src="https://www.googletagmanager.com/gtag/js?id=GA_MEASUREMENT_ID"></script>
+<!-- GA4: loaded dynamically from /api/config/keys if configured -->
 <script>
   window.dataLayer = window.dataLayer || [];
   function gtag(){dataLayer.push(arguments);}
   gtag('js', new Date());
-  gtag('config', 'GA_MEASUREMENT_ID');
 </script>
 <!-- Firebase Auth SDK (CDN) -->
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
@@ -4124,6 +4123,8 @@ function isOwnerProfile() {
 function isPremium(feature) {
   // El dueño ArT-AtR siempre tiene acceso completo
   if (isOwnerProfile()) return true;
+  // Without a specific feature, just check if license is active with any features
+  if (!feature) return licenseState.activated && licenseState.features.length > 0;
   return licenseState.activated && licenseState.features.includes(feature);
 }
 
@@ -5900,7 +5901,7 @@ async function estSaveLetter() {
     if (typeof showToast === 'function') showToast('Escribe un titulo y tu letra', 'warning');
     return;
   }
-  const usuario = localStorage.getItem('byflow_user_alias') || 'Anonimo';
+  const usuario = localStorage.getItem('byflow_user_alias') || localStorage.getItem('byflow_user_name') || 'Anonimo';
   const payload = {
     titulo,
     letra,
@@ -6312,8 +6313,8 @@ function vpRefresh() {
         return `<div class="vp-cola-item${singing ? ' singing' : ''}" onclick="activarCantante('${c.id}')">
           <div class="vp-cola-num">${i + 1}</div>
           <div class="vp-cola-info">
-            <div class="vp-cola-name">${c.cantante || 'Sin nombre'}</div>
-            <div class="vp-cola-song">${c.cancion || 'Sin cancion'}</div>
+            <div class="vp-cola-name">${escHtml(c.cantante || 'Sin nombre')}</div>
+            <div class="vp-cola-song">${escHtml(c.cancion || 'Sin cancion')}</div>
           </div>
         </div>`;
       }).join('');
@@ -6372,17 +6373,18 @@ async function vpSearch() {
   if (!q) return;
   results.innerHTML = '<div style="padding:20px;text-align:center;color:var(--sub);font-size:11px;">Buscando...</div>';
   try {
-    const ytKey = localStorage.getItem('byflow_yt_api_key') || '';
+    const ytKey = localStorage.getItem('byflow_yt_api_key') || localStorage.getItem('yt_api_key') || '';
     const res = await fetch(`/api/youtube/search?q=${encodeURIComponent(q)}&key=${encodeURIComponent(ytKey)}`);
     const data = await res.json();
     if (!data.error && data.items && data.items.length > 0) {
       results.innerHTML = data.items.map(item => {
         const vid = item.id.videoId || item.id;
-        const title = item.snippet.title.replace(/&amp;/g,'&').replace(/&quot;/g,'"').replace(/&#39;/g,"'");
+        const rawTitle = item.snippet.title.replace(/&amp;/g,'&').replace(/&quot;/g,'"').replace(/&#39;/g,"'");
+        const safeTitle = escHtml(rawTitle);
         const thumb = item.snippet.thumbnails?.default?.url || '';
-        return `<div class="vp-result-item" onclick="vpPlay('${vid}','${title.replace(/'/g,"\\'")}')">
-          <img class="vp-result-thumb" src="${thumb}" alt="" loading="lazy">
-          <div class="vp-result-title" title="${title}">${title}</div>
+        return `<div class="vp-result-item" onclick="vpPlay('${vid}','${rawTitle.replace(/'/g,"\\'").replace(/"/g,'&quot;')}')">
+          <img class="vp-result-thumb" src="${escHtml(thumb)}" alt="" loading="lazy">
+          <div class="vp-result-title" title="${safeTitle}">${safeTitle}</div>
           <button class="vp-result-play">&#9654;</button>
         </div>`;
       }).join('');

@@ -4,6 +4,10 @@
   VF.modules = VF.modules || {};
   const youtube = VF.modules.youtube = {};
 
+  // YouTube search cache constants
+  var YT_CACHE_PREFIX = 'bf_ytc_';
+  var YT_CACHE_TTL = 1800000; // 30 minutes
+
   function bridge() {
     return VF.modules.twinBridge;
   }
@@ -538,7 +542,7 @@
     const query = inp?.value.trim();
     if (!query) return;
     const res = document.getElementById('jm-results');
-    const clientId = JAMENDO_CLIENT_ID || localStorage.getItem('byflow_jamendo_id');
+    const clientId = localStorage.getItem('byflow_jamendo_id') || '';
     if (!clientId) {
       res.innerHTML = `<div style="padding:12px;text-align:center;font-size:.8rem;">
         <div style="color:var(--sub);margin-bottom:8px;">Necesitas un Client ID gratuito de Jamendo</div>

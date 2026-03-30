@@ -97,8 +97,8 @@
 
   settings.toggleAutoQueue = function(btn) {
     btn.classList.toggle('on');
-    _autoQueueEnabled = btn.classList.contains('on');
-    localStorage.setItem('byflow_autoqueue', _autoQueueEnabled ? '1' : '0');
+    window._autoQueueEnabled = btn.classList.contains('on');
+    localStorage.setItem('byflow_autoqueue', window._autoQueueEnabled ? '1' : '0');
   };
 
   settings.loadSettingsState = function() {

@@ -891,35 +891,60 @@ function selT(n, el) {
 }
 
 // ═══ ORDER MANAGEMENT ═══
-let orderTotal = 1570;
-let orderCount = 6;
+let orderTotal = 0;
+let orderCount = 0;
 let isHappyHour = false;
 
-function addI(name, price, el) {
-  // Find the order list — prefer the mobile overlay if open, else the main POS
-  const overlayList = document.getElementById('order-list-overlay');
-  const mainList = document.getElementById('order-list');
-  const list = (overlayList && document.getElementById('pos-overlay').classList.contains('open')) ? overlayList : mainList;
-  const line = document.createElement('div');
-  line.className = 'ol';
-  line.style.animation = 'fadeIn .3s';
-  line.innerHTML = '<span class="ol-q">1</span><span class="ol-n">' + escapeHtml(name) + '</span><span class="ol-p">$' + price + '</span><span class="ol-x" onclick="removeItem(this,' + price + ')">&#x2715;</span>';
-  list.appendChild(line);
-  list.scrollTop = list.scrollHeight;
-  orderTotal += price;
-  orderCount++;
-  updateTotals();
-  // Flash feedback
-  const piEl = el || (typeof event !== 'undefined' && event && event.currentTarget);
+function addI(name, price, el, productId) {
+  if (!_cobrarState.orderId) {
+    toast('Selecciona una mesa primero', 'warn');
+    return;
+  }
+  // Flash feedback immediately for responsiveness
+  var piEl = el || (typeof event !== 'undefined' && event && event.currentTarget);
   if (piEl) {
     piEl.style.background = 'rgba(255,138,0,.15)';
     piEl.style.transform = 'scale(.94)';
-    setTimeout(() => {
+    setTimeout(function() {
       piEl.style.background = '';
       piEl.style.transform = '';
     }, 200);
   }
-  toast(name + ' agregado — $' + price, 'success');
+
+  // Save item to DB
+  fetch('/pos/orders/' + _cobrarState.orderId + '/items', {
+    method: 'POST',
+    headers: Object.assign({ 'Content-Type': 'application/json' }, authHeaders()),
+    body: JSON.stringify({ product_id: productId, quantity: 1 })
+  })
+    .then(function(r) { return r.ok ? r.json() : Promise.reject(r.status); })
+    .then(function(data) {
+      // Add DOM element on success
+      var overlayList = document.getElementById('order-list-overlay');
+      var mainList = document.getElementById('order-list');
+      var posOverlay = document.getElementById('pos-overlay');
+      var list = (overlayList && posOverlay && posOverlay.classList.contains('open')) ? overlayList : mainList;
+      var itemId = (data.item && data.item.id) || (data.id) || null;
+      var line = document.createElement('div');
+      line.className = 'ol';
+      line.style.animation = 'fadeIn .3s';
+      if (itemId) line.setAttribute('data-item-id', itemId);
+      line.innerHTML = '<span class="ol-q">1</span><span class="ol-n">' + escapeHtml(name) + '</span><span class="ol-p">$' + price + '</span><span class="ol-x" onclick="removeItem(this,' + price + ')">&#x2715;</span>';
+      list.appendChild(line);
+      list.scrollTop = list.scrollHeight;
+      // Update totals from server response if available, else locally
+      if (data.order_total != null) {
+        orderTotal = Number(data.order_total);
+      } else {
+        orderTotal += price;
+      }
+      orderCount++;
+      updateTotals();
+      toast(name + ' agregado — $' + price, 'success');
+    })
+    .catch(function(err) {
+      toast('Error agregando ' + name + ': ' + err, 'error');
+    });
 }
 
 function removeItem(el, price) {
@@ -997,45 +1022,14 @@ function closePosOverlay(e) {
   document.body.style.overflow = '';
 }
 
-// ═══ CATEGORY SWITCHING ═══
-const menuData = {
-  cervezas: [
-    {n:'Corona',p:45,i:'&#x1F37A;',hh:true},{n:'Modelo',p:50,i:'&#x1F37A;',hh:true},{n:'Victoria',p:40,i:'&#x1F37A;',hh:true},
-    {n:'Heineken',p:65,i:'&#x1F37A;'},{n:'Michelada',p:85,i:'&#x1F37A;',hh:true},{n:'Cubeta x5',p:200,i:'&#x1F9CA;'},
-    {n:'Pacifico',p:45,i:'&#x1F37A;',hh:true},{n:'Negra Modelo',p:55,i:'&#x1F37A;'}
-  ],
-  cocktails: [
-    {n:'Margarita',p:120,i:'&#x1F378;'},{n:'Paloma',p:90,i:'&#x1F378;'},{n:'Mojito',p:110,i:'&#x1F378;'},
-    {n:'Pina Colada',p:130,i:'&#x1F378;'},{n:'Cuba Libre',p:95,i:'&#x1F378;'},{n:'Sangria',p:80,i:'&#x1F377;'}
-  ],
-  shots: [
-    {n:'Tequila',p:80,i:'&#x1F943;'},{n:'Vodka',p:70,i:'&#x1F943;'},{n:'Whisky',p:100,i:'&#x1F943;'},
-    {n:'Mezcal',p:90,i:'&#x1F943;'},{n:'Jager',p:85,i:'&#x1F943;'},{n:'Ronda x4',p:280,i:'&#x1F943;'}
-  ],
-  botanas: [
-    {n:'Nachos',p:90,i:'&#x1F35F;'},{n:'Alitas BBQ',p:165,i:'&#x1F357;'},{n:'Papas Fritas',p:70,i:'&#x1F35F;'},
-    {n:'Guacamole',p:85,i:'&#x1F951;'},{n:'Tabla Quesos',p:180,i:'&#x1F9C0;'},{n:'Tostadas Atun',p:120,i:'&#x1F363;'}
-  ],
-  comida: [
-    {n:'Hamburguesa',p:145,i:'&#x1F354;'},{n:'Pizza Personal',p:120,i:'&#x1F355;'},{n:'Tacos x3',p:95,i:'&#x1F32E;'},
-    {n:'Quesadilla',p:80,i:'&#x1F9C0;'},{n:'Hot Dog',p:65,i:'&#x1F32D;'},{n:'Ensalada',p:90,i:'&#x1F957;'}
-  ],
-  refrescos: [
-    {n:'Coca-Cola',p:35,i:'&#x1F9C3;'},{n:'Agua Mineral',p:30,i:'&#x1F4A7;'},{n:'Jugo Naranja',p:40,i:'&#x1F34A;'},
-    {n:'Red Bull',p:65,i:'&#x26A1;'},{n:'Limonada',p:35,i:'&#x1F34B;'},{n:'Cafe',p:40,i:'&#x2615;'}
-  ]
-};
+// ═══ CATEGORY SWITCHING (API-based) ═══
+// Category name → API category_id mapping (1-indexed)
+var _catIdMap = { cervezas: 1, cocktails: 2, shots: 3, botanas: 4, comida: 5, refrescos: 6 };
 
 function switchCat(cat, el) {
-  document.querySelectorAll('.cc').forEach(c => c.classList.remove('active'));
+  document.querySelectorAll('.cc').forEach(function(c) { c.classList.remove('active'); });
   el.classList.add('active');
-  const grid = document.querySelector('.prod-grid');
-  const items = menuData[cat] || menuData.cervezas;
-  grid.innerHTML = items.map((it, idx) => {
-    const hhTag = it.hh ? '<span class="pi-hh">$' + it.p + '</span>$' + Math.round(it.p/2) : '$' + it.p;
-    return '<div class="pi" onclick="addI(\'' + escapeHtml(it.n) + '\',' + it.p + ')" style="animation:fadeIn .2s ' + (idx*0.03) + 's backwards;">' +
-      '<div class="pi-i">' + it.i + '</div><div class="pi-n">' + escapeHtml(it.n) + '</div><div class="pi-p">' + hhTag + '</div></div>';
-  }).join('');
+  loadProducts(_catIdMap[cat] || 1);
 }
 
 // ═══ TOAST NOTIFICATIONS ═══
@@ -1050,15 +1044,56 @@ function toast(msg, type) {
 
 // ═══ POS ACTIONS ═══
 function posAction(action) {
-  const actions = {
-    enviar: () => toast('Comanda enviada a cocina y barra', 'success'),
-    cobrar: () => openCobrarModal(),
-    dividir: () => toast('Selecciona items para dividir', 'info'),
-    cancion: () => toast('Abriendo cola de karaoke para esta mesa', 'info'),
-    ticket: () => openTicketPreview(),
-    cfdi: () => toast('Abriendo facturacion CFDI 4.0', 'info')
+  var actions = {
+    enviar: function() { enviarComanda(); },
+    cobrar: function() { openCobrarModal(); },
+    dividir: function() { toast('Selecciona items para dividir', 'info'); },
+    cancion: function() { toast('Abriendo cola de karaoke para esta mesa', 'info'); },
+    ticket: function() { openTicketPreview(); },
+    cfdi: function() { toast('Abriendo facturacion CFDI 4.0', 'info'); }
   };
   if (actions[action]) actions[action]();
+}
+
+function enviarComanda() {
+  var orderId = _cobrarState.orderId;
+  if (!orderId) { toast('Selecciona una mesa con orden abierta', 'warn'); return; }
+
+  // Fetch order items, then update pending ones to 'enviado'
+  fetch('/pos/orders/' + orderId, { headers: authHeaders() })
+    .then(function(r) { return r.ok ? r.json() : Promise.reject(r.status); })
+    .then(function(data) {
+      var order = data.order || data;
+      var items = order.items || [];
+      var pending = items.filter(function(it) {
+        return (it.status || '').toLowerCase() === 'pendiente';
+      });
+      if (pending.length === 0) {
+        toast('No hay items pendientes para enviar', 'info');
+        return Promise.resolve([]);
+      }
+      // Send all pending items in parallel
+      var promises = pending.map(function(it) {
+        return fetch('/pos/order-items/' + it.id + '/status', {
+          method: 'PUT',
+          headers: Object.assign({ 'Content-Type': 'application/json' }, authHeaders()),
+          body: JSON.stringify({ status: 'enviado' })
+        }).then(function(r) { return r.ok ? r.json() : Promise.reject(r.status); });
+      });
+      return Promise.all(promises);
+    })
+    .then(function(results) {
+      if (results && results.length > 0) {
+        // Emit socket event if connected
+        if (typeof io !== 'undefined' && window._posSocket) {
+          window._posSocket.emit('comanda_enviada', { order_id: orderId });
+        }
+        toast('Comanda enviada a cocina y barra (' + results.length + ' items)', 'success');
+      }
+    })
+    .catch(function(err) {
+      toast('Error enviando comanda: ' + err, 'error');
+    });
 }
 
 // ═══ COMANDAS VIEW — Real data ═══
@@ -1455,7 +1490,8 @@ function renderProducts(products) {
       ? '<span class="pi-hh">$' + price + '</span>$' + happyPrice
       : '$' + price;
     var name = p.name || p.nombre || '';
-    return '<div class="pi" onclick="addI(' + JSON.stringify(name) + ',' + price + ')" ' +
+    var productId = p.id || p.product_id || null;
+    return '<div class="pi" data-product-id="' + (productId || '') + '" onclick="addI(' + JSON.stringify(name) + ',' + price + ',this,' + (productId || 'null') + ')" ' +
       'style="animation:fadeIn .2s ' + (idx * 0.03) + 's backwards;">' +
       '<div class="pi-i">' + icon + '</div>' +
       '<div class="pi-n">' + name + '</div>' +
@@ -2473,7 +2509,9 @@ function closeShiftOpenModal() { document.getElementById('shift-open-modal').sty
 
 function confirmOpenShift() {
   var cash = parseFloat(document.getElementById('shift-open-cash').value) || 0;
-  var empId = parseInt(sessionStorage.getItem('pos_employee_id')) || 1;
+  var empData = null;
+  try { empData = JSON.parse(sessionStorage.getItem('pos_employee')); } catch(_) {}
+  var empId = (empData && empData.id) ? empData.id : 1;
   fetch('/pos/shifts', {
     method: 'POST',
     headers: Object.assign({ 'Content-Type': 'application/json' }, authHeaders()),
@@ -2948,19 +2986,64 @@ renderTables = function(tables) {
   });
 };
 
-// Patch selT to store table/order info for cobrar flow
+// Patch selT to store table/order info for cobrar flow AND create order for free tables
 var _origSelT = selT;
 selT = function(n, el) {
   _origSelT(n, el);
   var tables = window._posTablesCache || [];
+  var matched = null;
   for (var i = 0; i < tables.length; i++) {
     var t = tables[i];
-    if ((t.number == n || t.id == n) && t.current_order_id) {
-      _cobrarState.orderId = t.current_order_id;
-      _cobrarState.tableId = t.id;
-      break;
-    }
+    if (t.number == n || t.id == n) { matched = t; break; }
   }
+  if (!matched) return;
+  _cobrarState.tableId = matched.id;
+  _cobrarState.tableName = 'Mesa ' + (matched.number || matched.id);
+
+  if (matched.current_order_id) {
+    // Table already has an open order — just store it
+    _cobrarState.orderId = matched.current_order_id;
+    return;
+  }
+
+  var st = (matched.status || 'libre').toLowerCase();
+  if (st !== 'libre') return;
+
+  // Create a real order in the DB for this free table
+  fetch('/pos/orders', {
+    method: 'POST',
+    headers: Object.assign({ 'Content-Type': 'application/json' }, authHeaders()),
+    body: JSON.stringify({ table_id: matched.id })
+  })
+    .then(function(r) { return r.ok ? r.json() : Promise.reject(r.status); })
+    .then(function(data) {
+      var order = data.order || data;
+      _cobrarState.orderId = order.id;
+      // Read employee id for waiter assignment
+      var empData = null;
+      try { empData = JSON.parse(sessionStorage.getItem('pos_employee')); } catch(_) {}
+      var employeeId = empData && empData.id ? empData.id : null;
+      // Update table status to 'ocupada'
+      return fetch('/pos/tables/' + matched.id + '/status', {
+        method: 'PUT',
+        headers: Object.assign({ 'Content-Type': 'application/json' }, authHeaders()),
+        body: JSON.stringify({ status: 'ocupada', waiter_id: employeeId })
+      });
+    })
+    .then(function(r) {
+      if (r && r.ok) {
+        // Update local cache so we don't create duplicate orders on re-click
+        if (matched) {
+          matched.status = 'ocupada';
+          matched.current_order_id = _cobrarState.orderId;
+        }
+        toast('Orden creada para Mesa ' + (matched.number || matched.id), 'success');
+        loadTables(); // Refresh table grid to show new status
+      }
+    })
+    .catch(function(err) {
+      toast('Error creando orden: ' + err, 'error');
+    });
 };
 </script>
 </body>

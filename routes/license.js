@@ -78,7 +78,7 @@ function registerRoutes(app, state, helpers) {
       const demoExpiry = new Date(Date.now() + 60 * 60 * 1000).toISOString();
       return res.json({
         success: true, token: demoToken,
-        features: ['streaming', 'bares', 'ia', 'estudio', 'vistas', 'remote'],
+        features: ['bares', 'music_streaming', 'ollama_ai', 'youtube', 'ia', 'estudio', 'vistas', 'remote'],
         expiresAt: demoExpiry, demo: true,
         message: 'Demo PRO activado por 1 hora. Disfruta todas las funciones!'
       });

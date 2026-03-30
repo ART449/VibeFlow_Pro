@@ -4,6 +4,8 @@
   VF.modules = VF.modules || {};
   const socketModule = VF.modules.socket = {};
 
+  var _karaokeDisplayWin = null;
+
   function loadSocketIO() {
     return new Promise((resolve) => {
       const s = document.createElement('script');
