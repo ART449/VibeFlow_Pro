@@ -11,7 +11,9 @@ const { getDb, DB_PATH } = require('./database');
 const auth = require('./auth');
 
 // ═══ CONFIG ═══
-const BACKUP_DIR = path.join(__dirname, '..', 'data', 'backups');
+const BACKUP_DIR = process.env.DATA_PATH
+  ? path.join(process.env.DATA_PATH, 'backups')
+  : path.join(__dirname, '..', 'data', 'backups');
 const MAX_BACKUPS = 30; // Keep last 30 days
 const ENCRYPTION_ALGO = 'aes-256-gcm';
 

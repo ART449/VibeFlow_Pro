@@ -74,8 +74,11 @@ function validarTextoPublico(texto, campo = 'campo', maxLen = 100) {
 }
 
 // ── Persistencia JSON ───────────────────────────────────────────────────────
-const DATA_DIR = path.join(__dirname, 'data');
+// Railway Volume: set DATA_PATH env var to the mounted volume path (e.g., /data)
+const DATA_DIR = process.env.DATA_PATH || path.join(__dirname, 'data');
 fs.mkdirSync(DATA_DIR, { recursive: true });
+if (process.env.DATA_PATH) console.log('[DATA] Usando volumen persistente:', DATA_DIR);
+else console.log('[DATA] Usando directorio local:', DATA_DIR);
 
 function loadJSON(filename, defaultVal) {
   const fp = path.join(DATA_DIR, filename);

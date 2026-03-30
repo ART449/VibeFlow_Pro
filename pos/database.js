@@ -12,7 +12,9 @@ const fs = require('fs');
 const path = require('path');
 const bcrypt = require('bcryptjs');
 
-const DB_PATH = path.join(__dirname, '..', 'data', 'pos-v2.db');
+const DB_PATH = process.env.DATA_PATH
+  ? path.join(process.env.DATA_PATH, 'pos-v2.db')
+  : path.join(__dirname, '..', 'data', 'pos-v2.db');
 
 let db = null;       // sql.js Database instance
 let wrapper = null;  // Sync-compatible wrapper returned by getDb()
