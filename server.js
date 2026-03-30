@@ -426,6 +426,7 @@ app.use((req, res, next) => {
 app.use(compression());
 app.use(express.static(path.join(__dirname, 'public'), { maxAge: '1d' }));
 app.get('/landing', (req, res) => res.sendFile(path.join(__dirname, 'public', 'landing.html')));
+app.get('/remote', (req, res) => res.sendFile(path.join(__dirname, 'public', 'remote.html')));
 
 // ── Estado con persistencia ─────────────────────────────────────────────────
 const DEFAULT_MESAS = Array.from({ length: 12 }, (_, i) => ({

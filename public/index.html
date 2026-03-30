@@ -233,7 +233,7 @@ input,textarea,select{font-family:inherit;}
 .vp-tp{
   flex:1;overflow-y:auto;padding:20px 24px;font-size:2.5rem;font-weight:700;
   line-height:1.5;text-align:center;word-break:break-word;
-  display:flex;align-items:center;justify-content:center;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
 }
 .vp-tp-empty{color:var(--sub);font-size:1.2rem;font-weight:400;}
 .vp-now{
@@ -1542,7 +1542,7 @@ body:has(.center.tp-fullscreen) #audio-bar{
 .welcome-card[data-mode="karaoke"] .wc-glow{background:radial-gradient(circle at 50% 0%,rgba(233,30,144,.35) 0%,transparent 70%);}
 .welcome-card[data-mode="youtube"] .wc-glow{background:radial-gradient(circle at 50% 0%,rgba(229,57,53,.35) 0%,transparent 70%);}
 .welcome-card[data-mode="bares"] .wc-glow{background:radial-gradient(circle at 50% 0%,rgba(255,111,0,.35) 0%,transparent 70%);}
-.welcome-card[data-mode="ia"] .wc-glow{background:radial-gradient(circle at 50% 0%,rgba(124,77,255,.35) 0%,transparent 70%);}
+.welcome-card[data-mode="estudio"] .wc-glow{background:radial-gradient(circle at 50% 0%,rgba(6,182,212,.35) 0%,transparent 70%);}
 .welcome-card:hover{
   background:rgba(255,255,255,.07);transform:translateY(-6px) scale(1.02);
   box-shadow:0 12px 40px rgba(0,0,0,.4);
@@ -1552,7 +1552,7 @@ body:has(.center.tp-fullscreen) #audio-bar{
 .welcome-card[data-mode="karaoke"]:hover{border-color:rgba(233,30,144,.4);}
 .welcome-card[data-mode="youtube"]:hover{border-color:rgba(229,57,53,.4);}
 .welcome-card[data-mode="bares"]:hover{border-color:rgba(255,111,0,.4);}
-.welcome-card[data-mode="ia"]:hover{border-color:rgba(124,77,255,.4);}
+.welcome-card[data-mode="estudio"]:hover{border-color:rgba(6,182,212,.4);}
 .welcome-card:active{transform:scale(.97);transition:transform .1s;}
 .welcome-card .wc-icon{
   width:56px;height:56px;border-radius:14px;
@@ -2194,10 +2194,6 @@ input:focus-visible,textarea:focus-visible{
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M11 5H6a2 2 0 0 0-2 2v11a2 2 0 0 0 2 2h11a2 2 0 0 0 2-2v-5"/><path d="M18 2l4 4-10 10H8v-4L18 2z"/></svg>
             Estudio
           </button>
-          <button class="mode-btn ia-btn" data-mode="ia" onclick="toggleMode('ia');closeModeMore()" title="GFlow — DJ IA para letras y sets">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 2a9 9 0 0 1 9 9c0 4.56-2.87 8.5-7 9.7V22h-4v-1.3C5.87 19.5 3 15.56 3 11a9 9 0 0 1 9-9z"/><circle cx="9" cy="11" r="1" fill="currentColor"/><circle cx="15" cy="11" r="1" fill="currentColor"/></svg>
-            IA Studio
-          </button>
           <button class="mode-btn vistas-btn" data-mode="vistas" onclick="toggleMode('vistas');closeModeMore()" title="Dashboard DJ multi-panel">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
             Panel Vistas
@@ -2223,7 +2219,11 @@ input:focus-visible,textarea:focus-visible{
 
     <div style="display:flex;align-items:center;gap:8px;">
       <span id="online-count" title="Dispositivos en tu sala" style="font-size:10px;color:var(--g);display:none;">● <span id="online-num">0</span></span>
-      <span id="room-badge" title="Tu sala — comparte este codigo" style="font-size:9px;background:var(--card2);border:1px solid var(--border);padding:2px 6px;border-radius:6px;cursor:pointer;display:none;" onclick="copyRoomLink()">🔗 <span id="room-id-display">---</span></span>
+      <span id="room-badge" title="Tu sala — comparte este codigo" style="font-size:9px;background:var(--card2);border:1px solid var(--border);padding:2px 6px;border-radius:6px;cursor:pointer;display:none;" onclick="copyRoomLink()">&#x1F517; <span id="room-id-display">---</span></span>
+      <button id="btn-open-display" onclick="openKaraokeDisplay()" title="Abrir pantalla de karaoke en ventana separada (para TV/proyector)" style="display:none;align-items:center;gap:3px;padding:3px 8px;border-radius:6px;border:1px solid rgba(0,229,255,.2);background:rgba(0,229,255,.06);color:rgba(0,229,255,.8);font-size:9px;font-weight:600;cursor:pointer;white-space:nowrap;transition:all .2s;" onmouseenter="this.style.background='rgba(0,229,255,.12)';this.style.borderColor='rgba(0,229,255,.4)'" onmouseleave="this.style.background='rgba(0,229,255,.06)';this.style.borderColor='rgba(0,229,255,.2)'">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+        Abrir Pantalla
+      </button>
       <div id="datetime">--</div>
     </div>
     <!-- User avatar / login -->
@@ -2438,14 +2438,15 @@ input:focus-visible,textarea:focus-visible{
     <button class="panel-toggle panel-toggle-right" id="toggle-right" onclick="toggleRightPanel()" title="Esconder/mostrar panel derecho" aria-label="Esconder/mostrar panel derecho">&#x25B6;</button>
     <div class="right-panel">
       <h4 title="Escanea este QR desde otro celular para controlar el karaoke remotamente">Control Remoto (QR)</h4>
-      <img id="qr-img" alt="Codigo QR para control remoto de ByFlow" title="Escanea con la camara de tu celular para conectarte">
-      <div id="qr-url" title="URL para acceder desde otro dispositivo en la misma red WiFi" style="font-size:10px;word-break:break-all;">Generando enlace de control remoto...</div>
+      <img id="qr-img" alt="Codigo QR para control remoto de ByFlow" title="Escanea con la camara de tu celular para conectarte" style="display:none;">
+      <div id="qr-url" title="URL para acceder desde otro dispositivo en la misma red WiFi" style="font-size:10px;word-break:break-all;text-align:center;color:var(--sub);padding:8px 0;">Proximamente — Escanea para controlar ByFlow desde tu celular</div>
       <div class="divider"></div>
       <h4 title="Guarda canciones con su letra para cargarlas rapidamente desde el Catalogo">Guardar Nueva Cancion</h4>
       <input type="text" class="rp-input" id="new-song-title" placeholder="Titulo de la cancion..." title="Nombre de la cancion" style="margin-bottom:6px;">
       <input type="text" class="rp-input" id="new-song-artista" placeholder="Artista (opcional)..." title="Nombre del artista o banda" style="margin-bottom:6px;">
       <textarea class="rp-input" id="new-song-letra" placeholder="Pega o escribe la letra aqui..." title="Letra completa de la cancion para el teleprompter" style="height:90px;resize:none;"></textarea>
       <button class="rp-btn" onclick="agregarCancion()" title="Guardar esta cancion en el catalogo para uso futuro">Guardar al Catalogo</button>
+      <button class="rp-btn" onclick="showToast('Proximamente — busqueda automatica desde YouTube')" title="Proximamente: buscar letra automaticamente desde YouTube" style="margin-top:6px;background:rgba(255,68,68,.15);border-color:rgba(255,68,68,.3);color:rgba(255,255,255,.5);cursor:default;">▶ Buscar en YouTube <span style="font-size:9px;opacity:.7;">(Proximamente)</span></button>
     </div>
 
     <!-- ═══ IA PANEL ═══ -->
@@ -2593,7 +2594,7 @@ input:focus-visible,textarea:focus-visible{
                 ✓ Letras LRC sync<br>
                 ✗ <span class="disabled">Streaming musica</span><br>
                 ✗ <span class="disabled">Gestion bares</span><br>
-                ✗ <span class="disabled">IA Studio</span>
+                ✗ <span class="disabled">Estudio IA</span>
               </div>
             </div>
 
@@ -2608,7 +2609,7 @@ input:focus-visible,textarea:focus-visible{
                 ✓ YouTube streaming<br>
                 ✓ SoundCloud embed<br>
                 ✓ Jamendo musica CC<br>
-                ✓ IA Studio (Ollama)<br>
+                ✓ Estudio IA (Ollama)<br>
                 ✓ Control remoto QR<br>
                 ✗ <span class="disabled">Gestion bares</span>
               </div>
@@ -2969,11 +2970,11 @@ input:focus-visible,textarea:focus-visible{
             </div>
             <div style="margin-bottom:8px;">
               <div style="font-size:9px;color:var(--sub);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">🏆 Top Canciones</div>
-              <div id="stat-top-songs" style="font-size:10px;color:var(--sub);">Cargando...</div>
+              <div id="stat-top-songs" style="font-size:10px;color:var(--sub);opacity:.5;">Agrega canciones para ver tus stats</div>
             </div>
             <div style="margin-bottom:8px;">
               <div style="font-size:9px;color:var(--sub);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">🎤 Top Cantantes</div>
-              <div id="stat-top-singers" style="font-size:10px;color:var(--sub);">Cargando...</div>
+              <div id="stat-top-singers" style="font-size:10px;color:var(--sub);opacity:.5;">Agrega cantantes para ver tus stats</div>
             </div>
             <div>
               <div style="font-size:9px;color:var(--sub);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">📊 Ultimos 7 dias</div>
@@ -3208,18 +3209,11 @@ input:focus-visible,textarea:focus-visible{
       <div class="wc-desc">Mesas, promos, jingles y soundboard</div>
       <span class="wc-tag pro">PRO</span>
     </div>
-    <div class="welcome-card" data-mode="ia" onclick="welcomeSelect('ia')">
-      <div class="wc-glow"></div>
-      <div class="wc-icon ia">&#x2728;</div>
-      <div class="wc-title">IA Studio</div>
-      <div class="wc-desc">DJ IA que sugiere canciones</div>
-      <span class="wc-tag pro">PRO</span>
-    </div>
     <div class="welcome-card" data-mode="estudio" onclick="welcomeSelect('estudio')">
       <div class="wc-glow"></div>
       <div class="wc-icon karaoke" style="background:linear-gradient(135deg,#06b6d4,#8b5cf6);">&#x1F3B6;</div>
       <div class="wc-title">Estudio</div>
-      <div class="wc-desc">Beats, letras y rimas con Motor ARTATR</div>
+      <div class="wc-desc">Beats, letras, IA y rimas</div>
       <span class="wc-tag free">GRATIS</span>
     </div>
   </div>
@@ -3514,10 +3508,6 @@ input:focus-visible,textarea:focus-visible{
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M16 3h5v5"/><path d="M4 20L21 3"/><path d="M21 16v5h-5"/><path d="M15 15l6 6"/><path d="M4 4l5 5"/></svg>
       <span>Cola</span>
     </button>
-    <button class="mnav-btn" data-mode="ia" onclick="mobileSetMode('ia',this)">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 2a9 9 0 0 1 9 9c0 4.56-2.87 8.5-7 9.7V22h-4v-1.3C5.87 19.5 3 15.56 3 11a9 9 0 0 1 9-9z"/><circle cx="9" cy="11" r="1" fill="currentColor"/><circle cx="15" cy="11" r="1" fill="currentColor"/></svg>
-      <span>IA</span>
-    </button>
     <button class="mnav-btn" data-mode="estudio" onclick="mobileSetMode('estudio',this)">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M11 5H6a2 2 0 0 0-2 2v11a2 2 0 0 0 2 2h11a2 2 0 0 0 2-2v-5"/><path d="M18 2l4 4-10 10H8v-4L18 2z"/></svg>
       <span>Estudio</span>
@@ -3557,8 +3547,8 @@ input:focus-visible,textarea:focus-visible{
     </div>
     <div class="tutorial-step" data-step="3">
       <div class="tutorial-icon">&#10024;</div>
-      <div class="tutorial-title">IA Studio + Vistas</div>
-      <div class="tutorial-desc">Genera letras con IA, usa el Panel Vistas para ver todo a la vez, y comparte la pantalla remota via QR. Todo desde el menu "Mas" del topbar.</div>
+      <div class="tutorial-title">Estudio + Vistas</div>
+      <div class="tutorial-desc">Escribe letras sobre beats, genera con IA (GFlow), usa el Panel Vistas para ver todo a la vez, y comparte la pantalla remota via QR.</div>
     </div>
     <div class="tutorial-step" data-step="4">
       <div class="tutorial-icon">&#128640;</div>
@@ -3681,12 +3671,35 @@ function copyRoomLink() {
   });
 }
 
-// Show room badge after socket connects
+// Show room badge + display button after socket connects
 function showRoomBadge() {
   const badge = document.getElementById('room-badge');
   const display = document.getElementById('room-id-display');
+  const displayBtn = document.getElementById('btn-open-display');
   if (badge) badge.style.display = '';
   if (display) display.textContent = _myRoomId;
+  if (displayBtn) displayBtn.style.display = 'inline-flex';
+}
+
+// Open karaoke teleprompter in a separate window (for TV/second monitor)
+var _karaokeDisplayWin = null;
+function openKaraokeDisplay() {
+  const url = location.origin + '/remote?room=' + _myRoomId;
+  // If window is already open and not closed, focus it
+  if (_karaokeDisplayWin && !_karaokeDisplayWin.closed) {
+    _karaokeDisplayWin.focus();
+    showToast('Pantalla de karaoke ya esta abierta — enfocada');
+    return;
+  }
+  _karaokeDisplayWin = window.open(
+    url, 'byflow-karaoke-display',
+    'width=1920,height=1080,menubar=no,toolbar=no,location=no,status=no'
+  );
+  if (_karaokeDisplayWin) {
+    showToast('Pantalla de karaoke abierta — arrastrala al segundo monitor');
+  } else {
+    showToast('Popup bloqueado — permite ventanas emergentes para ByFlow', 'warning');
+  }
 }
 
 async function connectSocket() {
@@ -4187,6 +4200,13 @@ function stopAutoScroll() {
 function updatePlayBtn() {
   document.getElementById('ico-play').style.display  = tpState.autoScrolling ? 'none' : 'block';
   document.getElementById('ico-pause').style.display = tpState.autoScrolling ? 'block' : 'none';
+  const hasWords = tpState.words.length > 0;
+  const playBtn = document.getElementById('btn-play');
+  if (playBtn) { playBtn.style.opacity = hasWords ? '' : '0.35'; playBtn.style.pointerEvents = hasWords ? '' : 'none'; }
+  document.querySelectorAll('.ctrl-btn:not(#btn-play)').forEach(btn => {
+    btn.style.opacity = hasWords ? '' : '0.35';
+    btn.style.pointerEvents = hasWords ? '' : 'none';
+  });
 }
 function updateWordCounter() {
   const c = Math.max(0, tpState.currentIdx + 1);
@@ -4396,6 +4416,7 @@ async function eliminarCola(id) { try { await fetch('/api/cola/'+id, {method:'DE
 function openColaModal() {
   renderColaModal();
   document.getElementById('cola-modal').classList.add('open');
+  fetchCola();
 }
 function closeColaModal() {
   document.getElementById('cola-modal').classList.remove('open');
@@ -4504,7 +4525,7 @@ function setMode(mode) {
   }
 
   // Bloquear PRO sin licencia
-  const proModes = ['youtube', 'bares', 'ia'];
+  const proModes = ['youtube', 'bares'];
   if (proModes.includes(mode) && typeof isPremium === 'function' && !isPremium()) {
     showToast('Modo PRO — Necesitas licencia activa', 'warning');
     return;
@@ -4590,9 +4611,13 @@ function setMode(mode) {
     const centerEl = document.querySelector('.center');
     if (centerEl) centerEl.style.paddingBottom = '0';
   } else if (mode === 'ia') {
-    if (sidebar && !isMobile)    sidebar.style.display    = 'flex';
-    if (iaPanel)    { iaPanel.classList.add('active'); iaPanel.style.display = 'flex'; }
-    checkOllamaStatus();
+    // IA Studio merged into Estudio — redirect to estudio + gflow tab
+    setMode('estudio');
+    setTimeout(() => {
+      const gflowBtn = document.querySelector('.est-tab[data-est-tab="gflow"]');
+      if (gflowBtn) estSwitchTab('gflow', gflowBtn);
+    }, 50);
+    return;
   } else if (mode === 'youtube') {
     if (sidebar && !isMobile)    sidebar.style.display    = 'flex';
     if (ytPanel)    { ytPanel.classList.add('active'); ytPanel.style.display = 'flex'; }
@@ -5244,13 +5269,12 @@ async function loadQR() {
   try {
     const r = await fetch('/api/qr');
     const d = await r.json();
-    if (img && d.qr) img.src = d.qr;
+    if (img && d.qr) { img.src = d.qr; img.style.display = ''; }
     if (url) url.textContent = d.url || location.origin;
   } catch {
-    // No QR endpoint or failed — show production URL
-    if (url) url.textContent = location.origin;
-    if (img) img.alt = 'QR no disponible en este entorno';
+    // No QR endpoint or failed — show friendly message
     if (img) img.style.display = 'none';
+    if (url) url.textContent = 'Proximamente — Escanea para controlar ByFlow desde tu celular';
   }
 }
 
@@ -7555,10 +7579,14 @@ function mobileSetMode(mode, btn) {
   if (mode === 'youtube' && ytPanel) {
     ytPanel.classList.add('active'); ytPanel.style.display = 'flex';
     currentMode = 'youtube';
-  } else if (mode === 'ia' && iaPanel) {
-    iaPanel.classList.add('active'); iaPanel.style.display = 'flex';
-    currentMode = 'ia';
-    checkOllamaStatus();
+  } else if (mode === 'ia') {
+    // IA Studio merged into Estudio — redirect to estudio + gflow tab
+    mobileSetMode('estudio', document.querySelector('.mnav-btn[data-mode="estudio"]'));
+    setTimeout(() => {
+      const gflowBtn = document.querySelector('.est-tab[data-est-tab="gflow"]');
+      if (gflowBtn) estSwitchTab('gflow', gflowBtn);
+    }, 50);
+    return;
   } else if (mode === 'bares' && baresPanel) {
     baresPanel.classList.add('active'); baresPanel.style.display = 'flex';
     currentMode = 'bares';
@@ -8440,6 +8468,7 @@ async function loadStats() {
     }
   } catch {
     document.getElementById('stat-top-songs').innerHTML = '<div style="opacity:.5;">Error cargando</div>';
+    document.getElementById('stat-top-singers').innerHTML = '<div style="opacity:.5;">Error cargando</div>';
   }
 }
 
@@ -8544,7 +8573,7 @@ function welcomeSelect(mode) {
   }
 
   // PRO modes — necesitan licencia
-  const proModes = ['youtube', 'bares', 'ia'];
+  const proModes = ['youtube', 'bares'];
   if (proModes.includes(mode) && !isPremium()) {
     showToast('Modo PRO — Necesitas licencia activa', 'warning');
     return;
@@ -8999,9 +9028,35 @@ function estSelectBeat(videoId, titulo, canal) {
     canal,
     canalUrl: 'https://www.youtube.com/results?search_query=' + encodeURIComponent(canal)
   };
-  // Embed beat player (small)
+  // Destroy previous estudio YT player if exists
+  if (_estBeatPlayer) { try { _estBeatPlayer.destroy(); } catch {} _estBeatPlayer = null; }
+  _estIsPlaying = false;
+  const btn = document.getElementById('est-play-master');
+  if (btn) btn.innerHTML = '&#9654;';
+
+  // Create YT.Player in est-beat-embed (same pattern as ytEmbed)
   const embed = document.getElementById('est-beat-embed');
-  embed.innerHTML = `<iframe src="https://www.youtube.com/embed/${videoId}?enablejsapi=1&rel=0&modestbranding=1" allow="autoplay" allowfullscreen></iframe>`;
+  embed.innerHTML = '<div id="est-yt-api-player"></div>';
+
+  function createEstPlayer() {
+    _estBeatPlayer = new YT.Player('est-yt-api-player', {
+      height: '120', width: '100%',
+      videoId: videoId,
+      playerVars: { autoplay: 0, rel: 0, modestbranding: 1 },
+      events: {
+        onReady: () => {},
+        onStateChange: (e) => {
+          const playBtn = document.getElementById('est-play-master');
+          if (e.data === YT.PlayerState.PLAYING) { _estIsPlaying = true; if (playBtn) playBtn.innerHTML = '&#10074;&#10074;'; }
+          else if (e.data === YT.PlayerState.PAUSED) { _estIsPlaying = false; if (playBtn) playBtn.innerHTML = '&#9654;'; }
+          else if (e.data === YT.PlayerState.ENDED) { _estIsPlaying = false; if (playBtn) playBtn.innerHTML = '&#9654;'; }
+        }
+      }
+    });
+  }
+  if (window.YT && YT.Player) createEstPlayer();
+  else { window.onYouTubeIframeAPIReady = createEstPlayer; }
+
   // Show disclaimer
   const disc = document.getElementById('est-disclaimer');
   disc.style.display = 'flex';
@@ -9016,18 +9071,18 @@ function estSelectBeat(videoId, titulo, canal) {
 
 function estTogglePlay() {
   const btn = document.getElementById('est-play-master');
-  const iframe = document.querySelector('#est-beat-embed iframe');
-  if (!iframe) {
+  if (!_estBeatPlayer || typeof _estBeatPlayer.getPlayerState !== 'function') {
     if (typeof showToast === 'function') showToast('Selecciona un beat primero', 'warning');
     return;
   }
-  _estIsPlaying = !_estIsPlaying;
   if (_estIsPlaying) {
-    iframe.contentWindow.postMessage('{"event":"command","func":"playVideo","args":""}', '*');
-    btn.innerHTML = '&#10074;&#10074;';
-  } else {
-    iframe.contentWindow.postMessage('{"event":"command","func":"pauseVideo","args":""}', '*');
+    _estBeatPlayer.pauseVideo();
+    _estIsPlaying = false;
     btn.innerHTML = '&#9654;';
+  } else {
+    _estBeatPlayer.playVideo();
+    _estIsPlaying = true;
+    btn.innerHTML = '&#10074;&#10074;';
   }
 }
 
@@ -9545,22 +9600,49 @@ async function vpSearch() {
     const ytKey = localStorage.getItem('byflow_yt_api_key') || '';
     const res = await fetch(`/api/youtube/search?q=${encodeURIComponent(q)}&key=${encodeURIComponent(ytKey)}`);
     const data = await res.json();
-    if (data.error || !data.items || data.items.length === 0) {
-      results.innerHTML = '<div style="padding:20px;text-align:center;color:var(--sub);font-size:11px;">Sin resultados</div>';
+    if (!data.error && data.items && data.items.length > 0) {
+      results.innerHTML = data.items.map(item => {
+        const vid = item.id.videoId || item.id;
+        const title = item.snippet.title.replace(/&amp;/g,'&').replace(/&quot;/g,'"').replace(/&#39;/g,"'");
+        const thumb = item.snippet.thumbnails?.default?.url || '';
+        return `<div class="vp-result-item" onclick="vpPlay('${vid}','${title.replace(/'/g,"\\'")}')">
+          <img class="vp-result-thumb" src="${thumb}" alt="" loading="lazy">
+          <div class="vp-result-title" title="${title}">${title}</div>
+          <button class="vp-result-play">&#9654;</button>
+        </div>`;
+      }).join('');
       return;
     }
-    results.innerHTML = data.items.map(item => {
-      const vid = item.id.videoId || item.id;
-      const title = item.snippet.title.replace(/&amp;/g,'&').replace(/&quot;/g,'"').replace(/&#39;/g,"'");
-      const thumb = item.snippet.thumbnails?.default?.url || '';
-      return `<div class="vp-result-item" onclick="vpPlay('${vid}','${title.replace(/'/g,"\\'")}')">
-        <img class="vp-result-thumb" src="${thumb}" alt="" loading="lazy">
-        <div class="vp-result-title" title="${title}">${title}</div>
-        <button class="vp-result-play">&#9654;</button>
-      </div>`;
-    }).join('');
+    // Fallback: search LRCLIB for lyrics when YouTube API unavailable
+    const lrcRes = await fetch(`/api/lrclib/search?q=${encodeURIComponent(q)}`);
+    const lrcData = await lrcRes.json();
+    if (lrcData && lrcData.length > 0) {
+      window._vpLrcCache = lrcData;
+      results.innerHTML = lrcData.slice(0, 8).map((item, idx) => {
+        const title = escHtml((item.trackName || item.name || q));
+        const artist = escHtml(item.artistName || item.artist || '');
+        return '<div class="vp-result-item" onclick="loadLyricsDirect(' + idx + ')">' +
+          '<div class="vp-result-title" title="' + title + (artist ? ' — ' + artist : '') + '">' + title + (artist ? ' <span style="font-size:9px;opacity:.6;">— ' + artist + '</span>' : '') + '</div>' +
+          '<button class="vp-result-play" title="Cargar letra">&#9654;</button>' +
+          '</div>';
+      }).join('');
+    } else {
+      results.innerHTML = '<div style="padding:20px;text-align:center;color:var(--sub);font-size:11px;">Sin resultados para "' + escHtml(q) + '"</div>';
+    }
   } catch {
     results.innerHTML = '<div style="padding:20px;text-align:center;color:var(--sub);font-size:11px;">Error de busqueda</div>';
+  }
+}
+function loadLyricsDirect(idx) {
+  const item = (window._vpLrcCache || [])[idx];
+  if (!item) return;
+  const lyrics = item.syncedLyrics || item.plainLyrics || '';
+  const title = item.trackName || item.name || '';
+  if (lyrics) {
+    setLyrics(lyrics);
+    showToast('Letra cargada: ' + title);
+  } else {
+    showToast('Sin letra disponible para esta cancion');
   }
 }
 
@@ -9654,6 +9736,7 @@ window.addEventListener('appinstalled', () => {
   initFXSliders();
   renderMesas();
   applyMesasCollapse();
+  updatePlayBtn();
   loadQR();
   fetchCola();
   fetchSongs();

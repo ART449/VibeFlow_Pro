@@ -1,0 +1,11 @@
+{
+  "active": true,
+  "features": [
+    "bares",
+    "music_streaming",
+    "ollama_ai"
+  ],
+  "expiresAt": "2026-04-03T18:50:41.937Z",
+  "label": "Semana PRO Gratis - Lanzamiento ByFlow",
+  "activatedAt": "2026-03-27T18:50:41.938Z"
+}
