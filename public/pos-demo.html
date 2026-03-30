@@ -283,8 +283,12 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--t
     <div class="demo-tab" onclick="loadDemo('empleados',this)">👥 Empleados</div>
     <div class="demo-tab" onclick="loadDemo('corte',this)">💰 Corte</div>
   </div>
-  <div class="demo-frame">
-    <iframe id="demo-iframe" src="/bares-v2.html?demo=true" scrolling="auto"></iframe>
+  <div class="demo-frame" style="display:flex;align-items:center;justify-content:center;min-height:400px;">
+    <a href="/pos-demo-sim.html" style="display:flex;flex-direction:column;align-items:center;gap:12px;padding:40px;border-radius:20px;background:rgba(255,138,0,.06);border:2px solid rgba(255,138,0,.2);text-decoration:none;color:#fff;transition:all .3s;cursor:pointer;" onmouseover="this.style.borderColor='rgba(255,138,0,.5)'" onmouseout="this.style.borderColor='rgba(255,138,0,.2)'">
+      <div style="font-size:48px;">&#x1F3AC;</div>
+      <div style="font-size:18px;font-weight:700;color:#ff8a00;">Ver Demo Interactivo</div>
+      <div style="font-size:12px;color:rgba(255,255,255,.4);max-width:280px;text-align:center;">Prueba el POS completo con datos ficticios. Mesas, ordenes, cocina, cobro, reportes — todo simulado.</div>
+    </a>
   </div>
 </div>
 
