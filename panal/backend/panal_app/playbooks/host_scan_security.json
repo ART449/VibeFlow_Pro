@@ -1,0 +1,43 @@
+{
+  "id": "host.scan_security",
+  "intent": "Escaneo controlado de postura de seguridad",
+  "risk_level": "low",
+  "description": "Panal solicita a Guardian Local un escaneo offline del host y toma una fotografia de telemetria.",
+  "vars_schema": {
+    "scan_profile": {
+      "type": "string",
+      "required": false,
+      "allowed": ["quick", "standard", "deep"],
+      "default": "standard"
+    }
+  },
+  "steps": [
+    {
+      "id": "guardian-scan",
+      "kind": "guardian_scan",
+      "label": "Run Guardian offline analysis",
+      "profile": "standard",
+      "live_capable": false,
+      "emits_telemetry": false
+    },
+    {
+      "id": "telemetry-snapshot",
+      "kind": "telemetry_snapshot",
+      "label": "Capture host telemetry",
+      "live_capable": false,
+      "emits_telemetry": true
+    }
+  ],
+  "rollback": [],
+  "approval_policy": {
+    "mode": "policy_only",
+    "requires_human": false
+  },
+  "allowed_targets": ["linux-production", "linux-edge", "dmz"],
+  "artifact_policy": {
+    "retain_for_hours": 72,
+    "sensitivity": "restricted"
+  },
+  "tags": ["guardian", "scan", "zero-trust"]
+}
+

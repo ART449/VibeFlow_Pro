@@ -1,0 +1,48 @@
+version: "3.9"
+
+services:
+  panal-c2:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.c2
+    ports:
+      - "8008:8008"
+    environment:
+      PANAL_JWT_SECRET: panal-dev-jwt-secret
+      PANAL_APPROVAL_SECRET: panal-dev-approval-secret
+      PANAL_INTERNAL_AGENT_TOKEN: panal-internal-token
+      PANAL_NERVE_AGENT_URL: http://panal-nerve:8010
+      PANAL_GUARDIAN_URL: http://panal-guardian:8011
+      PANAL_ENABLE_LIVE_EXECUTION: "false"
+    depends_on:
+      - panal-nerve
+      - panal-guardian
+
+  panal-nerve:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.nerve
+    ports:
+      - "8010:8010"
+    environment:
+      PANAL_INTERNAL_AGENT_TOKEN: panal-internal-token
+      PANAL_ENABLE_LIVE_EXECUTION: "false"
+
+  panal-guardian:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.guardian
+    ports:
+      - "8011:8011"
+    environment:
+      PANAL_INTERNAL_AGENT_TOKEN: panal-internal-token
+
+  panal-console:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "4175:4175"
+    depends_on:
+      - panal-c2
+

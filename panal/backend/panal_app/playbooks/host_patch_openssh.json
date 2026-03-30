@@ -1,0 +1,60 @@
+{
+  "id": "host.patch.openssh",
+  "intent": "Remediacion aprobada de OpenSSH",
+  "risk_level": "high",
+  "description": "Panal aplica un parche de OpenSSH usando comandos declarativos aprobados y verificados.",
+  "vars_schema": {
+    "package": {
+      "type": "string",
+      "required": true,
+      "allowed": ["openssh"]
+    }
+  },
+  "steps": [
+    {
+      "id": "precheck-openssh",
+      "kind": "ssh_command",
+      "label": "Check OpenSSH status",
+      "command": "sudo systemctl status ssh || sudo systemctl status sshd",
+      "live_capable": true,
+      "emits_telemetry": true
+    },
+    {
+      "id": "upgrade-openssh",
+      "kind": "ssh_command",
+      "label": "Upgrade OpenSSH packages",
+      "command": "sudo apt-get update && sudo apt-get install --only-upgrade -y openssh-server openssh-client",
+      "live_capable": true,
+      "emits_telemetry": true
+    },
+    {
+      "id": "verify-openssh",
+      "kind": "ssh_command",
+      "label": "Verify OpenSSH version",
+      "command": "ssh -V || /usr/sbin/sshd -V",
+      "live_capable": true,
+      "emits_telemetry": false
+    }
+  ],
+  "rollback": [
+    {
+      "id": "rollback-note",
+      "kind": "manual_note",
+      "label": "Rollback requires package snapshot or image restore",
+      "live_capable": false,
+      "emits_telemetry": false
+    }
+  ],
+  "approval_policy": {
+    "mode": "human_signed",
+    "requires_human": true,
+    "minimum_role": "security_admin"
+  },
+  "allowed_targets": ["linux-production", "linux-edge"],
+  "artifact_policy": {
+    "retain_for_hours": 168,
+    "sensitivity": "restricted"
+  },
+  "tags": ["openssh", "patch", "remediation"]
+}
+

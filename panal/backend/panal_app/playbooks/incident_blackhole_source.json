@@ -1,0 +1,61 @@
+{
+  "id": "incident.blackhole_source",
+  "intent": "Null routing y contencion de origen hostil",
+  "risk_level": "critical",
+  "description": "Panal aplica un blackhole route y refuerzo de iptables para bloquear un origen hostil identificado.",
+  "vars_schema": {
+    "source_ip": {
+      "type": "string",
+      "required": true,
+      "format": "ipv4"
+    }
+  },
+  "steps": [
+    {
+      "id": "add-blackhole-route",
+      "kind": "ssh_command",
+      "label": "Add kernel blackhole route",
+      "command": "sudo ip route add blackhole ${source_ip}",
+      "live_capable": true,
+      "emits_telemetry": true
+    },
+    {
+      "id": "drop-input-traffic",
+      "kind": "ssh_command",
+      "label": "Drop source IP at INPUT chain",
+      "command": "sudo iptables -I INPUT -s ${source_ip} -j DROP",
+      "live_capable": true,
+      "emits_telemetry": true
+    },
+    {
+      "id": "confirm-telemetry",
+      "kind": "telemetry_snapshot",
+      "label": "Capture post-remediation telemetry",
+      "live_capable": false,
+      "emits_telemetry": true
+    }
+  ],
+  "rollback": [
+    {
+      "id": "remove-blackhole-route",
+      "kind": "ssh_command",
+      "label": "Remove null route and firewall drop",
+      "command": "sudo ip route del blackhole ${source_ip} || true && sudo iptables -D INPUT -s ${source_ip} -j DROP || true",
+      "live_capable": true,
+      "emits_telemetry": false
+    }
+  ],
+  "approval_policy": {
+    "mode": "human_signed",
+    "requires_human": true,
+    "minimum_role": "commander",
+    "requires_emergency": true
+  },
+  "allowed_targets": ["dmz", "linux-production"],
+  "artifact_policy": {
+    "retain_for_hours": 168,
+    "sensitivity": "secret"
+  },
+  "tags": ["blackhole", "iptables", "containment"]
+}
+
