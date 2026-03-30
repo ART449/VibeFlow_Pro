@@ -297,7 +297,14 @@ async function signInWithGoogle() {
   try {
     const provider = new firebase.auth.GoogleAuthProvider();
     provider.setCustomParameters({ prompt: 'select_account' });
-    const result = await _fbAuth.signInWithPopup(provider);
+    let result;
+    const isMobile = /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent);
+    if (isMobile) {
+      await _fbAuth.signInWithRedirect(provider);
+      return; // redirect handles the rest via getRedirectResult below
+    } else {
+      result = await _fbAuth.signInWithPopup(provider);
+    }
     const user = result.user;
     const email = user.email;
 
@@ -638,6 +645,53 @@ window.addEventListener('appinstalled', () => {
   console.log('[POS] App installed!');
   const btn = document.getElementById('install-btn');
   if (btn) btn.remove();
+});
+
+// Handle Google redirect result (for mobile)
+_fbAuth.getRedirectResult().then(async function(result) {
+  if (!result || !result.user) return;
+  const user = result.user;
+  const email = user.email;
+  const statusEl = document.getElementById('gl-status');
+  if (statusEl) statusEl.textContent = 'Verificando licencia POS...';
+
+  const barId = await emailToBarId(email);
+  sessionStorage.setItem('pos_bar_id', barId);
+  localStorage.setItem('pos_bar_email', email);
+
+  // Check license
+  try {
+    const licResp = await fetch('/api/pos/license?email=' + encodeURIComponent(email));
+    const licData = await licResp.json();
+    if (licData.ok && licData.active) {
+      sessionStorage.setItem('pos_license', JSON.stringify(licData));
+    }
+  } catch(e) {}
+
+  // Setup bar if first time
+  try {
+    await fetch('/pos/auth/setup-owner', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-Bar-ID': barId },
+      body: JSON.stringify({ bar_id: barId, owner_name: user.displayName || 'Dueno', owner_email: email })
+    });
+  } catch(e) {}
+
+  // Login with default PIN
+  try {
+    const loginResp = await fetch('/pos/auth/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-Bar-ID': barId },
+      body: JSON.stringify({ pin: '000000', bar_id: barId })
+    });
+    const loginData = await loginResp.json();
+    if (loginData.employee) {
+      PosAuth.saveSession(loginData.employee, loginData.token, barId);
+      showGreeting(loginData.employee);
+    }
+  } catch(e) {}
+}).catch(function(err) {
+  console.log('[POS] Redirect result:', err.message);
 });
 </script>
 </body>

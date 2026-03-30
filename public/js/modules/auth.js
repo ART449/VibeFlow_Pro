@@ -10,6 +10,11 @@
       if (provider === 'google') {
         const googleProvider = new firebase.auth.GoogleAuthProvider();
         googleProvider.setCustomParameters({ prompt: 'select_account' });
+        const isMobile = /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent);
+        if (isMobile) {
+          await _fbAuth.signInWithRedirect(googleProvider);
+          return;
+        }
         result = await _fbAuth.signInWithPopup(googleProvider);
       } else if (provider === 'facebook') {
         const fbProvider = new firebase.auth.FacebookAuthProvider();
