@@ -136,6 +136,28 @@ function registerRoutes(app, state, helpers) {
     res.json(ads.length ? ads : defaults);
   });
 
+  // Analytics — cuantos usuarios, sesiones, para vender espacios publicitarios
+  const _analytics = { sessions: 0, uniqueUsers: new Set(), pageViews: 0, lastReset: Date.now() };
+  app.post('/api/analytics/ping', (req, res) => {
+    const uid = req.body.uid || req.ip;
+    _analytics.sessions++;
+    _analytics.uniqueUsers.add(uid);
+    _analytics.pageViews++;
+    res.json({ ok: true });
+  });
+  app.get('/api/analytics/summary', (req, res) => {
+    if (req.headers['x-admin-key'] !== ADMIN_SECRET) return res.status(403).json({ ok: false });
+    const hoursUp = (Date.now() - _analytics.lastReset) / 3600000;
+    res.json({
+      ok: true,
+      sessions: _analytics.sessions,
+      uniqueUsers: _analytics.uniqueUsers.size,
+      pageViews: _analytics.pageViews,
+      hoursTracked: Math.round(hoursUp * 10) / 10,
+      sessionsPerHour: hoursUp > 0 ? Math.round(_analytics.sessions / hoursUp * 10) / 10 : 0
+    });
+  });
+
   // Health
   app.get('/api/health', (req, res) => res.json({
     status: 'ok', version: '2.1.0-shield', uptime: process.uptime(),

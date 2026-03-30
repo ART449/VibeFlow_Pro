@@ -1530,6 +1530,19 @@ body:not(.bar-context) .sidebar #input-mesa{display:none!important;}
 @keyframes adFadeIn{from{opacity:0}to{opacity:1}}
 @keyframes adFadeOut{from{opacity:1}to{opacity:0}}
 .ad-interstitial.closing{animation:adFadeOut .3s ease forwards;}
+
+/* Mini banner ads — estilo Uber/Didi, discretos */
+.ad-mini{
+  display:flex;align-items:center;gap:10px;padding:8px 14px;margin:8px 0;
+  background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);
+  border-radius:10px;cursor:pointer;transition:all .2s;text-decoration:none;color:inherit;
+}
+.ad-mini:hover{background:rgba(255,255,255,.06);border-color:rgba(255,255,255,.1);}
+.ad-mini-icon{width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;}
+.ad-mini-text{flex:1;min-width:0;}
+.ad-mini-title{font-size:11px;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.ad-mini-desc{font-size:9px;color:rgba(255,255,255,.35);margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.ad-mini-tag{font-size:7px;color:rgba(255,255,255,.2);text-transform:uppercase;letter-spacing:1px;flex-shrink:0;}
 .ad-interstitial-card{
   width:90%;max-width:420px;padding:32px 28px;border-radius:20px;
   text-align:center;position:relative;overflow:hidden;
@@ -5611,6 +5624,37 @@ function updateTutorial() {
 if (!localStorage.getItem('byflow_tutorial_done')) {
   setTimeout(openTutorial, 1500);
 }
+// ── Mini Ad Banners — discretos, estilo Uber/Didi ──
+function adRenderMini(container) {
+  if (typeof isPremium === 'function' && isPremium()) return; // PRO = sin ads
+  fetch('/api/ads').then(r => r.json()).then(ads => {
+    if (!Array.isArray(ads) || !ads.length) return;
+    var ad = ads[Math.floor(Math.random() * ads.length)];
+    var el = document.createElement('a');
+    el.className = 'ad-mini';
+    el.href = ad.url || '#';
+    el.target = ad.url && ad.url.startsWith('http') ? '_blank' : '_self';
+    el.rel = 'noopener';
+    el.innerHTML = '<div class="ad-mini-icon" style="background:' + (ad.bg || 'rgba(255,138,0,.1)') + ';">' +
+      (ad.id === 'pro' ? '&#x2B50;' : '&#x1F4E2;') + '</div>' +
+      '<div class="ad-mini-text"><div class="ad-mini-title">' + (ad.title || '') + '</div>' +
+      '<div class="ad-mini-desc">' + (ad.text || '').substring(0, 60) + '</div></div>' +
+      '<span class="ad-mini-tag">Ad</span>';
+    var target = typeof container === 'string' ? document.getElementById(container) : container;
+    if (target) target.appendChild(el);
+  }).catch(function(){});
+}
+// Insertar mini ad en la sidebar despues de la cola
+setTimeout(function() {
+  var cola = document.getElementById('lista-cola');
+  if (cola && cola.parentNode) adRenderMini(cola.parentNode);
+}, 5000);
+// Ping analytics
+setTimeout(function() {
+  var uid = localStorage.getItem('byflow_user_uid') || 'anon';
+  fetch('/api/analytics/ping', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ uid: uid }) }).catch(function(){});
+}, 3000);
+
 // Welcome overlay se cierra SOLO cuando el usuario hace login o selecciona modo gratis
 
 // Welcome buttons — addEventListener en vez de onclick para garantizar que funcionen
