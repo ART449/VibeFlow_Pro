@@ -1,0 +1,42 @@
+[
+  {
+    "id": "greyhound",
+    "title": "Servicio Automotriz Greyhound",
+    "text": "Mantenimiento preventivo y reparacion. Refacciones originales. Calle Vicencio 112, Obraje, AGS",
+    "cta": "Llamar",
+    "url": "tel:4499164035",
+    "bg": "linear-gradient(135deg, #334155, #1e293b)"
+  },
+  {
+    "id": "donpato",
+    "title": "Birrieria Don Pato",
+    "text": "Birria al estilo Aguascalientes. Desayuno, comida y cena. Jose Maria Chavez 701, AGS",
+    "cta": "Pedir",
+    "url": "https://www.ubereats.com/mx-en/store/birrieria-don-pato/r-Sm2R85UvKpML7w6q80_Q",
+    "bg": "linear-gradient(135deg, #dc2626, #991b1b)"
+  },
+  {
+    "id": "carajillo",
+    "title": "Carajillo Restaurante",
+    "text": "Cocina mexicana y bar. Lun-Sab 1pm-1am. Av Independencia 1845, AGS",
+    "cta": "Reservar",
+    "url": "https://www.opentable.com/r/carajillo-aguascalientes",
+    "bg": "linear-gradient(135deg, #92400e, #78350f)"
+  },
+  {
+    "id": "ojodeagua",
+    "title": "Ojo de Agua",
+    "text": "Desayunos frescos, jugos, bowls y ensaladas. Saludable por tradicion. Plaza Tribeca, AGS",
+    "cta": "Ver menu",
+    "url": "https://grupoojodeagua.com.mx/en/menu-en/",
+    "bg": "linear-gradient(135deg, #059669, #047857)"
+  },
+  {
+    "id": "pro",
+    "title": "ByFlow PRO",
+    "text": "Sin anuncios + todas las funciones. Usa DEMO-BYFLOW-2026",
+    "cta": "Activar",
+    "url": "#pro",
+    "bg": "linear-gradient(135deg, #7c3aed, #6d28d9)"
+  }
+]
