@@ -105,10 +105,10 @@ function registerRoutes(app, state, helpers) {
     res.json({ ok: true, message: 'Log de seguridad limpiado' });
   });
 
-  // API Keys endpoint
+  // API Keys endpoint — only serve keys from env vars, no hardcoded fallbacks
   app.get('/api/config/keys', (req, res) => {
     res.json({
-      youtube: process.env.YOUTUBE_API_KEY || 'AIzaSyBTFWSrpFCNagcOgPPGt0BZA5A8v5TgT7w',
+      youtube: process.env.YOUTUBE_API_KEY || '',
       jamendo: process.env.JAMENDO_CLIENT_ID || '',
       ga: process.env.GA_MEASUREMENT_ID || ''
     });

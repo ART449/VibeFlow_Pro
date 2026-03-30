@@ -151,10 +151,16 @@ function registerRoutes(app, _state, helpers) {
 
   // POS License verification
   app.get('/api/pos/license', (req, res) => {
+    const ip = req.ip || req.connection?.remoteAddress || 'unknown';
+    if (!helpers.checkRateLimit(ip, 10, 60000)) {
+      return res.status(429).json({ ok: false, error: 'Demasiados intentos. Espera 1 minuto.' });
+    }
+
     const email = typeof req.query.email === 'string' ? req.query.email.trim().slice(0, 200) : '';
     const key = typeof req.query.key === 'string' ? req.query.key.trim() : '';
     const subs = readSubs();
 
+    // Email lookup: return status only, NEVER the key
     if (email && subs.posLicenses && subs.posLicenses[email]) {
       const lic = subs.posLicenses[email];
       const user = subs.users?.[email] || {};
@@ -162,18 +168,18 @@ function registerRoutes(app, _state, helpers) {
       return res.json({
         ok: true, active: isActive,
         plan: lic.plan, email,
-        key: lic.key,
         activatedAt: lic.activatedAt
       });
     }
 
+    // Key lookup: only confirm if key matches, never expose other keys
     if (key) {
       if (!validateKeySignature(key, LICENSE_SECRET)) return res.json({ ok: false, error: 'Licencia invalida' });
       for (const [e, lic] of Object.entries(subs.posLicenses || {})) {
         if (lic.key === key) {
           const user = subs.users?.[e] || {};
           const isActive = user.status === 'active' || lic.plan === 'POS_VITALICIO';
-          return res.json({ ok: true, active: isActive, plan: lic.plan, email: e, key });
+          return res.json({ ok: true, active: isActive, plan: lic.plan, email: e, activatedAt: lic.activatedAt });
         }
       }
     }
@@ -195,7 +201,25 @@ function registerRoutes(app, _state, helpers) {
     if (!stripe) return res.status(503).json({ error: 'Pagos no configurados todavia' });
     const { email } = req.body || {};
     if (!email) return res.status(400).json({ error: 'Email requerido' });
+
+    // Auth: require a valid POS license key or license token matching this email
+    const posKey = req.headers['x-pos-key'] || '';
+    const licenseToken = req.headers['x-license-token'] || '';
+    let authorized = false;
     const subs = readSubs();
+
+    if (posKey && subs.posLicenses) {
+      const lic = subs.posLicenses[email];
+      if (lic && lic.key === posKey) authorized = true;
+    }
+    if (!authorized && licenseToken && helpers.getLicenseByToken) {
+      const lic = helpers.getLicenseByToken(licenseToken);
+      if (lic && lic.owner && lic.owner.toLowerCase() === email.toLowerCase()) authorized = true;
+    }
+    if (!authorized) {
+      return res.status(401).json({ error: 'Autenticacion requerida. Proporciona x-pos-key o x-license-token.' });
+    }
+
     const user = subs.users[email];
     if (!user?.stripeCustomerId) return res.status(404).json({ error: 'Cliente no encontrado' });
     try {

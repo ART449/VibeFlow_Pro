@@ -72,8 +72,11 @@ function registerRoutes(app, state, helpers) {
       return res.status(429).json({ error: 'Demasiados intentos. Espera 1 minuto.' });
     }
     const key = (req.body.key || '').trim().toUpperCase();
-    // Demo key — PRO gratis por 1 hora, sin restriccion
+    // Demo key — only accepted if explicitly enabled via env var
     if (key === 'DEMO-BYFLOW-2026') {
+      if (process.env.ALLOW_DEMO_KEY !== 'true') {
+        return res.status(403).json({ error: 'Clave demo deshabilitada en produccion' });
+      }
       const demoToken = crypto.randomBytes(24).toString('hex');
       const demoExpiry = new Date(Date.now() + 60 * 60 * 1000).toISOString();
       return res.json({

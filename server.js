@@ -173,7 +173,12 @@ function checkRateLimit(ip, maxAttempts = 5, windowMs = 60000) {
 
 function requireRoomAuth(req, res, next) {
   const roomId = req.headers['x-room-id'];
-  if (!roomId) return next();
+  const isDestructive = req.method === 'DELETE' || (req.method === 'POST' && /clean/i.test(req.path));
+  // Destructive endpoints MUST have a valid room header
+  if (!roomId) {
+    if (isDestructive) return res.status(403).json({ error: 'X-Room-ID header requerido para esta operacion' });
+    return next();
+  }
   if (rooms[roomId]) return next();
   return res.status(403).json({ error: 'Room ID invalido o inactivo' });
 }

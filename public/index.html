@@ -3783,7 +3783,7 @@ function getMyRoomId() {
   // DJ: generate or reuse session room
   let rid = sessionStorage.getItem('bf_room');
   if (!rid) {
-    rid = Math.random().toString(36).substring(2, 8).toUpperCase();
+    rid = (crypto.getRandomValues(new Uint8Array(16)).reduce((s, b) => s + b.toString(16).padStart(2, '0'), '')).substring(0, 16).toUpperCase();
     sessionStorage.setItem('bf_room', rid);
   }
   return rid;

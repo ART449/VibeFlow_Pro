@@ -1,5 +1,6 @@
 // ── Perfiles de Creador + Actividad — routes/perfiles.js ────────────────────
 const crypto = require('crypto');
+const bcrypt = require('bcryptjs');
 const fs = require('fs');
 const path = require('path');
 
@@ -45,7 +46,7 @@ function registerRoutes(app, _state, helpers) {
   const { readLetrasBeat } = helpers;
 
   // POST — Registrar perfil
-  app.post('/api/perfiles/register', (req, res) => {
+  app.post('/api/perfiles/register', async (req, res) => {
     const { alias, pin, nombre, bio } = req.body;
     if (!alias || !pin) return res.status(400).json({ error: 'alias y pin son requeridos' });
     if (alias.length > 30) return res.status(400).json({ error: 'alias max 30 caracteres' });
@@ -55,7 +56,7 @@ function registerRoutes(app, _state, helpers) {
     const key = alias.toLowerCase().trim();
     if (perfiles[key]) return res.status(409).json({ error: 'Ese alias ya existe' });
 
-    const pinHash = crypto.createHash('sha256').update(pin).digest('hex');
+    const pinHash = await bcrypt.hash(pin, 10);
     perfiles[key] = {
       alias: alias.trim().slice(0, 30),
       pinHash,
@@ -69,8 +70,18 @@ function registerRoutes(app, _state, helpers) {
     res.status(201).json({ alias: perfiles[key].alias, nombre: perfiles[key].nombre, bio: perfiles[key].bio, token });
   });
 
-  // POST — Login
-  app.post('/api/perfiles/login', (req, res) => {
+  // POST — Login (rate limited: 5 attempts per IP per minute)
+  const _loginRateLimits = {};
+  app.post('/api/perfiles/login', async (req, res) => {
+    const ip = req.ip || req.connection?.remoteAddress || 'unknown';
+    const now = Date.now();
+    if (!_loginRateLimits[ip]) _loginRateLimits[ip] = [];
+    _loginRateLimits[ip] = _loginRateLimits[ip].filter(t => now - t < 60000);
+    if (_loginRateLimits[ip].length >= 5) {
+      return res.status(429).json({ error: 'Demasiados intentos. Espera 1 minuto.' });
+    }
+    _loginRateLimits[ip].push(now);
+
     const { alias, pin } = req.body;
     if (!alias || !pin) return res.status(400).json({ error: 'alias y pin son requeridos' });
 
@@ -79,8 +90,20 @@ function registerRoutes(app, _state, helpers) {
     const perfil = perfiles[key];
     if (!perfil) return res.status(404).json({ error: 'Perfil no encontrado' });
 
-    const pinHash = crypto.createHash('sha256').update(pin).digest('hex');
-    if (pinHash !== perfil.pinHash) return res.status(401).json({ error: 'PIN incorrecto' });
+    // Support both bcrypt hashes and legacy SHA-256 hashes (auto-upgrade)
+    let pinValid = false;
+    if (perfil.pinHash.startsWith('$2a$') || perfil.pinHash.startsWith('$2b$')) {
+      pinValid = await bcrypt.compare(pin, perfil.pinHash);
+    } else {
+      // Legacy SHA-256 — compare and auto-upgrade to bcrypt
+      const legacyHash = crypto.createHash('sha256').update(pin).digest('hex');
+      pinValid = (legacyHash === perfil.pinHash);
+      if (pinValid) {
+        perfil.pinHash = await bcrypt.hash(pin, 10);
+        writePerfiles(perfiles);
+      }
+    }
+    if (!pinValid) return res.status(401).json({ error: 'PIN incorrecto' });
 
     const token = crypto.randomBytes(16).toString('hex');
     _profileTokens.set(token, { key, createdAt: Date.now() });
