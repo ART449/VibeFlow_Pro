@@ -5616,13 +5616,7 @@ function updateTutorial() {
 if (!localStorage.getItem('byflow_tutorial_done')) {
   setTimeout(openTutorial, 1500);
 }
-// FAILSAFE: si el welcome overlay sigue visible despues de 10s, cerrarlo
-setTimeout(function() {
-  var ov = document.getElementById('welcome-overlay');
-  if (ov && !ov.classList.contains('hidden') && ov.style.display !== 'none') {
-    ov.classList.add('hidden');
-  }
-}, 10000);
+// Welcome overlay se cierra SOLO cuando el usuario hace login o selecciona modo gratis
 
 // Welcome buttons — addEventListener en vez de onclick para garantizar que funcionen
 (function bindWelcomeButtons() {
