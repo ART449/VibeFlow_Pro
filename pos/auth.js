@@ -219,6 +219,7 @@ function authMiddleware(req, res, next) {
   if (req.path === '/auth/login' || req.path === '/pos/auth/login') return next();
   if (req.path === '/auth/authorize' || req.path === '/pos/auth/authorize') return next();
   if (req.path === '/auth/setup-owner' || req.path === '/pos/auth/setup-owner') return next();
+  if (req.path === '/auth/login-email' || req.path === '/pos/auth/login-email') return next();
 
   // Skip auth for GET on public-ish routes (products, categories for menu display)
   const publicGets = ['/products', '/categories', '/happy-hour/active',
@@ -359,5 +360,6 @@ module.exports = {
   authenticate, authMiddleware, validateToken,
   hasPermission, getPermissions, hashPin, verifyPin,
   authorizeAction, getDefaultView, getSidebarForRole,
+  generateTokenForEmployee: generateToken,
   ROLE_LEVELS, ROLE_PERMISSIONS, AUTH_REQUIREMENTS, VALID_ROLES
 };

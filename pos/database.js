@@ -433,6 +433,15 @@ function runMigrations(db) {
     } catch (_) { /* index may already exist */ }
   }
 
+  // ═══ EMPLOYEE EMAIL MIGRATION: Add email column for Google login ═══
+  try {
+    db.exec("ALTER TABLE employees ADD COLUMN email TEXT DEFAULT ''");
+    console.log('[POS-DB] Migration: added email to employees');
+  } catch (_) { /* already exists */ }
+  try {
+    db.exec("CREATE INDEX IF NOT EXISTS idx_employees_email ON employees(email)");
+  } catch (_) {}
+
   // bar_settings migration: change from single-key PK to composite (key, bar_id)
   // Check if migration is needed by looking at table schema
   try {
@@ -511,7 +520,7 @@ function seedData(db) {
   // ═══ EMPLOYEES ═══
   const insertEmp = db.prepare('INSERT INTO employees (name, pin, role, role_level, area, avatar, bar_id) VALUES (?,?,?,?,?,?,?)');
   const employees = [
-    ['Arturo Torres', hashPin('000000'), 'dueno', 0, 'todos', '', 'default'],
+    ['Arturo Torres', hashPin('147258'), 'dueno', 0, 'todos', '', 'default'],
     ['Ana Garcia', hashPin('1111'), 'gerente', 1, 'todos', '', 'default'],
     ['Luis Mendez', hashPin('2222'), 'capitan', 2, 'salon', '', 'default'],
     ['Juan Perez', hashPin('3333'), 'mesero', 4, 'salon', '', 'default'],

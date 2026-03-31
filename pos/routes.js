@@ -86,6 +86,57 @@ function registerRoutes(app) {
     });
   });
 
+  // ═══ LOGIN BY EMAIL (Google Auth — no PIN needed) ═══
+  app.post('/pos/auth/login-email', posJson, (req, res) => {
+    const db = getDb();
+    const { email, bar_id } = req.body || {};
+    if (!email || typeof email !== 'string') {
+      return res.json({ ok: false, error: 'Email requerido' });
+    }
+    const cleanEmail = email.trim().toLowerCase();
+    const effectiveBarId = (typeof bar_id === 'string' && bar_id) ? bar_id : (req.headers['x-bar-id'] || 'default');
+
+    // Find employee by email in this bar
+    const emp = db.prepare('SELECT * FROM employees WHERE email = ? AND bar_id = ? AND active = 1').get(cleanEmail, effectiveBarId);
+
+    if (!emp) {
+      // Not found in this bar — check ALL bars (employee might be in another bar)
+      const empAny = db.prepare('SELECT * FROM employees WHERE email = ? AND active = 1').get(cleanEmail);
+      if (empAny) {
+        // Found in another bar
+        const token = auth.generateTokenForEmployee(empAny.id, empAny.role, empAny.role_level, empAny.bar_id);
+        return res.json({
+          ok: true,
+          employee: {
+            id: empAny.id, name: empAny.name, role: empAny.role,
+            area: empAny.area, avatar: empAny.avatar, bar_id: empAny.bar_id
+          },
+          token,
+          bar_id: empAny.bar_id,
+          defaultView: auth.getDefaultView(empAny.role),
+          sidebar: auth.getSidebarForRole(empAny.role)
+        });
+      }
+      return res.json({ ok: false, error: 'No hay cuenta de empleado con este email' });
+    }
+
+    // Found — generate token and login
+    const token = auth.generateTokenForEmployee(emp.id, emp.role, emp.role_level, emp.bar_id);
+    db.prepare('UPDATE employees SET last_login = datetime(?) WHERE id = ?').run(new Date().toISOString(), emp.id);
+
+    res.json({
+      ok: true,
+      employee: {
+        id: emp.id, name: emp.name, role: emp.role,
+        area: emp.area, avatar: emp.avatar, bar_id: emp.bar_id
+      },
+      token,
+      bar_id: emp.bar_id,
+      defaultView: auth.getDefaultView(emp.role),
+      sidebar: auth.getSidebarForRole(emp.role)
+    });
+  });
+
   // ═══ FIRST-TIME OWNER SETUP (unauthenticated — only works for empty bars) ═══
   app.post('/pos/auth/setup-owner', posJson, (req, res) => {
     const db = getDb();
@@ -105,9 +156,10 @@ function registerRoutes(app) {
     }
 
     const hashedPin = auth.hashPin(pin);
+    const cleanEmail = typeof email === 'string' ? email.trim().toLowerCase() : '';
     const result = db.prepare(
-      'INSERT INTO employees (name, pin, role, role_level, area, avatar, bar_id) VALUES (?,?,?,?,?,?,?)'
-    ).run(sanitize(name, 100), hashedPin, 'dueno', 0, 'todos', '', bar_id);
+      'INSERT INTO employees (name, pin, role, role_level, area, avatar, bar_id, email) VALUES (?,?,?,?,?,?,?,?)'
+    ).run(sanitize(name, 100), hashedPin, 'dueno', 0, 'todos', '', bar_id, cleanEmail);
 
     // Seed default settings for this bar
     const seedSettings = [
