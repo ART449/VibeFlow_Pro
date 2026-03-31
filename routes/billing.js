@@ -227,6 +227,31 @@ function registerRoutes(app, _state, helpers) {
       res.json({ url: session.url });
     } catch (err) { console.error('[Stripe] Portal error:', err.message); res.status(500).json({ error: 'Error al abrir portal' }); }
   });
+  // ── Bootstrap: grant first owner license (works ONCE, no admin key needed) ──
+  app.post('/api/pos/license/bootstrap', (req, res) => {
+    const subs = readSubs();
+    const existingCount = Object.keys(subs.posLicenses || {}).length;
+    if (existingCount > 0) {
+      return res.status(403).json({ error: 'Bootstrap ya fue usado. Usa /api/pos/license/grant con admin key.' });
+    }
+    const email = typeof req.body.email === 'string' ? req.body.email.trim().toLowerCase() : '';
+    if (!email) return res.status(400).json({ error: 'Email requerido' });
+
+    const licenseKey = generateLicenseKey(LICENSE_SECRET);
+    const licenseEntry = {
+      key: licenseKey, plan: 'POS_VITALICIO', email, type: 'pos',
+      activated: true, activatedAt: new Date().toISOString(),
+      bootstrap: true
+    };
+    if (!subs.posLicenses) subs.posLicenses = {};
+    subs.posLicenses[email] = licenseEntry;
+    if (!subs.users) subs.users = {};
+    subs.users[email] = { posLicenseKey: licenseKey, posActive: true, plan: 'POS_VITALICIO', status: 'active', updatedAt: new Date().toISOString() };
+    writeSubs(subs);
+    console.log('[Bootstrap] First POS license granted to', email, ':', licenseKey);
+    res.json({ ok: true, email, plan: 'POS_VITALICIO', key: licenseKey });
+  });
+
   // ── Admin: grant POS license manually ─────────────────────────────────────
   app.post('/api/pos/license/grant', (req, res) => {
     const adminKey = req.headers['x-admin-key'];
