@@ -3062,6 +3062,9 @@ function confirmCloseShift() {
 .cobrar-item .ci-n{flex:1;}
 .cobrar-item .ci-p{font-weight:600;color:var(--sub);}
 .cobrar-totals{padding:12px 20px;border-bottom:1px solid var(--border);}
+.cobrar-glance{padding:10px 20px;border-bottom:1px solid var(--border);display:flex;gap:6px;flex-wrap:wrap;}
+.cg-chip{padding:6px 10px;border-radius:999px;background:var(--surface);border:1px solid var(--border);font-size:10px;font-weight:700;color:var(--sub);}
+.cg-chip strong{color:var(--text);}
 .cobrar-tr{display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px;}
 .cobrar-tr.disc{color:var(--green);}
 .cobrar-tr.grand{font-size:16px;font-weight:800;color:var(--orange);margin-top:6px;padding-top:6px;border-top:1px solid var(--border);}
@@ -3085,8 +3088,14 @@ function confirmCloseShift() {
 .efectivo-row label{font-size:11px;color:var(--sub);white-space:nowrap;}
 .efectivo-row input{flex:1;padding:8px 10px;border-radius:8px;background:var(--surface);border:1px solid var(--border);color:var(--text);font-size:14px;font-weight:700;font-family:inherit;text-align:right;}
 .efectivo-row input:focus{outline:none;border-color:rgba(255,138,0,.4);}
+.cash-shortcuts{margin-top:8px;display:none;gap:6px;flex-wrap:wrap;}
+.cash-shortcuts.show{display:flex;}
+.cash-chip{padding:7px 10px;border-radius:999px;border:1px solid var(--border);background:var(--surface);color:var(--sub);font-size:10px;font-weight:700;cursor:pointer;transition:all .15s;font-family:inherit;}
+.cash-chip:hover{background:var(--surface2);color:var(--text);}
+.cash-chip.active{background:rgba(255,138,0,.1);border-color:rgba(255,138,0,.3);color:var(--orange);}
 .cambio-display{margin-top:6px;display:none;text-align:right;font-size:13px;font-weight:700;color:var(--green);}
 .cambio-display.show{display:block;}
+.cambio-display.is-warning{color:var(--red);}
 .cobrar-action{padding:12px 20px 20px;display:flex;gap:8px;}
 .cobrar-btn{flex:1;padding:12px;border-radius:12px;border:none;font-size:13px;font-weight:800;cursor:pointer;transition:all .15s;font-family:inherit;}
 .cobrar-btn:hover{transform:translateY(-1px);filter:brightness(1.1);}
@@ -3167,6 +3176,7 @@ function confirmCloseShift() {
     </div>
     <div class="cobrar-summary" id="cobrar-summary"></div>
     <div class="cobrar-totals" id="cobrar-totals"></div>
+    <div class="cobrar-glance" id="cobrar-glance"></div>
     <div class="cobrar-section">
       <div class="cobrar-section-title">Propina</div>
       <div class="tip-btns">
@@ -3189,8 +3199,9 @@ function confirmCloseShift() {
       </div>
       <div class="efectivo-row show" id="efectivo-row">
         <label>Recibido:</label>
-        <input type="number" id="cash-received" placeholder="0" min="0" step="1" oninput="calcCambio()">
+        <input type="number" id="cash-received" placeholder="0" min="0" step="1" oninput="calcCambio()" onkeydown="if(event.key==='Enter'&&!document.getElementById('cobrar-confirm-btn').disabled)processCobro()">
       </div>
+      <div class="cash-shortcuts" id="cash-shortcuts"></div>
       <div class="cambio-display" id="cambio-display"></div>
     </div>
     <div class="cobrar-action">
@@ -3325,16 +3336,100 @@ function openCobrarModal() {
     });
   }
 
+function getCobrarGrandTotal() {
+  return Number(_cobrarState.total || 0) + Number(_cobrarState.tipAmount || 0);
+}
+
+function getCashShortcutValues(total) {
+  var exact = Math.ceil(Number(total || 0));
+  var values = [exact];
+  [20, 50, 100, 200].forEach(function(step) {
+    var rounded = Math.ceil(exact / step) * step;
+    if (rounded >= exact) values.push(rounded);
+  });
+  return values.filter(function(value, index, arr) {
+    return value > 0 && arr.indexOf(value) === index;
+  }).slice(0, 4);
+}
+
+function renderCobrarGlance() {
+  var total = getCobrarGrandTotal();
+  var methodLabels = { efectivo: 'Efectivo', tarjeta: 'Tarjeta', transferencia: 'Transferencia' };
+  var itemsCount = (_cobrarState.items || []).reduce(function(sum, item) {
+    return sum + (parseInt(item.qty, 10) || 1);
+  }, 0);
+  var glance = document.getElementById('cobrar-glance');
+  if (!glance) return;
+  glance.innerHTML =
+    '<div class="cg-chip"><strong>' + escapeHtml(_cobrarState.tableName || 'Mesa') + '</strong></div>' +
+    '<div class="cg-chip">' + itemsCount + ' item(s)</div>' +
+    '<div class="cg-chip">Pago: <strong>' + escapeHtml(methodLabels[_cobrarState.method] || 'Pendiente') + '</strong></div>' +
+    '<div class="cg-chip">Total: <strong>$' + total.toLocaleString() + '</strong></div>';
+}
+
+function renderCashShortcuts() {
+  var shortcuts = document.getElementById('cash-shortcuts');
+  if (!shortcuts) return;
+  if (_cobrarState.method !== 'efectivo') {
+    shortcuts.classList.remove('show');
+    shortcuts.innerHTML = '';
+    return;
+  }
+  var current = Math.ceil(Number(_cobrarState.cashReceived || 0));
+  var values = getCashShortcutValues(getCobrarGrandTotal());
+  shortcuts.classList.add('show');
+  shortcuts.innerHTML = values.map(function(value, index) {
+    var label = index === 0 ? 'Exacto' : 'Cobrar con';
+    var activeClass = current === value ? ' active' : '';
+    return '<button type="button" class="cash-chip' + activeClass + '" onclick="applyCashShortcut(' + value + ')">' + label + ' $' + value.toLocaleString() + '</button>';
+  }).join('');
+}
+
+function applyCashShortcut(value) {
+  var cashInput = document.getElementById('cash-received');
+  if (!cashInput) return;
+  cashInput.value = String(value);
+  cashInput.focus();
+  cashInput.select();
+  calcCambio();
+}
+
+function updateCobrarConfirmState() {
+  var btn = document.getElementById('cobrar-confirm-btn');
+  if (!btn || btn.dataset.busyLock === '1') return;
+  var total = getCobrarGrandTotal();
+  if (_cobrarState.method === 'efectivo') {
+    var received = Number(_cobrarState.cashReceived || 0);
+    if (received <= 0) {
+      btn.disabled = true;
+      btn.textContent = 'Ingresa efectivo';
+      btn.title = 'Captura el monto recibido para cerrar el pago en efectivo';
+      return;
+    }
+    if (received < total) {
+      btn.disabled = true;
+      btn.textContent = 'Faltan $' + (total - received).toLocaleString();
+      btn.title = 'El efectivo recibido todavia no cubre el total';
+      return;
+    }
+  }
+  btn.disabled = false;
+  btn.textContent = 'Cobrar $' + total.toLocaleString();
+  btn.title = 'Confirmar el cobro de la cuenta';
+}
+
 function renderCobrarTotals() {
   var s = _cobrarState;
-  var grandTotal = s.total + s.tipAmount;
+  var grandTotal = getCobrarGrandTotal();
   var html = '<div class="cobrar-tr"><span>Subtotal</span><span>$' + s.subtotal.toLocaleString() + '</span></div>';
   if (s.discount > 0) html += '<div class="cobrar-tr disc"><span>Descuento</span><span>-$' + s.discount.toLocaleString() + '</span></div>';
   html += '<div class="cobrar-tr"><span>IVA ' + Math.round(s.taxRate * 100) + '%</span><span>$' + s.tax.toLocaleString() + '</span></div>';
   if (s.tipAmount > 0) html += '<div class="cobrar-tr"><span>Propina (' + (s.tipPercent >= 0 ? s.tipPercent + '%' : 'custom') + ')</span><span>$' + s.tipAmount.toLocaleString() + '</span></div>';
   html += '<div class="cobrar-tr grand"><span>Total a cobrar</span><span>$' + grandTotal.toLocaleString() + '</span></div>';
   document.getElementById('cobrar-totals').innerHTML = html;
-  document.getElementById('cobrar-confirm-btn').textContent = 'Cobrar $' + grandTotal.toLocaleString();
+  renderCobrarGlance();
+  renderCashShortcuts();
+  updateCobrarConfirmState();
 }
 
 function closeCobrarModal() { document.getElementById('cobrar-overlay').classList.remove('open'); }
@@ -3373,10 +3468,13 @@ function setPayMethod(method, btn) {
     }, 20);
   }
   else { document.getElementById('efectivo-row').classList.remove('show'); document.getElementById('cambio-display').classList.remove('show'); }
+  renderCobrarGlance();
+  renderCashShortcuts();
+  updateCobrarConfirmState();
 }
 
 function calcCambio() {
-  var grandTotal = _cobrarState.total + _cobrarState.tipAmount;
+  var grandTotal = getCobrarGrandTotal();
   var received = parseFloat(document.getElementById('cash-received').value) || 0;
   _cobrarState.cashReceived = received;
   var change = received - grandTotal;
@@ -3384,15 +3482,21 @@ function calcCambio() {
   var display = document.getElementById('cambio-display');
   if (received > 0) {
     display.classList.add('show');
+    display.classList.toggle('is-warning', change < 0);
     display.innerHTML = change >= 0
       ? 'Cambio: <span style="color:var(--green);">$' + _cobrarState.change.toLocaleString() + '</span>'
-      : 'Falta: <span style="color:var(--red);">$' + Math.abs(change).toLocaleString() + '</span>';
-  } else { display.classList.remove('show'); }
+      : 'Restan: <span style="color:var(--red);">$' + Math.abs(change).toLocaleString() + '</span>';
+  } else {
+    display.classList.remove('show');
+    display.classList.remove('is-warning');
+  }
+  renderCashShortcuts();
+  updateCobrarConfirmState();
 }
 
 function processCobro() {
   var s = _cobrarState;
-  var grandTotal = s.total + s.tipAmount;
+  var grandTotal = getCobrarGrandTotal();
   if (s.method === 'efectivo' && s.cashReceived > 0 && s.cashReceived < grandTotal) {
     toast('El monto recibido no cubre el total', 'error'); return;
   }
