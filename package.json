@@ -7,7 +7,10 @@
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
-    "test": "jest --verbose --forceExit"
+    "test": "jest --verbose --forceExit",
+    "cap:copy:android": "npx cap copy android",
+    "cap:sync:android": "npx cap sync android",
+    "cap:open:android": "npx cap open android"
   },
   "engines": {
     "node": ">=18.0.0"
