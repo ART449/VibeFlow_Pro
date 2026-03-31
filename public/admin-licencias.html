@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ByFlow — Admin Licencias POS</title>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+<script>
+firebase.initializeApp({
+  apiKey: "AIzaSyCrdTH1CvJj-kHX_LR5kzPmlxVG8fkaQpM",
+  authDomain: "byflow-d3a0f.firebaseapp.com",
+  projectId: "byflow-d3a0f"
+});
+const _fbAuth = firebase.auth();
+</script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+body{min-height:100vh;background:#07070d;color:#e8e8f0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;padding:20px;}
+.wrap{max-width:500px;margin:0 auto;}
+h1{font-size:1.2rem;font-weight:900;background:linear-gradient(135deg,#ff006e,#8338ec);-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:4px;}
+.sub{font-size:.65rem;color:rgba(255,255,255,.3);letter-spacing:2px;text-transform:uppercase;margin-bottom:20px;}
+.card{background:rgba(14,14,24,.8);border:1px solid rgba(255,255,255,.06);border-radius:16px;padding:20px;margin-bottom:16px;}
+.card h2{font-size:.85rem;font-weight:700;margin-bottom:12px;color:#ff8a00;}
+label{font-size:.7rem;color:rgba(255,255,255,.4);display:block;margin-bottom:4px;text-transform:uppercase;letter-spacing:1px;}
+input,select{width:100%;padding:12px;border-radius:10px;border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.04);color:#e8e8f0;font-size:.85rem;margin-bottom:12px;outline:none;}
+input:focus,select:focus{border-color:rgba(255,138,0,.4);}
+.btn{width:100%;padding:14px;border:none;border-radius:12px;font-size:.9rem;font-weight:800;cursor:pointer;transition:all .2s;}
+.btn-primary{background:linear-gradient(135deg,#ff8a00,#ff6b00);color:#fff;}
+.btn-primary:hover{transform:translateY(-1px);box-shadow:0 6px 20px rgba(255,138,0,.3);}
+.btn-primary:disabled{opacity:.5;cursor:not-allowed;transform:none;box-shadow:none;}
+.btn-danger{background:rgba(239,68,68,.12);color:#ef4444;border:1px solid rgba(239,68,68,.2);}
+.btn-sm{padding:8px 14px;font-size:.7rem;width:auto;border-radius:8px;}
+.result{padding:14px;border-radius:10px;margin-top:12px;font-size:.8rem;display:none;}
+.result.ok{display:block;background:rgba(0,245,160,.08);border:1px solid rgba(0,245,160,.2);color:#00f5a0;}
+.result.err{display:block;background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.2);color:#ef4444;}
+.lic-item{padding:12px;border:1px solid rgba(255,255,255,.06);border-radius:10px;margin-bottom:8px;background:rgba(255,255,255,.02);}
+.lic-email{font-size:.8rem;font-weight:700;}
+.lic-meta{font-size:.65rem;color:rgba(255,255,255,.35);margin-top:4px;}
+.lic-key{font-size:.65rem;color:#ff8a00;font-family:monospace;margin-top:4px;}
+.badge{display:inline-block;padding:2px 8px;border-radius:6px;font-size:.6rem;font-weight:700;text-transform:uppercase;}
+.badge-active{background:rgba(0,245,160,.12);color:#00f5a0;}
+.badge-inactive{background:rgba(239,68,68,.12);color:#ef4444;}
+.login-gate{text-align:center;padding:60px 20px;}
+.login-gate .btn{max-width:300px;margin:10px auto;}
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);padding:10px 20px;border-radius:10px;background:rgba(0,0,0,.9);color:#fff;font-size:.75rem;z-index:9999;opacity:0;transition:opacity .3s;}
+.toast.show{opacity:1;}
+#lic-list{max-height:400px;overflow-y:auto;}
+.stats{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:16px;}
+.stat{text-align:center;padding:10px;border-radius:10px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.05);}
+.stat-num{font-size:1.4rem;font-weight:900;color:#ff8a00;}
+.stat-label{font-size:.55rem;color:rgba(255,255,255,.3);text-transform:uppercase;letter-spacing:1px;}
+.hidden{display:none!important;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>ByFlow Admin</h1>
+  <div class="sub">Generador de Licencias POS</div>
+
+  <!-- Login Gate -->
+  <div id="login-gate" class="login-gate">
+    <div style="font-size:3rem;margin-bottom:16px;">&#x1F510;</div>
+    <div style="font-size:.85rem;margin-bottom:20px;color:rgba(255,255,255,.5);">Solo el administrador puede acceder</div>
+    <button class="btn btn-primary" onclick="adminLogin()" style="max-width:300px;">Entrar con Google</button>
+  </div>
+
+  <!-- Admin Panel (hidden until auth) -->
+  <div id="admin-panel" class="hidden">
+
+    <!-- Stats -->
+    <div class="stats">
+      <div class="stat"><div class="stat-num" id="st-total">0</div><div class="stat-label">Total</div></div>
+      <div class="stat"><div class="stat-num" id="st-active">0</div><div class="stat-label">Activas</div></div>
+      <div class="stat"><div class="stat-num" id="st-plans">0</div><div class="stat-label">Planes</div></div>
+    </div>
+
+    <!-- Generate -->
+    <div class="card">
+      <h2>&#x1F511; Generar Licencia</h2>
+      <label>Email del cliente</label>
+      <input type="email" id="gen-email" placeholder="cliente@ejemplo.com">
+      <label>Plan</label>
+      <select id="gen-plan">
+        <option value="POS_STARTER">POS Starter ($499/mes)</option>
+        <option value="POS_PRO">POS Pro ($999/mes)</option>
+        <option value="POS_VITALICIO" selected>POS Vitalicio</option>
+      </select>
+      <button class="btn btn-primary" id="gen-btn" onclick="generateLicense()">Generar Licencia</button>
+      <div class="result" id="gen-result"></div>
+    </div>
+
+    <!-- Check -->
+    <div class="card">
+      <h2>&#x1F50D; Verificar Licencia</h2>
+      <input type="email" id="chk-email" placeholder="Email a verificar...">
+      <button class="btn btn-primary" onclick="checkLicense()">Verificar</button>
+      <div class="result" id="chk-result"></div>
+    </div>
+
+    <!-- List -->
+    <div class="card">
+      <h2>&#x1F4CB; Licencias Activas</h2>
+      <div id="lic-list"><div style="text-align:center;color:rgba(255,255,255,.3);font-size:.75rem;padding:20px;">Cargando...</div></div>
+    </div>
+
+    <button class="btn btn-danger" onclick="adminLogout()" style="margin-top:12px;">Cerrar Sesion</button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+var ADMIN_EMAILS = ['elricondelgeekdearturo@gmail.com'];
+var adminToken = '';
+
+function toast(msg, ms) {
+  var t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(function() { t.classList.remove('show'); }, ms || 3000);
+}
+
+function adminLogin() {
+  var provider = new firebase.auth.GoogleAuthProvider();
+  provider.setCustomParameters({ prompt: 'select_account' });
+  _fbAuth.signInWithRedirect(provider);
+}
+
+function adminLogout() {
+  _fbAuth.signOut();
+  adminToken = '';
+  document.getElementById('admin-panel').classList.add('hidden');
+  document.getElementById('login-gate').classList.remove('hidden');
+  toast('Sesion cerrada');
+}
+
+// Handle redirect
+_fbAuth.getRedirectResult().then(function(result) {
+  if (result && result.user) handleAuth(result.user);
+}).catch(function() {});
+
+_fbAuth.onAuthStateChanged(function(user) {
+  if (user) handleAuth(user);
+});
+
+function handleAuth(user) {
+  if (!ADMIN_EMAILS.includes(user.email.toLowerCase())) {
+    toast('Acceso denegado: ' + user.email);
+    _fbAuth.signOut();
+    return;
+  }
+  user.getIdToken().then(function(token) {
+    adminToken = token;
+    document.getElementById('login-gate').classList.add('hidden');
+    document.getElementById('admin-panel').classList.remove('hidden');
+    toast('Bienvenido, jefe');
+    loadLicenses();
+  });
+}
+
+async function generateLicense() {
+  var email = document.getElementById('gen-email').value.trim().toLowerCase();
+  var plan = document.getElementById('gen-plan').value;
+  var res = document.getElementById('gen-result');
+  var btn = document.getElementById('gen-btn');
+
+  if (!email || !email.includes('@')) {
+    res.className = 'result err';
+    res.textContent = 'Ingresa un email valido';
+    return;
+  }
+
+  btn.disabled = true;
+  btn.textContent = 'Generando...';
+
+  try {
+    var r = await fetch('/api/pos/license/grant', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-Admin-Key': adminToken, 'X-Admin-Email': ADMIN_EMAILS[0] },
+      body: JSON.stringify({ email: email, plan: plan })
+    });
+    var d = await r.json();
+    if (d.ok) {
+      res.className = 'result ok';
+      res.innerHTML = '<strong>Licencia creada!</strong><br>Email: ' + d.email + '<br>Plan: ' + d.plan + '<br>Key: <code>' + d.key + '</code>';
+      document.getElementById('gen-email').value = '';
+      toast('Licencia generada para ' + email);
+      loadLicenses();
+    } else {
+      res.className = 'result err';
+      res.textContent = d.error || 'Error generando licencia';
+    }
+  } catch (e) {
+    res.className = 'result err';
+    res.textContent = 'Error de conexion: ' + e.message;
+  }
+  btn.disabled = false;
+  btn.textContent = 'Generar Licencia';
+}
+
+async function checkLicense() {
+  var email = document.getElementById('chk-email').value.trim();
+  var res = document.getElementById('chk-result');
+  if (!email) { res.className = 'result err'; res.textContent = 'Ingresa un email'; return; }
+
+  try {
+    var r = await fetch('/api/pos/license?email=' + encodeURIComponent(email));
+    var d = await r.json();
+    if (d.ok && d.active) {
+      res.className = 'result ok';
+      res.innerHTML = '<strong>ACTIVA</strong> — ' + d.plan + '<br>Email: ' + d.email + '<br>Desde: ' + new Date(d.activatedAt).toLocaleDateString('es-MX');
+    } else {
+      res.className = 'result err';
+      res.textContent = 'No tiene licencia activa';
+    }
+  } catch (e) {
+    res.className = 'result err';
+    res.textContent = 'Error: ' + e.message;
+  }
+}
+
+async function loadLicenses() {
+  var list = document.getElementById('lic-list');
+  try {
+    var r = await fetch('/api/pos/license/list', {
+      headers: { 'X-Admin-Key': adminToken, 'X-Admin-Email': ADMIN_EMAILS[0] }
+    });
+    var d = await r.json();
+    if (!d.licenses || !d.licenses.length) {
+      list.innerHTML = '<div style="text-align:center;color:rgba(255,255,255,.3);font-size:.75rem;padding:20px;">Sin licencias aun</div>';
+      updateStats(0, 0, 0);
+      return;
+    }
+    var active = d.licenses.filter(function(l) { return l.active; }).length;
+    var plans = new Set(d.licenses.map(function(l) { return l.plan; }));
+    updateStats(d.licenses.length, active, plans.size);
+
+    list.innerHTML = d.licenses.map(function(l) {
+      return '<div class="lic-item">'
+        + '<div style="display:flex;justify-content:space-between;align-items:center;">'
+        + '<span class="lic-email">' + esc(l.email || 'Sin email') + '</span>'
+        + '<span class="badge ' + (l.active ? 'badge-active' : 'badge-inactive') + '">' + (l.active ? 'Activa' : 'Inactiva') + '</span>'
+        + '</div>'
+        + '<div class="lic-meta">' + (l.plan || '—') + ' &bull; ' + new Date(l.activatedAt || l.created).toLocaleDateString('es-MX') + '</div>'
+        + '<div class="lic-key">' + esc(l.key || '—') + '</div>'
+        + '</div>';
+    }).join('');
+  } catch (e) {
+    list.innerHTML = '<div style="text-align:center;color:#ef4444;font-size:.75rem;padding:20px;">Error cargando: ' + esc(e.message) + '</div>';
+  }
+}
+
+function updateStats(total, active, plans) {
+  document.getElementById('st-total').textContent = total;
+  document.getElementById('st-active').textContent = active;
+  document.getElementById('st-plans').textContent = plans;
+}
+
+function esc(s) { var d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
+</script>
+</body>
+</html>

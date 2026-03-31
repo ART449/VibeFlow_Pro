@@ -252,12 +252,18 @@ function registerRoutes(app, _state, helpers) {
     res.json({ ok: true, email, plan: 'POS_VITALICIO', key: licenseKey });
   });
 
+  // ── Admin auth check (admin key OR owner email header) ──────────────────
+  const OWNER_EMAILS = ['elricondelgeekdearturo@gmail.com'];
+  function isAdmin(req) {
+    const adminKey = req.headers['x-admin-key'];
+    if (adminKey === ADMIN_SECRET || adminKey === MASTER_ADMIN) return true;
+    const adminEmail = (req.headers['x-admin-email'] || '').trim().toLowerCase();
+    return OWNER_EMAILS.includes(adminEmail);
+  }
+
   // ── Admin: grant POS license manually ─────────────────────────────────────
   app.post('/api/pos/license/grant', (req, res) => {
-    const adminKey = req.headers['x-admin-key'];
-    if (adminKey !== ADMIN_SECRET && adminKey !== MASTER_ADMIN) {
-      return res.status(401).json({ error: 'Admin key invalida' });
-    }
+    if (!isAdmin(req)) return res.status(401).json({ error: 'Acceso denegado' });
     const email = typeof req.body.email === 'string' ? req.body.email.trim().toLowerCase() : '';
     const plan = typeof req.body.plan === 'string' ? req.body.plan.trim() : 'POS_VITALICIO';
     if (!email) return res.status(400).json({ error: 'Email requerido' });
@@ -276,6 +282,23 @@ function registerRoutes(app, _state, helpers) {
     writeSubs(subs);
     console.log('[Admin] POS license granted to', email, ':', licenseKey, 'plan:', plan);
     res.json({ ok: true, email, plan, key: licenseKey });
+  });
+
+  // ── Admin: list all POS licenses ──────────────────────────────────────────
+  app.get('/api/pos/license/list', (req, res) => {
+    if (!isAdmin(req)) return res.status(401).json({ error: 'Acceso denegado' });
+    const subs = readSubs();
+    const licenses = Object.entries(subs.posLicenses || {}).map(([email, lic]) => ({
+      email,
+      key: lic.key,
+      plan: lic.plan,
+      active: true,
+      activatedAt: lic.activatedAt,
+      created: lic.activatedAt,
+      manual: !!lic.manual,
+      bootstrap: !!lic.bootstrap
+    }));
+    res.json({ licenses });
   });
 }
 
