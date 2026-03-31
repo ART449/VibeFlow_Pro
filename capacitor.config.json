@@ -1,0 +1,24 @@
+{
+  "appId": "com.iartlabs.byflow",
+  "appName": "ByFlow",
+  "webDir": "public",
+  "server": {
+    "url": "https://byflowapp.up.railway.app",
+    "cleartext": true,
+    "allowNavigation": ["byflowapp.up.railway.app", "*.google.com", "*.googleapis.com", "*.firebaseapp.com", "*.youtube.com", "*.stripe.com"]
+  },
+  "plugins": {
+    "SplashScreen": {
+      "launchShowDuration": 2000,
+      "backgroundColor": "#0a0a0f",
+      "showSpinner": false
+    }
+  },
+  "android": {
+    "allowMixedContent": true,
+    "backgroundColor": "#0a0a0f"
+  },
+  "ios": {
+    "backgroundColor": "#0a0a0f"
+  }
+}
