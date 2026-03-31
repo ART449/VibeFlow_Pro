@@ -227,6 +227,31 @@ function registerRoutes(app, _state, helpers) {
       res.json({ url: session.url });
     } catch (err) { console.error('[Stripe] Portal error:', err.message); res.status(500).json({ error: 'Error al abrir portal' }); }
   });
+  // ── Admin: grant POS license manually ─────────────────────────────────────
+  app.post('/api/pos/license/grant', (req, res) => {
+    const adminKey = req.headers['x-admin-key'];
+    if (adminKey !== ADMIN_SECRET && adminKey !== MASTER_ADMIN) {
+      return res.status(401).json({ error: 'Admin key invalida' });
+    }
+    const email = typeof req.body.email === 'string' ? req.body.email.trim().toLowerCase() : '';
+    const plan = typeof req.body.plan === 'string' ? req.body.plan.trim() : 'POS_VITALICIO';
+    if (!email) return res.status(400).json({ error: 'Email requerido' });
+
+    const subs = readSubs();
+    const licenseKey = generateLicenseKey(LICENSE_SECRET);
+    const licenseEntry = {
+      key: licenseKey, plan, email, type: 'pos',
+      activated: true, activatedAt: new Date().toISOString(),
+      manual: true
+    };
+    if (!subs.posLicenses) subs.posLicenses = {};
+    subs.posLicenses[email] = licenseEntry;
+    if (!subs.users) subs.users = {};
+    subs.users[email] = { ...(subs.users[email] || {}), posLicenseKey: licenseKey, posActive: true, plan, status: 'active', updatedAt: new Date().toISOString() };
+    writeSubs(subs);
+    console.log('[Admin] POS license granted to', email, ':', licenseKey, 'plan:', plan);
+    res.json({ ok: true, email, plan, key: licenseKey });
+  });
 }
 
 module.exports = { registerRoutes, registerWebhook };
