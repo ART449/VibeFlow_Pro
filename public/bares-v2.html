@@ -26,7 +26,7 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--t
 @keyframes pulse{0%,100%{opacity:1;}50%{opacity:.3;}}
 .topbar-right{margin-left:auto;display:flex;gap:6px;align-items:center;}
 .tb{padding:5px 10px;border-radius:8px;border:1px solid var(--border);background:var(--surface);color:var(--sub);font-size:10px;cursor:pointer;transition:all .2s;display:flex;align-items:center;gap:4px;}
-.tb:hover{background:var(--surface2);color:var(--text);}
+.tb:hover{background:var(--surface2);color:var(--text);transform:translateY(-1px);}
 .tb.active{background:rgba(255,138,0,.1);border-color:rgba(255,138,0,.3);color:var(--orange);}
 .tb.alert{border-color:rgba(239,68,68,.3);color:var(--red);}
 .tb .notif{background:var(--red);color:#fff;font-size:8px;font-weight:800;padding:1px 4px;border-radius:4px;}
@@ -41,7 +41,7 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--t
 .sb-section{padding:10px 8px 4px;}
 .sb-title{font-size:8px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,.25);margin-bottom:6px;padding:0 8px;}
 .nav{display:flex;align-items:center;gap:7px;padding:7px 10px;border-radius:8px;font-size:11px;color:var(--sub);cursor:pointer;transition:all .15s;margin-bottom:1px;}
-.nav:hover{background:var(--surface);color:var(--text);}
+.nav:hover{background:var(--surface);color:var(--text);transform:translateX(2px);}
 .nav.active{background:rgba(255,138,0,.1);color:var(--orange);font-weight:600;}
 .nav .ni{font-size:14px;width:18px;text-align:center;}
 .nav .nb{margin-left:auto;font-size:8px;font-weight:700;padding:1px 5px;border-radius:4px;background:rgba(255,138,0,.12);color:var(--orange);}
@@ -79,7 +79,7 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--t
 
 .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(105px,1fr));gap:8px;}
 .tc{position:relative;background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:12px 10px;text-align:center;cursor:pointer;transition:all .3s;min-height:90px;display:flex;flex-direction:column;align-items:center;justify-content:center;}
-.tc:hover{transform:translateY(-2px);border-color:rgba(255,255,255,.15);}
+.tc:hover{transform:translateY(-2px) scale(1.01);border-color:rgba(255,255,255,.15);}
 .tc.libre{border-color:rgba(52,211,153,.15);}
 .tc.libre:hover{border-color:rgba(52,211,153,.4);box-shadow:0 6px 20px rgba(52,211,153,.08);}
 .tc.ocupada{background:rgba(255,138,0,.04);border-color:rgba(255,138,0,.2);}
@@ -124,7 +124,7 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--t
 .cc:hover,.cc.active{background:rgba(255,138,0,.1);color:var(--orange);border-color:rgba(255,138,0,.3);}
 .prod-grid{flex:1;overflow-y:auto;padding:6px;display:grid;grid-template-columns:repeat(2,1fr);gap:5px;align-content:start;}
 .pi{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:8px;cursor:pointer;transition:all .15s;text-align:center;}
-.pi:hover{background:var(--surface2);transform:scale(1.02);}
+.pi:hover{background:var(--surface2);transform:translateY(-1px) scale(1.02);border-color:rgba(255,138,0,.18);}
 .pi:active{transform:scale(.96);}
 .pi .pi-i{font-size:18px;}
 .pi .pi-n{font-size:10px;margin-top:2px;}
@@ -135,7 +135,12 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--t
 .order-sec{border-top:1px solid var(--border);}
 .order-h{display:flex;align-items:center;padding:6px 10px;font-size:10px;font-weight:700;color:var(--sub);}
 .order-h span{margin-left:auto;color:var(--orange);cursor:pointer;font-size:9px;}
-.order-list{max-height:140px;overflow-y:auto;padding:0 10px;}
+.order-h .order-clear.is-muted{color:var(--sub);cursor:default;}
+.order-list{max-height:140px;overflow-y:auto;padding:0 10px;scroll-behavior:smooth;}
+.order-empty{padding:18px 10px 20px;text-align:center;display:flex;flex-direction:column;gap:4px;align-items:center;justify-content:center;color:var(--sub);}
+.order-empty .oe-icon{font-size:22px;opacity:.78;}
+.order-empty .oe-title{font-size:11px;font-weight:700;color:var(--text);}
+.order-empty .oe-sub{font-size:10px;line-height:1.4;max-width:220px;}
 .ol{display:flex;align-items:center;gap:6px;padding:4px 0;border-bottom:1px solid rgba(255,255,255,.02);font-size:11px;}
 .ol .ol-q{width:18px;height:18px;border-radius:5px;background:rgba(255,138,0,.1);color:var(--orange);font-size:9px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
 .ol .ol-n{flex:1;}
@@ -150,7 +155,7 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--t
 .tr.disc{color:var(--green);}
 
 /* Acciones POS */
-.pos-actions{display:grid;grid-template-columns:repeat(2,1fr);gap:4px;padding:8px 10px;border-top:1px solid var(--border);}
+.pos-actions{display:grid;grid-template-columns:repeat(2,1fr);gap:4px;padding:8px 10px;border-top:1px solid var(--border);position:sticky;bottom:0;background:rgba(12,12,18,.98);backdrop-filter:blur(14px);box-shadow:0 -10px 30px rgba(0,0,0,.28);}
 .pb{padding:8px;border-radius:8px;border:none;font-size:10px;font-weight:700;cursor:pointer;transition:all .15s;display:flex;align-items:center;justify-content:center;gap:4px;}
 .pb:hover{transform:translateY(-1px);filter:brightness(1.1);}
 .pb:active{transform:scale(.96);}
@@ -202,6 +207,18 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--t
 .inv-cats{display:flex;gap:4px;margin-bottom:10px;overflow-x:auto;padding-bottom:4px;}
 .inv-cat{padding:5px 12px;border-radius:6px;font-size:10px;font-weight:600;background:var(--surface);color:var(--sub);border:1px solid var(--border);cursor:pointer;white-space:nowrap;}
 .inv-cat.active{background:rgba(255,138,0,.1);color:var(--orange);border-color:rgba(255,138,0,.3);}
+.tb:focus-visible,.nav:focus-visible,.tc:focus-visible,.cc:focus-visible,.pi:focus-visible,.pb:focus-visible,.k-btn:focus-visible,.tip-btn:focus-visible,.pay-method:focus-visible,.qr-actions button:focus-visible,.karaoke-add:focus-visible,.karaoke-close:focus-visible,.cobrar-btn:focus-visible,.mf-btn:focus-visible,.inv-cat:focus-visible{
+  outline:2px solid rgba(255,138,0,.55);
+  outline-offset:2px;
+}
+.tb.is-busy,.nav.is-busy,.tc.is-busy,.cc.is-busy,.pi.is-busy,.pb.is-busy,.k-btn.is-busy,.tip-btn.is-busy,.pay-method.is-busy,.karaoke-add.is-busy,.cobrar-btn.is-busy,.mf-btn.is-busy,.inv-cat.is-busy,
+button:disabled{
+  opacity:.62;
+  cursor:wait !important;
+  pointer-events:none;
+  transform:none !important;
+  filter:none !important;
+}
 .inv-table{width:100%;border-collapse:collapse;}
 .inv-table th{text-align:left;font-size:9px;font-weight:700;color:var(--sub);text-transform:uppercase;letter-spacing:1px;padding:8px 10px;border-bottom:1px solid var(--border);}
 .inv-table td{padding:8px 10px;font-size:11px;border-bottom:1px solid rgba(255,255,255,.03);}
@@ -377,6 +394,14 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--t
     <div class="nav" onclick="showView('empleados',this)"><span class="ni">&#x1F3C6;</span> <span>Rendimiento</span></div>
     <div class="nav"><span class="ni">&#x1F6E1;&#xFE0F;</span> <span>Seguridad</span></div>
     <div class="nav"><span class="ni">&#x2699;&#xFE0F;</span> <span>Config</span></div>
+  </div>
+  <div class="sb-section">
+    <div class="sb-title" style="color:#ff8a00;">IA Asistente</div>
+    <div class="nav" onclick="showView('ia-asistente',this)"><span class="ni">&#x1F41D;</span> <span>El Avispero</span> <span class="nb" style="background:rgba(255,138,0,.15);color:#ff8a00;">PRO</span></div>
+    <div class="nav" onclick="showView('ia-builders',this)"><span class="ni">&#x1F3D7;&#xFE0F;</span> <span>Builders UX/UI</span></div>
+    <div class="nav" onclick="showView('ia-contador',this)"><span class="ni">&#x1F9EE;</span> <span>Contador IA</span></div>
+    <div class="nav" onclick="showView('ia-inventario',this)"><span class="ni">&#x1F4E6;</span> <span>Inventario IA</span></div>
+    <div class="nav" onclick="showView('ia-espia',this)"><span class="ni">&#x1F576;&#xFE0F;</span> <span>Espia Mercado</span></div>
   </div>
   <div class="sb-section">
     <div class="sb-title">Hoy</div>
@@ -585,7 +610,7 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--t
       <input id="shift-open-cash" type="number" step="0.01" placeholder="0.00" style="width:100%;padding:10px;border-radius:8px;background:var(--surface);border:1px solid var(--border);color:var(--text);font-size:14px;margin-bottom:12px;">
       <div style="display:flex;gap:8px;">
         <button onclick="closeShiftOpenModal()" style="flex:1;padding:8px;border-radius:8px;background:var(--surface);border:1px solid var(--border);color:var(--sub);font-size:11px;cursor:pointer;">Cancelar</button>
-        <button onclick="confirmOpenShift()" style="flex:1;padding:8px;border-radius:8px;background:linear-gradient(135deg,var(--green),#059669);border:none;color:#fff;font-size:11px;font-weight:700;cursor:pointer;">Abrir Turno</button>
+        <button id="shift-open-confirm-btn" onclick="confirmOpenShift()" style="flex:1;padding:8px;border-radius:8px;background:linear-gradient(135deg,var(--green),#059669);border:none;color:#fff;font-size:11px;font-weight:700;cursor:pointer;">Abrir Turno</button>
       </div>
     </div>
   </div>
@@ -597,7 +622,7 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--t
       <input id="shift-close-id" type="hidden" value="">
       <div style="display:flex;gap:8px;">
         <button onclick="closeShiftCloseModal()" style="flex:1;padding:8px;border-radius:8px;background:var(--surface);border:1px solid var(--border);color:var(--sub);font-size:11px;cursor:pointer;">Cancelar</button>
-        <button onclick="confirmCloseShift()" style="flex:1;padding:8px;border-radius:8px;background:linear-gradient(135deg,var(--red),#dc2626);border:none;color:#fff;font-size:11px;font-weight:700;cursor:pointer;">Cerrar Turno</button>
+        <button id="shift-close-confirm-btn" onclick="confirmCloseShift()" style="flex:1;padding:8px;border-radius:8px;background:linear-gradient(135deg,var(--red),#dc2626);border:none;color:#fff;font-size:11px;font-weight:700;cursor:pointer;">Cerrar Turno</button>
       </div>
     </div>
   </div>
@@ -676,6 +701,85 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--t
       </div>
     </div>
   </div>
+</div>
+
+<!-- VIEW: IA ASISTENTE (El Avispero integrado al POS) -->
+<div class="view" id="v-ia-asistente" style="display:none;">
+  <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;">
+    <span style="font-size:28px;">&#x1F41D;</span>
+    <div><div style="font-size:16px;font-weight:800;color:#ff8a00;">El Avispero</div><div style="font-size:10px;color:var(--sub);">35 agentes de IA trabajando para tu negocio</div></div>
+  </div>
+  <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px;margin-bottom:16px;" id="ia-agents-grid"></div>
+  <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px;">
+    <div style="font-size:12px;font-weight:700;margin-bottom:8px;">&#x1F4AC; Pide algo a tus agentes</div>
+    <div style="display:flex;gap:8px;">
+      <input id="ia-prompt" placeholder="Ej: Genera reporte de ventas, Calcula IVA de $5000, Analiza mi competencia..." style="flex:1;padding:10px;border-radius:8px;background:rgba(255,255,255,.04);border:1px solid var(--border);color:var(--text);font-size:12px;outline:none;">
+      <button onclick="iaAskAgent()" style="padding:10px 20px;border-radius:8px;background:linear-gradient(135deg,#ff8a00,#ea580c);color:#fff;border:none;font-size:12px;font-weight:700;cursor:pointer;">Enviar</button>
+    </div>
+    <div id="ia-response" style="margin-top:12px;font-size:12px;color:var(--sub);max-height:300px;overflow-y:auto;"></div>
+  </div>
+</div>
+
+<!-- VIEW: BUILDERS UX/UI -->
+<div class="view" id="v-ia-builders" style="display:none;">
+  <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;">
+    <span style="font-size:28px;">&#x1F3D7;&#xFE0F;</span>
+    <div><div style="font-size:16px;font-weight:800;color:#8b5cf6;">Builders UX/UI</div><div style="font-size:10px;color:var(--sub);">Genera landing pages, dashboards, menus y mas — sin Canva</div></div>
+  </div>
+  <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:10px;margin-bottom:16px;">
+    <div onclick="iaBuild('landing-page')" style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px;text-align:center;cursor:pointer;transition:all .2s;" onmouseover="this.style.borderColor='rgba(139,92,246,.3)'" onmouseout="this.style.borderColor='var(--border)'"><div style="font-size:24px;">&#x1F310;</div><div style="font-size:12px;font-weight:700;margin-top:4px;">Landing Page</div><div style="font-size:9px;color:var(--sub);">Pagina de ventas completa</div></div>
+    <div onclick="iaBuild('menu-restaurante')" style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px;text-align:center;cursor:pointer;transition:all .2s;" onmouseover="this.style.borderColor='rgba(139,92,246,.3)'" onmouseout="this.style.borderColor='var(--border)'"><div style="font-size:24px;">&#x1F37D;&#xFE0F;</div><div style="font-size:12px;font-weight:700;margin-top:4px;">Menu Digital</div><div style="font-size:9px;color:var(--sub);">Menu QR para tu bar</div></div>
+    <div onclick="iaBuild('flyer-evento')" style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px;text-align:center;cursor:pointer;transition:all .2s;" onmouseover="this.style.borderColor='rgba(139,92,246,.3)'" onmouseout="this.style.borderColor='var(--border)'"><div style="font-size:24px;">&#x1F389;</div><div style="font-size:12px;font-weight:700;margin-top:4px;">Flyer Evento</div><div style="font-size:9px;color:var(--sub);">Noche de karaoke, 2x1</div></div>
+    <div onclick="iaBuild('post-instagram')" style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px;text-align:center;cursor:pointer;transition:all .2s;" onmouseover="this.style.borderColor='rgba(139,92,246,.3)'" onmouseout="this.style.borderColor='var(--border)'"><div style="font-size:24px;">&#x1F4F1;</div><div style="font-size:12px;font-weight:700;margin-top:4px;">Post Instagram</div><div style="font-size:9px;color:var(--sub);">Imagen para redes</div></div>
+    <div onclick="iaBuild('tarjeta-presentacion')" style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px;text-align:center;cursor:pointer;transition:all .2s;" onmouseover="this.style.borderColor='rgba(139,92,246,.3)'" onmouseout="this.style.borderColor='var(--border)'"><div style="font-size:24px;">&#x1F4C7;</div><div style="font-size:12px;font-weight:700;margin-top:4px;">Tarjeta</div><div style="font-size:9px;color:var(--sub);">Tarjeta de presentacion</div></div>
+    <div onclick="iaBuild('dashboard')" style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px;text-align:center;cursor:pointer;transition:all .2s;" onmouseover="this.style.borderColor='rgba(139,92,246,.3)'" onmouseout="this.style.borderColor='var(--border)'"><div style="font-size:24px;">&#x1F4CA;</div><div style="font-size:12px;font-weight:700;margin-top:4px;">Dashboard</div><div style="font-size:9px;color:var(--sub);">Panel de metricas</div></div>
+  </div>
+  <div id="ia-build-result" style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px;display:none;">
+    <div style="font-size:12px;font-weight:700;margin-bottom:8px;">Resultado del Builder</div>
+    <div id="ia-build-content" style="font-size:11px;color:var(--sub);max-height:400px;overflow-y:auto;"></div>
+  </div>
+</div>
+
+<!-- VIEW: CONTADOR IA -->
+<div class="view" id="v-ia-contador" style="display:none;">
+  <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;">
+    <span style="font-size:28px;">&#x1F9EE;</span>
+    <div><div style="font-size:16px;font-weight:800;color:#34d399;">Contador IA</div><div style="font-size:10px;color:var(--sub);">Facturas, IVA, reportes fiscales — todo automatico</div></div>
+  </div>
+  <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px;">
+    <button onclick="iaContador('calculo-iva')" style="padding:14px;border-radius:10px;background:var(--surface);border:1px solid var(--border);color:var(--text);font-size:12px;cursor:pointer;text-align:left;"><strong>Calcular IVA</strong><br><span style="font-size:10px;color:var(--sub);">Subtotal + IVA + Total</span></button>
+    <button onclick="iaContador('reporte-fiscal')" style="padding:14px;border-radius:10px;background:var(--surface);border:1px solid var(--border);color:var(--text);font-size:12px;cursor:pointer;text-align:left;"><strong>Reporte Fiscal</strong><br><span style="font-size:10px;color:var(--sub);">ISR, IVA, deducciones</span></button>
+    <button onclick="iaContador('estado-financiero')" style="padding:14px;border-radius:10px;background:var(--surface);border:1px solid var(--border);color:var(--text);font-size:12px;cursor:pointer;text-align:left;"><strong>Estado Financiero</strong><br><span style="font-size:10px;color:var(--sub);">Utilidad bruta y neta</span></button>
+    <button onclick="iaContador('deducibles')" style="padding:14px;border-radius:10px;background:var(--surface);border:1px solid var(--border);color:var(--text);font-size:12px;cursor:pointer;text-align:left;"><strong>Deducibles</strong><br><span style="font-size:10px;color:var(--sub);">Que puedes deducir</span></button>
+  </div>
+  <div id="ia-contador-result" style="margin-top:16px;background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px;display:none;font-size:12px;white-space:pre-wrap;max-height:400px;overflow-y:auto;"></div>
+</div>
+
+<!-- VIEW: INVENTARIO IA -->
+<div class="view" id="v-ia-inventario" style="display:none;">
+  <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;">
+    <span style="font-size:28px;">&#x1F4E6;</span>
+    <div><div style="font-size:16px;font-weight:800;color:#f97316;">Inventario IA</div><div style="font-size:10px;color:var(--sub);">Alertas de stock, ordenes de compra, analisis de merma</div></div>
+  </div>
+  <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px;">
+    <button onclick="iaInventario('alerta-stock')" style="padding:14px;border-radius:10px;background:var(--surface);border:1px solid var(--border);color:var(--text);font-size:12px;cursor:pointer;text-align:left;"><strong>Alerta Stock</strong><br><span style="font-size:10px;color:var(--sub);">Que se esta acabando</span></button>
+    <button onclick="iaInventario('orden-compra')" style="padding:14px;border-radius:10px;background:var(--surface);border:1px solid var(--border);color:var(--text);font-size:12px;cursor:pointer;text-align:left;"><strong>Orden de Compra</strong><br><span style="font-size:10px;color:var(--sub);">Que pedir y cuanto</span></button>
+    <button onclick="iaInventario('merma-analisis')" style="padding:14px;border-radius:10px;background:var(--surface);border:1px solid var(--border);color:var(--text);font-size:12px;cursor:pointer;text-align:left;"><strong>Analisis Merma</strong><br><span style="font-size:10px;color:var(--sub);">Donde se pierde dinero</span></button>
+  </div>
+  <div id="ia-inventario-result" style="margin-top:16px;background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px;display:none;font-size:12px;white-space:pre-wrap;max-height:400px;overflow-y:auto;"></div>
+</div>
+
+<!-- VIEW: ESPIA MERCADO -->
+<div class="view" id="v-ia-espia" style="display:none;">
+  <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;">
+    <span style="font-size:28px;">&#x1F576;&#xFE0F;</span>
+    <div><div style="font-size:16px;font-weight:800;color:#ef4444;">Espia de Mercado</div><div style="font-size:10px;color:var(--sub);">Monitorea competencia, precios, tendencias</div></div>
+  </div>
+  <div style="display:flex;gap:8px;margin-bottom:16px;">
+    <input id="ia-espia-target" placeholder="Nombre del competidor o negocio a investigar..." style="flex:1;padding:10px;border-radius:8px;background:rgba(255,255,255,.04);border:1px solid var(--border);color:var(--text);font-size:12px;outline:none;">
+    <button onclick="iaEspia()" style="padding:10px 20px;border-radius:8px;background:linear-gradient(135deg,#ef4444,#dc2626);color:#fff;border:none;font-size:12px;font-weight:700;cursor:pointer;">Investigar</button>
+  </div>
+  <div id="ia-espia-result" style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px;display:none;font-size:12px;white-space:pre-wrap;max-height:400px;overflow-y:auto;"></div>
 </div>
 
 <!-- VIEW: COVER CHARGE -->
@@ -761,7 +865,7 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--t
     <div class="mf-group"><label>Notas</label><input class="mf-input" id="cf-notes" placeholder="Nombre, referencia..."></div>
     <div class="mf-actions">
       <button class="mf-btn cancel" onclick="document.getElementById('modal-cover').classList.remove('show')">Cancelar</button>
-      <button class="mf-btn primary" onclick="saveCoverFromModal()">&#x1F3AB; Registrar</button>
+      <button class="mf-btn primary" id="cover-save-btn" onclick="saveCoverFromModal()">&#x1F3AB; Registrar</button>
     </div>
   </div>
 </div>
@@ -824,12 +928,12 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--t
     <div class="kq-i"><span class="kq-p">2</span><span class="kq-s">Cielito Lindo — Tradicional</span></div>
   </div>
   <div class="pos-actions">
-    <button class="pb primary" onclick="posAction('enviar')">&#x1F4E4; Enviar</button>
-    <button class="pb success" onclick="posAction('cobrar')">&#x1F4B3; Cobrar</button>
-    <button class="pb secondary" onclick="posAction('dividir')">&#x2702;&#xFE0F; Dividir</button>
-    <button class="pb karaoke" onclick="posAction('cancion')">&#x1F3A4; Cancion</button>
-    <button class="pb secondary" onclick="posAction('ticket')">&#x1F5A8;&#xFE0F; Ticket</button>
-    <button class="pb secondary" onclick="posAction('cfdi')">&#x1F9FE; CFDI</button>
+    <button class="pb primary" data-pos-action="enviar" onclick="posAction('enviar', this)">&#x1F4E4; Enviar</button>
+    <button class="pb success" data-pos-action="cobrar" onclick="posAction('cobrar', this)">&#x1F4B3; Cobrar</button>
+    <button class="pb secondary" data-pos-action="dividir" onclick="posAction('dividir', this)">&#x2702;&#xFE0F; Dividir</button>
+    <button class="pb karaoke" data-pos-action="cancion" onclick="posAction('cancion', this)">&#x1F3A4; Karaoke</button>
+    <button class="pb secondary" data-pos-action="ticket" onclick="posAction('ticket', this)">&#x1F5A8;&#xFE0F; Ticket</button>
+    <button class="pb secondary" data-pos-action="cfdi" onclick="posAction('cfdi', this)">&#x1F9FE; CFDI</button>
   </div>
 </div>
 
@@ -926,6 +1030,43 @@ function getCurrentEmployeeId() {
   return empData && empData.id ? parseInt(empData.id, 10) : null;
 }
 
+function setBusyState(el, busy, busyHtml) {
+  if (!el) return;
+  if (busy) {
+    if (el.dataset.busyLock === '1') return;
+    el.dataset.busyLock = '1';
+    if (typeof el.innerHTML === 'string') el.dataset.busyRestore = el.innerHTML;
+    el.classList.add('is-busy');
+    if ('disabled' in el) el.disabled = true;
+    if (busyHtml && typeof el.innerHTML === 'string') el.innerHTML = busyHtml;
+    return;
+  }
+  el.classList.remove('is-busy');
+  if ('disabled' in el) el.disabled = false;
+  if (el.dataset.busyRestore) {
+    el.innerHTML = el.dataset.busyRestore;
+    delete el.dataset.busyRestore;
+  }
+  delete el.dataset.busyLock;
+}
+
+function syncInteractiveControls(root) {
+  var scope = root && root.querySelectorAll ? root : document;
+  scope.querySelectorAll('.tb,.nav,.tc,.cc,.pi,.floor-tab,.mclose,.order-h span').forEach(function(el) {
+    if (!el || (!el.onclick && !el.getAttribute('onclick'))) return;
+    if (!el.hasAttribute('tabindex')) el.tabIndex = 0;
+    if (!el.hasAttribute('role')) el.setAttribute('role', 'button');
+    if (el.dataset.keyboardReady === '1') return;
+    el.dataset.keyboardReady = '1';
+    el.addEventListener('keydown', function(evt) {
+      if (evt.key === 'Enter' || evt.key === ' ') {
+        evt.preventDefault();
+        el.click();
+      }
+    });
+  });
+}
+
 function getCurrentHappyHourRate() {
   if (!isHappyHour || !window._hhActive || !window._hhActive.length) return 0;
   var pct = parseFloat(window._hhActive[0].discount_pct);
@@ -954,9 +1095,13 @@ function getOrderListTargets() {
 }
 
 function resetRenderedOrder() {
-  getOrderListTargets().forEach(function(list) { list.innerHTML = ''; });
+  renderOrderEmptyState();
   orderTotal = 0;
   orderCount = 0;
+  if (!_cobrarState.tableId) {
+    document.getElementById('pos-mesa').textContent = 'Selecciona mesa';
+    setPosMeta('Selecciona una mesa para abrir una orden');
+  }
   updateTotals();
 }
 
@@ -965,7 +1110,59 @@ function setPosMeta(metaHtml) {
   if (metaEl) metaEl.innerHTML = metaHtml;
 }
 
+function getOrderEmptyStateHtml() {
+  var hasTable = !!_cobrarState.tableId;
+  var title = hasTable ? 'Orden lista para capturar' : 'Selecciona una mesa';
+  var sub = hasTable
+    ? 'Agrega bebidas, alimentos o karaoke para empezar la cuenta de esta mesa.'
+    : 'Primero elige una mesa para abrir una orden y habilitar las acciones del POS.';
+  return '<div class="order-empty">' +
+    '<div class="oe-icon">&#x1F4CB;</div>' +
+    '<div class="oe-title">' + title + '</div>' +
+    '<div class="oe-sub">' + sub + '</div>' +
+    '</div>';
+}
+
+function renderOrderEmptyState() {
+  var html = getOrderEmptyStateHtml();
+  getOrderListTargets().forEach(function(list) {
+    list.innerHTML = html;
+    list.scrollTop = 0;
+  });
+}
+
+function setPosActionEnabled(action, enabled, title) {
+  document.querySelectorAll('[data-pos-action="' + action + '"]').forEach(function(btn) {
+    btn.disabled = !enabled;
+    btn.setAttribute('aria-disabled', enabled ? 'false' : 'true');
+    if (title) btn.title = title;
+    else btn.removeAttribute('title');
+  });
+}
+
+function syncPosActionState() {
+  var items = _cobrarState.items || [];
+  var hasTable = !!_cobrarState.tableId;
+  var hasOrder = !!_cobrarState.orderId;
+  var hasItems = orderCount > 0 || items.length > 0;
+  var hasPending = items.some(function(item) {
+    return String(item.status || 'pendiente').toLowerCase() === 'pendiente';
+  });
+  var canReuseReceipt = hasItems || !!_cobrarState.lastPaidOrderId;
+
+  setPosActionEnabled('enviar', hasOrder && hasPending, hasOrder ? (hasPending ? 'Enviar items pendientes a cocina y barra' : 'No hay items pendientes por enviar') : 'Abre una orden para enviar comandas');
+  setPosActionEnabled('cobrar', hasOrder && hasItems, hasOrder ? (hasItems ? 'Cobrar la orden activa' : 'Agrega items antes de cobrar') : 'Selecciona una mesa con orden activa');
+  setPosActionEnabled('dividir', hasItems, hasItems ? 'Dividir la cuenta actual' : 'Agrega items para dividir la cuenta');
+  setPosActionEnabled('cancion', hasTable, hasTable ? 'Agregar una cancion a la mesa seleccionada' : 'Selecciona una mesa para usar karaoke');
+  setPosActionEnabled('ticket', canReuseReceipt, canReuseReceipt ? 'Imprimir o reimprimir ticket' : 'Necesitas una orden o cobro previo para imprimir');
+  setPosActionEnabled('cfdi', canReuseReceipt, canReuseReceipt ? 'Preparar facturacion de la venta' : 'Necesitas una orden o cobro previo para facturar');
+}
+
 function renderOrderLines(items) {
+  if (!items || items.length === 0) {
+    renderOrderEmptyState();
+    return;
+  }
   var html = items.map(function(item) {
     var qty = parseInt(item.quantity != null ? item.quantity : item.qty, 10) || 1;
     var name = item.product_name || item.name || '?';
@@ -1055,14 +1252,15 @@ function addI(name, price, el, productId) {
   }
   // Flash feedback immediately for responsiveness
   var piEl = el || (typeof event !== 'undefined' && event && event.currentTarget);
-  if (piEl) {
-    piEl.style.background = 'rgba(255,138,0,.15)';
-    piEl.style.transform = 'scale(.94)';
-    setTimeout(function() {
-      piEl.style.background = '';
-      piEl.style.transform = '';
-    }, 200);
-  }
+    if (piEl) {
+      piEl.style.background = 'rgba(255,138,0,.15)';
+      piEl.style.transform = 'scale(.94)';
+      setBusyState(piEl, true);
+      setTimeout(function() {
+        piEl.style.background = '';
+        piEl.style.transform = '';
+      }, 200);
+    }
 
   // Save item to DB
   fetch('/pos/orders/' + _cobrarState.orderId + '/items', {
@@ -1071,16 +1269,21 @@ function addI(name, price, el, productId) {
     body: JSON.stringify({ product_id: productId, quantity: 1 })
   })
     .then(function(r) { return r.ok ? r.json() : Promise.reject(r.status); })
-    .then(function(data) {
-      if (data && data.ok === false) return Promise.reject(data.error || 'No se pudo agregar el item');
-      return syncCurrentOrder({ orderId: _cobrarState.orderId, silent: true }).then(function() {
-        toast(name + ' agregado - $' + price, 'success');
+      .then(function(data) {
+        if (data && data.ok === false) return Promise.reject(data.error || 'No se pudo agregar el item');
+        return syncCurrentOrder({ orderId: _cobrarState.orderId, silent: true }).then(function() {
+          var orderList = document.querySelector('.order-list');
+          if (orderList) orderList.scrollTop = orderList.scrollHeight;
+          toast(name + ' agregado - $' + price, 'success');
+        });
+      })
+      .catch(function(err) {
+        toast('Error agregando ' + name + ': ' + err, 'error');
+      })
+      .finally(function() {
+        setBusyState(piEl, false);
       });
-    })
-    .catch(function(err) {
-      toast('Error agregando ' + name + ': ' + err, 'error');
-    });
-}
+  }
 
 function removeItem(el) {
   var line = el && el.closest ? el.closest('.ol') : null;
@@ -1126,7 +1329,7 @@ function removeItem(el) {
 function clearOrder() {
   if (!_cobrarState.orderId) {
     resetRenderedOrder();
-    toast('Orden limpiada', 'warn');
+    toast(_cobrarState.tableId ? 'La orden ya esta vacia' : 'Selecciona una mesa para empezar', 'info');
     return;
   }
 
@@ -1203,13 +1406,17 @@ function updateTotals() {
   document.getElementById('totals-area').innerHTML = totalsHTML;
   const overlayTotals = document.getElementById('totals-area-overlay');
   if (overlayTotals) overlayTotals.innerHTML = totalsHTML;
-  const orderHeaderHTML = '&#x1F4CB; Orden (' + orderCount + ') <span onclick="clearOrder()">Limpiar</span>';
+  const orderHeaderHTML = orderCount > 0
+    ? '&#x1F4CB; Orden (' + orderCount + ') <span class="order-clear" onclick="clearOrder()">Limpiar</span>'
+    : '&#x1F4CB; Orden (0) <span class="order-clear is-muted">Esperando items</span>';
   document.querySelector('.order-h').innerHTML = orderHeaderHTML;
   const overlayOrderH = document.querySelector('#pos-sheet-inner .order-h');
   if (overlayOrderH) overlayOrderH.innerHTML = orderHeaderHTML;
   // Update FAB badge
   const badge = document.getElementById('fab-badge');
   if (badge) badge.textContent = orderCount;
+  syncInteractiveControls();
+  syncPosActionState();
 }
 
 // ═══ MOBILE POS OVERLAY ═══
@@ -1230,6 +1437,8 @@ function openPosOverlay() {
   const cats = inner.querySelectorAll('.cat-bar .cc');
   const catMap = ['cervezas','cocktails','shots','botanas','comida','refrescos'];
   cats.forEach((c, i) => { c.onclick = () => switchCat(catMap[i], c); });
+  syncInteractiveControls(inner);
+  syncPosActionState();
   overlay.classList.add('open');
   document.body.style.overflow = 'hidden';
 }
@@ -1262,9 +1471,9 @@ function toast(msg, type) {
 }
 
 // ═══ POS ACTIONS ═══
-function posAction(action) {
+function posAction(action, triggerEl) {
   var actions = {
-    enviar: function() { enviarComanda(); },
+    enviar: function() { enviarComanda(triggerEl); },
     cobrar: function() { openCobrarModal(); },
     dividir: function() { toast('Selecciona items para dividir', 'info'); },
     cancion: function() { openKaraokeQueueModal(); },
@@ -1274,9 +1483,10 @@ function posAction(action) {
   if (actions[action]) actions[action]();
 }
 
-function enviarComanda() {
+function enviarComanda(triggerEl) {
   var orderId = _cobrarState.orderId;
   if (!orderId) { toast('Selecciona una mesa con orden abierta', 'warn'); return; }
+  setBusyState(triggerEl, true, '&#x1F504; Enviando...');
 
   // Fetch order items, then update pending ones to 'enviado'
   fetch('/pos/orders/' + orderId, { headers: authHeaders() })
@@ -1315,11 +1525,14 @@ function enviarComanda() {
         syncCurrentOrder({ orderId: orderId, silent: true }).catch(function() {});
         toast('Comanda enviada a cocina y barra (' + results.length + ' items)', 'success');
       }
-    })
-    .catch(function(err) {
-      toast('Error enviando comanda: ' + err, 'error');
-    });
-}
+      })
+      .catch(function(err) {
+        toast('Error enviando comanda: ' + err, 'error');
+      })
+      .finally(function() {
+        setBusyState(triggerEl, false);
+      });
+  }
 
 // ═══ COMANDAS VIEW — Real data ═══
 var _comandasTimer = null;
@@ -1489,8 +1702,7 @@ function renderCocina(orders) {
 }
 
 function kitchenAction(btn, itemId, newStatus) {
-  btn.disabled = true;
-  btn.style.opacity = '0.5';
+  setBusyState(btn, true, newStatus === 'listo' ? 'Marcando...' : 'En progreso...');
   fetch('/pos/order-items/' + itemId + '/status', {
     method: 'PUT',
     headers: Object.assign({ 'Content-Type': 'application/json' }, authHeaders()),
@@ -1507,8 +1719,9 @@ function kitchenAction(btn, itemId, newStatus) {
     })
     .catch(function(err) {
       toast('Error actualizando item (' + err + ')', 'error');
-      btn.disabled = false;
-      btn.style.opacity = '1';
+    })
+    .finally(function() {
+      setBusyState(btn, false);
     });
 }
 
@@ -1682,6 +1895,7 @@ function renderTables(tables) {
       '<span class="tc-s ' + tsCls + '">' + label + '</span>' +
       '</div>';
   }).join('');
+  syncInteractiveControls(grid);
 }
 
 // ── Render summary stats ─────────────────────────
@@ -1724,10 +1938,11 @@ function renderProducts(products) {
       'style="animation:fadeIn .2s ' + (idx * 0.03) + 's backwards;">' +
       '<div class="pi-i">' + icon + '</div>' +
       '<div class="pi-n">' + name + '</div>' +
-      '<div class="pi-p">' + hhTag + '</div>' +
-      '</div>';
-  }).join('');
-}
+        '<div class="pi-p">' + hhTag + '</div>' +
+        '</div>';
+    }).join('');
+    syncInteractiveControls(grid);
+  }
 
 // ── Load tables ──────────────────────────────────
 function loadTables() {
@@ -1786,6 +2001,7 @@ document.addEventListener('DOMContentLoaded', function() {
   loadReservationsToday();
   loadCoverData();
   initHappyHourBanner();
+  syncInteractiveControls();
 });
 
 // ═══════════════════════════════════════════════
@@ -2004,6 +2220,10 @@ function openCoverModal() {
   document.getElementById('cf-guests').value = '1';
   document.getElementById('cf-notes').value = '';
   document.getElementById('modal-cover').classList.add('show');
+  setTimeout(function() {
+    var guestsInput = document.getElementById('cf-guests');
+    if (guestsInput) guestsInput.focus();
+  }, 40);
 }
 
 function saveCoverFromModal() {
@@ -2012,6 +2232,8 @@ function saveCoverFromModal() {
   var notes = document.getElementById('cf-notes').value.trim();
   var prices = { general: _coverSettings.cover_general, vip: _coverSettings.cover_vip, cortesia: 0, lista: 0 };
   var amount = (prices[type] || 0) * guests;
+  var saveBtn = document.getElementById('cover-save-btn');
+  setBusyState(saveBtn, true, '&#x1F3AB; Guardando...');
   fetch('/pos/covers', {
     method: 'POST',
     headers: Object.assign({ 'Content-Type': 'application/json' }, authHeaders()),
@@ -2023,11 +2245,12 @@ function saveCoverFromModal() {
       toast('Entrada registrada: ' + guests + ' persona(s)', 'success');
       document.getElementById('modal-cover').classList.remove('show');
       loadCoverLog();
-    } else {
-      toast(d.error || 'Error', 'error');
-    }
-  })
-  .catch(function() { toast('Error de conexion', 'error'); });
+      } else {
+        toast(d.error || 'Error', 'error');
+      }
+    })
+    .catch(function() { toast('Error de conexion', 'error'); })
+    .finally(function() { setBusyState(saveBtn, false, '&#x1F3AB; Registrar'); });
 }
 
 function registerDeparture(coverId) {
@@ -2733,6 +2956,10 @@ function renderCorteHistory(data) {
 function openShiftOpenModal() {
   document.getElementById('shift-open-cash').value = '';
   document.getElementById('shift-open-modal').style.display = 'flex';
+  setTimeout(function() {
+    var input = document.getElementById('shift-open-cash');
+    if (input) input.focus();
+  }, 40);
 }
 
 function closeShiftOpenModal() { document.getElementById('shift-open-modal').style.display = 'none'; }
@@ -2742,23 +2969,30 @@ function confirmOpenShift() {
   var empData = null;
   try { empData = JSON.parse(sessionStorage.getItem('pos_employee')); } catch(_) {}
   var empId = (empData && empData.id) ? empData.id : 1;
+  var confirmBtn = document.getElementById('shift-open-confirm-btn');
+  setBusyState(confirmBtn, true, 'Abriendo...');
   fetch('/pos/shifts', {
     method: 'POST',
     headers: Object.assign({ 'Content-Type': 'application/json' }, authHeaders()),
     body: JSON.stringify({ employee_id: empId, opening_cash: cash })
   })
     .then(function(r) { return r.json(); })
-    .then(function(data) {
-      if (data.ok) { toast('Turno abierto', 'success'); closeShiftOpenModal(); loadCorte(); }
-      else toast(data.error || 'Error', 'error');
-    })
-    .catch(function() { toast('Error de conexion', 'error'); });
+      .then(function(data) {
+        if (data.ok) { toast('Turno abierto', 'success'); closeShiftOpenModal(); loadCorte(); }
+        else toast(data.error || 'Error', 'error');
+      })
+      .catch(function() { toast('Error de conexion', 'error'); })
+      .finally(function() { setBusyState(confirmBtn, false, 'Abrir Turno'); });
 }
 
 function openShiftCloseModal(shiftId) {
   document.getElementById('shift-close-cash').value = '';
   document.getElementById('shift-close-id').value = shiftId;
   document.getElementById('shift-close-modal').style.display = 'flex';
+  setTimeout(function() {
+    var input = document.getElementById('shift-close-cash');
+    if (input) input.focus();
+  }, 40);
 }
 
 function closeShiftCloseModal() { document.getElementById('shift-close-modal').style.display = 'none'; }
@@ -2767,6 +3001,8 @@ function confirmCloseShift() {
   var shiftId = document.getElementById('shift-close-id').value;
   var cash = parseFloat(document.getElementById('shift-close-cash').value);
   if (isNaN(cash) || cash < 0) { toast('Ingresa el efectivo contado', 'error'); return; }
+  var confirmBtn = document.getElementById('shift-close-confirm-btn');
+  setBusyState(confirmBtn, true, 'Cerrando...');
 
   fetch('/pos/shifts/' + shiftId + '/close', {
     method: 'PUT',
@@ -2775,15 +3011,16 @@ function confirmCloseShift() {
   })
     .then(function(r) { return r.json(); })
     .then(function(data) {
-      if (data.ok) {
-        var variance = data.variance || 0;
-        var msg = 'Turno cerrado. Diferencia: ' + (variance >= 0 ? '+' : '') + '$' + variance.toFixed(2);
-        toast(msg, variance === 0 ? 'success' : 'info');
-        closeShiftCloseModal();
+        if (data.ok) {
+          var variance = data.variance || 0;
+          var msg = 'Turno cerrado. Diferencia: ' + (variance >= 0 ? '+' : '') + '$' + variance.toFixed(2);
+          toast(msg, variance === 0 ? 'success' : 'info');
+          closeShiftCloseModal();
         loadCorte();
       } else toast(data.error || 'Error', 'error');
-    })
-    .catch(function() { toast('Error de conexion', 'error'); });
+      })
+      .catch(function() { toast('Error de conexion', 'error'); })
+      .finally(function() { setBusyState(confirmBtn, false, 'Cerrar Turno'); });
 }
 
 // Load saved bar name on page load (also fetch from server settings for multi-tenant)
@@ -2991,7 +3228,7 @@ function confirmCloseShift() {
       <div class="karaoke-form">
         <input class="karaoke-input" id="karaoke-song-input" placeholder="Cancion">
         <input class="karaoke-input" id="karaoke-singer-input" placeholder="Cantante">
-        <button class="karaoke-add" onclick="submitKaraokeSong()">Agregar</button>
+        <button class="karaoke-add" id="karaoke-add-btn" onclick="submitKaraokeSong()">Agregar</button>
       </div>
       <div class="karaoke-list" id="karaoke-list"></div>
     </div>
@@ -3075,14 +3312,18 @@ function openCobrarModal() {
     renderCobrarTotals();
     document.querySelectorAll('.tip-btn').forEach(function(b, i) { b.classList.toggle('active', i === 1); });
     document.getElementById('tip-custom').classList.remove('show');
-    document.getElementById('tip-custom-input').value = '';
-    document.querySelectorAll('.pay-method').forEach(function(b, i) { b.classList.toggle('active', i === 0); });
-    document.getElementById('efectivo-row').classList.add('show');
-    document.getElementById('cash-received').value = '';
-    document.getElementById('cambio-display').classList.remove('show');
-    document.getElementById('cobrar-overlay').classList.add('open');
-  });
-}
+      document.getElementById('tip-custom-input').value = '';
+      document.querySelectorAll('.pay-method').forEach(function(b, i) { b.classList.toggle('active', i === 0); });
+      document.getElementById('efectivo-row').classList.add('show');
+      document.getElementById('cash-received').value = '';
+      document.getElementById('cambio-display').classList.remove('show');
+      document.getElementById('cobrar-overlay').classList.add('open');
+      setTimeout(function() {
+        var cashInput = document.getElementById('cash-received');
+        if (cashInput) cashInput.focus();
+      }, 40);
+    });
+  }
 
 function renderCobrarTotals() {
   var s = _cobrarState;
@@ -3124,7 +3365,13 @@ function setPayMethod(method, btn) {
   document.querySelectorAll('.pay-method').forEach(function(b) { b.classList.remove('active'); });
   btn.classList.add('active');
   _cobrarState.method = method;
-  if (method === 'efectivo') { document.getElementById('efectivo-row').classList.add('show'); }
+  if (method === 'efectivo') {
+    document.getElementById('efectivo-row').classList.add('show');
+    setTimeout(function() {
+      var cashInput = document.getElementById('cash-received');
+      if (cashInput) cashInput.focus();
+    }, 20);
+  }
   else { document.getElementById('efectivo-row').classList.remove('show'); document.getElementById('cambio-display').classList.remove('show'); }
 }
 
@@ -3150,6 +3397,8 @@ function processCobro() {
     toast('El monto recibido no cubre el total', 'error'); return;
   }
   var cashierId = getCurrentEmployeeId() || 1;
+  var confirmBtn = document.getElementById('cobrar-confirm-btn');
+  setBusyState(confirmBtn, true, 'Procesando...');
   if (s.orderId && s.orderId > 0) {
     fetch('/pos/payments', {
       method: 'POST',
@@ -3167,12 +3416,16 @@ function processCobro() {
       })
     })
     .then(function(r) { return r.json(); })
-    .then(function(data) {
-      if (data.ok) { _cobrarState.change = data.change || _cobrarState.change; showPostPayment(); }
-      else { toast(data.error || 'Error al procesar pago', 'error'); }
-    })
-    .catch(function() { toast('Error de conexion al procesar pago', 'error'); });
-  } else { showPostPayment(); }
+      .then(function(data) {
+        if (data.ok) { _cobrarState.change = data.change || _cobrarState.change; showPostPayment(); }
+        else { toast(data.error || 'Error al procesar pago', 'error'); }
+      })
+      .catch(function() { toast('Error de conexion al procesar pago', 'error'); })
+      .finally(function() { setBusyState(confirmBtn, false); });
+  } else {
+    setBusyState(confirmBtn, false);
+    showPostPayment();
+  }
 }
 
 function showPostPayment() {
@@ -3288,6 +3541,9 @@ function openKaraokeQueueModal() {
   if (singerInput) singerInput.value = '';
   overlay.classList.add('open');
   loadKaraokeQueue().catch(function() {});
+  setTimeout(function() {
+    if (songInput) songInput.focus();
+  }, 40);
 }
 
 function closeKaraokeQueueModal() {
@@ -3310,6 +3566,8 @@ function submitKaraokeSong() {
     if (songInput) songInput.focus();
     return;
   }
+  var addBtn = document.getElementById('karaoke-add-btn');
+  setBusyState(addBtn, true, 'Agregando...');
 
   fetch('/pos/karaoke/queue', {
     method: 'POST',
@@ -3321,16 +3579,21 @@ function submitKaraokeSong() {
     })
   })
     .then(function(r) { return r.ok ? r.json() : Promise.reject(r.status); })
-    .then(function(data) {
-      if (data && data.ok === false) return Promise.reject(data.error || 'No se pudo agregar la cancion');
-      if (songInput) songInput.value = '';
-      if (singerInput) singerInput.value = '';
-      toast('Cancion agregada a la cola karaoke', 'success');
-      return loadKaraokeQueue();
-    })
-    .catch(function(err) {
-      toast('Error agregando cancion: ' + err, 'error');
-    });
+      .then(function(data) {
+        if (data && data.ok === false) return Promise.reject(data.error || 'No se pudo agregar la cancion');
+        if (songInput) songInput.value = '';
+        if (singerInput) singerInput.value = '';
+        toast('Cancion agregada a la cola karaoke', 'success');
+        return loadKaraokeQueue().then(function() {
+          if (songInput) songInput.focus();
+        });
+      })
+      .catch(function(err) {
+        toast('Error agregando cancion: ' + err, 'error');
+      })
+      .finally(function() {
+        setBusyState(addBtn, false, 'Agregar');
+      });
 }
 
 function openQRModal(orderId) {
@@ -3393,6 +3656,7 @@ selT = function(n, el) {
   if (!matched) return;
   _cobrarState.tableId = matched.id;
   _cobrarState.tableName = 'Mesa ' + (matched.number || matched.id);
+  syncPosActionState();
 
   if (matched.current_order_id) {
     _cobrarState.orderId = matched.current_order_id;
@@ -3436,6 +3700,53 @@ selT = function(n, el) {
       toast('Error creando orden: ' + err, 'error');
     });
 };
+
+// ═══ IA ASISTENTE — Conecta El Avispero al POS ═══
+function iaAskAgent() {
+  var prompt = document.getElementById('ia-prompt').value.trim();
+  if (!prompt) return toast('Escribe algo para los agentes', 'warning');
+  var el = document.getElementById('ia-response');
+  el.innerHTML = '<div style="color:#ff8a00;">Procesando con IA...</div>';
+  fetch('/api/ai/chat', { method:'POST', headers:authHeaders(), body:JSON.stringify({prompt:prompt, system:'Eres un asistente de negocio para un bar/restaurante. Responde en espanol, conciso y accionable.'}) })
+  .then(r=>r.json()).then(d=>{ el.innerHTML='<pre style="white-space:pre-wrap;font-size:12px;color:var(--text);">'+(d.text||d.error||'Sin respuesta')+'</pre>'; })
+  .catch(e=>{ el.innerHTML='<div style="color:var(--red);">Error: '+e.message+'</div>'; });
+}
+function iaBuild(type) {
+  var el = document.getElementById('ia-build-result');
+  var content = document.getElementById('ia-build-content');
+  el.style.display='block';
+  content.innerHTML='<div style="color:#8b5cf6;">Generando '+type+'...</div>';
+  fetch('/api/ai/chat', { method:'POST', headers:authHeaders(), body:JSON.stringify({prompt:'Genera un '+type+' profesional en HTML completo para mi bar. Dark theme, moderno, responsive.', system:'Eres un diseñador web experto. Genera HTML completo autocontenido que se pueda abrir en navegador.'}) })
+  .then(r=>r.json()).then(d=>{ content.innerHTML='<pre style="white-space:pre-wrap;font-size:11px;">'+escapeHtml(d.text||d.error||'Sin respuesta')+'</pre>'; })
+  .catch(e=>{ content.innerHTML='<div style="color:var(--red);">Error: '+e.message+'</div>'; });
+}
+function iaContador(type) {
+  var el = document.getElementById('ia-contador-result');
+  el.style.display='block';
+  el.innerHTML='<div style="color:#34d399;">Calculando...</div>';
+  var monto = prompt('Monto en pesos:') || '0';
+  fetch('/api/ai/chat', { method:'POST', headers:authHeaders(), body:JSON.stringify({prompt:'Tarea: '+type+'. Monto: $'+monto+'. Empresa: bar/restaurante en Mexico.', system:'Eres un contador experto en Mexico. CFDI 4.0, IVA 16%, ISR. Responde con numeros exactos y fundamento legal.'}) })
+  .then(r=>r.json()).then(d=>{ el.innerHTML='<pre style="white-space:pre-wrap;">'+escapeHtml(d.text||d.error)+'</pre>'; })
+  .catch(e=>{ el.innerHTML='Error: '+e.message; });
+}
+function iaInventario(type) {
+  var el = document.getElementById('ia-inventario-result');
+  el.style.display='block';
+  el.innerHTML='<div style="color:#f97316;">Analizando inventario...</div>';
+  fetch('/api/ai/chat', { method:'POST', headers:authHeaders(), body:JSON.stringify({prompt:'Tarea de inventario: '+type+'. Negocio: bar/restaurante. Productos tipicos: cerveza, tequila, vodka, nachos, alitas, limon.', system:'Eres un experto en inventario para bares. Alertas de stock, ordenes de compra, analisis de merma. Usa tablas y numeros.'}) })
+  .then(r=>r.json()).then(d=>{ el.innerHTML='<pre style="white-space:pre-wrap;">'+escapeHtml(d.text||d.error)+'</pre>'; })
+  .catch(e=>{ el.innerHTML='Error: '+e.message; });
+}
+function iaEspia() {
+  var target = document.getElementById('ia-espia-target').value.trim();
+  if (!target) return toast('Escribe el nombre del competidor', 'warning');
+  var el = document.getElementById('ia-espia-result');
+  el.style.display='block';
+  el.innerHTML='<div style="color:#ef4444;">Investigando "'+escapeHtml(target)+'"...</div>';
+  fetch('/api/ai/chat', { method:'POST', headers:authHeaders(), body:JSON.stringify({prompt:'Investigacion de mercado sobre "'+target+'" en Aguascalientes. Analiza: precios, servicios, reviews, presencia digital, ventajas y desventajas vs nosotros.', system:'Eres un analista de mercado experto. Solo usas datos publicos. Responde con tablas comparativas y recomendaciones accionables.'}) })
+  .then(r=>r.json()).then(d=>{ el.innerHTML='<pre style="white-space:pre-wrap;">'+escapeHtml(d.text||d.error)+'</pre>'; })
+  .catch(e=>{ el.innerHTML='Error: '+e.message; });
+}
 </script>
 </body>
 </html>
