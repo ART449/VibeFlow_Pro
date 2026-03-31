@@ -336,15 +336,17 @@ button:disabled{
 .pos-overlay{display:none;position:fixed;inset:0;z-index:400;flex-direction:column;}
 .pos-overlay.open{display:flex;}
 .pos-overlay-backdrop{position:absolute;inset:0;background:rgba(0,0,0,.5);}
-.pos-sheet{position:absolute;bottom:0;left:0;right:0;max-height:92vh;background:rgba(12,12,18,.99);border-top:1px solid var(--border);border-radius:16px 16px 0 0;display:flex;flex-direction:column;overflow:hidden;animation:slideUp .28s ease;}
+.pos-sheet{position:absolute;bottom:0;left:0;right:0;max-height:92vh;background:rgba(12,12,18,.99);border-top:1px solid var(--border);border-radius:16px 16px 0 0;display:flex;flex-direction:column;overflow:hidden;animation:slideUp .28s ease;padding-bottom:env(safe-area-inset-bottom);}
 @keyframes slideUp{from{transform:translateY(100%);}to{transform:translateY(0);}}
 .pos-sheet-close{position:absolute;top:10px;right:12px;width:32px;height:32px;border-radius:50%;background:var(--surface2);border:1px solid var(--border);color:var(--text);font-size:16px;line-height:32px;text-align:center;cursor:pointer;z-index:1;}
 .pos-sheet-handle{width:36px;height:4px;border-radius:2px;background:rgba(255,255,255,.15);margin:10px auto 0;flex-shrink:0;}
 .pos-sheet-inner{display:flex;flex-direction:column;overflow:hidden;flex:1;}
 
 /* ═══ MOBILE FAB ═══ */
-.pos-fab{display:none;position:fixed;bottom:20px;right:16px;z-index:350;width:54px;height:54px;border-radius:50%;background:linear-gradient(135deg,var(--orange2),var(--orange));border:none;color:#fff;font-size:22px;cursor:pointer;box-shadow:0 6px 20px rgba(255,138,0,.4);align-items:center;justify-content:center;transition:transform .15s;}
+.pos-fab{display:none;position:fixed;bottom:20px;right:16px;z-index:350;min-width:58px;height:54px;border-radius:999px;background:linear-gradient(135deg,var(--orange2),var(--orange));border:none;color:#fff;font-size:18px;cursor:pointer;box-shadow:0 6px 20px rgba(255,138,0,.4);align-items:center;justify-content:center;gap:10px;transition:transform .15s;padding:0 16px 0 18px;font-weight:800;}
 .pos-fab:active{transform:scale(.9);}
+.pos-fab .fab-icon{font-size:20px;line-height:1;}
+.pos-fab .fab-label{font-size:11px;letter-spacing:.2px;white-space:nowrap;}
 .pos-fab .fab-badge{position:absolute;top:-2px;right:-2px;background:var(--red);color:#fff;font-size:8px;font-weight:800;padding:1px 4px;border-radius:6px;min-width:16px;text-align:center;}
 @media(max-width:600px){.pos-fab{display:flex;}}
 </style>
@@ -957,7 +959,8 @@ button:disabled{
 
 <!-- MOBILE FAB -->
 <button class="pos-fab" id="pos-fab" onclick="openPosOverlay()" title="Abrir POS">
-  &#x1F6D2;
+  <span class="fab-icon">&#x1F6D2;</span>
+  <span class="fab-label" id="fab-label">Abrir POS</span>
   <span class="fab-badge" id="fab-badge">6</span>
 </button>
 
@@ -1011,7 +1014,7 @@ function openCobrarShortcut() {
 
 // ═══ TABLE SELECTION ═══
 function selT(n, el) {
-  document.getElementById('pos-mesa').textContent = (typeof n === 'string' ? n : 'Mesa ' + n);
+  setPosMesaLabel(typeof n === 'string' ? n : 'Mesa ' + n);
   document.querySelectorAll('.tc').forEach(c => { c.style.outline = 'none'; c.style.outlineOffset = ''; });
   const tcEl = el || (typeof event !== 'undefined' && event && event.currentTarget);
   if (tcEl) {
@@ -1098,20 +1101,50 @@ function getOrderListTargets() {
     .filter(Boolean);
 }
 
+function getPosMesaTargets() {
+  return [
+    document.getElementById('pos-mesa'),
+    document.querySelector('#pos-sheet-inner [data-pos-mesa]')
+  ].filter(Boolean);
+}
+
+function setPosMesaLabel(label) {
+  getPosMesaTargets().forEach(function(el) {
+    el.textContent = label;
+  });
+}
+
 function resetRenderedOrder() {
   renderOrderEmptyState();
   orderTotal = 0;
   orderCount = 0;
   if (!_cobrarState.tableId) {
-    document.getElementById('pos-mesa').textContent = 'Selecciona mesa';
+    setPosMesaLabel('Selecciona mesa');
     setPosMeta('Selecciona una mesa para abrir una orden');
   }
   updateTotals();
 }
 
 function setPosMeta(metaHtml) {
-  var metaEl = document.querySelector('.ph-g');
-  if (metaEl) metaEl.innerHTML = metaHtml;
+  [document.querySelector('.pos .ph-g'), document.querySelector('#pos-sheet-inner [data-pos-meta]')].filter(Boolean).forEach(function(metaEl) {
+    metaEl.innerHTML = metaHtml;
+  });
+}
+
+function updateFabState() {
+  var label = document.getElementById('fab-label');
+  var badge = document.getElementById('fab-badge');
+  var button = document.getElementById('pos-fab');
+  if (!label || !badge || !button) return;
+  if (_cobrarState.tableName) {
+    label.textContent = _cobrarState.tableName + (orderCount > 0 ? ' · ' + orderCount : '');
+    button.title = 'Abrir POS de ' + _cobrarState.tableName;
+  } else {
+    label.textContent = 'Abrir POS';
+    button.title = 'Abrir POS';
+  }
+  badge.textContent = String(orderCount || 0);
+  badge.style.display = orderCount > 0 ? 'block' : 'none';
 }
 
 function getOrderEmptyStateHtml() {
@@ -1213,12 +1246,13 @@ function syncCurrentOrder(options) {
       }, 0));
       var financials = getOrderFinancials(subtotal);
 
-      _cobrarState.orderId = order.id || orderId;
-      if (order.table_id) _cobrarState.tableId = order.table_id;
-      if (order.table_number) _cobrarState.tableName = 'Mesa ' + order.table_number;
-      _cobrarState.items = items.map(function(item) {
-        return {
-          id: item.id,
+        _cobrarState.orderId = order.id || orderId;
+        if (order.table_id) _cobrarState.tableId = order.table_id;
+        if (order.table_number) _cobrarState.tableName = 'Mesa ' + order.table_number;
+        if (_cobrarState.tableName) setPosMesaLabel(_cobrarState.tableName);
+        _cobrarState.items = items.map(function(item) {
+          return {
+            id: item.id,
           qty: parseInt(item.quantity, 10) || 1,
           name: item.product_name || item.name || '',
           total: Number(item.total || 0),
@@ -1416,9 +1450,7 @@ function updateTotals() {
   document.querySelector('.order-h').innerHTML = orderHeaderHTML;
   const overlayOrderH = document.querySelector('#pos-sheet-inner .order-h');
   if (overlayOrderH) overlayOrderH.innerHTML = orderHeaderHTML;
-  // Update FAB badge
-  const badge = document.getElementById('fab-badge');
-  if (badge) badge.textContent = orderCount;
+  updateFabState();
   syncInteractiveControls();
   syncPosActionState();
 }
@@ -1436,13 +1468,21 @@ function openPosOverlay() {
   const clonedTotals = inner.querySelector('#totals-area');
   if (clonedTotals) clonedTotals.id = 'totals-area-overlay';
   const clonedPosMesa = inner.querySelector('#pos-mesa');
-  if (clonedPosMesa) clonedPosMesa.removeAttribute('id');
+  if (clonedPosMesa) {
+    clonedPosMesa.removeAttribute('id');
+    clonedPosMesa.setAttribute('data-pos-mesa', 'overlay');
+  }
+  const clonedPosMeta = inner.querySelector('.ph-g');
+  if (clonedPosMeta) clonedPosMeta.setAttribute('data-pos-meta', 'overlay');
   // Wire up category buttons in the overlay
   const cats = inner.querySelectorAll('.cat-bar .cc');
   const catMap = ['cervezas','cocktails','shots','botanas','comida','refrescos'];
   cats.forEach((c, i) => { c.onclick = () => switchCat(catMap[i], c); });
+  setPosMesaLabel(_cobrarState.tableName || 'Selecciona mesa');
+  if (!_cobrarState.tableId) setPosMeta('Selecciona una mesa para abrir una orden');
   syncInteractiveControls(inner);
   syncPosActionState();
+  updateFabState();
   overlay.classList.add('open');
   document.body.style.overflow = 'hidden';
 }
@@ -1453,6 +1493,14 @@ function closePosOverlay(e) {
   overlay.classList.remove('open');
   document.body.style.overflow = '';
 }
+
+window.addEventListener('resize', function() {
+  if (window.innerWidth > 600) closePosOverlay();
+});
+
+document.addEventListener('keydown', function(evt) {
+  if (evt.key === 'Escape') closePosOverlay();
+});
 
 // ═══ CATEGORY SWITCHING (API-based) ═══
 // Category name → API category_id mapping (1-indexed)

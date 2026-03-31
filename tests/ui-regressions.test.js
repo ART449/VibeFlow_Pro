@@ -26,13 +26,16 @@ describe('UI production regressions', () => {
     expect(html).toMatch(/function renderCashShortcuts\(/);
     expect(html).toMatch(/function updateCobrarConfirmState\(/);
     expect(html).toMatch(/function renderKitchenStats\(/);
+    expect(html).toMatch(/function updateFabState\(/);
     expect(html).toMatch(/tabIndex = 0/);
     expect(html).toMatch(/posAction\('enviar', this\)/);
     expect(html).toMatch(/data-pos-action="enviar"/);
     expect(html).toMatch(/data-pos-action="cancion"/);
+    expect(html).toMatch(/setAttribute\('data-pos-mesa', 'overlay'\)/);
     expect(html).toMatch(/id="cocina-count"/);
     expect(html).toMatch(/id="barra-count"/);
     expect(html).toMatch(/id="cash-shortcuts"/);
+    expect(html).toMatch(/id="fab-label"/);
     expect(html).toMatch(/id="karaoke-add-btn"/);
     expect(html).toMatch(/id="cover-save-btn"/);
   });
