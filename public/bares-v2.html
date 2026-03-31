@@ -185,6 +185,9 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--t
 .kh-time.ok{background:rgba(52,211,153,.1);color:var(--green);}
 .kh-time.warn{background:rgba(251,191,36,.1);color:var(--amber);}
 .kh-time.late{background:rgba(239,68,68,.1);color:var(--red);}
+.kitchen-stats{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px;}
+.ks-chip{padding:6px 10px;border-radius:999px;background:var(--surface);border:1px solid var(--border);font-size:10px;font-weight:700;color:var(--sub);}
+.ks-chip strong{color:var(--text);}
 .k-items{padding:8px 12px;}
 .k-item{display:flex;align-items:center;gap:6px;padding:4px 0;font-size:11px;border-bottom:1px solid rgba(255,255,255,.02);}
 .k-item .ki-q{font-weight:700;color:var(--orange);width:16px;}
@@ -380,8 +383,8 @@ button:disabled{
   </div>
   <div class="sb-section">
     <div class="sb-title">Produccion</div>
-    <div class="nav" onclick="showView('cocina',this)"><span class="ni">&#x1F373;</span> <span>Monitor Cocina</span> <span class="nb red">3</span></div>
-    <div class="nav" onclick="showView('cocina',this)"><span class="ni">&#x1F378;</span> <span>Monitor Barra</span> <span class="nb">7</span></div>
+      <div class="nav" onclick="showView('cocina',this)"><span class="ni">&#x1F373;</span> <span>Monitor Cocina</span> <span class="nb red" id="cocina-count">0</span></div>
+      <div class="nav" onclick="showView('cocina',this)"><span class="ni">&#x1F378;</span> <span>Monitor Barra</span> <span class="nb" id="barra-count">0</span></div>
     <div class="nav" onclick="showView('inventario',this)"><span class="ni">&#x1F4E6;</span> <span>Inventario</span></div>
     <div class="nav" onclick="showView('inventario',this)"><span class="ni">&#x1F4B8;</span> <span>Costo x Trago</span></div>
   </div>
@@ -486,20 +489,21 @@ button:disabled{
 </div>
 
 <!-- VIEW: COCINA -->
-<div class="view" id="v-cocina">
-  <div class="kitchen-wrap">
-    <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;">
-      <h2 style="font-size:14px;">&#x1F373; Monitor de Cocina</h2>
+  <div class="view" id="v-cocina">
+    <div class="kitchen-wrap">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;">
+        <h2 style="font-size:14px;">&#x1F373; Monitor de Cocina</h2>
       <div style="margin-left:auto;display:flex;gap:4px;">
         <div class="cc cocina-filter active" data-filter="cocina" onclick="setCocinaFilter(this,'cocina')">Cocina</div>
         <div class="cc cocina-filter" data-filter="barra" onclick="setCocinaFilter(this,'barra')">Barra</div>
         <div class="cc cocina-filter" data-filter="todo" onclick="setCocinaFilter(this,'todo')">Todo</div>
+        </div>
+        <div style="font-size:10px;color:var(--sub);margin-left:8px;" id="cocina-refresh-indicator">Auto-refresh 10s</div>
       </div>
-      <div style="font-size:10px;color:var(--sub);margin-left:8px;" id="cocina-refresh-indicator">Auto-refresh 10s</div>
-    </div>
-    <div class="kitchen-grid" id="cocina-grid">
-      <div style="text-align:center;padding:40px;color:var(--sub);font-size:12px;">Cargando ordenes...</div>
-    </div>
+      <div class="kitchen-stats" id="cocina-stats"></div>
+      <div class="kitchen-grid" id="cocina-grid">
+        <div style="text-align:center;padding:40px;color:var(--sub);font-size:12px;">Cargando ordenes...</div>
+      </div>
   </div>
 </div>
 
@@ -1595,6 +1599,26 @@ function renderComandas(orders) {
 var _cocinaTimer = null;
 var _cocinaFilter = 'todo';
 
+function isBarCategory(category) {
+  var cat = String(category || '').toLowerCase();
+  return cat === 'bebidas' || cat === 'cervezas' || cat === 'cocktails' || cat === 'shots' || cat === 'refrescos' || cat === 'drinks';
+}
+
+function renderKitchenStats(stats) {
+  var statsEl = document.getElementById('cocina-stats');
+  if (statsEl) {
+    statsEl.innerHTML =
+      '<div class="ks-chip">Cocina <strong>' + (stats.cocina || 0) + '</strong></div>' +
+      '<div class="ks-chip">Barra <strong>' + (stats.barra || 0) + '</strong></div>' +
+      '<div class="ks-chip">Preparando <strong>' + (stats.preparando || 0) + '</strong></div>' +
+      '<div class="ks-chip">Urgentes <strong>' + (stats.urgentes || 0) + '</strong></div>';
+  }
+  var cocinaBadge = document.getElementById('cocina-count');
+  if (cocinaBadge) cocinaBadge.textContent = String(stats.cocina || 0);
+  var barraBadge = document.getElementById('barra-count');
+  if (barraBadge) barraBadge.textContent = String(stats.barra || 0);
+}
+
 function setCocinaFilter(el, filter) {
   _cocinaFilter = filter;
   document.querySelectorAll('.cocina-filter').forEach(function(c) { c.classList.remove('active'); });
@@ -1626,6 +1650,7 @@ function renderCocina(orders) {
   if (!grid) return;
   var now = Date.now();
   var tables = {};
+  var stats = { cocina: 0, barra: 0, preparando: 0, urgentes: 0 };
   orders.forEach(function(order) {
     var st = (order.status || '').toLowerCase();
     if (st === 'pagada' || st === 'cancelada') return;
@@ -1636,25 +1661,33 @@ function renderCocina(orders) {
     if (items.length === 0) return;
     var mesa = order.table_name || order.table_number || 'Mesa ?';
     var key = String(mesa);
-    if (!tables[key]) {
-      tables[key] = { mesa: mesa, created_at: order.created_at, items: [] };
-    }
-    items.forEach(function(it) {
-      tables[key].items.push({
-        id: it.id || it._id || null,
-        name: it.name || it.product_name || '?',
-        quantity: it.quantity || 1,
-        status: (it.status || 'pendiente').toLowerCase(),
+      if (!tables[key]) {
+        tables[key] = { mesa: mesa, created_at: order.created_at, items: [] };
+      }
+      items.forEach(function(it) {
+        if (isBarCategory(it.category)) stats.barra++;
+        else stats.cocina++;
+        if ((it.status || 'pendiente').toLowerCase() === 'preparando') stats.preparando++;
+        tables[key].items.push({
+          id: it.id || it._id || null,
+          name: it.name || it.product_name || '?',
+          quantity: it.quantity || 1,
+          status: (it.status || 'pendiente').toLowerCase(),
         notes: it.notes || it.note || '',
         category: (it.category || '').toLowerCase()
+        });
       });
     });
-  });
-  var tableKeys = Object.keys(tables);
-  if (tableKeys.length === 0) {
-    grid.innerHTML = '<div style="text-align:center;padding:40px;color:var(--sub);font-size:12px;">Sin ordenes pendientes en cocina</div>';
-    return;
-  }
+    Object.keys(tables).forEach(function(key) {
+      var createdAt = tables[key].created_at ? new Date(tables[key].created_at).getTime() : now;
+      if (Math.round((now - createdAt) / 60000) >= 20) stats.urgentes++;
+    });
+    renderKitchenStats(stats);
+    var tableKeys = Object.keys(tables);
+    if (tableKeys.length === 0) {
+      grid.innerHTML = '<div style="text-align:center;padding:40px;color:var(--sub);font-size:12px;">Sin ordenes pendientes en cocina</div>';
+      return;
+    }
   tableKeys.sort(function(a, b) {
     var ta = tables[a].created_at ? new Date(tables[a].created_at).getTime() : now;
     var tb = tables[b].created_at ? new Date(tables[b].created_at).getTime() : now;
@@ -1664,20 +1697,18 @@ function renderCocina(orders) {
     var t = tables[key];
     var createdAt = t.created_at ? new Date(t.created_at).getTime() : now;
     var elapsedMin = Math.round((now - createdAt) / 60000);
-    var timeClass = elapsedMin < 10 ? 'ok' : (elapsedMin < 20 ? 'warn' : 'late');
-    var timeStr = elapsedMin + ' min';
-    var filteredItems = t.items;
-    if (_cocinaFilter === 'cocina') {
-      filteredItems = t.items.filter(function(it) {
-        var cat = it.category;
-        return cat !== 'bebidas' && cat !== 'cervezas' && cat !== 'cocktails' && cat !== 'shots' && cat !== 'refrescos' && cat !== 'drinks';
-      });
-    } else if (_cocinaFilter === 'barra') {
-      filteredItems = t.items.filter(function(it) {
-        var cat = it.category;
-        return cat === 'bebidas' || cat === 'cervezas' || cat === 'cocktails' || cat === 'shots' || cat === 'refrescos' || cat === 'drinks';
-      });
-    }
+      var timeClass = elapsedMin < 10 ? 'ok' : (elapsedMin < 20 ? 'warn' : 'late');
+      var timeStr = elapsedMin + ' min';
+      var filteredItems = t.items;
+      if (_cocinaFilter === 'cocina') {
+        filteredItems = t.items.filter(function(it) {
+          return !isBarCategory(it.category);
+        });
+      } else if (_cocinaFilter === 'barra') {
+        filteredItems = t.items.filter(function(it) {
+          return isBarCategory(it.category);
+        });
+      }
     if (filteredItems.length === 0) return '';
     var itemsHtml = filteredItems.map(function(it) {
       var isPending = it.status === 'pendiente';
