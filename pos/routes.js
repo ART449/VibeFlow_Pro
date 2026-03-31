@@ -760,8 +760,9 @@ function registerRoutes(app) {
 
     const roleLevel = auth.ROLE_LEVELS[role];
     const hashedPin = auth.hashPin(pin);
+    const empEmail = typeof req.body.email === 'string' ? req.body.email.trim().toLowerCase() : '';
 
-    // Validate PIN unique within this bar — two bars can share PINs
+    // Validate PIN unique within this bar
     const allEmps = db.prepare('SELECT id, name, pin FROM employees WHERE active = 1 AND bar_id = ?').all(barId);
     for (const emp of allEmps) {
       if (auth.verifyPin(pin, emp.pin)) {
@@ -769,9 +770,17 @@ function registerRoutes(app) {
       }
     }
 
+    // Validate email unique within this bar (if provided)
+    if (empEmail) {
+      const emailExists = db.prepare('SELECT id FROM employees WHERE email = ? AND bar_id = ? AND active = 1').get(empEmail, barId);
+      if (emailExists) {
+        return res.json({ ok: false, error: 'Ya hay un empleado con ese email en este bar.' });
+      }
+    }
+
     const result = db.prepare(
-      'INSERT INTO employees (name, pin, role, role_level, area, avatar, bar_id) VALUES (?,?,?,?,?,?,?)'
-    ).run(sanitize(name, 100), hashedPin, role, roleLevel, sanitize(area, 50) || 'salon', sanitize(avatar, 10) || '', barId);
+      'INSERT INTO employees (name, pin, role, role_level, area, avatar, bar_id, email) VALUES (?,?,?,?,?,?,?,?)'
+    ).run(sanitize(name, 100), hashedPin, role, roleLevel, sanitize(area, 50) || 'salon', sanitize(avatar, 10) || '', barId, empEmail);
 
     res.json({ ok: true, employee_id: result.lastInsertRowid });
   });

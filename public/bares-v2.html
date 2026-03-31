@@ -402,8 +402,8 @@ button:disabled{
   </div>
   <div class="sb-section">
     <div class="sb-title" style="color:#ff8a00;">IA Asistente</div>
-    <div class="nav" onclick="showView('ia-asistente',this)"><span class="ni">&#x1F41D;</span> <span>El Avispero</span> <span class="nb" style="background:rgba(255,138,0,.15);color:#ff8a00;">PRO</span></div>
-    <div class="nav" onclick="showView('ia-builders',this)"><span class="ni">&#x1F3D7;&#xFE0F;</span> <span>Builders UX/UI</span></div>
+    <div class="nav role-dueno" onclick="showView('ia-asistente',this)"><span class="ni">&#x1F41D;</span> <span>El Avispero</span> <span class="nb" style="background:rgba(255,138,0,.15);color:#ff8a00;">PRO</span></div>
+    <div class="nav role-dueno" onclick="showView('ia-builders',this)"><span class="ni">&#x1F3D7;&#xFE0F;</span> <span>Builders UX/UI</span></div>
     <div class="nav" onclick="showView('ia-contador',this)"><span class="ni">&#x1F9EE;</span> <span>Contador IA</span></div>
     <div class="nav" onclick="showView('ia-inventario',this)"><span class="ni">&#x1F4E6;</span> <span>Inventario IA</span></div>
     <div class="nav" onclick="showView('ia-espia',this)"><span class="ni">&#x1F576;&#xFE0F;</span> <span>Espia Mercado</span></div>
@@ -1950,6 +1950,31 @@ document.addEventListener('DOMContentLoaded', () => {
   cats.forEach((c, i) => {
     c.onclick = () => switchCat(catMap[i], c);
   });
+
+  // ═══ ROLE-BASED NAV VISIBILITY ═══
+  // Hide nav items that require specific roles
+  var empData = null;
+  try { empData = JSON.parse(sessionStorage.getItem('pos_employee')); } catch(_) {}
+  var currentRole = empData ? empData.role : 'mesero';
+
+  // Elements with class "role-dueno" only visible to dueno and gerente
+  document.querySelectorAll('.role-dueno').forEach(function(el) {
+    if (currentRole !== 'dueno' && currentRole !== 'gerente') {
+      el.style.display = 'none';
+    }
+  });
+
+  // Hide admin-only sections for non-admin roles
+  var adminViews = ['empleados', 'config', 'reportes', 'cfdi'];
+  var restrictedRoles = ['mesero', 'bartender', 'cocinero', 'dj', 'seguridad'];
+  if (restrictedRoles.includes(currentRole)) {
+    document.querySelectorAll('.nav').forEach(function(nav) {
+      var onclick = nav.getAttribute('onclick') || '';
+      adminViews.forEach(function(v) {
+        if (onclick.indexOf("'" + v + "'") !== -1) nav.style.display = 'none';
+      });
+    });
+  }
 });
 
 // ═══════════════════════════════════════════════
