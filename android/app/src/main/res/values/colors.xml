@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="colorPrimary">#FF8A00</color>
+    <color name="colorPrimaryDark">#C55F00</color>
+    <color name="colorAccent">#34D399</color>
+    <color name="pos_hub_orange">#FFB15C</color>
+    <color name="pos_hub_text">#F5F7FB</color>
+    <color name="pos_hub_subtle">#B7C0D2</color>
+</resources>

@@ -10,8 +10,12 @@
       if (provider === 'google') {
         const googleProvider = new firebase.auth.GoogleAuthProvider();
         googleProvider.setCustomParameters({ prompt: 'select_account' });
+        const isCapacitor = window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform();
         const isMobile = /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent);
-        if (isMobile) {
+        if (isCapacitor) {
+          _fbAuth.signInWithRedirect(googleProvider);
+          return;
+        } else if (isMobile) {
           await _fbAuth.signInWithRedirect(googleProvider);
           return;
         }

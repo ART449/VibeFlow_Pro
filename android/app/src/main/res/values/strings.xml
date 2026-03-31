@@ -2,6 +2,7 @@
 <resources>
     <string name="app_name">ByFlow</string>
     <string name="title_activity_main">ByFlow</string>
+    <string name="title_activity_pos_hub">ByFlow POS</string>
     <string name="package_name">com.iartlabs.byflow</string>
     <string name="custom_url_scheme">com.iartlabs.byflow</string>
 </resources>

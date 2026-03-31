@@ -17,7 +17,7 @@
 <script src="/js/pos-auth.js"></script>
 <script>
   firebase.initializeApp(PosAuth.firebaseConfig);
-  const _fbAuth = firebase.auth();
+  window._fbAuth = firebase.auth();
 </script>
 <style>
 *{margin:0;padding:0;box-sizing:border-box;}
@@ -298,9 +298,10 @@ async function signInWithGoogle() {
     const provider = new firebase.auth.GoogleAuthProvider();
     provider.setCustomParameters({ prompt: 'select_account' });
     let result;
+    const isCapacitor = window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform();
     const isMobile = /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent);
-    if (isMobile) {
-      await _fbAuth.signInWithRedirect(provider);
+    if (isCapacitor || isMobile) {
+      _fbAuth.signInWithRedirect(provider);
       return; // redirect handles the rest via getRedirectResult below
     } else {
       result = await _fbAuth.signInWithPopup(provider);

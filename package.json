@@ -10,7 +10,12 @@
     "test": "jest --verbose --forceExit",
     "cap:copy:android": "npx cap copy android",
     "cap:sync:android": "npx cap sync android",
-    "cap:open:android": "npx cap open android"
+    "cap:open:android": "npx cap open android",
+    "android:doctor": "powershell -ExecutionPolicy Bypass -File .\\scripts\\android-build-debug.ps1 -DoctorOnly",
+    "android:apk:debug": "powershell -ExecutionPolicy Bypass -File .\\scripts\\android-build-debug.ps1 -BuildType debug",
+    "android:apk:release": "powershell -ExecutionPolicy Bypass -File .\\scripts\\android-build-debug.ps1 -BuildType release",
+    "android:apk:bundled": "powershell -ExecutionPolicy Bypass -File .\\scripts\\android-build-debug.ps1 -BuildType debug -AppMode bundled",
+    "android:install:debug": "powershell -ExecutionPolicy Bypass -File .\\scripts\\android-install-debug.ps1"
   },
   "engines": {
     "node": ">=18.0.0"

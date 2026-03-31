@@ -1920,6 +1920,29 @@ function showViewDirect(id) {
   if (target) target.classList.add('active');
 }
 
+function findNativeNavByView(id) {
+  return Array.from(document.querySelectorAll('.nav')).find(function(nav) {
+    var handler = nav.getAttribute('onclick') || '';
+    return handler.indexOf("showView('" + id + "'") !== -1;
+  }) || null;
+}
+
+function applyInitialViewFromQuery() {
+  var params = new URLSearchParams(window.location.search || '');
+  var view = (params.get('view') || '').trim();
+  if (!view) return;
+
+  showViewDirect(view);
+  document.querySelectorAll('.nav').forEach(function(nav) { nav.classList.remove('active'); });
+  var nav = findNativeNavByView(view);
+  if (nav) nav.classList.add('active');
+
+  if (view === 'comandas') loadComandas();
+  if (view === 'cocina') loadCocina();
+  if (view === 'inventario') loadInventory();
+  if (view === 'corte') loadCorte();
+}
+
 // ═══ INIT: Wire up category buttons ═══
 document.addEventListener('DOMContentLoaded', () => {
   const cats = document.querySelectorAll('.cat-bar .cc');
@@ -2080,6 +2103,7 @@ document.addEventListener('DOMContentLoaded', function() {
   loadReservationsToday();
   loadCoverData();
   initHappyHourBanner();
+  applyInitialViewFromQuery();
   syncInteractiveControls();
 });
 

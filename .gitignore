@@ -26,3 +26,5 @@ docs/.credentials
 *.db-shm
 *.db-wal
 .claude/worktrees/
+.android-sdk/
+.android-sdk-tmp/
