@@ -4053,6 +4053,11 @@ function getFallbackResponse() { return window.VibeFlow.modules.gflow.getFallbac
 
 function openLyricStudio() { return window.VibeFlow.modules.studio.openLyricStudio.apply(this, arguments); }
 function closeLyricStudio() { return window.VibeFlow.modules.studio.closeLyricStudio.apply(this, arguments); }
+function lsTab() { return window.VibeFlow.modules.studio.lsTab.apply(this, arguments); }
+function socialLogin() { return window.VibeFlow.modules.auth.socialLogin.apply(this, arguments); }
+function bfLogout() { return window.VibeFlow.modules.auth.bfLogout.apply(this, arguments); }
+function dismissWelcome() { if (window.VibeFlow && window.VibeFlow.modules && window.VibeFlow.modules.auth) return window.VibeFlow.modules.auth.dismissWelcome.apply(this, arguments); }
+function siguienteCantante() { return window.VibeFlow.modules.queue.siguienteCantante.apply(this, arguments); }
 // catalogo y datos del estudio extraidos a /js/modules/studio-data.js
 
 // utilidades de UI, catalogo y paneles extraidas a /js/modules/misc-ui.js
