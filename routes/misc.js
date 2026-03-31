@@ -3,7 +3,7 @@
 
 function registerRoutes(app, state, helpers) {
   const { saveJSON, loadJSON, debouncedSave, clampStr,
-          getLocalIp, getRoom, stats, securityLog,
+          getLocalIp, getRoom, isValidRoomAccess, stats, securityLog,
           ADMIN_SECRET, MASTER_ADMIN, PORT, server, io } = helpers;
 
   // QR para acceso remoto
@@ -20,17 +20,40 @@ function registerRoutes(app, state, helpers) {
   });
 
   // Teleprompter state (deprecated for user-facing use — admin/debug only)
-  app.get('/api/teleprompter', (req, res) => res.json(state.teleprompter));
+  app.get('/api/teleprompter', (req, res) => {
+    const roomId = typeof req.query.roomId === 'string' ? req.query.roomId : '';
+    const roomToken = req.headers['x-room-token'] || req.query.roomToken || '';
+    if (roomId) {
+      if (!isValidRoomAccess(roomId, roomToken)) {
+        return res.status(403).json({ error: 'Room token invalido o faltante' });
+      }
+      const room = getRoom(roomId, roomToken);
+      return res.json(room.teleprompter);
+    }
+    const adminKey = req.headers['x-admin-key'];
+    if (adminKey !== ADMIN_SECRET && adminKey !== MASTER_ADMIN) {
+      return res.status(401).json({ error: 'Admin key requerida' });
+    }
+    return res.json(state.teleprompter);
+  });
   app.post('/api/teleprompter', (req, res) => {
     const roomId = req.body.roomId;
+    const roomToken = req.headers['x-room-token'] || req.body.roomToken || req.query.roomToken || '';
     const allowed = ['lyrics', 'currentWord', 'scrollSpeed', 'isPlaying'];
     if (roomId) {
-      const room = getRoom(roomId);
+      if (!isValidRoomAccess(roomId, roomToken)) {
+        return res.status(403).json({ error: 'Room token invalido o faltante' });
+      }
+      const room = getRoom(roomId, roomToken);
       for (const key of allowed) {
         if (req.body[key] !== undefined) room.teleprompter[key] = req.body[key];
       }
       io.to(roomId).emit('tp_update', room.teleprompter);
       return res.json(room.teleprompter);
+    }
+    const adminKey = req.headers['x-admin-key'];
+    if (adminKey !== ADMIN_SECRET && adminKey !== MASTER_ADMIN) {
+      return res.status(401).json({ error: 'Admin key requerida' });
     }
     for (const key of allowed) {
       if (req.body[key] !== undefined) state.teleprompter[key] = req.body[key];
@@ -108,7 +131,7 @@ function registerRoutes(app, state, helpers) {
   // API Keys endpoint — only serve keys from env vars, no hardcoded fallbacks
   app.get('/api/config/keys', (req, res) => {
     res.json({
-      youtube: process.env.YOUTUBE_API_KEY || '',
+      youtubeConfigured: !!process.env.YOUTUBE_API_KEY,
       jamendo: process.env.JAMENDO_CLIENT_ID || '',
       ga: process.env.GA_MEASUREMENT_ID || ''
     });

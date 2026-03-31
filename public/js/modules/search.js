@@ -219,13 +219,15 @@
 
   search.uSearchYoutube = async function(q) {
     const key = localStorage.getItem('yt_api_key') || '';
-    if (key) {
-      try {
-        const r = await fetch('/api/youtube/search?q=' + encodeURIComponent(q) + '&key=' + encodeURIComponent(key), { signal: AbortSignal.timeout(5000) });
-        const d = await r.json();
-        if (d.items && d.items.length) return d.items;
-      } catch {}
-    }
+    try {
+      const headers = key ? { 'X-YouTube-Key': key } : {};
+      const r = await fetch('/api/youtube/search?q=' + encodeURIComponent(q), {
+        signal: AbortSignal.timeout(5000),
+        ...(Object.keys(headers).length ? { headers } : {})
+      });
+      const d = await r.json();
+      if (d.items && d.items.length) return d.items;
+    } catch {}
 
     try {
       if (typeof ytFreeSearch === 'function') {

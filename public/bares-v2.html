@@ -340,7 +340,7 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--t
   </div>
   <div class="topbar-right">
     <div class="tb active">&#x1F37A; Happy Hour</div>
-    <div class="tb" onclick="alert('Cover: $150 general / $250 VIP\nIncluye 2 bebidas')">&#x1F3AB; Cover $150</div>
+    <div class="tb" onclick="openCoverView()">&#x1F3AB; Cover $150</div>
     <div class="tb">&#x1F4F1; QR Menu</div>
     <div class="tb">&#x1F4E1; Delivery</div>
     <div class="tb alert">&#x1F514; <span class="notif">3</span></div>
@@ -356,8 +356,8 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--t
     <div class="sb-title">Operacion</div>
     <div class="nav active" onclick="showView('mesas',this)"><span class="ni">&#x1F37B;</span> <span>Mesas</span> <span class="nb">12</span></div>
     <div class="nav" onclick="showView('comandas',this)"><span class="ni">&#x1F4CB;</span> <span>Comandas</span> <span class="nb" id="comandas-count">0</span></div>
-    <div class="nav" onclick="toast('&#x1F3A4; Cola Karaoke — Proximamente', 'info')"><span class="ni">&#x1F3A4;</span> <span>Cola Karaoke</span> <span class="nb pink">8</span></div>
-    <div class="nav" onclick="toast('&#x1F4B3; Cobrar — Proximamente', 'info')"><span class="ni">&#x1F4B3;</span> <span>Cobrar</span></div>
+    <div class="nav" onclick="openKaraokeQueueModal()"><span class="ni">&#x1F3A4;</span> <span>Cola Karaoke</span> <span class="nb pink">8</span></div>
+    <div class="nav" onclick="openCobrarShortcut()"><span class="ni">&#x1F4B3;</span> <span>Cobrar</span></div>
     <div class="nav" onclick="showView('reservaciones',this)"><span class="ni">&#x1F4C5;</span> <span>Reservaciones</span> <span class="nb" id="reserv-count">0</span></div>
     <div class="nav" onclick="showView('cover',this)"><span class="ni">&#x1F3AB;</span> <span>Cover / Entrada</span> <span class="nb green">43</span></div>
   </div>
@@ -876,6 +876,31 @@ function showView(id, el) {
   if (id === 'corte') loadCorte();
 }
 
+function findNavItemByText(text) {
+  var targetText = String(text || '').toLowerCase();
+  var navs = document.querySelectorAll('.nav');
+  for (var i = 0; i < navs.length; i++) {
+    var navText = (navs[i].textContent || '').toLowerCase();
+    if (navText.indexOf(targetText) !== -1) return navs[i];
+  }
+  return null;
+}
+
+function openCoverView() {
+  var nav = findNavItemByText('cover / entrada') || findNavItemByText('cover');
+  showView('cover', nav);
+}
+
+function openCobrarShortcut() {
+  var nav = findNavItemByText('mesas');
+  if (nav) showView('mesas', nav);
+  if (!_cobrarState.orderId) {
+    toast('Selecciona una mesa con orden abierta para cobrar', 'warn');
+    return;
+  }
+  openCobrarModal();
+}
+
 // ═══ TABLE SELECTION ═══
 function selT(n, el) {
   document.getElementById('pos-mesa').textContent = (typeof n === 'string' ? n : 'Mesa ' + n);
@@ -894,6 +919,134 @@ function selT(n, el) {
 let orderTotal = 0;
 let orderCount = 0;
 let isHappyHour = false;
+
+function getCurrentEmployeeId() {
+  var empData = null;
+  try { empData = JSON.parse(sessionStorage.getItem('pos_employee')); } catch (_) {}
+  return empData && empData.id ? parseInt(empData.id, 10) : null;
+}
+
+function getCurrentHappyHourRate() {
+  if (!isHappyHour || !window._hhActive || !window._hhActive.length) return 0;
+  var pct = parseFloat(window._hhActive[0].discount_pct);
+  if (!isFinite(pct) || pct <= 0) return 0;
+  return pct > 1 ? (pct / 100) : pct;
+}
+
+function getOrderFinancials(subtotal) {
+  var cobrarState = window._cobrarState || {};
+  var taxRate = cobrarState.taxRate || 0.16;
+  var hhRate = getCurrentHappyHourRate();
+  var discount = hhRate > 0 ? Math.round(subtotal * hhRate) : 0;
+  var afterDiscount = subtotal - discount;
+  var tax = Math.round(afterDiscount * taxRate);
+  return {
+    discount: discount,
+    tax: tax,
+    total: afterDiscount + tax
+  };
+}
+
+function getOrderListTargets() {
+  return ['order-list', 'order-list-overlay']
+    .map(function(id) { return document.getElementById(id); })
+    .filter(Boolean);
+}
+
+function resetRenderedOrder() {
+  getOrderListTargets().forEach(function(list) { list.innerHTML = ''; });
+  orderTotal = 0;
+  orderCount = 0;
+  updateTotals();
+}
+
+function setPosMeta(metaHtml) {
+  var metaEl = document.querySelector('.ph-g');
+  if (metaEl) metaEl.innerHTML = metaHtml;
+}
+
+function renderOrderLines(items) {
+  var html = items.map(function(item) {
+    var qty = parseInt(item.quantity != null ? item.quantity : item.qty, 10) || 1;
+    var name = item.product_name || item.name || '?';
+    var total = Number(item.total || 0);
+    var status = String(item.status || 'pendiente').toLowerCase();
+    var actionHtml = status === 'pendiente'
+      ? '<span class="ol-x" onclick="removeItem(this)">&#x2715;</span>'
+      : '<span class="ol-p" style="font-size:10px;text-transform:uppercase;">' + escapeHtml(status) + '</span>';
+    return '<div class="ol" data-item-id="' + (item.id || '') + '" data-item-status="' + escapeHtml(status) + '">' +
+      '<span class="ol-q">' + qty + '</span>' +
+      '<span class="ol-n">' + escapeHtml(name) + '</span>' +
+      '<span class="ol-p">$' + total.toLocaleString() + '</span>' +
+      actionHtml +
+      '</div>';
+  }).join('');
+
+  getOrderListTargets().forEach(function(list) {
+    list.innerHTML = html;
+    list.scrollTop = list.scrollHeight;
+  });
+}
+
+function syncCurrentOrder(options) {
+  options = options || {};
+  var orderId = options.orderId || _cobrarState.orderId;
+  if (!orderId) {
+    _cobrarState.items = [];
+    _cobrarState.subtotal = 0;
+    _cobrarState.discount = 0;
+    _cobrarState.tax = 0;
+    _cobrarState.total = 0;
+    resetRenderedOrder();
+    return Promise.resolve(null);
+  }
+
+  return fetch('/pos/orders/' + orderId, { headers: authHeaders() })
+    .then(function(r) { return r.ok ? r.json() : Promise.reject(r.status); })
+    .then(function(data) {
+      if (data && data.ok === false) return Promise.reject(data.error || 'Orden no encontrada');
+      var order = data.order || {};
+      var items = data.items || order.items || [];
+      var subtotal = Number(order.subtotal != null ? order.subtotal : items.reduce(function(sum, item) {
+        return sum + (Number(item.total) || 0);
+      }, 0));
+      var financials = getOrderFinancials(subtotal);
+
+      _cobrarState.orderId = order.id || orderId;
+      if (order.table_id) _cobrarState.tableId = order.table_id;
+      if (order.table_number) _cobrarState.tableName = 'Mesa ' + order.table_number;
+      _cobrarState.items = items.map(function(item) {
+        return {
+          id: item.id,
+          qty: parseInt(item.quantity, 10) || 1,
+          name: item.product_name || item.name || '',
+          total: Number(item.total || 0),
+          status: item.status || 'pendiente'
+        };
+      });
+      _cobrarState.subtotal = subtotal;
+      _cobrarState.discount = financials.discount;
+      _cobrarState.tax = financials.tax;
+      _cobrarState.total = financials.total;
+
+      orderTotal = subtotal;
+      orderCount = items.reduce(function(sum, item) {
+        return sum + (parseInt(item.quantity, 10) || 1);
+      }, 0);
+
+      renderOrderLines(items);
+      updateTotals();
+
+      var guests = parseInt(order.guests || order.table_guests, 10) || 0;
+      var waiterName = order.waiter_name || 'Sin asignar';
+      setPosMeta((guests ? guests + ' pers &bull; ' : '') + 'Mesero: ' + escapeHtml(waiterName));
+      return { order: order, items: items };
+    })
+    .catch(function(err) {
+      if (!options.silent) toast('Error cargando orden: ' + err, 'error');
+      throw err;
+    });
+}
 
 function addI(name, price, el, productId) {
   if (!_cobrarState.orderId) {
@@ -919,61 +1072,127 @@ function addI(name, price, el, productId) {
   })
     .then(function(r) { return r.ok ? r.json() : Promise.reject(r.status); })
     .then(function(data) {
-      // Add DOM element on success
-      var overlayList = document.getElementById('order-list-overlay');
-      var mainList = document.getElementById('order-list');
-      var posOverlay = document.getElementById('pos-overlay');
-      var list = (overlayList && posOverlay && posOverlay.classList.contains('open')) ? overlayList : mainList;
-      var itemId = (data.item && data.item.id) || (data.id) || null;
-      var line = document.createElement('div');
-      line.className = 'ol';
-      line.style.animation = 'fadeIn .3s';
-      if (itemId) line.setAttribute('data-item-id', itemId);
-      line.innerHTML = '<span class="ol-q">1</span><span class="ol-n">' + escapeHtml(name) + '</span><span class="ol-p">$' + price + '</span><span class="ol-x" onclick="removeItem(this,' + price + ')">&#x2715;</span>';
-      list.appendChild(line);
-      list.scrollTop = list.scrollHeight;
-      // Update totals from server response if available, else locally
-      if (data.order_total != null) {
-        orderTotal = Number(data.order_total);
-      } else {
-        orderTotal += price;
-      }
-      orderCount++;
-      updateTotals();
-      toast(name + ' agregado — $' + price, 'success');
+      if (data && data.ok === false) return Promise.reject(data.error || 'No se pudo agregar el item');
+      return syncCurrentOrder({ orderId: _cobrarState.orderId, silent: true }).then(function() {
+        toast(name + ' agregado - $' + price, 'success');
+      });
     })
     .catch(function(err) {
       toast('Error agregando ' + name + ': ' + err, 'error');
     });
 }
 
-function removeItem(el, price) {
-  const line = el.closest('.ol');
-  line.style.animation = 'fadeOut .2s forwards';
-  setTimeout(() => line.remove(), 200);
-  orderTotal -= price;
-  orderCount--;
-  updateTotals();
-  toast('Item eliminado', 'warn');
+function removeItem(el) {
+  var line = el && el.closest ? el.closest('.ol') : null;
+  if (!line) return;
+
+  var itemId = parseInt(line.getAttribute('data-item-id'), 10);
+  var itemStatus = String(line.getAttribute('data-item-status') || 'pendiente').toLowerCase();
+  if (!itemId) {
+    toast('No se pudo identificar el item a cancelar', 'warn');
+    return;
+  }
+  if (itemStatus !== 'pendiente') {
+    toast('Solo puedes cancelar items pendientes antes de enviarlos', 'warn');
+    return;
+  }
+
+  line.style.pointerEvents = 'none';
+  line.style.opacity = '0.5';
+
+  fetch('/pos/order-items/' + itemId + '/status', {
+    method: 'PUT',
+    headers: Object.assign({ 'Content-Type': 'application/json' }, authHeaders()),
+    body: JSON.stringify({
+      status: 'cancelado',
+      cancelled_by: getCurrentEmployeeId(),
+      cancel_reason: 'Cancelado desde la comanda'
+    })
+  })
+    .then(function(r) { return r.ok ? r.json() : Promise.reject(r.status); })
+    .then(function(data) {
+      if (data && data.ok === false) return Promise.reject(data.error || 'No se pudo cancelar el item');
+      return syncCurrentOrder({ orderId: _cobrarState.orderId, silent: true }).then(function() {
+        toast('Item cancelado', 'warn');
+      });
+    })
+    .catch(function(err) {
+      line.style.pointerEvents = '';
+      line.style.opacity = '';
+      toast('Error cancelando item: ' + err, 'error');
+    });
 }
 
 function clearOrder() {
-  document.getElementById('order-list').innerHTML = '';
-  const overlayList = document.getElementById('order-list-overlay');
-  if (overlayList) overlayList.innerHTML = '';
-  orderTotal = 0;
-  orderCount = 0;
-  updateTotals();
-  toast('Orden limpiada', 'warn');
+  if (!_cobrarState.orderId) {
+    resetRenderedOrder();
+    toast('Orden limpiada', 'warn');
+    return;
+  }
+
+  fetch('/pos/orders/' + _cobrarState.orderId, { headers: authHeaders() })
+    .then(function(r) { return r.ok ? r.json() : Promise.reject(r.status); })
+    .then(function(data) {
+      if (data && data.ok === false) return Promise.reject(data.error || 'Orden no encontrada');
+      var items = data.items || (data.order && data.order.items) || [];
+      if (items.length === 0) {
+        return fetch('/pos/orders/' + _cobrarState.orderId, {
+          method: 'DELETE',
+          headers: authHeaders()
+        }).then(function(r) { return r.ok ? r.json() : Promise.reject(r.status); });
+      }
+
+      var pending = items.filter(function(item) {
+        return String(item.status || 'pendiente').toLowerCase() === 'pendiente';
+      });
+      if (pending.length !== items.length) {
+        toast('Solo se pueden limpiar items pendientes antes de enviarlos', 'warn');
+        return null;
+      }
+
+      return Promise.all(pending.map(function(item) {
+        return fetch('/pos/order-items/' + item.id + '/status', {
+          method: 'PUT',
+          headers: Object.assign({ 'Content-Type': 'application/json' }, authHeaders()),
+          body: JSON.stringify({
+            status: 'cancelado',
+            cancelled_by: getCurrentEmployeeId(),
+            cancel_reason: 'Limpieza completa de orden'
+          })
+        }).then(function(r) { return r.ok ? r.json() : Promise.reject(r.status); });
+      }))
+        .then(function() {
+          return fetch('/pos/orders/' + _cobrarState.orderId, {
+            method: 'DELETE',
+            headers: authHeaders()
+          }).then(function(r) { return r.ok ? r.json() : Promise.reject(r.status); });
+        });
+    })
+    .then(function(data) {
+      if (!data) return;
+      if (data && data.ok === false) return Promise.reject(data.error || 'No se pudo limpiar la orden');
+      _cobrarState.orderId = null;
+      _cobrarState.items = [];
+      _cobrarState.subtotal = 0;
+      _cobrarState.discount = 0;
+      _cobrarState.tax = 0;
+      _cobrarState.total = 0;
+      resetRenderedOrder();
+      loadTables();
+      toast('Orden limpiada', 'warn');
+    })
+    .catch(function(err) {
+      toast('Error limpiando orden: ' + err, 'error');
+    });
 }
 
 function updateTotals() {
   const subtotal = orderTotal;
-  const hhDisc = isHappyHour ? Math.round(subtotal * 0.086) : 0;
-  const afterDisc = subtotal - hhDisc;
-  const iva = Math.round(afterDisc * 0.16);
-  const total = afterDisc + iva;
-  const hhLine = isHappyHour
+  const financials = getOrderFinancials(subtotal);
+  const hhDisc = financials.discount;
+  const iva = financials.tax;
+  const total = financials.total;
+  const hhLine = hhDisc > 0
     ? '<div class="tr disc"><span>&#x1F37A; Happy Hour</span><span>-$' + hhDisc.toLocaleString() + '</span></div>'
     : '';
   const totalsHTML =
@@ -1048,7 +1267,7 @@ function posAction(action) {
     enviar: function() { enviarComanda(); },
     cobrar: function() { openCobrarModal(); },
     dividir: function() { toast('Selecciona items para dividir', 'info'); },
-    cancion: function() { toast('Abriendo cola de karaoke para esta mesa', 'info'); },
+    cancion: function() { openKaraokeQueueModal(); },
     ticket: function() { openTicketPreview(); },
     cfdi: function() { toast('Abriendo facturacion CFDI 4.0', 'info'); }
   };
@@ -1064,7 +1283,7 @@ function enviarComanda() {
     .then(function(r) { return r.ok ? r.json() : Promise.reject(r.status); })
     .then(function(data) {
       var order = data.order || data;
-      var items = order.items || [];
+      var items = data.items || order.items || [];
       var pending = items.filter(function(it) {
         return (it.status || '').toLowerCase() === 'pendiente';
       });
@@ -1078,7 +1297,12 @@ function enviarComanda() {
           method: 'PUT',
           headers: Object.assign({ 'Content-Type': 'application/json' }, authHeaders()),
           body: JSON.stringify({ status: 'enviado' })
-        }).then(function(r) { return r.ok ? r.json() : Promise.reject(r.status); });
+        })
+          .then(function(r) { return r.ok ? r.json() : Promise.reject(r.status); })
+          .then(function(resp) {
+            if (resp && resp.ok === false) return Promise.reject(resp.error || 'No se pudo enviar el item');
+            return resp;
+          });
       });
       return Promise.all(promises);
     })
@@ -1088,6 +1312,7 @@ function enviarComanda() {
         if (typeof io !== 'undefined' && window._posSocket) {
           window._posSocket.emit('comanda_enviada', { order_id: orderId });
         }
+        syncCurrentOrder({ orderId: orderId, silent: true }).catch(function() {});
         toast('Comanda enviada a cocina y barra (' + results.length + ' items)', 'success');
       }
     })
@@ -1142,7 +1367,7 @@ function renderComandas(orders) {
     var items = order.items || [];
     var itemsHtml = items.map(function(it) {
       var st = (it.status || 'pendiente').toLowerCase();
-      var badgeCls = st === 'lista' ? 'ki-badge-lista' : (st === 'preparando' ? 'ki-badge-preparando' : 'ki-badge-pendiente');
+      var badgeCls = st === 'listo' ? 'ki-badge-lista' : (st === 'preparando' ? 'ki-badge-preparando' : 'ki-badge-pendiente');
       return '<div class="k-item"><span class="ki-q">' + (it.quantity || 1) + 'x</span><span class="ki-n">' + escapeHtml(it.name || it.product_name || '?') + '</span><span class="ki-status ' + badgeCls + '">' + escapeHtml(st) + '</span></div>';
     }).join('');
     return '<div class="k-card' + (elapsedMin >= 20 ? ' urgent' : '') + '" style="animation:fadeIn .3s;">' +
@@ -1248,7 +1473,7 @@ function renderCocina(orders) {
         if (isPending) {
           btnHtml = '<button class="k-btn progress" onclick="kitchenAction(this,\'' + it.id + '\',\'preparando\')" style="padding:3px 6px;font-size:9px;">&#x1F373; Preparando</button>';
         }
-        btnHtml += '<button class="k-btn ready" onclick="kitchenAction(this,\'' + it.id + '\',\'lista\')" style="padding:3px 6px;font-size:9px;">&#x2705; Lista</button>';
+        btnHtml += '<button class="k-btn ready" onclick="kitchenAction(this,\'' + it.id + '\',\'listo\')" style="padding:3px 6px;font-size:9px;">&#x2705; Lista</button>';
       }
       return '<div class="k-item" style="flex-wrap:wrap;"><span class="ki-q">' + it.quantity + 'x</span><span class="ki-n">' + escapeHtml(it.name) + '</span>' +
         (it.notes ? '<span class="ki-note">' + escapeHtml(it.notes) + '</span>' : '') +
@@ -1273,7 +1498,11 @@ function kitchenAction(btn, itemId, newStatus) {
   })
     .then(function(r) {
       if (!r.ok) return Promise.reject(r.status);
-      toast(newStatus === 'lista' ? 'Item listo -- notificando mesero' : 'Marcado en preparacion', newStatus === 'lista' ? 'success' : 'info');
+      return r.json();
+    })
+    .then(function(data) {
+      if (data && data.ok === false) return Promise.reject(data.error || 'No se pudo actualizar el item');
+      toast(newStatus === 'listo' ? 'Item listo - notificando mesero' : 'Marcado en preparacion', newStatus === 'listo' ? 'success' : 'info');
       _fetchCocina();
     })
     .catch(function(err) {
@@ -1551,6 +1780,9 @@ document.addEventListener('DOMContentLoaded', function() {
   // Bootstrap on load: fetch tables and default category (1 = cervezas)
   loadTables();
   loadProducts(1);
+  resetRenderedOrder();
+  document.getElementById('pos-mesa').textContent = 'Selecciona mesa';
+  setPosMeta('Sin mesa seleccionada');
   loadReservationsToday();
   loadCoverData();
   initHappyHourBanner();
@@ -2041,8 +2273,6 @@ function updateHHTimer(endTime) {
     // Clean state: replace demo data with empty state when no real data loaded
     cleanDemoState();
 
-    // Hide demo banners / "Proximamente" toasts by overriding the nav items
-    overrideProximamente();
   }
 })();
 
@@ -2638,6 +2868,25 @@ function confirmCloseShift() {
 .qr-actions button{flex:1;padding:8px;border-radius:8px;border:none;font-size:11px;font-weight:600;cursor:pointer;font-family:inherit;transition:all .15s;}
 .qr-actions .qr-copy{background:rgba(255,138,0,.1);color:var(--orange);}
 .qr-actions .qr-close-btn{background:var(--surface);color:var(--sub);border:1px solid var(--border);}
+.karaoke-overlay{display:none;position:fixed;inset:0;z-index:405;align-items:center;justify-content:center;}
+.karaoke-overlay.open{display:flex;}
+.karaoke-card{position:relative;z-index:1;width:520px;max-width:95vw;max-height:88vh;overflow:hidden;background:rgba(15,15,22,.98);border:1px solid var(--border);border-radius:20px;box-shadow:0 30px 80px rgba(0,0,0,.6);display:flex;flex-direction:column;}
+.karaoke-head{display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid var(--border);}
+.karaoke-head h3{font-size:15px;font-weight:800;}
+.karaoke-head p{font-size:11px;color:var(--sub);margin-top:2px;}
+.karaoke-close{width:30px;height:30px;border-radius:8px;border:1px solid var(--border);background:var(--surface);color:var(--sub);cursor:pointer;}
+.karaoke-body{padding:16px 20px;overflow-y:auto;display:flex;flex-direction:column;gap:14px;}
+.karaoke-form{display:grid;grid-template-columns:1fr 1fr auto;gap:8px;}
+.karaoke-input{padding:10px 12px;border-radius:10px;border:1px solid var(--border);background:var(--surface);color:var(--text);font-size:12px;font-family:inherit;}
+.karaoke-add{padding:10px 16px;border-radius:10px;border:none;background:linear-gradient(135deg,var(--orange),#f59e0b);color:#fff;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;}
+.karaoke-list{display:flex;flex-direction:column;gap:8px;}
+.karaoke-item{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:12px;background:var(--surface);border:1px solid rgba(255,255,255,.05);}
+.karaoke-pos{width:24px;height:24px;border-radius:50%;background:rgba(255,138,0,.12);color:var(--orange);font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.karaoke-main{flex:1;min-width:0;}
+.karaoke-song{font-size:12px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.karaoke-meta{font-size:10px;color:var(--sub);margin-top:2px;}
+.karaoke-status{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--green);}
+.karaoke-empty{padding:18px;border-radius:12px;background:rgba(255,255,255,.03);border:1px dashed rgba(255,255,255,.08);text-align:center;font-size:11px;color:var(--sub);}
 #print-ticket{display:none;}
 @media print{
   body *{display:none !important;}
@@ -2665,6 +2914,11 @@ function confirmCloseShift() {
 .pp-actions button{flex:1;padding:10px;border-radius:10px;border:none;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;transition:all .15s;}
 .pp-actions .pp-print{background:rgba(255,138,0,.1);color:var(--orange);}
 .pp-actions .pp-done{background:linear-gradient(135deg,var(--green),#22c55e);color:#fff;}
+@media(max-width:520px){
+  .karaoke-card{width:96vw;border-radius:16px;}
+  .karaoke-body{padding:14px 16px;}
+  .karaoke-form{grid-template-columns:1fr;}
+}
 </style>
 
 <div class="cobrar-overlay" id="cobrar-overlay" onclick="if(event.target===this)closeCobrarModal()">
@@ -2723,6 +2977,27 @@ function confirmCloseShift() {
   </div>
 </div>
 
+<div class="karaoke-overlay" id="karaoke-overlay" onclick="if(event.target===this)closeKaraokeQueueModal()">
+  <div class="cobrar-backdrop"></div>
+  <div class="karaoke-card">
+    <div class="karaoke-head">
+      <div>
+        <h3 id="karaoke-title">Cola Karaoke</h3>
+        <p id="karaoke-sub">Consulta y agrega canciones a la cola activa</p>
+      </div>
+      <button class="karaoke-close" onclick="closeKaraokeQueueModal()">&#x2715;</button>
+    </div>
+    <div class="karaoke-body">
+      <div class="karaoke-form">
+        <input class="karaoke-input" id="karaoke-song-input" placeholder="Cancion">
+        <input class="karaoke-input" id="karaoke-singer-input" placeholder="Cantante">
+        <button class="karaoke-add" onclick="submitKaraokeSong()">Agregar</button>
+      </div>
+      <div class="karaoke-list" id="karaoke-list"></div>
+    </div>
+  </div>
+</div>
+
 <div class="post-payment" id="post-payment" onclick="if(event.target===this)closePostPayment()">
   <div class="cobrar-backdrop"></div>
   <div class="post-payment-card">
@@ -2744,7 +3019,7 @@ var _cobrarState = {
   orderId: null, tableId: null, tableName: '',
   items: [], subtotal: 0, discount: 0, taxRate: 0.16,
   tax: 0, total: 0, tipPercent: 15, tipAmount: 0,
-  method: 'efectivo', cashReceived: 0, change: 0,
+  method: 'efectivo', cashReceived: 0, change: 0, lastPaidOrderId: null,
   barName: localStorage.getItem('pos_bar_name') || 'ByFlow Bar'
 };
 
@@ -2762,48 +3037,51 @@ var _cobrarState = {
 function openCobrarModal() {
   var mesaText = document.getElementById('pos-mesa').textContent || 'Mesa';
   _cobrarState.tableName = mesaText;
-  var orderLines = document.querySelectorAll('#order-list .ol');
-  var items = [];
-  var subtotal = 0;
-  orderLines.forEach(function(line) {
-    var qtyEl = line.querySelector('.ol-q');
-    var nameEl = line.querySelector('.ol-n');
-    var priceEl = line.querySelector('.ol-p');
-    if (!qtyEl || !nameEl || !priceEl) return;
-    var qty = parseInt(qtyEl.textContent) || 1;
-    var name = nameEl.textContent || '';
-    var priceText = priceEl.textContent.replace(/[^0-9.]/g, '');
-    var price = parseFloat(priceText) || 0;
-    items.push({ qty: qty, name: name, total: price });
-    subtotal += price;
+  var loadPromise = _cobrarState.orderId
+    ? syncCurrentOrder({ orderId: _cobrarState.orderId, silent: true }).catch(function() { return null; })
+    : Promise.resolve(null);
+
+  loadPromise.then(function() {
+    var items = (_cobrarState.items || []).map(function(item) {
+      return {
+        qty: parseInt(item.qty, 10) || 1,
+        name: item.name || '',
+        total: Number(item.total || 0)
+      };
+    });
+    if (items.length === 0) { toast('No hay items en la orden', 'warn'); return; }
+
+    var subtotal = items.reduce(function(sum, item) { return sum + item.total; }, 0);
+    var financials = getOrderFinancials(subtotal);
+
+    _cobrarState.items = items;
+    _cobrarState.subtotal = subtotal;
+    _cobrarState.discount = financials.discount;
+    _cobrarState.tax = financials.tax;
+    _cobrarState.total = financials.total;
+    _cobrarState.tipPercent = 15;
+    _cobrarState.tipAmount = Math.round(_cobrarState.total * 0.15);
+    _cobrarState.method = 'efectivo';
+    _cobrarState.cashReceived = 0;
+    _cobrarState.change = 0;
+    _cobrarState.lastPaidOrderId = _cobrarState.orderId;
+
+    document.getElementById('cobrar-title').textContent = 'Cobrar \u2014 ' + mesaText;
+    var summaryHtml = '';
+    items.forEach(function(it) {
+      summaryHtml += '<div class="cobrar-item"><span class="ci-q">' + it.qty + '</span><span class="ci-n">' + escapeHtml(it.name) + '</span><span class="ci-p">$' + it.total.toLocaleString() + '</span></div>';
+    });
+    document.getElementById('cobrar-summary').innerHTML = summaryHtml;
+    renderCobrarTotals();
+    document.querySelectorAll('.tip-btn').forEach(function(b, i) { b.classList.toggle('active', i === 1); });
+    document.getElementById('tip-custom').classList.remove('show');
+    document.getElementById('tip-custom-input').value = '';
+    document.querySelectorAll('.pay-method').forEach(function(b, i) { b.classList.toggle('active', i === 0); });
+    document.getElementById('efectivo-row').classList.add('show');
+    document.getElementById('cash-received').value = '';
+    document.getElementById('cambio-display').classList.remove('show');
+    document.getElementById('cobrar-overlay').classList.add('open');
   });
-  if (items.length === 0) { toast('No hay items en la orden', 'warn'); return; }
-  _cobrarState.items = items;
-  _cobrarState.subtotal = subtotal;
-  _cobrarState.discount = isHappyHour ? Math.round(subtotal * 0.086) : 0;
-  var afterDisc = subtotal - _cobrarState.discount;
-  _cobrarState.tax = Math.round(afterDisc * _cobrarState.taxRate);
-  _cobrarState.total = afterDisc + _cobrarState.tax;
-  _cobrarState.tipPercent = 15;
-  _cobrarState.tipAmount = Math.round(_cobrarState.total * 0.15);
-  _cobrarState.method = 'efectivo';
-  _cobrarState.cashReceived = 0;
-  _cobrarState.change = 0;
-  document.getElementById('cobrar-title').textContent = 'Cobrar \u2014 ' + mesaText;
-  var summaryHtml = '';
-  items.forEach(function(it) {
-    summaryHtml += '<div class="cobrar-item"><span class="ci-q">' + it.qty + '</span><span class="ci-n">' + escapeHtml(it.name) + '</span><span class="ci-p">$' + it.total.toLocaleString() + '</span></div>';
-  });
-  document.getElementById('cobrar-summary').innerHTML = summaryHtml;
-  renderCobrarTotals();
-  document.querySelectorAll('.tip-btn').forEach(function(b, i) { b.classList.toggle('active', i === 1); });
-  document.getElementById('tip-custom').classList.remove('show');
-  document.getElementById('tip-custom-input').value = '';
-  document.querySelectorAll('.pay-method').forEach(function(b, i) { b.classList.toggle('active', i === 0); });
-  document.getElementById('efectivo-row').classList.add('show');
-  document.getElementById('cash-received').value = '';
-  document.getElementById('cambio-display').classList.remove('show');
-  document.getElementById('cobrar-overlay').classList.add('open');
 }
 
 function renderCobrarTotals() {
@@ -2871,14 +3149,22 @@ function processCobro() {
   if (s.method === 'efectivo' && s.cashReceived > 0 && s.cashReceived < grandTotal) {
     toast('El monto recibido no cubre el total', 'error'); return;
   }
-  var employeeData = null;
-  try { employeeData = JSON.parse(sessionStorage.getItem('pos_employee')); } catch(_) {}
-  var cashierId = (employeeData && employeeData.id) || 1;
+  var cashierId = getCurrentEmployeeId() || 1;
   if (s.orderId && s.orderId > 0) {
     fetch('/pos/payments', {
       method: 'POST',
       headers: Object.assign({ 'Content-Type': 'application/json' }, authHeaders()),
-      body: JSON.stringify({ order_id: s.orderId, method: s.method, amount: grandTotal, cash_received: s.method === 'efectivo' ? s.cashReceived : 0, tip: s.tipAmount, cashier_id: cashierId })
+      body: JSON.stringify({
+        order_id: s.orderId,
+        method: s.method,
+        subtotal: s.subtotal,
+        discount: s.discount,
+        tax: s.tax,
+        amount: s.total,
+        cash_received: s.method === 'efectivo' ? s.cashReceived : 0,
+        tip: s.tipAmount,
+        cashier_id: cashierId
+      })
     })
     .then(function(r) { return r.json(); })
     .then(function(data) {
@@ -2891,6 +3177,7 @@ function processCobro() {
 
 function showPostPayment() {
   var s = _cobrarState;
+  var paidOrderId = s.orderId;
   closeCobrarModal();
   var methodLabels = { efectivo: 'Efectivo', tarjeta: 'Tarjeta', transferencia: 'Transferencia' };
   document.getElementById('pp-sub').textContent = s.tableName + ' \u2014 ' + (methodLabels[s.method] || s.method);
@@ -2898,7 +3185,9 @@ function showPostPayment() {
   if (s.method === 'efectivo' && s.change > 0) { changeEl.textContent = 'Cambio: $' + s.change.toLocaleString(); changeEl.style.display = 'block'; }
   else { changeEl.style.display = 'none'; }
   document.getElementById('post-payment').classList.add('open');
-  clearOrder();
+  _cobrarState.lastPaidOrderId = paidOrderId || _cobrarState.lastPaidOrderId;
+  _cobrarState.orderId = null;
+  resetRenderedOrder();
   loadTables();
   toast('Pago procesado exitosamente', 'success');
 }
@@ -2915,7 +3204,7 @@ function printTicket() {
   var grandTotal = s.total + s.tipAmount;
   var html = '<div class="ticket-header"><div class="ticket-bar">' + escapeHtml(s.barName) + '</div>';
   html += '<div class="ticket-meta">' + dateStr + ' ' + timeStr + '</div>';
-  html += '<div class="ticket-meta">' + escapeHtml(s.tableName) + (s.orderId ? ' | Orden #' + s.orderId : '') + '</div></div>';
+  html += '<div class="ticket-meta">' + escapeHtml(s.tableName) + ((s.lastPaidOrderId || s.orderId) ? ' | Orden #' + (s.lastPaidOrderId || s.orderId) : '') + '</div></div>';
   html += '<div class="ticket-line"></div><div class="ticket-items">';
   s.items.forEach(function(it) { html += '<div class="ticket-item"><span>' + it.qty + 'x ' + escapeHtml(it.name) + '</span><span>$' + it.total.toLocaleString() + '</span></div>'; });
   html += '</div><div class="ticket-line"></div><div class="ticket-totals">';
@@ -2937,6 +3226,111 @@ function printTicket() {
   html += '<div class="ticket-footer">Powered by ByFlow \u2014 IArtLabs</div>';
   document.getElementById('ticket-content').innerHTML = html;
   setTimeout(function() { window.print(); }, 100);
+}
+
+function renderKaraokeQueue(queue) {
+  var list = document.getElementById('karaoke-list');
+  if (!list) return;
+  if (!queue || queue.length === 0) {
+    list.innerHTML = '<div class="karaoke-empty">No hay canciones en cola para este alcance.</div>';
+    return;
+  }
+
+  list.innerHTML = queue.map(function(item, index) {
+    var status = item.status || 'espera';
+    var singer = item.singer_name || 'Sin cantante';
+    var tableLabel = item.table_number ? 'Mesa ' + item.table_number : 'General';
+    return '<div class="karaoke-item">' +
+      '<div class="karaoke-pos">' + (item.position || index + 1) + '</div>' +
+      '<div class="karaoke-main">' +
+        '<div class="karaoke-song">' + escapeHtml(item.song_title || 'Cancion sin titulo') + '</div>' +
+        '<div class="karaoke-meta">' + escapeHtml(singer) + ' &bull; ' + escapeHtml(tableLabel) + '</div>' +
+      '</div>' +
+      '<div class="karaoke-status">' + escapeHtml(status) + '</div>' +
+    '</div>';
+  }).join('');
+}
+
+function loadKaraokeQueue() {
+  var tableId = _cobrarState.tableId;
+  var query = tableId ? ('?table_id=' + encodeURIComponent(tableId)) : '';
+  return fetch('/pos/karaoke/queue' + query, { headers: authHeaders() })
+    .then(function(r) { return r.ok ? r.json() : Promise.reject(r.status); })
+    .then(function(data) {
+      if (data && data.ok === false) return Promise.reject(data.error || 'No se pudo cargar la cola');
+      renderKaraokeQueue((data && data.queue) || []);
+      return data;
+    })
+    .catch(function(err) {
+      renderKaraokeQueue([]);
+      toast('Error cargando cola karaoke: ' + err, 'error');
+      throw err;
+    });
+}
+
+function openKaraokeQueueModal() {
+  var overlay = document.getElementById('karaoke-overlay');
+  var title = document.getElementById('karaoke-title');
+  var sub = document.getElementById('karaoke-sub');
+  var songInput = document.getElementById('karaoke-song-input');
+  var singerInput = document.getElementById('karaoke-singer-input');
+  if (!overlay || !title || !sub) return;
+
+  if (_cobrarState.tableId) {
+    title.textContent = 'Cola Karaoke - ' + (_cobrarState.tableName || ('Mesa ' + _cobrarState.tableId));
+    sub.textContent = 'Administra la cola activa de la mesa seleccionada';
+  } else {
+    title.textContent = 'Cola Karaoke General';
+    sub.textContent = 'Consulta la cola global. Selecciona una mesa para agregar canciones.';
+  }
+
+  if (songInput) songInput.value = '';
+  if (singerInput) singerInput.value = '';
+  overlay.classList.add('open');
+  loadKaraokeQueue().catch(function() {});
+}
+
+function closeKaraokeQueueModal() {
+  var overlay = document.getElementById('karaoke-overlay');
+  if (overlay) overlay.classList.remove('open');
+}
+
+function submitKaraokeSong() {
+  if (!_cobrarState.tableId) {
+    toast('Selecciona una mesa antes de agregar una cancion', 'warn');
+    return;
+  }
+
+  var songInput = document.getElementById('karaoke-song-input');
+  var singerInput = document.getElementById('karaoke-singer-input');
+  var songTitle = songInput ? songInput.value.trim() : '';
+  var singerName = singerInput ? singerInput.value.trim() : '';
+  if (!songTitle) {
+    toast('Ingresa el titulo de la cancion', 'warn');
+    if (songInput) songInput.focus();
+    return;
+  }
+
+  fetch('/pos/karaoke/queue', {
+    method: 'POST',
+    headers: Object.assign({ 'Content-Type': 'application/json' }, authHeaders()),
+    body: JSON.stringify({
+      table_id: _cobrarState.tableId,
+      song_title: songTitle,
+      singer_name: singerName || _cobrarState.tableName || 'Mesa'
+    })
+  })
+    .then(function(r) { return r.ok ? r.json() : Promise.reject(r.status); })
+    .then(function(data) {
+      if (data && data.ok === false) return Promise.reject(data.error || 'No se pudo agregar la cancion');
+      if (songInput) songInput.value = '';
+      if (singerInput) singerInput.value = '';
+      toast('Cancion agregada a la cola karaoke', 'success');
+      return loadKaraokeQueue();
+    })
+    .catch(function(err) {
+      toast('Error agregando cancion: ' + err, 'error');
+    });
 }
 
 function openQRModal(orderId) {
@@ -3001,45 +3395,42 @@ selT = function(n, el) {
   _cobrarState.tableName = 'Mesa ' + (matched.number || matched.id);
 
   if (matched.current_order_id) {
-    // Table already has an open order — just store it
     _cobrarState.orderId = matched.current_order_id;
+    syncCurrentOrder({ orderId: matched.current_order_id, silent: true }).catch(function() {});
     return;
   }
 
   var st = (matched.status || 'libre').toLowerCase();
-  if (st !== 'libre') return;
+  if (st !== 'libre') {
+    _cobrarState.orderId = null;
+    resetRenderedOrder();
+    return;
+  }
+
+  var employeeId = getCurrentEmployeeId();
+  if (!employeeId) {
+    toast('Inicia sesion POS para abrir una orden real', 'warn');
+    return;
+  }
 
   // Create a real order in the DB for this free table
   fetch('/pos/orders', {
     method: 'POST',
     headers: Object.assign({ 'Content-Type': 'application/json' }, authHeaders()),
-    body: JSON.stringify({ table_id: matched.id })
+    body: JSON.stringify({ table_id: matched.id, waiter_id: employeeId })
   })
     .then(function(r) { return r.ok ? r.json() : Promise.reject(r.status); })
     .then(function(data) {
-      var order = data.order || data;
-      _cobrarState.orderId = order.id;
-      // Read employee id for waiter assignment
-      var empData = null;
-      try { empData = JSON.parse(sessionStorage.getItem('pos_employee')); } catch(_) {}
-      var employeeId = empData && empData.id ? empData.id : null;
-      // Update table status to 'ocupada'
-      return fetch('/pos/tables/' + matched.id + '/status', {
-        method: 'PUT',
-        headers: Object.assign({ 'Content-Type': 'application/json' }, authHeaders()),
-        body: JSON.stringify({ status: 'ocupada', waiter_id: employeeId })
-      });
-    })
-    .then(function(r) {
-      if (r && r.ok) {
-        // Update local cache so we don't create duplicate orders on re-click
-        if (matched) {
-          matched.status = 'ocupada';
-          matched.current_order_id = _cobrarState.orderId;
-        }
-        toast('Orden creada para Mesa ' + (matched.number || matched.id), 'success');
-        loadTables(); // Refresh table grid to show new status
-      }
+      if (data && data.ok === false) return Promise.reject(data.error || 'No se pudo abrir la orden');
+      var orderId = data.order_id || (data.order && data.order.id) || data.id;
+      if (!orderId) return Promise.reject('No se pudo obtener la orden creada');
+
+      _cobrarState.orderId = orderId;
+      matched.status = 'ocupada';
+      matched.current_order_id = orderId;
+      toast('Orden creada para Mesa ' + (matched.number || matched.id), 'success');
+      loadTables();
+      return syncCurrentOrder({ orderId: orderId, silent: true });
     })
     .catch(function(err) {
       toast('Error creando orden: ' + err, 'error');

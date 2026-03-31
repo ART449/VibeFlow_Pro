@@ -12,6 +12,10 @@
     return VF.modules.twinBridge;
   }
 
+  function buildYoutubeHeaders() {
+    return ytApiKey ? { 'X-YouTube-Key': ytApiKey } : {};
+  }
+
   function ensureScript(src) {
     if (document.querySelector('script[src="' + src + '"]')) return;
     const script = document.createElement('script');
@@ -22,10 +26,12 @@
   youtube.ytInit = function() {
     const inp = document.getElementById('yt-api-key');
     const st = document.getElementById('yt-key-status');
-    if (!ytApiKey) return;
-    if (inp) inp.value = ytApiKey;
-    if (st) {
+    if (ytApiKey && inp) inp.value = ytApiKey;
+    if (st && ytApiKey) {
       st.textContent = 'API key guardada';
+      st.className = 'yt-key-status ok';
+    } else if (st && window.__ytServerConfigured) {
+      st.textContent = 'Busqueda lista via servidor';
       st.className = 'yt-key-status ok';
     }
   };
@@ -118,23 +124,23 @@
       let durs = {};
       let usedFree = false;
 
-      if (ytApiKey) {
-        try {
-          const r = await fetch('/api/youtube/search?q=' + encodeURIComponent(q) + '&key=' + encodeURIComponent(ytApiKey));
-          const d = await r.json();
-          if (!d.error && d.items && d.items.length) {
-            items = d.items;
-            const ids = d.items.map((i) => i.id.videoId).join(',');
-            const detRes = await fetch('/api/youtube/videos?ids=' + ids + '&key=' + encodeURIComponent(ytApiKey));
-            const detD = await detRes.json();
-            if (detD.items) {
-              detD.items.forEach((v) => {
-                durs[v.id] = youtube.ytParseDuration(v.contentDetails.duration);
-              });
-            }
+      try {
+        const headers = buildYoutubeHeaders();
+        const options = Object.keys(headers).length ? { headers } : {};
+        const r = await fetch('/api/youtube/search?q=' + encodeURIComponent(q), options);
+        const d = await r.json();
+        if (!d.error && d.items && d.items.length) {
+          items = d.items;
+          const ids = d.items.map((i) => i.id.videoId).join(',');
+          const detRes = await fetch('/api/youtube/videos?ids=' + encodeURIComponent(ids), options);
+          const detD = await detRes.json();
+          if (detD.items) {
+            detD.items.forEach((v) => {
+              durs[v.id] = youtube.ytParseDuration(v.contentDetails.duration);
+            });
           }
-        } catch {}
-      }
+        }
+      } catch {}
 
       if (!items) {
         const free = await youtube.ytFreeSearch(q);

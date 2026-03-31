@@ -338,7 +338,8 @@ function registerRoutes(app) {
     const barId = getBarId(req);
     const { table_id, waiter_id, guests } = req.body || {};
     const tid = parseInt(table_id);
-    const wid = parseInt(waiter_id);
+    const sessionEmployeeId = req.posSession?.employeeId;
+    const wid = parseInt(waiter_id || sessionEmployeeId);
     if (!isPositiveInt(tid) || !isPositiveInt(wid)) {
       return res.json({ ok: false, error: 'table_id y waiter_id requeridos' });
     }
@@ -358,7 +359,17 @@ function registerRoutes(app) {
         "UPDATE tables SET status = 'ocupada', current_order_id = ?, waiter_id = ?, guests = ?, opened_at = datetime('now') WHERE id = ? AND bar_id = ?"
       ).run(result.lastInsertRowid, wid, parseInt(guests) || 1, tid, barId);
 
-      return { ok: true, order_id: result.lastInsertRowid };
+      return {
+        ok: true,
+        order_id: result.lastInsertRowid,
+        order: {
+          id: result.lastInsertRowid,
+          table_id: tid,
+          waiter_id: wid,
+          guests: parseInt(guests) || 1,
+          status: 'abierta'
+        }
+      };
     });
 
     res.json(createOrder());
@@ -381,9 +392,9 @@ function registerRoutes(app) {
       SELECT oi.*, p.name as product_name, p.icon as product_icon
       FROM order_items oi JOIN products p ON oi.product_id = p.id
       JOIN orders o ON oi.order_id = o.id
-      WHERE oi.order_id = ? AND o.bar_id = ? ORDER BY oi.created_at
+      WHERE oi.order_id = ? AND o.bar_id = ? AND oi.status != 'cancelado' ORDER BY oi.created_at
     `).all(orderId, barId);
-    res.json({ ok: true, order, items });
+    res.json({ ok: true, order: { ...order, items }, items });
   });
 
   app.get('/pos/orders/table/:tableId', (req, res) => {
@@ -405,7 +416,42 @@ function registerRoutes(app) {
       JOIN orders o ON oi.order_id = o.id
       WHERE oi.order_id = ? AND o.bar_id = ? AND oi.status != 'cancelado' ORDER BY oi.created_at
     `).all(order.id, barId);
-    res.json({ ok: true, order, items });
+    res.json({ ok: true, order: { ...order, items }, items });
+  });
+
+  app.delete('/pos/orders/:id', (req, res) => {
+    const db = getDb();
+    const barId = getBarId(req);
+    const orderId = parseInt(req.params.id);
+    if (!isPositiveInt(orderId)) return res.json({ ok: false, error: 'ID invalido' });
+
+    const cancelOrder = db.transaction(() => {
+      const order = db.prepare(
+        'SELECT id, table_id, status FROM orders WHERE id = ? AND bar_id = ?'
+      ).get(orderId, barId);
+      if (!order) return { ok: false, error: 'Orden no encontrada' };
+      if (order.status !== 'abierta') {
+        return { ok: false, error: 'Solo se pueden cancelar ordenes abiertas' };
+      }
+
+      const activeItems = db.prepare(
+        "SELECT COUNT(*) as total FROM order_items WHERE order_id = ? AND status != 'cancelado'"
+      ).get(orderId).total;
+      if (activeItems > 0) {
+        return { ok: false, error: 'La orden aun tiene items activos' };
+      }
+
+      db.prepare(
+        "UPDATE orders SET status = 'cancelada', closed_at = datetime('now') WHERE id = ? AND bar_id = ?"
+      ).run(orderId, barId);
+      db.prepare(
+        "UPDATE tables SET status = 'libre', current_order_id = NULL, waiter_id = NULL, guests = 0, opened_at = NULL WHERE id = ? AND bar_id = ?"
+      ).run(order.table_id, barId);
+
+      return { ok: true };
+    });
+
+    res.json(cancelOrder());
   });
 
   // ═══ ORDER ITEMS ═══
@@ -443,8 +489,18 @@ function registerRoutes(app) {
 
       // Recalc order
       recalcOrder(db, orderId, barId);
+      const orderTotals = db.prepare(
+        'SELECT subtotal, tax, total FROM orders WHERE id = ? AND bar_id = ?'
+      ).get(orderId, barId);
 
-      return { ok: true, item_id: result.lastInsertRowid, total };
+      return {
+        ok: true,
+        item_id: result.lastInsertRowid,
+        item_total: total,
+        order_subtotal: orderTotals?.subtotal || 0,
+        order_tax: orderTotals?.tax || 0,
+        order_total: orderTotals?.total || 0
+      };
     });
 
     res.json(addItem());
@@ -454,7 +510,7 @@ function registerRoutes(app) {
     const db = getDb();
     const barId = getBarId(req);
     const itemId = parseInt(req.params.id);
-    const { status } = req.body || {};
+    const { status, cancel_reason, cancelled_by } = req.body || {};
 
     if (!isPositiveInt(itemId)) return res.json({ ok: false, error: 'ID invalido' });
     if (!status || !VALID_ITEM_STATUS.includes(status)) {
@@ -463,7 +519,7 @@ function registerRoutes(app) {
 
     // Verify item belongs to an order in this bar
     const item = db.prepare(`
-      SELECT oi.id FROM order_items oi JOIN orders o ON oi.order_id = o.id
+      SELECT oi.id, oi.order_id, oi.status as current_status FROM order_items oi JOIN orders o ON oi.order_id = o.id
       WHERE oi.id = ? AND o.bar_id = ?
     `).get(itemId, barId);
     if (!item) return res.json({ ok: false, error: 'Item no encontrado' });
@@ -472,19 +528,32 @@ function registerRoutes(app) {
     const params = [status];
     if (status === 'enviado') setClauses.push("sent_at = datetime('now')");
     if (status === 'listo') setClauses.push("ready_at = datetime('now')");
+    if (status === 'cancelado') {
+      const cancelledById = parseInt(cancelled_by || req.posSession?.employeeId) || null;
+      setClauses.push("cancel_reason = ?");
+      params.push(sanitize(cancel_reason, 200) || 'Cancelado desde POS');
+      setClauses.push('cancelled_by = ?');
+      params.push(cancelledById);
+    }
     params.push(itemId);
 
     db.prepare(`UPDATE order_items SET ${setClauses.join(', ')} WHERE id = ?`).run(...params);
-    res.json({ ok: true });
+    if (status === 'cancelado' || item.current_status === 'cancelado') {
+      recalcOrder(db, item.order_id, barId);
+    }
+    const orderTotals = db.prepare(
+      'SELECT subtotal, tax, total FROM orders WHERE id = ? AND bar_id = ?'
+    ).get(item.order_id, barId);
+    res.json({ ok: true, order: orderTotals || null });
   });
 
   // ═══ PAYMENTS ═══
   app.post('/pos/payments', posJson, (req, res) => {
     const db = getDb();
     const barId = getBarId(req);
-    const { order_id, method, amount, cash_received, tip, cashier_id } = req.body || {};
+    const { order_id, method, amount, cash_received, tip, cashier_id, subtotal, discount, tax } = req.body || {};
     const oid = parseInt(order_id);
-    const cid = parseInt(cashier_id);
+    const cid = parseInt(cashier_id || req.posSession?.employeeId);
 
     if (!isPositiveInt(oid) || !isPositiveInt(cid)) {
       return res.json({ ok: false, error: 'order_id y cashier_id requeridos' });
@@ -497,11 +566,17 @@ function registerRoutes(app) {
 
     const cashRcv = parseFloat(cash_received) || 0;
     const tipAmt = parseFloat(tip) || 0;
-    const change = Math.max(0, cashRcv - amt);
+    const subtotalAmt = Math.max(0, parseFloat(subtotal) || 0);
+    const discountAmt = Math.max(0, parseFloat(discount) || 0);
+    const taxAmt = Math.max(0, parseFloat(tax) || 0);
+    const amountDue = amt + tipAmt;
+    const change = Math.max(0, cashRcv - amountDue);
 
     // TRANSACTION: payment + close order + free table (atomic)
     const processPayment = db.transaction(() => {
-      const order = db.prepare('SELECT table_id, status FROM orders WHERE id = ? AND bar_id = ?').get(oid, barId);
+      const order = db.prepare(
+        'SELECT table_id, status, subtotal, discount, tax, total FROM orders WHERE id = ? AND bar_id = ?'
+      ).get(oid, barId);
       if (!order) return { ok: false, error: 'Orden no encontrada' };
       if (order.status === 'pagada') return { ok: false, error: 'Orden ya fue pagada' };
 
@@ -509,13 +584,23 @@ function registerRoutes(app) {
         'INSERT INTO payments (order_id, method, amount, cash_received, change_given, tip, cashier_id, bar_id) VALUES (?,?,?,?,?,?,?,?)'
       ).run(oid, method, amt, cashRcv, change, tipAmt, cid, barId);
 
-      db.prepare("UPDATE orders SET status = 'pagada', closed_at = datetime('now'), tip = ? WHERE id = ? AND bar_id = ?").run(tipAmt, oid, barId);
+      db.prepare(
+        "UPDATE orders SET status = 'pagada', closed_at = datetime('now'), subtotal = ?, discount = ?, tax = ?, total = ?, tip = ? WHERE id = ? AND bar_id = ?"
+      ).run(
+        subtotalAmt || order.subtotal || 0,
+        discountAmt,
+        taxAmt || order.tax || 0,
+        amt,
+        tipAmt,
+        oid,
+        barId
+      );
 
       db.prepare(
         "UPDATE tables SET status = 'libre', current_order_id = NULL, waiter_id = NULL, guests = 0, opened_at = NULL WHERE id = ? AND bar_id = ?"
       ).run(order.table_id, barId);
 
-      return { ok: true, payment_id: result.lastInsertRowid, change };
+      return { ok: true, payment_id: result.lastInsertRowid, change, total_due: amountDue };
     });
 
     res.json(processPayment());

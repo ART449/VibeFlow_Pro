@@ -203,7 +203,7 @@ var _palabrasProhibidas = ['puta', 'puto', 'mierda', 'coño', 'pendejo', 'culero
     }
     const proModes = ['youtube', 'ia'];
     if (proModes.includes(mode) && !isPremium()) {
-      showToast('Modo PRO - Necesitas licencia activa. Usa DEMO-BYFLOW-2026 para probar.', 'warning');
+      showToast('Modo PRO - Necesitas licencia activa o una demo habilitada por el servidor.', 'warning');
       return;
     }
     const card = document.querySelector('.welcome-card[data-mode="' + mode + '"]');

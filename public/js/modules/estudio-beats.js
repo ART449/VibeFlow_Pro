@@ -65,8 +65,8 @@
     container.innerHTML = '<div class="est-empty">Buscando beats...</div>';
     try {
       const apiKey = localStorage.getItem('byflow_yt_api_key') || localStorage.getItem('yt_api_key') || '';
-      const url = 'https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&maxResults=15&q=' + encodeURIComponent(searchQ) + '&key=' + apiKey;
-      const res = await fetch(url);
+      const headers = apiKey ? { 'X-YouTube-Key': apiKey } : {};
+      const res = await fetch('/api/youtube/search?q=' + encodeURIComponent(searchQ), Object.keys(headers).length ? { headers } : {});
       const data = await res.json();
       if (!data.items || !data.items.length) {
         container.innerHTML = '<div class="est-empty">No se encontraron beats. Intenta otro genero.</div>';
@@ -93,7 +93,7 @@
         container.appendChild(div);
       });
     } catch {
-      container.innerHTML = '<div class="est-empty">Error buscando. Revisa tu API key en Ajustes.</div>';
+      container.innerHTML = '<div class="est-empty">Error buscando. Revisa tu configuracion de YouTube o del servidor.</div>';
     }
   }
 

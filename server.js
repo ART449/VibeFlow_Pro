@@ -52,6 +52,21 @@ function clampStr(s, max) {
   return typeof s === 'string' ? s.slice(0, max) : '';
 }
 
+function normalizeRoomId(value) {
+  return typeof value === 'string'
+    ? value.toUpperCase().replace(/[^A-Z0-9_-]/g, '').slice(0, 20)
+    : '';
+}
+
+function normalizeRoomToken(value) {
+  const token = typeof value === 'string' ? value.trim() : '';
+  return /^[A-F0-9]{32}$/i.test(token) ? token.toUpperCase() : '';
+}
+
+function generateRoomToken() {
+  return crypto.randomBytes(16).toString('hex').toUpperCase();
+}
+
 // ── Filtro de contenido (anti-groserias para modo Bares) ────────────────────
 const PALABRAS_PROHIBIDAS = [
   'puta','puto','putos','putas','mierda','coño','joder','hostia',
@@ -172,14 +187,15 @@ function checkRateLimit(ip, maxAttempts = 5, windowMs = 60000) {
 }
 
 function requireRoomAuth(req, res, next) {
-  const roomId = req.headers['x-room-id'];
+  const roomId = normalizeRoomId(req.headers['x-room-id']);
+  const roomToken = normalizeRoomToken(req.headers['x-room-token']);
   const isDestructive = req.method === 'DELETE' || (req.method === 'POST' && /clean/i.test(req.path));
   // Destructive endpoints MUST have a valid room header
-  if (!roomId) {
+  if (!roomId || !roomToken) {
     if (isDestructive) return res.status(403).json({ error: 'X-Room-ID header requerido para esta operacion' });
     return next();
   }
-  if (rooms[roomId]) return next();
+  if (isValidRoomAccess(roomId, roomToken)) return next();
   return res.status(403).json({ error: 'Room ID invalido o inactivo' });
 }
 
@@ -436,10 +452,13 @@ function trackStat(type, data) {
 // ── Rooms (aislamiento por sesion) ──────────────────────────────────────────
 const rooms = {};
 
-function getRoom(roomId) {
-  if (!roomId) return null;
-  if (!rooms[roomId]) {
-    rooms[roomId] = {
+function getRoom(roomId, tokenHint) {
+  const normalizedRoomId = normalizeRoomId(roomId);
+  const normalizedToken = normalizeRoomToken(tokenHint);
+  if (!normalizedRoomId) return null;
+  if (!rooms[normalizedRoomId]) {
+    rooms[normalizedRoomId] = {
+      roomToken: normalizedToken || generateRoomToken(),
       teleprompter: {
         lyrics: '', currentWord: -1, currentTime: 0,
         scrollSpeed: 1, isPlaying: false,
@@ -448,8 +467,15 @@ function getRoom(roomId) {
       lastActive: Date.now()
     };
   }
-  rooms[roomId].lastActive = Date.now();
-  return rooms[roomId];
+  rooms[normalizedRoomId].lastActive = Date.now();
+  return rooms[normalizedRoomId];
+}
+
+function isValidRoomAccess(roomId, roomToken) {
+  const normalizedRoomId = normalizeRoomId(roomId);
+  const normalizedToken = normalizeRoomToken(roomToken);
+  if (!normalizedRoomId || !normalizedToken) return false;
+  return !!(rooms[normalizedRoomId] && rooms[normalizedRoomId].roomToken === normalizedToken);
 }
 
 // Cleanup: rooms inactivos > 2h, rate limits viejos
@@ -478,7 +504,7 @@ const helpers = {
   ADMIN_SECRET, MASTER_ADMIN, LICENSE_SECRET,
   getDeviceFingerprint, getLicenseByToken,
   addActividad, readLetrasBeat,
-  getLocalIp, getRoom, stats, securityLog,
+  getLocalIp, getRoom, isValidRoomAccess, stats, securityLog,
   PORT, server,
   io
 };
@@ -511,13 +537,19 @@ io.on('connection', (socket) => {
   socket.on('join_room', (data) => {
     try {
       if (++_roomJoins > 10) return;
-      const roomId = (data && data.roomId) ? String(data.roomId).substring(0, 20) : null;
+      const roomId = normalizeRoomId(data && data.roomId);
+      const roomToken = normalizeRoomToken(data && data.roomToken);
       if (!roomId) return;
+      const existingRoom = rooms[roomId];
+      if (existingRoom && existingRoom.roomToken !== roomToken) {
+        socket.emit('room_error', { error: 'Token de sala invalido o faltante' });
+        return;
+      }
       if (myRoom) socket.leave(myRoom);
       myRoom = roomId;
       socket.join(roomId);
-      const room = getRoom(roomId);
-      socket.emit('room_joined', { roomId, teleprompter: room.teleprompter });
+      const room = getRoom(roomId, roomToken);
+      socket.emit('room_joined', { roomId, roomToken: room.roomToken, teleprompter: room.teleprompter });
       const roomSize = io.sockets.adapter.rooms.get(roomId)?.size || 0;
       io.to(roomId).emit('room_count', roomSize);
     } catch (err) {

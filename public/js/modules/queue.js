@@ -161,11 +161,11 @@
     if (!item || !item.cancion) return;
 
     let lyricsLoaded = false;
-    if (ytApiKey && (typeof currentMode === 'undefined' || currentMode !== 'remote')) {
+    if (typeof currentMode === 'undefined' || currentMode !== 'remote') {
       try {
         const q = item.cancion + (item.cantante ? ' ' + item.cantante : '');
-        const params = new URLSearchParams({ part: 'snippet', type: 'video', maxResults: '1', q, key: ytApiKey });
-        const r = await fetch('/api/youtube/search?' + params);
+        const headers = ytApiKey ? { 'X-YouTube-Key': ytApiKey } : {};
+        const r = await fetch('/api/youtube/search?q=' + encodeURIComponent(q), Object.keys(headers).length ? { headers } : {});
         const d = await r.json();
         if (d.items && d.items.length) {
           const vid = d.items[0];

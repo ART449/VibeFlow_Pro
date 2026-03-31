@@ -6,6 +6,12 @@
 
   var _karaokeDisplayWin = null;
 
+  function buildRoomLink(pathname) {
+    const params = new URLSearchParams({ room: _myRoomId });
+    if (_myRoomToken) params.set('token', _myRoomToken);
+    return window.location.origin + pathname + '?' + params.toString();
+  }
+
   function loadSocketIO() {
     return new Promise((resolve) => {
       const s = document.createElement('script');
@@ -23,7 +29,7 @@
   }
 
   socketModule.copyRoomLink = function() {
-    const base = window.location.origin + '/?room=' + _myRoomId;
+    const base = buildRoomLink('/remote');
     navigator.clipboard.writeText(base).then(() => {
       showToast('Link de sala copiado: ' + base);
     }).catch(() => {
@@ -41,7 +47,7 @@
   };
 
   socketModule.openKaraokeDisplay = function() {
-    const url = location.origin + '/remote?room=' + _myRoomId;
+    const url = buildRoomLink('/remote');
     if (_karaokeDisplayWin && !_karaokeDisplayWin.closed) {
       _karaokeDisplayWin.focus();
       showToast('Pantalla de karaoke ya esta abierta');
@@ -63,12 +69,20 @@
     let lastInit = 0;
 
     socket.on('connect', () => {
-      socket.emit('join_room', { roomId: _myRoomId });
+      socket.emit('join_room', { roomId: _myRoomId, roomToken: _myRoomToken });
     });
 
     socket.on('room_joined', (data) => {
+      if (data.roomToken) {
+        _myRoomToken = data.roomToken;
+        sessionStorage.setItem('bf_room_token', _myRoomToken);
+      }
       if (data.teleprompter && data.teleprompter.lyrics) setLyrics(data.teleprompter.lyrics);
       socketModule.showRoomBadge();
+    });
+
+    socket.on('room_error', (data) => {
+      showToast((data && data.error) || 'No se pudo unir a la sala', 'error');
     });
 
     socket.on('room_count', (n) => {

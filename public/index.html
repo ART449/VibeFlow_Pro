@@ -2315,7 +2315,7 @@ input:focus-visible,textarea:focus-visible{
 
     <div style="display:flex;align-items:center;gap:8px;">
       <span id="online-count" title="Dispositivos en tu sala" style="font-size:10px;color:var(--g);display:none;">&#x25CF; <span id="online-num">0</span></span>
-      <span id="room-badge" title="Tu sala — comparte este codigo" style="font-size:9px;background:var(--card2);border:1px solid var(--border);padding:2px 6px;border-radius:6px;cursor:pointer;display:none;" onclick=”copyRoomLink()”>&#x1F517; <span id="room-id-display">---</span></span>
+          <span id="room-badge" title="Tu sala — comparte este codigo" style="font-size:9px;background:var(--card2);border:1px solid var(--border);padding:2px 6px;border-radius:6px;cursor:pointer;display:none;" onclick="copyRoomLink()">&#x1F517; <span id="room-id-display">---</span></span>
       <button id="btn-open-display" onclick="openKaraokeDisplay()" title="Abrir pantalla de karaoke en ventana separada (para TV/proyector)" aria-label="Abrir pantalla de karaoke en ventana separada" style="display:none;align-items:center;gap:3px;padding:3px 8px;border-radius:6px;border:1px solid rgba(0,229,255,.2);background:rgba(0,229,255,.06);color:rgba(0,229,255,.8);font-size:10px;font-weight:600;cursor:pointer;white-space:nowrap;transition:all .2s;">
         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
         <span class="topbar-action-label">Abrir Pantalla</span>
@@ -2574,7 +2574,7 @@ input:focus-visible,textarea:focus-visible{
       </div>
       <div class="ia-chips" id="ia-chips">
         <span class="ia-chip" onclick="iaQuick('Genera una letra de rap consciente estilo ArT-AtR sobre tecnologia y superacion, con rimas AABB')">&#x1F3A4; Rap ArT-AtR</span>
-        <span class="ia-chip" onclick="iaQuick('Genera una letra de reggaeton con metaforas de hacking y desamor’)”>&#x1F494; Trap &amp; Desamor</span>
+                <span class="ia-chip" onclick="iaQuick('Genera una letra de reggaeton con metaforas de hacking y desamor')">&#x1F494; Trap &amp; Desamor</span>
         <span class="ia-chip" onclick="iaQuick('Genera una balada de redencion y familia, estilo sentimental con terminologia de software')">&#x1F3B6; Redencion</span>
         <span class="ia-chip" onclick="iaQuick('Sugiere 5 canciones populares para karaoke')">&#x1F3B5; Sugerir canciones</span>
         <span class="ia-chip" onclick="openLyricStudio()">&#x270F;&#xFE0F; Estudio de Letras</span>
@@ -2849,7 +2849,7 @@ input:focus-visible,textarea:focus-visible{
             </div>
             <div class="dj-pads">
               <div class="dj-pad" onclick="djPlay('airhorn')" data-sfx="airhorn">
-                <div class="dj-pad-icon”>&#x1F4EF;</div>
+                <div class="dj-pad-icon">&#x1F4EF;</div>
                 <div class="dj-pad-label">Airhorn</div>
               </div>
               <div class="dj-pad" onclick="djPlay('applause')" data-sfx="applause">
@@ -2869,7 +2869,7 @@ input:focus-visible,textarea:focus-visible{
                 <div class="dj-pad-label">Ovacion</div>
               </div>
               <div class="dj-pad" onclick="djPlay('bell')" data-sfx="bell">
-                <div class="dj-pad-icon”>&#x1F514;</div>
+                <div class="dj-pad-icon">&#x1F514;</div>
                 <div class="dj-pad-label">Campana</div>
               </div>
               <div class="dj-pad" onclick="djPlay('siren')" data-sfx="siren">
@@ -3081,7 +3081,7 @@ input:focus-visible,textarea:focus-visible{
               <div id="stat-top-singers" style="font-size:10px;color:var(--sub);opacity:.5;">Agrega cantantes para ver tus stats</div>
             </div>
             <div>
-              <div style="font-size:9px;color:var(--sub);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;”>&#x1F4CA; Ultimos 7 dias</div>
+                  <div style="font-size:9px;color:var(--sub);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">&#x1F4CA; Ultimos 7 dias</div>
               <div id="stat-chart" style="display:flex;align-items:flex-end;gap:3px;height:50px;"></div>
             </div>
           </div>
@@ -3183,7 +3183,7 @@ input:focus-visible,textarea:focus-visible{
       <!-- Tabs -->
       <div style="display:flex;gap:3px;margin-bottom:12px;background:rgba(255,255,255,.04);padding:3px;border-radius:10px;">
         <button onclick="lsTab('gen')" id="ls-tab-gen" class="mode-btn active" style="flex:1;padding:6px 10px;font-size:11px;border:none;border-radius:8px;">&#x2728; Generar</button>
-        <button onclick="lsTab('mis')" id="ls-tab-mis" class="mode-btn" style="flex:1;padding:6px 10px;font-size:11px;border:none;border-radius:8px;”>&#x1F4C2; Mis Letras</button>
+              <button onclick="lsTab('mis')" id="ls-tab-mis" class="mode-btn" style="flex:1;padding:6px 10px;font-size:11px;border:none;border-radius:8px;">&#x1F4C2; Mis Letras</button>
         <button onclick="lsTab('suno')" id="ls-tab-suno" class="mode-btn" style="flex:1;padding:6px 10px;font-size:11px;border:none;border-radius:8px;">&#x1F3B5; Suno</button>
       </div>
 
@@ -3195,7 +3195,7 @@ input:focus-visible,textarea:focus-visible{
           <label style="font-size:10px;color:var(--sub);display:block;margin-bottom:3px;">Tema</label>
           <select id="ls-theme" class="catalog-search" style="padding:7px 10px;">
             <option value="amor">&#x2764;&#xFE0F; Amor y Romance</option>
-            <option value=”desamor”>&#x1F494; Desamor y Realidad</option>
+                    <option value="desamor">&#x1F494; Desamor y Realidad</option>
             <option value="superacion">&#x1F680; Superacion Personal</option>
             <option value="calle">&#x1F3D9;&#xFE0F; Calle y Urbano</option>
             <option value="tech">&#x1F4BB; Tecnologia y Trap</option>
@@ -3208,7 +3208,7 @@ input:focus-visible,textarea:focus-visible{
           <label style="font-size:10px;color:var(--sub);display:block;margin-bottom:3px;">Estilo</label>
           <select id="ls-style" class="catalog-search" style="padding:7px 10px;">
             <option value="rap">&#x1F3A4; Rap Consciente</option>
-            <option value=”trap”>&#x1F525; Trap Latino</option>
+                    <option value="trap">&#x1F525; Trap Latino</option>
             <option value="reggaeton">&#x1F483; Reggaeton</option>
             <option value="balada">&#x1F3B6; Balada</option>
             <option value="rock">&#x1F3B8; Rock</option>
@@ -3406,7 +3406,7 @@ input:focus-visible,textarea:focus-visible{
           <button class="est-genre-btn" onclick="estGenreSearch(this,'latin trap beat')">Latin</button>
         </div>
         <div class="est-favs-toggle">
-          <button class="active" id="est-tab-search" onclick="estShowSearch()">” Buscar</button>
+          <button class="active" id="est-tab-search" onclick="estShowSearch()">&#128269; Buscar</button>
           <button id="est-tab-favs" onclick="estShowFavs()">&#x2764;&#xFE0F; Favoritos</button>
         </div>
       </div>
@@ -3521,8 +3521,8 @@ input:focus-visible,textarea:focus-visible{
         <div style="padding:8px 12px;display:flex;gap:4px;flex-wrap:wrap;border-top:1px solid var(--border);">
           <span class="ia-chip" onclick="gflowEstQuick('Genera una letra de rap sobre tecnología y superación, rimas AABB')"> Rap tech</span>
           <span class="ia-chip" onclick="gflowEstQuick('Dame 5 ideas de temas para escribir una canción')">&#x1F4A1; Ideas</span>
-          <span class=”ia-chip” onclick=”gflowEstQuick(‘Sugiere rimas para: corazón, razón, ilusión’)”>&#x1F4AC; Rimas</span>
-          <span class=”ia-chip” onclick=”openLyricStudio()”>&#x270F;&#xFE0F; Generador offline</span>
+                  <span class="ia-chip" onclick="gflowEstQuick('Sugiere rimas para: corazon, razon, ilusion')">&#x1F4AC; Rimas</span>
+                  <span class="ia-chip" onclick="openLyricStudio()">&#x270F;&#xFE0F; Generador offline</span>
         </div>
         <div class="ia-input-row" style="border-top:1px solid var(--border);">
           <input class="ia-input" id="gflow-est-input" placeholder="Pregúntale al GFlow..."
@@ -3540,7 +3540,7 @@ input:focus-visible,textarea:focus-visible{
         </div>
         <textarea class="est-letra-area" id="gflow-est-letra" placeholder="Escribe tu letra aquí o pídele al GFlow que genere una...&#10;&#10;Verso 1:&#10;..." style="flex:1;border:none;resize:none;"></textarea>
         <div style="padding:8px 12px;border-top:1px solid var(--border);display:flex;gap:6px;">
-          <button class="est-search-btn" onclick="gflowEstLoadTP()” style=”flex:1;”>&#x1F4FA; Cargar al Teleprompter</button>
+          <button class="est-search-btn" onclick="gflowEstLoadTP()" style="flex:1;">&#x1F4FA; Cargar al Teleprompter</button>
           <button class="est-search-btn" onclick="gflowEstSaveLetter()" style="flex:1;background:var(--s);">&#x1F4BE; Guardar</button>
         </div>
       </div>
@@ -3789,6 +3789,9 @@ function getMyRoomId() {
   return rid;
 }
 const _myRoomId = getMyRoomId();
+let _myRoomToken = (/^[A-F0-9]{32}$/i.test(sessionStorage.getItem('bf_room_token') || '')
+  ? (sessionStorage.getItem('bf_room_token') || '').toUpperCase()
+  : '');
 
 function copyRoomLink() { return window.VibeFlow.modules.socket.copyRoomLink.apply(this, arguments); }
 function showRoomBadge() { return window.VibeFlow.modules.socket.showRoomBadge.apply(this, arguments); }

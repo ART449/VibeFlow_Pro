@@ -7,6 +7,12 @@ const PIPED_INSTANCES = [
   'https://pipedapi.in.projectsegfau.lt'
 ];
 
+function resolveYouTubeKey(req) {
+  const headerKey = typeof req.headers['x-youtube-key'] === 'string' ? req.headers['x-youtube-key'].trim() : '';
+  const queryKey = typeof req.query.key === 'string' ? req.query.key.trim() : '';
+  return headerKey || queryKey || process.env.YOUTUBE_API_KEY || '';
+}
+
 function registerRoutes(app, _state, _helpers) {
 
   // Busqueda libre via Piped — NO necesita API key
@@ -50,7 +56,9 @@ function registerRoutes(app, _state, _helpers) {
 
   // Busqueda con API key de Google (metodo original)
   app.get('/api/youtube/search', async (req, res) => {
-    const { q, key, pageToken } = req.query;
+    const q = typeof req.query.q === 'string' ? req.query.q.trim() : '';
+    const pageToken = typeof req.query.pageToken === 'string' ? req.query.pageToken.trim() : '';
+    const key = resolveYouTubeKey(req);
     if (!q || !key) return res.status(400).json({ error: 'Faltan parametros: q y key' });
     try {
       const params = new URLSearchParams({
@@ -68,10 +76,11 @@ function registerRoutes(app, _state, _helpers) {
   });
 
   app.get('/api/youtube/videos', async (req, res) => {
-    const { ids, key } = req.query;
+    const ids = typeof req.query.ids === 'string' ? req.query.ids.trim().slice(0, 500) : '';
+    const key = resolveYouTubeKey(req);
     if (!ids || !key) return res.status(400).json({ error: 'Faltan ids y key' });
     try {
-      const params = new URLSearchParams({ part: 'contentDetails,snippet', id: String(ids).slice(0, 500), key: String(key).slice(0, 80) });
+      const params = new URLSearchParams({ part: 'contentDetails,snippet', id: ids, key: String(key).slice(0, 80) });
       const r = await fetch(`https://www.googleapis.com/youtube/v3/videos?${params}`, { signal: AbortSignal.timeout(8000) });
       if (!r.ok) return res.status(r.status).json({ error: `YouTube API error: ${r.status}` });
       const d = await r.json();

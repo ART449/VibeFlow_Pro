@@ -22,13 +22,12 @@
     loadQR();
     fetchCola();
     fetchSongs();
-    // Load API keys from server (YouTube, Jamendo)
+    // Load non-sensitive runtime config from server
     try {
       const kr = await fetch('/api/config/keys');
       const kd = await kr.json();
-      if (kd.youtube && !localStorage.getItem('yt_api_key')) localStorage.setItem('yt_api_key', kd.youtube);
       if (kd.jamendo && !localStorage.getItem('byflow_jamendo_id')) localStorage.setItem('byflow_jamendo_id', kd.jamendo);
-      if (kd.youtube) ytApiKey = kd.youtube;
+      window.__ytServerConfigured = !!kd.youtubeConfigured;
       // Configure GA4 dynamically — load script + config
       if (kd.ga && kd.ga !== 'GA_MEASUREMENT_ID' && typeof gtag === 'function') {
         if (!document.querySelector('script[src*="googletagmanager"]')) {

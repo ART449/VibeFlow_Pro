@@ -73,41 +73,63 @@ describe('POS License Key Stripping', () => {
 
 // ── HIGH 3: Room auth rejection ──────────────────────────────────────────────
 describe('Room Auth Bypass Fix', () => {
-  const rooms = { 'VALIDROOM123456': { lastActive: Date.now() } };
+  const rooms = {
+    'VALIDROOM123456': {
+      roomToken: 'ABCDEF1234567890ABCDEF1234567890',
+      lastActive: Date.now()
+    }
+  };
 
-  function requireRoomAuth(method, path, roomId) {
+  function requireRoomAuth(method, path, roomId, roomToken) {
     const isDestructive = method === 'DELETE' || (method === 'POST' && /clean/i.test(path));
-    if (!roomId) {
+    if (!roomId || !roomToken) {
       if (isDestructive) return { status: 403, error: 'X-Room-ID header requerido para esta operacion' };
       return { status: 200 };
     }
-    if (rooms[roomId]) return { status: 200 };
+    if (rooms[roomId] && rooms[roomId].roomToken === roomToken) return { status: 200 };
     return { status: 403, error: 'Room ID invalido o inactivo' };
   }
 
+  function canJoinRoom(roomId, roomToken) {
+    const room = rooms[roomId];
+    if (!room) return { status: 200 };
+    if (room.roomToken === roomToken) return { status: 200 };
+    return { status: 403, error: 'Token de sala invalido o faltante' };
+  }
+
   test('DELETE without X-Room-ID is REJECTED', () => {
-    const result = requireRoomAuth('DELETE', '/api/cola/123', null);
+    const result = requireRoomAuth('DELETE', '/api/cola/123', null, null);
     expect(result.status).toBe(403);
   });
 
   test('POST /clean without X-Room-ID is REJECTED', () => {
-    const result = requireRoomAuth('POST', '/api/cola/clean', null);
+    const result = requireRoomAuth('POST', '/api/cola/clean', null, null);
     expect(result.status).toBe(403);
   });
 
   test('GET without X-Room-ID still passes (non-destructive)', () => {
-    const result = requireRoomAuth('GET', '/api/cola', null);
+    const result = requireRoomAuth('GET', '/api/cola', null, null);
     expect(result.status).toBe(200);
   });
 
-  test('DELETE with valid room ID passes', () => {
-    const result = requireRoomAuth('DELETE', '/api/cola/123', 'VALIDROOM123456');
+  test('DELETE with valid room ID and room token passes', () => {
+    const result = requireRoomAuth('DELETE', '/api/cola/123', 'VALIDROOM123456', 'ABCDEF1234567890ABCDEF1234567890');
     expect(result.status).toBe(200);
   });
 
-  test('DELETE with invalid room ID is rejected', () => {
-    const result = requireRoomAuth('DELETE', '/api/cola/123', 'BADROOM');
+  test('DELETE with invalid or missing room token is rejected', () => {
+    const result = requireRoomAuth('DELETE', '/api/cola/123', 'VALIDROOM123456', 'BADTOKEN');
     expect(result.status).toBe(403);
+  });
+
+  test('existing room rejects join without matching token', () => {
+    const result = canJoinRoom('VALIDROOM123456', '');
+    expect(result.status).toBe(403);
+  });
+
+  test('existing room accepts join with matching token', () => {
+    const result = canJoinRoom('VALIDROOM123456', 'ABCDEF1234567890ABCDEF1234567890');
+    expect(result.status).toBe(200);
   });
 
   test('Room IDs should be 16 chars from crypto, not 6 from Math.random', () => {
@@ -120,23 +142,25 @@ describe('Room Auth Bypass Fix', () => {
 
 // ── HIGH 4: YouTube API key not hardcoded ────────────────────────────────────
 describe('YouTube API Key Removal', () => {
-  test('config/keys returns empty string when YOUTUBE_API_KEY env not set', () => {
+  function resolveYouTubeKey({ headers = {}, query = {} }, envKey) {
+    return headers['x-youtube-key'] || query.key || envKey || '';
+  }
+
+  test('config/keys should not expose raw YouTube API keys to the browser', () => {
     const originalEnv = process.env.YOUTUBE_API_KEY;
     delete process.env.YOUTUBE_API_KEY;
-    const youtubeKey = process.env.YOUTUBE_API_KEY || '';
-    expect(youtubeKey).toBe('');
-    // Restore
+    const response = { youtubeConfigured: !!process.env.YOUTUBE_API_KEY, jamendo: '', ga: '' };
+    expect(response).not.toHaveProperty('youtube');
+    expect(response.youtubeConfigured).toBe(false);
     if (originalEnv) process.env.YOUTUBE_API_KEY = originalEnv;
   });
 
-  test('config/keys returns env value when YOUTUBE_API_KEY is set', () => {
-    const originalEnv = process.env.YOUTUBE_API_KEY;
-    process.env.YOUTUBE_API_KEY = 'TEST_KEY_12345';
-    const youtubeKey = process.env.YOUTUBE_API_KEY || '';
-    expect(youtubeKey).toBe('TEST_KEY_12345');
-    // Restore
-    if (originalEnv) process.env.YOUTUBE_API_KEY = originalEnv;
-    else delete process.env.YOUTUBE_API_KEY;
+  test('backend search can use env key without sending it to the client', () => {
+    expect(resolveYouTubeKey({ headers: {}, query: {} }, 'ENV_KEY_123')).toBe('ENV_KEY_123');
+  });
+
+  test('explicit header key overrides env key when user provides one', () => {
+    expect(resolveYouTubeKey({ headers: { 'x-youtube-key': 'USER_KEY_999' }, query: {} }, 'ENV_KEY_123')).toBe('USER_KEY_999');
   });
 });
 

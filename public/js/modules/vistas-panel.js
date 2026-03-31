@@ -87,7 +87,8 @@
     results.innerHTML = '<div style="padding:20px;text-align:center;color:var(--sub);font-size:11px;">Buscando...</div>';
     try {
       const ytKey = localStorage.getItem('byflow_yt_api_key') || localStorage.getItem('yt_api_key') || '';
-      const res = await fetch('/api/youtube/search?q=' + encodeURIComponent(q) + '&key=' + encodeURIComponent(ytKey));
+      const headers = ytKey ? { 'X-YouTube-Key': ytKey } : {};
+      const res = await fetch('/api/youtube/search?q=' + encodeURIComponent(q), Object.keys(headers).length ? { headers } : {});
       const data = await res.json();
       if (!data.error && data.items && data.items.length > 0) {
         results.innerHTML = data.items.map((item) => {

@@ -192,10 +192,11 @@
 
     const params = new URLSearchParams(location.search);
     const roomId = params.get('room');
-    if (!roomId) {
+    const roomToken = params.get('token');
+    if (!roomId || !roomToken) {
       document.getElementById('tp-display').innerHTML =
         '<div class="welcome-state"><div class="welcome-icon">&#x26A0;</div>' +
-        '<div class="welcome-title">Sin sala especificada</div>' +
+        '<div class="welcome-title">Link de sala incompleto</div>' +
         '<div class="welcome-sub">Abre esta pantalla desde el boton "Abrir Pantalla" en el control de ByFlow</div></div>';
     }
 
@@ -222,7 +223,7 @@
     }
 
     async function init() {
-      if (!roomId) return;
+      if (!roomId || !roomToken) return;
       const loaded = await loadSocketIO();
       if (!loaded || typeof io === 'undefined') {
         setConnStatus(false, 'Socket.IO no disponible');
@@ -236,7 +237,7 @@
 
       socket.on('connect', () => {
         setConnStatus(true, 'Sala ' + roomId);
-        socket.emit('join_room', { roomId: roomId });
+        socket.emit('join_room', { roomId: roomId, roomToken: roomToken });
       });
 
       socket.on('room_joined', (data) => {
@@ -267,6 +268,10 @@
 
       socket.on('disconnect', () => {
         setConnStatus(false, 'Reconectando...');
+      });
+
+      socket.on('room_error', (data) => {
+        setConnStatus(false, (data && data.error) || 'Acceso denegado');
       });
 
       socket.on('reconnect', () => {

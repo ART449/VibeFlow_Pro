@@ -136,8 +136,8 @@
 
     const ytKey = localStorage.getItem('yt_api_key');
     const ytSt = document.getElementById('set-yt-status');
-    if (ytSt) ytSt.textContent = ytKey ? 'Configurada' : 'No configurada';
-    if (ytSt && ytKey) ytSt.style.color = 'var(--g)';
+    if (ytSt) ytSt.textContent = ytKey ? 'Configurada' : (window.__ytServerConfigured ? 'Via servidor' : 'No configurada');
+    if (ytSt && (ytKey || window.__ytServerConfigured)) ytSt.style.color = 'var(--g)';
 
     const jmKey = localStorage.getItem('byflow_jamendo_id');
     const jmSt = document.getElementById('set-jm-status');
