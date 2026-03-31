@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Dark background matching ByFlow theme -->
+    <item android:drawable="@color/byflow_bg"/>
+    <!-- Centered app icon -->
+    <item
+        android:gravity="center"
+        android:width="128dp"
+        android:height="128dp"
+        android:drawable="@mipmap/ic_launcher_foreground"/>
+</layer-list>

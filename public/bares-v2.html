@@ -386,7 +386,7 @@ button:disabled{
   <div class="sb-section">
     <div class="sb-title">Produccion</div>
       <div class="nav" onclick="showView('cocina',this)"><span class="ni">&#x1F373;</span> <span>Monitor Cocina</span> <span class="nb red" id="cocina-count">0</span></div>
-      <div class="nav" onclick="showView('cocina',this)"><span class="ni">&#x1F378;</span> <span>Monitor Barra</span> <span class="nb" id="barra-count">0</span></div>
+      <div class="nav" onclick="showView('cocina',this);setTimeout(function(){var b=document.querySelector('.cocina-filter[data-filter=barra]');if(b)setCocinaFilter(b,'barra');},100)"><span class="ni">&#x1F378;</span> <span>Monitor Barra</span> <span class="nb" id="barra-count">0</span></div>
     <div class="nav" onclick="showView('inventario',this)"><span class="ni">&#x1F4E6;</span> <span>Inventario</span></div>
     <div class="nav" onclick="showView('inventario',this)"><span class="ni">&#x1F4B8;</span> <span>Costo x Trago</span></div>
   </div>

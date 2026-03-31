@@ -974,7 +974,7 @@ function registerRoutes(app) {
       db.prepare('UPDATE products SET stock = ? WHERE id = ? AND bar_id = ?').run(newStock, id, barId);
       db.prepare(
         'INSERT INTO inventory_adjustments (product_id, type, quantity, notes, employee_id, bar_id) VALUES (?,?,?,?,?,?)'
-      ).run(id, type, qty, sanitize(notes || '', 500), req.employeeId || null, barId);
+      ).run(id, type, qty, sanitize(notes || '', 500), req.posSession?.employeeId || null, barId);
     });
     doAdjust();
 

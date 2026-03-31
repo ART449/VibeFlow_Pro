@@ -169,7 +169,7 @@ function registerRoutes(app, state, helpers) {
     res.json({ ok: true });
   });
   app.get('/api/analytics/summary', (req, res) => {
-    if (req.headers['x-admin-key'] !== ADMIN_SECRET) return res.status(403).json({ ok: false });
+    if (req.headers['x-admin-key'] !== ADMIN_SECRET && req.headers['x-admin-key'] !== MASTER_ADMIN) return res.status(403).json({ ok: false });
     const hoursUp = (Date.now() - _analytics.lastReset) / 3600000;
     res.json({
       ok: true,
@@ -215,7 +215,7 @@ function registerRoutes(app, state, helpers) {
   });
 
   app.get('/api/errors', (req, res) => {
-    if (req.headers['x-admin-key'] !== ADMIN_SECRET) return res.status(403).json({ ok: false });
+    if (req.headers['x-admin-key'] !== ADMIN_SECRET && req.headers['x-admin-key'] !== MASTER_ADMIN) return res.status(403).json({ ok: false });
     res.json({ ok: true, errors: _clientErrors, count: _clientErrors.length });
   });
 }

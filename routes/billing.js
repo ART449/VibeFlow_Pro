@@ -52,7 +52,7 @@ function registerWebhook(app, helpers) {
     : null;
 
   app.post('/api/stripe/webhook', require('express').raw({ type: 'application/json' }), async (req, res) => {
-    if (!stripe || !process.env.STRIPE_WEBHOOK_SECRET) return res.status(200).send('Stripe no configurado');
+    if (!stripe || !process.env.STRIPE_WEBHOOK_SECRET) return res.status(503).json({ error: 'Stripe no configurado' });
     const sig = req.headers['stripe-signature'];
     let event;
     try { event = stripe.webhooks.constructEvent(req.body, sig, process.env.STRIPE_WEBHOOK_SECRET); }
