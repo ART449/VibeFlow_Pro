@@ -38,7 +38,7 @@
     iaOnline = false;
     iaBackend = 'none';
     if (statusEl) statusEl.classList.add('offline');
-    if (statusText) statusText.textContent = 'GFlow offline - Configura API key';
+    if (statusText) statusText.textContent = 'GFlow offline';
     if (typeof _updateGrokLyricBtn === 'function') _updateGrokLyricBtn();
   };
 

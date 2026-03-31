@@ -24,14 +24,26 @@
   }
 
   youtube.ytInit = function() {
-    const inp = document.getElementById('yt-api-key');
-    const st = document.getElementById('yt-key-status');
-    if (ytApiKey && inp) inp.value = ytApiKey;
-    if (st && ytApiKey) {
-      st.textContent = 'API key guardada';
-      st.className = 'yt-key-status ok';
-    } else if (st && window.__ytServerConfigured) {
-      st.textContent = 'Busqueda lista via servidor';
+    var inp = document.getElementById('yt-api-key');
+    var st = document.getElementById('yt-key-status');
+    var keyRow = document.getElementById('yt-key-row');
+
+    if (window.__ytServerConfigured) {
+      // Server has the key — hide the API key field entirely
+      if (keyRow) keyRow.style.display = 'none';
+      if (st) {
+        st.textContent = 'YouTube listo';
+        st.className = 'yt-key-status ok';
+      }
+    } else if (ytApiKey && inp) {
+      inp.value = ytApiKey;
+      if (st) {
+        st.textContent = 'API key guardada';
+        st.className = 'yt-key-status ok';
+      }
+    } else if (st) {
+      // No key anywhere — still works via Piped free search
+      st.textContent = 'Busqueda libre activa';
       st.className = 'yt-key-status ok';
     }
   };
@@ -122,32 +134,37 @@
     try {
       let items;
       let durs = {};
-      let usedFree = false;
 
-      try {
-        const headers = buildYoutubeHeaders();
-        const options = Object.keys(headers).length ? { headers } : {};
-        const r = await fetch('/api/youtube/search?q=' + encodeURIComponent(q), options);
-        const d = await r.json();
-        if (!d.error && d.items && d.items.length) {
-          items = d.items;
-          const ids = d.items.map((i) => i.id.videoId).join(',');
-          const detRes = await fetch('/api/youtube/videos?ids=' + encodeURIComponent(ids), options);
-          const detD = await detRes.json();
-          if (detD.items) {
-            detD.items.forEach((v) => {
-              durs[v.id] = youtube.ytParseDuration(v.contentDetails.duration);
-            });
+      // Strategy: try server API key first, then client key, then Piped free
+      var hasServerKey = !!window.__ytServerConfigured;
+      var hasClientKey = !!ytApiKey;
+
+      if (hasServerKey || hasClientKey) {
+        try {
+          var headers = buildYoutubeHeaders();
+          var options = Object.keys(headers).length ? { headers } : {};
+          var r = await fetch('/api/youtube/search?q=' + encodeURIComponent(q), options);
+          var d = await r.json();
+          if (!d.error && d.items && d.items.length) {
+            items = d.items;
+            var ids = d.items.map(function(i) { return i.id.videoId; }).join(',');
+            var detRes = await fetch('/api/youtube/videos?ids=' + encodeURIComponent(ids), options);
+            var detD = await detRes.json();
+            if (detD.items) {
+              detD.items.forEach(function(v) {
+                durs[v.id] = youtube.ytParseDuration(v.contentDetails.duration);
+              });
+            }
           }
-        }
-      } catch {}
+        } catch (apiErr) {}
+      }
 
+      // Fallback: Piped free search (always works, no key needed)
       if (!items) {
-        const free = await youtube.ytFreeSearch(q);
+        var free = await youtube.ytFreeSearch(q);
         if (free) {
           items = free.items;
           durs = free.durs;
-          usedFree = true;
         }
       }
 
@@ -159,7 +176,6 @@
       youtube.ytCacheSet(q, { items, durs });
       ytResults = items;
       youtube.ytRenderResults(items, durs, res);
-      if (usedFree) showToast('Busqueda libre sin API key');
     } catch (e) {
       res.innerHTML = '<div class="yt-empty">Error: ' + escHtml(e.message) + '</div>';
     }

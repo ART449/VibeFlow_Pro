@@ -2676,11 +2676,11 @@ input:focus-visible,textarea:focus-visible{
           <svg viewBox="0 0 24 24" fill="#ff4444"><path d="M23.495 6.205a3.007 3.007 0 0 0-2.088-2.088c-1.87-.501-9.396-.501-9.396-.501s-7.507-.01-9.396.501A3.007 3.007 0 0 0 .527 6.205a31.247 31.247 0 0 0-.522 5.805 31.247 31.247 0 0 0 .522 5.783 3.007 3.007 0 0 0 2.088 2.088c1.868.502 9.396.502 9.396.502s7.506 0 9.396-.502a3.007 3.007 0 0 0 2.088-2.088 31.247 31.247 0 0 0 .5-5.783 31.247 31.247 0 0 0-.5-5.805zM9.609 15.601V8.408l6.264 3.602z"/></svg>
           YouTube
         </div>
-        <div class="yt-apikey-row">
+        <div class="yt-apikey-row" id="yt-key-row">
           <input class="yt-apikey-inp" id="yt-api-key" type="password" placeholder="API Key de YouTube...">
           <button class="yt-save-key" onclick="ytSaveKey()">Guardar</button>
         </div>
-        <div class="yt-key-status" id="yt-key-status">Sin API key</div>
+        <div class="yt-key-status" id="yt-key-status">Busqueda libre activa</div>
       </div>
       <div class="yt-search-row">
         <input class="yt-search-inp" id="yt-search-inp" placeholder="Buscar canción..."
@@ -3126,9 +3126,9 @@ input:focus-visible,textarea:focus-visible{
             Claves API
           </div>
           <div style="font-size:10px;color:var(--sub);margin-bottom:8px;">Configura tus claves para desbloquear servicios</div>
-          <div class="settings-row">
+          <div class="settings-row" id="set-yt-row">
             <span class="settings-label">YouTube API</span>
-            <span class="settings-value" id="set-yt-status">No configurada</span>
+            <span class="settings-value" id="set-yt-status">Listo (busqueda libre)</span>
           </div>
           <div class="settings-row">
             <span class="settings-label">Jamendo Client ID</span>
