@@ -376,37 +376,37 @@ button:disabled{
 <div class="sidebar">
   <div class="sb-section">
     <div class="sb-title">Operacion</div>
-    <div class="nav active" onclick="showView('mesas',this)"><span class="ni">&#x1F37B;</span> <span>Mesas</span> <span class="nb">12</span></div>
-    <div class="nav" onclick="showView('comandas',this)"><span class="ni">&#x1F4CB;</span> <span>Comandas</span> <span class="nb" id="comandas-count">0</span></div>
-    <div class="nav" onclick="openKaraokeQueueModal()"><span class="ni">&#x1F3A4;</span> <span>Cola Karaoke</span> <span class="nb pink">8</span></div>
-    <div class="nav" onclick="openCobrarShortcut()"><span class="ni">&#x1F4B3;</span> <span>Cobrar</span></div>
-    <div class="nav" onclick="showView('reservaciones',this)"><span class="ni">&#x1F4C5;</span> <span>Reservaciones</span> <span class="nb" id="reserv-count">0</span></div>
-    <div class="nav" onclick="showView('cover',this)"><span class="ni">&#x1F3AB;</span> <span>Cover / Entrada</span> <span class="nb green">43</span></div>
+    <div class="nav active" data-nav-id="mesas" onclick="showView('mesas',this)"><span class="ni">&#x1F37B;</span> <span>Mesas</span> <span class="nb">12</span></div>
+    <div class="nav" data-nav-id="comandas" onclick="showView('comandas',this)"><span class="ni">&#x1F4CB;</span> <span>Comandas</span> <span class="nb" id="comandas-count">0</span></div>
+    <div class="nav" data-nav-id="karaoke" onclick="openKaraokeQueueModal()"><span class="ni">&#x1F3A4;</span> <span>Cola Karaoke</span> <span class="nb pink">8</span></div>
+    <div class="nav" data-nav-id="cobrar" onclick="openCobrarShortcut()"><span class="ni">&#x1F4B3;</span> <span>Cobrar</span></div>
+    <div class="nav" data-nav-id="reservaciones" onclick="showView('reservaciones',this)"><span class="ni">&#x1F4C5;</span> <span>Reservaciones</span> <span class="nb" id="reserv-count">0</span></div>
+    <div class="nav" data-nav-id="cover" onclick="showView('cover',this)"><span class="ni">&#x1F3AB;</span> <span>Cover / Entrada</span> <span class="nb green">43</span></div>
   </div>
   <div class="sb-section">
     <div class="sb-title">Produccion</div>
-      <div class="nav" onclick="showView('cocina',this)"><span class="ni">&#x1F373;</span> <span>Monitor Cocina</span> <span class="nb red" id="cocina-count">0</span></div>
-      <div class="nav" onclick="showView('cocina',this);setTimeout(function(){var b=document.querySelector('.cocina-filter[data-filter=barra]');if(b)setCocinaFilter(b,'barra');},100)"><span class="ni">&#x1F378;</span> <span>Monitor Barra</span> <span class="nb" id="barra-count">0</span></div>
-    <div class="nav" onclick="showView('inventario',this)"><span class="ni">&#x1F4E6;</span> <span>Inventario</span></div>
-    <div class="nav" onclick="showView('inventario',this)"><span class="ni">&#x1F4B8;</span> <span>Costo x Trago</span></div>
+      <div class="nav" data-nav-id="cocina" onclick="showView('cocina',this)"><span class="ni">&#x1F373;</span> <span>Monitor Cocina</span> <span class="nb red" id="cocina-count">0</span></div>
+      <div class="nav" data-nav-id="barra" onclick="showView('barra',this)"><span class="ni">&#x1F378;</span> <span>Monitor Barra</span> <span class="nb" id="barra-count">0</span></div>
+    <div class="nav" data-nav-id="inventario" onclick="showView('inventario',this)"><span class="ni">&#x1F4E6;</span> <span>Inventario</span></div>
+    <div class="nav" data-nav-id="inventario" onclick="showView('inventario',this)"><span class="ni">&#x1F4B8;</span> <span>Costo x Trago</span></div>
   </div>
   <div class="sb-section">
     <div class="sb-title">Admin</div>
-    <div class="nav" onclick="showView('reportes',this)"><span class="ni">&#x1F4CA;</span> <span>Reportes</span></div>
-    <div class="nav" onclick="showView('corte',this)"><span class="ni">&#x1F4B0;</span> <span>Corte de Caja</span></div>
-    <div class="nav" onclick="showView('corte',this)"><span class="ni">&#x1F9FE;</span> <span>Facturacion CFDI</span></div>
-    <div class="nav" onclick="showView('empleados',this)"><span class="ni">&#x1F465;</span> <span>Empleados</span></div>
-    <div class="nav" onclick="showView('empleados',this)"><span class="ni">&#x1F3C6;</span> <span>Rendimiento</span></div>
-    <div class="nav"><span class="ni">&#x1F6E1;&#xFE0F;</span> <span>Seguridad</span></div>
-    <div class="nav"><span class="ni">&#x2699;&#xFE0F;</span> <span>Config</span></div>
+    <div class="nav" data-nav-id="reportes" onclick="showView('reportes',this)"><span class="ni">&#x1F4CA;</span> <span>Reportes</span></div>
+    <div class="nav" data-nav-id="corte" onclick="showView('corte',this)"><span class="ni">&#x1F4B0;</span> <span>Corte de Caja</span></div>
+    <div class="nav" data-nav-id="cfdi" onclick="showView('cfdi',this)"><span class="ni">&#x1F9FE;</span> <span>Facturacion CFDI</span></div>
+    <div class="nav" data-nav-id="empleados" onclick="showView('empleados',this)"><span class="ni">&#x1F465;</span> <span>Empleados</span></div>
+    <div class="nav" data-nav-id="reportes" onclick="showView('reportes',this)"><span class="ni">&#x1F3C6;</span> <span>Rendimiento</span></div>
+    <div class="nav" data-nav-id="cover" onclick="showView('cover',this)"><span class="ni">&#x1F6E1;&#xFE0F;</span> <span>Seguridad</span></div>
+    <div class="nav" data-nav-id="config" onclick="window.location.href='/pos-admin.html#settings'"><span class="ni">&#x2699;&#xFE0F;</span> <span>Config</span></div>
   </div>
   <div class="sb-section">
     <div class="sb-title" style="color:#ff8a00;">IA Asistente</div>
-    <div class="nav role-dueno" onclick="showView('ia-asistente',this)"><span class="ni">&#x1F41D;</span> <span>El Avispero</span> <span class="nb" style="background:rgba(255,138,0,.15);color:#ff8a00;">PRO</span></div>
-    <div class="nav role-dueno" onclick="showView('ia-builders',this)"><span class="ni">&#x1F3D7;&#xFE0F;</span> <span>Builders UX/UI</span></div>
-    <div class="nav" onclick="showView('ia-contador',this)"><span class="ni">&#x1F9EE;</span> <span>Contador IA</span></div>
-    <div class="nav" onclick="showView('ia-inventario',this)"><span class="ni">&#x1F4E6;</span> <span>Inventario IA</span></div>
-    <div class="nav" onclick="showView('ia-espia',this)"><span class="ni">&#x1F576;&#xFE0F;</span> <span>Espia Mercado</span></div>
+    <div class="nav role-dueno" data-nav-id="ia-asistente" onclick="showView('ia-asistente',this)"><span class="ni">&#x1F41D;</span> <span>El Avispero</span> <span class="nb" style="background:rgba(255,138,0,.15);color:#ff8a00;">PRO</span></div>
+    <div class="nav role-dueno" data-nav-id="ia-builders" onclick="showView('ia-builders',this)"><span class="ni">&#x1F3D7;&#xFE0F;</span> <span>Builders UX/UI</span></div>
+    <div class="nav" data-nav-id="ia-contador" onclick="showView('ia-contador',this)"><span class="ni">&#x1F9EE;</span> <span>Contador IA</span></div>
+    <div class="nav" data-nav-id="ia-inventario" onclick="showView('ia-inventario',this)"><span class="ni">&#x1F4E6;</span> <span>Inventario IA</span></div>
+    <div class="nav" data-nav-id="ia-espia" onclick="showView('ia-espia',this)"><span class="ni">&#x1F576;&#xFE0F;</span> <span>Espia Mercado</span></div>
   </div>
   <div class="sb-section">
     <div class="sb-title">Hoy</div>
@@ -629,6 +629,30 @@ button:disabled{
       <div style="display:flex;gap:8px;">
         <button onclick="closeShiftCloseModal()" style="flex:1;padding:8px;border-radius:8px;background:var(--surface);border:1px solid var(--border);color:var(--sub);font-size:11px;cursor:pointer;">Cancelar</button>
         <button id="shift-close-confirm-btn" onclick="confirmCloseShift()" style="flex:1;padding:8px;border-radius:8px;background:linear-gradient(135deg,var(--red),#dc2626);border:none;color:#fff;font-size:11px;font-weight:700;cursor:pointer;">Cerrar Turno</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="view" id="v-cfdi">
+  <div class="corte-wrap">
+    <div class="corte-card" style="margin-bottom:12px;">
+      <h3>&#x1F9FE; Facturacion CFDI</h3>
+      <div class="corte-row"><span>Ultima venta registrada</span><span id="cfdi-last-order">Sin venta reciente</span></div>
+      <div class="corte-row"><span>Total listo para facturar</span><span id="cfdi-last-total">$0</span></div>
+      <div class="corte-row"><span>RFC configurado</span><span id="cfdi-rfc-status">Pendiente</span></div>
+      <div style="margin-top:14px;display:flex;gap:8px;flex-wrap:wrap;">
+        <button class="pb primary" onclick="prepareCfdiFromLastOrder()">Preparar factura</button>
+        <button class="pb secondary" onclick="window.location.href='/pos-admin.html#settings'">Configurar datos fiscales</button>
+      </div>
+    </div>
+    <div class="corte-card">
+      <h3>&#x1F4DD; Flujo recomendado</h3>
+      <div class="corte-row"><span>1. Cobra la orden</span><span>Desde POS</span></div>
+      <div class="corte-row"><span>2. Verifica RFC y razon social</span><span>Config del bar</span></div>
+      <div class="corte-row"><span>3. Genera CFDI</span><span>Con la venta cerrada</span></div>
+      <div style="margin-top:10px;font-size:11px;color:var(--sub);line-height:1.6;">
+        Esta vista prepara la venta reciente para facturacion y te lleva al flujo correcto sin perder contexto del POS.
       </div>
     </div>
   </div>
@@ -972,12 +996,55 @@ function escapeHtml(str) {
 }
 
 // ═══ NAVIGATION ═══
+function getAllowedSidebarIds() {
+  var sidebar = PosAuth.getSidebar ? PosAuth.getSidebar() : [];
+  return new Set((sidebar || []).map(function(item) { return item.id; }));
+}
+
+function isAllowedNavId(navId, allowedIds) {
+  if (allowedIds.has(navId)) return true;
+  if (navId === 'mesas' && allowedIds.has('mis-mesas')) return true;
+  return false;
+}
+
+function hasPosPermission(permission) {
+  return PosAuth.hasPermission ? PosAuth.hasPermission(permission) : false;
+}
+
+function resolveRequestedView(id) {
+  var aliases = {
+    'mis-mesas': 'mesas',
+    cobrar: 'mesas',
+    barra: 'cocina',
+    karaoke: 'mesas'
+  };
+  return aliases[id] || id;
+}
+
+function findNavItemById(id) {
+  return document.querySelector('.nav[data-nav-id="' + id + '"]');
+}
+
+function activateAuxiliaryViewState(id) {
+  if (id === 'barra') {
+    setTimeout(function() {
+      var barraFilter = document.querySelector('.cocina-filter[data-filter="barra"]');
+      if (barraFilter) setCocinaFilter(barraFilter, 'barra');
+    }, 60);
+  }
+  if (id === 'karaoke') {
+    setTimeout(function() { openKaraokeQueueModal(); }, 60);
+  }
+}
+
 function showView(id, el) {
+  var requestedId = id;
+  id = resolveRequestedView(id);
   document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
   const target = document.getElementById('v-' + id);
   if (target) target.classList.add('active');
   document.querySelectorAll('.nav').forEach(n => n.classList.remove('active'));
-  const navEl = el || (typeof event !== 'undefined' && event && event.currentTarget);
+  const navEl = el || (typeof event !== 'undefined' && event && event.currentTarget) || findNavItemById(requestedId) || findNativeNavByView(id);
   if (navEl) navEl.classList.add('active');
   // Trigger data loading for dynamic views
   if (id === 'comandas') loadComandas();
@@ -985,6 +1052,8 @@ function showView(id, el) {
   if (id === 'inventario') loadInventory();
   if (id === 'reportes') loadReports();
   if (id === 'corte') loadCorte();
+  if (id === 'cfdi') refreshCfdiState();
+  activateAuxiliaryViewState(requestedId);
 }
 
 function findNavItemByText(text) {
@@ -998,18 +1067,50 @@ function findNavItemByText(text) {
 }
 
 function openCoverView() {
-  var nav = findNavItemByText('cover / entrada') || findNavItemByText('cover');
+  var nav = findNavItemById('cover') || findNavItemByText('cover / entrada') || findNavItemByText('cover');
   showView('cover', nav);
 }
 
 function openCobrarShortcut() {
-  var nav = findNavItemByText('mesas');
+  var nav = findNavItemById('cobrar') || findNavItemById('mesas') || findNavItemByText('mesas');
   if (nav) showView('mesas', nav);
   if (!_cobrarState.orderId) {
     toast('Selecciona una mesa con orden abierta para cobrar', 'warn');
     return;
   }
   openCobrarModal();
+}
+
+function prepareCfdiFromLastOrder() {
+  refreshCfdiState();
+  if (!_cobrarState.lastPaidOrderId) {
+    toast('Primero registra un cobro para preparar su CFDI', 'warn');
+    return;
+  }
+  if (!_cobrarState.orderId && _cobrarState.lastPaidOrderId) {
+    _cobrarState.orderId = _cobrarState.lastPaidOrderId;
+  }
+  toast('Venta #' + _cobrarState.lastPaidOrderId + ' lista para facturacion CFDI', 'info');
+}
+
+function refreshCfdiState() {
+  var lastOrderEl = document.getElementById('cfdi-last-order');
+  var lastTotalEl = document.getElementById('cfdi-last-total');
+  var rfcStatusEl = document.getElementById('cfdi-rfc-status');
+  if (lastOrderEl) lastOrderEl.textContent = _cobrarState.lastPaidOrderId ? ('Venta #' + _cobrarState.lastPaidOrderId) : 'Sin venta reciente';
+  if (lastTotalEl) {
+    var total = Number(_cobrarState.total || 0) + Number(_cobrarState.tipAmount || 0);
+    lastTotalEl.textContent = total > 0 ? ('$' + total.toLocaleString()) : '$0';
+  }
+  fetch('/pos/settings', { headers: authHeaders() })
+    .then(function(r) { return r.ok ? r.json() : null; })
+    .then(function(data) {
+      var rfc = data && data.ok && data.settings ? (data.settings.cfdi_rfc || '') : '';
+      if (rfcStatusEl) rfcStatusEl.textContent = rfc || 'Pendiente';
+    })
+    .catch(function() {
+      if (rfcStatusEl) rfcStatusEl.textContent = 'Pendiente';
+    });
 }
 
 // ═══ TABLE SELECTION ═══
@@ -1530,7 +1631,11 @@ function posAction(action, triggerEl) {
     dividir: function() { toast('Selecciona items para dividir', 'info'); },
     cancion: function() { openKaraokeQueueModal(); },
     ticket: function() { openTicketPreview(); },
-    cfdi: function() { toast('Abriendo facturacion CFDI 4.0', 'info'); }
+    cfdi: function() {
+      var nav = findNavItemById('cfdi');
+      showView('cfdi', nav);
+      prepareCfdiFromLastOrder();
+    }
   };
   if (actions[action]) actions[action]();
 }
@@ -1915,6 +2020,7 @@ function cleanTourHighlight() {
 }
 
 function showViewDirect(id) {
+  id = resolveRequestedView(id);
   document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
   const target = document.getElementById('v-' + id);
   if (target) target.classList.add('active');
@@ -1929,18 +2035,21 @@ function findNativeNavByView(id) {
 
 function applyInitialViewFromQuery() {
   var params = new URLSearchParams(window.location.search || '');
-  var view = (params.get('view') || '').trim();
+  var view = (params.get('view') || PosAuth.getDefaultView() || '').trim();
   if (!view) return;
 
   showViewDirect(view);
   document.querySelectorAll('.nav').forEach(function(nav) { nav.classList.remove('active'); });
-  var nav = findNativeNavByView(view);
+  var nav = findNavItemById(view) || findNativeNavByView(resolveRequestedView(view));
   if (nav) nav.classList.add('active');
 
-  if (view === 'comandas') loadComandas();
-  if (view === 'cocina') loadCocina();
-  if (view === 'inventario') loadInventory();
-  if (view === 'corte') loadCorte();
+  var resolved = resolveRequestedView(view);
+  if (resolved === 'comandas') loadComandas();
+  if (resolved === 'cocina') loadCocina();
+  if (resolved === 'inventario') loadInventory();
+  if (resolved === 'corte') loadCorte();
+  if (resolved === 'cfdi') refreshCfdiState();
+  activateAuxiliaryViewState(view);
 }
 
 // ═══ INIT: Wire up category buttons ═══
@@ -1951,30 +2060,23 @@ document.addEventListener('DOMContentLoaded', () => {
     c.onclick = () => switchCat(catMap[i], c);
   });
 
-  // ═══ ROLE-BASED NAV VISIBILITY ═══
-  // Hide nav items that require specific roles
-  var empData = null;
-  try { empData = JSON.parse(sessionStorage.getItem('pos_employee')); } catch(_) {}
-  var currentRole = empData ? empData.role : 'mesero';
-
-  // Elements with class "role-dueno" only visible to dueno and gerente
-  document.querySelectorAll('.role-dueno').forEach(function(el) {
-    if (currentRole !== 'dueno' && currentRole !== 'gerente') {
-      el.style.display = 'none';
+  var allowedIds = getAllowedSidebarIds();
+  document.querySelectorAll('.nav[data-nav-id]').forEach(function(nav) {
+    var navId = nav.getAttribute('data-nav-id');
+    if (!navId) return;
+    if (navId.indexOf('ia-') === 0) {
+      nav.style.display = (PosAuth.getEmployee()?.role === 'dueno' || PosAuth.getEmployee()?.role === 'gerente') ? '' : 'none';
+      return;
     }
+    nav.style.display = isAllowedNavId(navId, allowedIds) ? '' : 'none';
   });
 
-  // Hide admin-only sections for non-admin roles
-  var adminViews = ['empleados', 'config', 'reportes', 'cfdi'];
-  var restrictedRoles = ['mesero', 'bartender', 'cocinero', 'dj', 'seguridad'];
-  if (restrictedRoles.includes(currentRole)) {
-    document.querySelectorAll('.nav').forEach(function(nav) {
-      var onclick = nav.getAttribute('onclick') || '';
-      adminViews.forEach(function(v) {
-        if (onclick.indexOf("'" + v + "'") !== -1) nav.style.display = 'none';
-      });
+  document.querySelectorAll('.sb-section').forEach(function(section) {
+    var visibleNav = Array.from(section.querySelectorAll('.nav')).some(function(nav) {
+      return nav.style.display !== 'none';
     });
-  }
+    if (section.querySelector('.nav') && !visibleNav) section.style.display = 'none';
+  });
 });
 
 // ═══════════════════════════════════════════════
@@ -2080,7 +2182,8 @@ function loadTables() {
       if (tables.length > 0) {
         renderTables(tables);
         window._posTablesCache = tables;
-        loadCovers(tables);
+        if (hasPosPermission('covers')) loadCovers(tables);
+        else renderSummary(tables, null);
       }
     })
     .catch(function() { /* API unavailable — keep static HTML */ });
@@ -2120,13 +2223,17 @@ document.addEventListener('DOMContentLoaded', function() {
   });
 
   // Bootstrap on load: fetch tables and default category (1 = cervezas)
-  loadTables();
-  loadProducts(1);
+  if (hasPosPermission('tables') || hasPosPermission('tables_view') || hasPosPermission('tables_own')) {
+    loadTables();
+  }
+  if (hasPosPermission('orders') || hasPosPermission('orders_own') || hasPosPermission('payments')) {
+    loadProducts(1);
+  }
   resetRenderedOrder();
   document.getElementById('pos-mesa').textContent = 'Selecciona mesa';
   setPosMeta('Sin mesa seleccionada');
-  loadReservationsToday();
-  loadCoverData();
+  if (hasPosPermission('reservations')) loadReservationsToday();
+  if (hasPosPermission('covers')) loadCoverData();
   initHappyHourBanner();
   applyInitialViewFromQuery();
   syncInteractiveControls();
@@ -2613,7 +2720,7 @@ function updateHHTimer(endTime) {
 
     // Show setup link if NOT yet configured
     var setupComplete = localStorage.getItem('pos_setup_complete');
-    if (!setupComplete) {
+    if (!setupComplete && hasPosPermission('config')) {
       var setupLink = document.getElementById('sb-setup-link');
       if (setupLink) setupLink.style.display = 'block';
 

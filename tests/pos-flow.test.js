@@ -100,14 +100,15 @@ describe('POS real flow regressions', () => {
   });
 
   test('cancelled items recalculate totals and allow empty orders to be voided', async () => {
-    const session = await login('3333');
-    const table = await getFreeTable(session.token);
-    const product = await getFirstProduct(session.token);
+    const mesero = await login('3333');
+    const capitan = await login('2222');
+    const table = await getFreeTable(mesero.token);
+    const product = await getFirstProduct(mesero.token);
 
     const create = await requestJson('/pos/orders', {
       method: 'POST',
       headers: {
-        Authorization: 'Bearer ' + session.token,
+        Authorization: 'Bearer ' + mesero.token,
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({ table_id: table.id })
@@ -117,7 +118,7 @@ describe('POS real flow regressions', () => {
     const addItem = await requestJson('/pos/orders/' + orderId + '/items', {
       method: 'POST',
       headers: {
-        Authorization: 'Bearer ' + session.token,
+        Authorization: 'Bearer ' + mesero.token,
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({ product_id: product.id, quantity: 1 })
@@ -129,7 +130,7 @@ describe('POS real flow regressions', () => {
     const cancelItem = await requestJson('/pos/order-items/' + addItem.body.item_id + '/status', {
       method: 'PUT',
       headers: {
-        Authorization: 'Bearer ' + session.token,
+        Authorization: 'Bearer ' + capitan.token,
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({ status: 'cancelado', cancel_reason: 'Test cleanup' })
@@ -140,7 +141,7 @@ describe('POS real flow regressions', () => {
     expect(cancelItem.body.order.total).toBe(0);
 
     const orderAfterCancel = await requestJson('/pos/orders/' + orderId, {
-      headers: { Authorization: 'Bearer ' + session.token }
+      headers: { Authorization: 'Bearer ' + capitan.token }
     });
 
     expect(orderAfterCancel.body.ok).toBe(true);
@@ -149,13 +150,13 @@ describe('POS real flow regressions', () => {
 
     const deleteOrder = await requestJson('/pos/orders/' + orderId, {
       method: 'DELETE',
-      headers: { Authorization: 'Bearer ' + session.token }
+      headers: { Authorization: 'Bearer ' + capitan.token }
     });
 
     expect(deleteOrder.body.ok).toBe(true);
 
     const tablesAfterDelete = await requestJson('/pos/tables', {
-      headers: { Authorization: 'Bearer ' + session.token }
+      headers: { Authorization: 'Bearer ' + capitan.token }
     });
     const freedTable = (tablesAfterDelete.body.tables || []).find((item) => item.id === table.id);
     expect(freedTable.status).toBe('libre');
@@ -163,14 +164,15 @@ describe('POS real flow regressions', () => {
   });
 
   test('payments keep amount and tip separated while calculating change from the full due total', async () => {
-    const session = await login('9999');
-    const table = await getFreeTable(session.token);
-    const product = await getFirstProduct(session.token);
+    const mesero = await login('3333');
+    const cajero = await login('9999');
+    const table = await getFreeTable(mesero.token);
+    const product = await getFirstProduct(mesero.token);
 
     const create = await requestJson('/pos/orders', {
       method: 'POST',
       headers: {
-        Authorization: 'Bearer ' + session.token,
+        Authorization: 'Bearer ' + mesero.token,
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({ table_id: table.id })
@@ -180,7 +182,7 @@ describe('POS real flow regressions', () => {
     const addItem = await requestJson('/pos/orders/' + orderId + '/items', {
       method: 'POST',
       headers: {
-        Authorization: 'Bearer ' + session.token,
+        Authorization: 'Bearer ' + mesero.token,
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({ product_id: product.id, quantity: 1 })
@@ -188,14 +190,14 @@ describe('POS real flow regressions', () => {
     expect(addItem.body.ok).toBe(true);
 
     const orderSnapshot = await requestJson('/pos/orders/' + orderId, {
-      headers: { Authorization: 'Bearer ' + session.token }
+      headers: { Authorization: 'Bearer ' + cajero.token }
     });
 
     const currentOrder = orderSnapshot.body.order;
     const payment = await requestJson('/pos/payments', {
       method: 'POST',
       headers: {
-        Authorization: 'Bearer ' + session.token,
+        Authorization: 'Bearer ' + cajero.token,
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
@@ -227,5 +229,58 @@ describe('POS real flow regressions', () => {
     expect(storedOrder.status).toBe('pagada');
     expect(storedOrder.total).toBeCloseTo(currentOrder.total, 5);
     expect(storedOrder.tip).toBeCloseTo(20, 5);
+  });
+
+  test('login responses include role-aware sidebar and permissions', async () => {
+    const mesero = await login('3333');
+    const cajero = await login('9999');
+
+    expect(mesero.sidebar.map((item) => item.id)).toEqual(expect.arrayContaining(['mis-mesas', 'comandas', 'karaoke']));
+    expect(mesero.sidebar.map((item) => item.id)).not.toContain('empleados');
+    expect(mesero.permissions).toEqual(expect.arrayContaining(['tables_own', 'orders_own']));
+
+    expect(cajero.sidebar.map((item) => item.id)).toEqual(expect.arrayContaining(['mesas', 'comandas', 'cobrar', 'corte', 'cfdi']));
+    expect(cajero.permissions).toEqual(expect.arrayContaining(['payments', 'corte_own', 'cfdi']));
+  });
+
+  test('public products endpoint strips sensitive fields for anonymous menu usage', async () => {
+    const { status, body } = await requestJson('/pos/products');
+
+    expect(status).toBe(200);
+    expect(body.ok).toBe(true);
+    expect(body.products.length).toBeGreaterThan(0);
+    expect(body.products[0]).not.toHaveProperty('cost');
+    expect(body.products[0]).not.toHaveProperty('stock');
+  });
+
+  test('mesero cannot access employee management or cancel full orders directly', async () => {
+    const mesero = await login('3333');
+
+    const employees = await requestJson('/pos/employees', {
+      headers: { Authorization: 'Bearer ' + mesero.token }
+    });
+    expect(employees.status).toBe(403);
+
+    const deleteOrder = await requestJson('/pos/orders/99999', {
+      method: 'DELETE',
+      headers: { Authorization: 'Bearer ' + mesero.token }
+    });
+    expect(deleteOrder.status).toBe(403);
+  });
+
+  test('non-config roles only receive safe settings keys', async () => {
+    const db = dbModule.getDb();
+    db.prepare("INSERT OR REPLACE INTO bar_settings (key, value, bar_id) VALUES ('youtube_api_key', 'SECRET_KEY', 'default')").run();
+    db.prepare("INSERT OR REPLACE INTO bar_settings (key, value, bar_id) VALUES ('tax_rate', '0.16', 'default')").run();
+
+    const cajero = await login('9999');
+    const settings = await requestJson('/pos/settings', {
+      headers: { Authorization: 'Bearer ' + cajero.token }
+    });
+
+    expect(settings.status).toBe(200);
+    expect(settings.body.ok).toBe(true);
+    expect(settings.body.settings.tax_rate).toBe('0.16');
+    expect(settings.body.settings.youtube_api_key).toBeUndefined();
   });
 });

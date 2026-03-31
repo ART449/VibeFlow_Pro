@@ -20,6 +20,39 @@
     return sessionStorage.getItem('pos_bar_id') || 'default';
   };
 
+  PosAuth.getPermissions = function() {
+    try {
+      return JSON.parse(sessionStorage.getItem('pos_permissions') || '[]');
+    } catch (e) {
+      return [];
+    }
+  };
+
+  PosAuth.getSidebar = function() {
+    try {
+      return JSON.parse(sessionStorage.getItem('pos_sidebar') || '[]');
+    } catch (e) {
+      return [];
+    }
+  };
+
+  PosAuth.getDefaultView = function() {
+    return sessionStorage.getItem('pos_default_view') || 'mesas';
+  };
+
+  PosAuth.getLicense = function() {
+    try {
+      return JSON.parse(sessionStorage.getItem('pos_license') || 'null');
+    } catch (e) {
+      return null;
+    }
+  };
+
+  PosAuth.hasPermission = function(permission) {
+    var perms = PosAuth.getPermissions();
+    return perms.includes('*') || perms.includes(permission);
+  };
+
   PosAuth.authHeaders = function() {
     return {
       'Content-Type': 'application/json',
@@ -57,6 +90,16 @@
     }
   };
 
+  PosAuth.checkLicenseByBar = async function(barId) {
+    try {
+      const r = await fetch('/api/pos/license?bar_id=' + encodeURIComponent(barId));
+      const d = await r.json();
+      return d.ok ? d : { ok: false };
+    } catch (e) {
+      return { ok: false, error: e.message };
+    }
+  };
+
   // ═══ Bar ID from Email (deterministic) ═══
 
   PosAuth.emailToBarId = async function(email) {
@@ -70,10 +113,15 @@
 
   // ═══ Session Management ═══
 
-  PosAuth.saveSession = function(employee, token, barId) {
+  PosAuth.saveSession = function(employee, token, barId, meta) {
     sessionStorage.setItem('pos_employee', JSON.stringify(employee));
     sessionStorage.setItem('pos_token', token);
     if (barId) sessionStorage.setItem('pos_bar_id', barId);
+    meta = meta || {};
+    if (meta.permissions) sessionStorage.setItem('pos_permissions', JSON.stringify(meta.permissions));
+    if (meta.sidebar) sessionStorage.setItem('pos_sidebar', JSON.stringify(meta.sidebar));
+    if (meta.defaultView) sessionStorage.setItem('pos_default_view', meta.defaultView);
+    if (meta.license) sessionStorage.setItem('pos_license', JSON.stringify(meta.license));
   };
 
   PosAuth.getEmployee = function() {
@@ -89,6 +137,9 @@
     sessionStorage.removeItem('pos_employee');
     sessionStorage.removeItem('pos_bar_id');
     sessionStorage.removeItem('pos_license');
+    sessionStorage.removeItem('pos_permissions');
+    sessionStorage.removeItem('pos_sidebar');
+    sessionStorage.removeItem('pos_default_view');
     localStorage.removeItem('pos_bar_name');
     localStorage.removeItem('pos_bar_email');
     localStorage.removeItem('pos_setup_complete');

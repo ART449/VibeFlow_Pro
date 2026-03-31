@@ -166,11 +166,12 @@
     }
   };
 
-  const BYFLOW_SIGNATURE = '\n\n------------------------------\n🎤 Generado con ByFlow - powered by IArtLabs\n📝 Propiedad intelectual: 100% del autor.\n💰 Clausula comercial: Si esta letra genera ingresos,\n   aplica un 15% de regalias a IArtLabs.\n------------------------------';
+  const BYFLOW_SIGNATURE = '\n\n------------------------------\n🎤 Motor autoral ByFlow - powered by IArtLabs\n📝 Revisa el origen de la letra para determinar autoria y reparto comercial.\n💰 Si la letra fue generada principalmente por ByFlow, aplica 75% IArtLabs / 25% usuario.\n------------------------------';
   const ZW0 = '\u200B';
   const ZW1 = '\u200C';
   const ZWS = '\u200D';
   const ZWM = '\uFEFF';
+  const BYFLOW_GENERATED_SIGNATURE_ASCII = '\n\n------------------------------\nMotor autoral ByFlow - powered by IArtLabs\nOrigen: letra generada principalmente por ByFlow.\nClausula comercial: aplica reparto 75% IArtLabs / 25% usuario,\nsalvo acuerdo distinto por escrito.\n------------------------------';
 
   gflow._bfEncode = function(str) {
     let bits = '';
@@ -206,7 +207,8 @@
     let meta;
     if (t === 'OG') meta = 'BF|' + ts + '|ARTATR-OG|R0|ART';
     else if (t === 'SUNO') meta = 'BF|' + ts + '|SUNO|R0|ART';
-    else meta = 'BF|' + ts + '|ARTATR|R15';
+    else if (t === 'USER') meta = 'BF|' + ts + '|USER|R0|USER';
+    else meta = 'BF|' + ts + '|ARTATR|R75|ART';
     const wm = gflow._bfEncode(meta);
     const idx = text.indexOf('\n');
     if (idx === -1) return text + wm;
@@ -229,22 +231,43 @@
   };
 
   gflow.offerLoadLyrics = function(bubbleEl, text) {
-    const signedText = gflow.stampSignature(text);
+    const signedText = gflow.prepareManagedLyrics(text, 'byflow_full');
     const notice = document.createElement('div');
     notice.style.cssText = 'margin-top:6px;padding:6px 10px;background:rgba(255,255,255,.05);border-left:3px solid var(--p);border-radius:4px;font-size:10px;color:var(--sub);line-height:1.5;';
-    notice.innerHTML = '📝 <b>Propiedad:</b> 100% tuya. 💰 Si genera ingresos, 15% regalias IArtLabs.';
+    notice.textContent = 'Origen: motor autoral ByFlow. Si se explota comercialmente, aplica 75% IArtLabs / 25% usuario.';
+    notice.innerHTML = '📝 <b>Origen:</b> revisa el modo de autoria antes de publicar o monetizar.';
     bubbleEl.parentElement.appendChild(notice);
+    notice.textContent = 'Origen: motor autoral ByFlow. Si se explota comercialmente, aplica 75% IArtLabs / 25% usuario.';
 
     const btn = document.createElement('button');
     btn.style.cssText = 'margin-top:8px;padding:5px 12px;background:var(--p);border:none;border-radius:7px;color:#fff;font-size:11px;font-weight:700;cursor:pointer;display:block;';
     btn.textContent = '📝 Cargar en teleprompter';
     btn.onclick = () => {
+      gflow.setEditorOrigin('byflow_full');
       setLyrics(signedText);
       if (socket) socket.emit('tp_lyrics', { lyrics: signedText });
       showToast('Letra cargada con firma ArT-AtR');
       btn.remove();
     };
     bubbleEl.parentElement.appendChild(btn);
+  };
+
+  gflow.setEditorOrigin = function(mode) {
+    const area = document.getElementById('gflow-est-letra');
+    if (area) area.dataset.originMode = mode || 'user';
+  };
+
+  gflow.getEditorOrigin = function() {
+    const area = document.getElementById('gflow-est-letra');
+    return area && area.dataset.originMode ? area.dataset.originMode : 'user';
+  };
+
+  gflow.prepareManagedLyrics = function(text, mode) {
+    const originMode = mode || 'byflow_full';
+    if (originMode === 'user') return text;
+    if (text.includes('motor autoral ByFlow') || text.includes('Motor autoral ByFlow')) return text;
+    const watermarked = gflow._bfWatermark(text, originMode === 'user' ? 'USER' : 'GEN');
+    return watermarked + BYFLOW_GENERATED_SIGNATURE_ASCII;
   };
 
   gflow.getFallbackResponse = function(prompt) {
@@ -362,12 +385,13 @@
         }
       }
       if (full && (prompt.toLowerCase().includes('letra') || prompt.toLowerCase().includes('genera'))) {
-        const signed = gflow.stampSignature(full);
+        const signed = gflow.prepareManagedLyrics(full, 'byflow_full');
         const btn = document.createElement('button');
         btn.style.cssText = 'margin-top:6px;padding:5px 12px;background:var(--p);border:none;border-radius:7px;color:#fff;font-size:11px;font-weight:700;cursor:pointer;';
         btn.textContent = '📝 Copiar al editor';
         btn.onclick = () => {
           document.getElementById('gflow-est-letra').value = signed;
+          gflow.setEditorOrigin('byflow_full');
           showToast('Letra copiada al editor');
           btn.remove();
         };
@@ -385,7 +409,8 @@
       showToast('Escribe una letra primero');
       return;
     }
-    const signed = gflow.stampSignature(text);
+    const originMode = gflow.getEditorOrigin();
+    const signed = originMode === 'user' ? text : gflow.prepareManagedLyrics(text, originMode);
     setLyrics(signed);
     if (socket) socket.emit('tp_lyrics', { lyrics: signed });
     showToast('Letra cargada al teleprompter');
@@ -400,7 +425,10 @@
     const titleEl = document.getElementById('est-titulo');
     if (titleEl && !titleEl.value.trim()) titleEl.value = 'GFlow - ' + new Date().toLocaleDateString();
     const areaEl = document.getElementById('est-letra-area');
-    if (areaEl) areaEl.value = gflow.stampSignature(text);
+    if (areaEl) {
+      const originMode = gflow.getEditorOrigin();
+      areaEl.value = originMode === 'user' ? text : gflow.prepareManagedLyrics(text, originMode);
+    }
     if (typeof estSaveLetter === 'function') estSaveLetter();
     else showToast('Letra guardada localmente');
   };

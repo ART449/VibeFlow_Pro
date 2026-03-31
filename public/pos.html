@@ -177,8 +177,8 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--t
     <div class="role-btn owner" onclick="showOwnerLogin()">
       <div class="rb-icon">&#x1F451;</div>
       <div class="rb-text">
-        <div class="rb-label">Soy Dueno / Gerente</div>
-        <div class="rb-desc">Accede con tu cuenta Google para vincular tu bar</div>
+        <div class="rb-label">Entrar con Google</div>
+        <div class="rb-desc">Dueño, gerente o empleado con correo asignado</div>
       </div>
     </div>
     <div class="role-btn" onclick="showEmployeeLogin()">
@@ -194,8 +194,8 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--t
 <!-- ═══ STEP 1b: Google Sign-In for Owner ═══ -->
 <div class="google-login" id="google-login">
   <div class="logo" style="font-family:'Great Vibes',cursive;font-size:2.5rem;background:linear-gradient(135deg,var(--orange),#fbbf24);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">ByFlow</div>
-  <div class="gl-title">Acceso de Dueno / Gerente</div>
-  <div class="gl-sub">Inicia sesion con tu cuenta Google. Verificaremos tu licencia POS para vincular tu bar.</div>
+  <div class="gl-title">Acceso con Google</div>
+  <div class="gl-sub">Inicia sesión con tu cuenta Google. Si tu correo ya está vinculado al POS, entras directo; si eres dueño con licencia activa, configuramos tu bar la primera vez.</div>
   <button class="gl-btn" onclick="signInWithGoogle()">
     <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="G">
     Continuar con Google
@@ -408,6 +408,159 @@ async function signInWithGoogle() {
   }
 }
 
+function showNoLicenseState(statusEl, message) {
+  if (!statusEl) return;
+  statusEl.style.color = '#fbbf24';
+  statusEl.innerHTML = '';
+  var noLicDiv = document.createElement('div');
+  noLicDiv.style.cssText = 'text-align:center;max-width:300px;';
+  noLicDiv.innerHTML = '<div style="font-size:13px;color:#fbbf24;font-weight:600;margin-bottom:8px;">' + escapeHtml(message || 'Tu cuenta no tiene licencia POS activa.') + '</div>'
+    + '<div style="font-size:11px;color:rgba(255,255,255,.5);margin-bottom:14px;">Contacta a IArtLabs para activar o vincular tu bar.</div>'
+    + '<a href="https://wa.me/524494917648" style="display:inline-block;padding:10px 24px;border-radius:10px;background:rgba(0,245,160,.12);color:#00f5a0;font-size:12px;font-weight:700;text-decoration:none;border:1px solid rgba(0,245,160,.25);transition:all .2s;">Contactar IArtLabs</a>';
+  statusEl.parentNode.insertBefore(noLicDiv, statusEl.nextSibling);
+  statusEl.textContent = '';
+}
+
+function clearGoogleStatusArtifacts() {
+  var statusEl = document.getElementById('gl-status');
+  if (!statusEl || !statusEl.parentNode) return;
+  Array.from(statusEl.parentNode.children).forEach(function(child) {
+    if (child !== statusEl && child.tagName === 'DIV' && child.textContent.indexOf('Contacta a IArtLabs') !== -1) {
+      child.remove();
+    }
+  });
+}
+
+async function completeGooglePosLogin(user, statusEl) {
+  const email = (user && user.email ? user.email : '').trim().toLowerCase();
+  if (!email) throw new Error('Tu cuenta de Google no devolvio un email valido');
+
+  clearGoogleStatusArtifacts();
+  statusEl.textContent = 'Buscando tu acceso POS...';
+  statusEl.style.color = '';
+
+  const guessedBarId = await emailToBarId(email);
+  let effectiveBarId = guessedBarId;
+
+  let loginResp = await fetch('/pos/auth/login-email', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'X-Bar-ID': guessedBarId },
+    body: JSON.stringify({ email: email, bar_id: guessedBarId })
+  });
+  let loginData = await loginResp.json();
+
+  if (!loginData.ok) {
+    if (loginResp.status === 402) {
+      showNoLicenseState(statusEl, loginData.error || 'No tienes licencia POS activa para este bar.');
+      return;
+    }
+
+    statusEl.textContent = 'Verificando licencia del propietario...';
+    const licData = await PosAuth.checkLicense(email);
+    if (!licData.ok || !licData.active) {
+      showNoLicenseState(statusEl, 'No encontramos un acceso POS activo para este correo.');
+      return;
+    }
+
+    effectiveBarId = licData.bar_id || guessedBarId;
+    statusEl.textContent = 'Configurando tu bar por primera vez...';
+
+    const ownerPin = String(Math.floor(100000 + Math.random() * 899999));
+    const setupResp = await fetch('/pos/auth/setup-owner', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-Bar-ID': effectiveBarId },
+      body: JSON.stringify({
+        name: user.displayName || email.split('@')[0],
+        pin: ownerPin,
+        bar_id: effectiveBarId,
+        email: email
+      })
+    });
+    const setupData = await setupResp.json();
+    if (!setupResp.ok || !setupData.ok) {
+      throw new Error(setupData.error || 'No se pudo configurar tu bar');
+    }
+
+    loginResp = await fetch('/pos/auth/login-email', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-Bar-ID': effectiveBarId },
+      body: JSON.stringify({ email: email, bar_id: effectiveBarId })
+    });
+    loginData = await loginResp.json();
+    if (!loginData.ok) {
+      if (loginResp.status === 402) {
+        showNoLicenseState(statusEl, loginData.error || 'No tienes licencia POS activa para este bar.');
+        return;
+      }
+      throw new Error(loginData.error || 'No se pudo iniciar sesion en el POS');
+    }
+  }
+
+  effectiveBarId = loginData.bar_id || effectiveBarId;
+  const licenseData = loginData.license && loginData.license.active
+    ? loginData.license
+    : await PosAuth.checkLicenseByBar(effectiveBarId);
+
+  PosAuth.saveSession(loginData.employee, loginData.token, effectiveBarId, {
+    sidebar: loginData.sidebar || [],
+    permissions: loginData.permissions || [],
+    defaultView: loginData.defaultView || 'mesas',
+    license: licenseData && licenseData.active ? licenseData : null
+  });
+
+  sessionStorage.setItem('pos_owner_email', email);
+  sessionStorage.setItem('pos_owner_name', user.displayName || email);
+  sessionStorage.setItem('pos_owner_photo', user.photoURL || '');
+
+  if (licenseData && licenseData.active && licenseData.email) {
+    localStorage.setItem('pos_bar_email', licenseData.email);
+  } else if (loginData.employee && loginData.employee.role === 'dueno') {
+    localStorage.setItem('pos_bar_email', email);
+  }
+
+  if (loginData.employee && loginData.employee.role === 'dueno') {
+    try {
+      await fetch('/pos/settings', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer ' + loginData.token,
+          'X-Bar-ID': effectiveBarId
+        },
+        body: JSON.stringify({ bar_name: 'Mi Bar - ' + (user.displayName || email.split('@')[0]) })
+      });
+    } catch (_) {}
+  }
+
+  _currentBarId = effectiveBarId;
+  statusEl.textContent = 'Acceso listo. Entrando al POS...';
+  statusEl.style.color = '#34d399';
+  showGreeting(loginData.employee, loginData.defaultView || 'mesas', licenseData && licenseData.active ? licenseData : null);
+}
+
+async function signInWithGoogle() {
+  const statusEl = document.getElementById('gl-status');
+  statusEl.textContent = 'Conectando con Google...';
+
+  try {
+    const provider = new firebase.auth.GoogleAuthProvider();
+    provider.setCustomParameters({ prompt: 'select_account' });
+    let result;
+    const isCapacitor = window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform();
+    const isMobile = /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent);
+    if (isCapacitor || isMobile) {
+      _fbAuth.signInWithRedirect(provider);
+      return;
+    }
+    result = await _fbAuth.signInWithPopup(provider);
+    await completeGooglePosLogin(result.user, statusEl);
+  } catch (err) {
+    console.error('[POS] Google sign-in error:', err);
+    statusEl.textContent = 'Error: ' + (err.message || 'No se pudo conectar');
+    statusEl.style.color = '#ef4444';
+  }
+}
+
 let pin = '';
 const MAX_PIN = 6;
 const MIN_PIN = 4;
@@ -481,33 +634,17 @@ async function submitPin() {
       return;
     }
 
-    // Success! Check license before deciding destination
     const emp = data.employee;
-    sessionStorage.setItem('pos_employee', JSON.stringify(emp));
-    sessionStorage.setItem('pos_token', data.token);
-    // Store bar_id from server response (or keep existing)
-    if (data.bar_id) {
-      _currentBarId = data.bar_id;
-      sessionStorage.setItem('pos_bar_id', data.bar_id);
-    }
-
-    // Check POS license
-    const email = emp.email || localStorage.getItem('pos_bar_email') || '';
-    let licenseData = { active: false };
-    if (email) {
-      try {
-        const licResp = await fetch('/api/pos/license?email=' + encodeURIComponent(email), {
-          headers: { 'X-Bar-ID': _currentBarId }
-        });
-        const licJson = await licResp.json();
-        if (licJson.ok && licJson.active) {
-          licenseData = { active: true, plan: licJson.plan || 'POS', email: licJson.email };
-          sessionStorage.setItem('pos_license', JSON.stringify(licenseData));
-        }
-      } catch (_) { /* license check failed, treat as demo */ }
-    }
-
-    showGreeting(emp, data.defaultView, licenseData);
+    const licenseData = data.license && data.license.active ? data.license : null;
+    _currentBarId = data.bar_id || _currentBarId;
+    PosAuth.saveSession(emp, data.token, _currentBarId, {
+      sidebar: data.sidebar || [],
+      permissions: data.permissions || [],
+      defaultView: data.defaultView || 'mesas',
+      license: licenseData
+    });
+    if (licenseData && licenseData.email) localStorage.setItem('pos_bar_email', licenseData.email);
+    showGreeting(emp, data.defaultView || 'mesas', licenseData);
 
   } catch (err) {
     showError('Error de conexion');
@@ -562,9 +699,9 @@ function loadSessions() {
   }
 }
 function quickSwitch() {
-  const emp = JSON.parse(sessionStorage.getItem('pos_employee'));
+  const emp = PosAuth.getEmployee();
   if (emp) {
-    showGreeting(emp, emp.role === 'mesero' ? 'mis-mesas' : 'mesas');
+    showGreeting(emp, PosAuth.getDefaultView(), PosAuth.getLicense());
   }
 }
 
@@ -584,18 +721,18 @@ loadSessions();
 // ═══ LICENSE BADGE CHECK ═══
 (function checkLicenseBadge() {
   const badge = document.getElementById('license-badge');
-  const email = localStorage.getItem('pos_bar_email') || '';
-  if (!email) {
+  const barId = sessionStorage.getItem('pos_bar_id') || _currentBarId;
+  if (!barId || barId === 'default') {
     badge.className = 'license-badge demo';
     badge.innerHTML = '<span class="lb-dot"></span> Demo';
     return;
   }
-  fetch('/api/pos/license?email=' + encodeURIComponent(email))
+  fetch('/api/pos/license?bar_id=' + encodeURIComponent(barId))
     .then(r => r.ok ? r.json() : null)
     .then(data => {
       if (data && data.ok && data.active) {
         badge.className = 'license-badge active';
-        badge.innerHTML = '<span class="lb-dot"></span> Licencia Activa';
+        badge.innerHTML = '<span class="lb-dot"></span> ' + escapeHtml(data.plan || 'Licencia Activa');
       } else {
         badge.className = 'license-badge demo';
         badge.innerHTML = '<span class="lb-dot"></span> Demo';
@@ -645,6 +782,14 @@ window.addEventListener('appinstalled', () => {
 // Handle Google redirect result (for mobile)
 _fbAuth.getRedirectResult().then(async function(result) {
   if (!result || !result.user) return;
+  var redirectStatusEl = document.getElementById('gl-status');
+  if (redirectStatusEl) redirectStatusEl.textContent = 'Verificando...';
+  try {
+    await completeGooglePosLogin(result.user, redirectStatusEl);
+    return;
+  } catch (redirectErr) {
+    console.log('[POS] Redirect login fallback:', redirectErr.message);
+  }
   var user = result.user;
   var email = user.email;
   var statusEl = document.getElementById('gl-status');

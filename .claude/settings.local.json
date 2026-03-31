@@ -67,7 +67,11 @@
       "Read(//c/Users/art44/.claude/skills//**)",
       "Read(//c/Users/art44/.claude/commands//**)",
       "Bash(ls -lh /c/BYFLOW/VibeFlow_Pro/public/*.svg)",
-      "Bash(grep -E '\\\\.\\(html|js|json\\)$')"
+      "Bash(grep -E '\\\\.\\(html|js|json\\)$')",
+      "Bash(export JAVA_HOME='C:\\\\Program Files\\\\Android\\\\Android Studio\\\\jbr')",
+      "Bash(export GRADLE_USER_HOME='C:\\\\BYFLOW\\\\VibeFlow_Pro\\\\.gradle-android')",
+      "Bash('C:\\\\Users\\\\art44\\\\.gradle\\\\wrapper\\\\dists\\\\gradle-8.14.3-all\\\\10utluxaxniiv4wxiphsi49nj\\\\gradle-8.14.3\\\\bin\\\\gradle.bat' -p android --stop)",
+      "Bash(powershell.exe -ExecutionPolicy Bypass -File ./scripts/android-build-debug.ps1 -BuildType debug -AppMode bundled 2>&1)"
     ]
   }
 }

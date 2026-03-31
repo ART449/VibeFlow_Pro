@@ -6,6 +6,11 @@
 const bcrypt = require('bcryptjs');
 const crypto = require('crypto');
 const { getDb } = require('./database');
+const {
+  normalizeEmail,
+  getLicenseStatusByEmail,
+  getLicenseStatusByBarId
+} = require('./license-utils');
 
 // ═══ CONSTANTS ═══
 const BCRYPT_ROUNDS = 10;
@@ -225,8 +230,11 @@ function authMiddleware(req, res, next) {
   const publicGets = ['/products', '/categories', '/happy-hour/active',
                       '/pos/products', '/pos/categories', '/pos/happy-hour/active'];
   if (req.method === 'GET' && publicGets.includes(req.path)) {
-    // Even for public GETs, resolve bar_id from header for tenant scoping
-    req.barId = resolveBarId(req);
+    const authHeader = req.headers.authorization;
+    const token = authHeader ? authHeader.replace('Bearer ', '') : req.query.token;
+    const session = validateToken(token);
+    req.posSession = session || null;
+    req.barId = session?.bar_id || resolveBarId(req);
     return next();
   }
 
@@ -246,6 +254,12 @@ function authMiddleware(req, res, next) {
   req.posSession = session;
   // bar_id priority: token session > X-Bar-ID header > 'default'
   req.barId = session.bar_id || req.headers['x-bar-id'] || 'default';
+
+  const licenseStatus = getBarLicenseStatus(req.barId);
+  if (!licenseStatus || !licenseStatus.active) {
+    return res.status(402).json({ ok: false, error: 'Licencia POS inactiva para este bar. Contacta IArtLabs.' });
+  }
+  req.posLicense = licenseStatus;
   next();
 }
 
@@ -266,8 +280,67 @@ function hasPermission(role, permission) {
   return perms.includes(permission);
 }
 
+function hasAnyPermission(role, permissions) {
+  return (permissions || []).some((permission) => hasPermission(role, permission));
+}
+
 function getPermissions(role) {
   return ROLE_PERMISSIONS[role] || [];
+}
+
+function requireAnyPermission(...permissions) {
+  return function(req, res, next) {
+    if (!req.posSession) {
+      return res.status(401).json({ ok: false, error: 'Sesion requerida' });
+    }
+    const role = req.posSession.role;
+    const allowed = permissions.some((perm) => hasPermission(role, perm));
+    if (!allowed) {
+      return res.status(403).json({ ok: false, error: 'No tienes permisos para esta accion' });
+    }
+    next();
+  };
+}
+
+function requireRoleLevel(maxRoleLevel) {
+  return function(req, res, next) {
+    if (!req.posSession) {
+      return res.status(401).json({ ok: false, error: 'Sesion requerida' });
+    }
+    if ((req.posSession.role_level ?? 999) > maxRoleLevel) {
+      return res.status(403).json({ ok: false, error: 'No tienes permisos para esta accion' });
+    }
+    next();
+  };
+}
+
+function getBarOwnerEmail(barId) {
+  if (!barId || barId === 'default') return '';
+  const db = getDb();
+  const owner = db.prepare(
+    "SELECT email FROM employees WHERE bar_id = ? AND role = 'dueno' AND active = 1 ORDER BY id ASC LIMIT 1"
+  ).get(barId);
+  return normalizeEmail(owner?.email);
+}
+
+function getBarLicenseStatus(barId, ownerEmailHint) {
+  if (!barId || barId === 'default') {
+    return { ok: true, active: true, plan: 'DEMO', bar_id: barId || 'default', demo: true };
+  }
+
+  const hintedEmail = normalizeEmail(ownerEmailHint);
+  if (hintedEmail) {
+    const byEmail = getLicenseStatusByEmail(hintedEmail);
+    if (byEmail && byEmail.bar_id === barId) return byEmail;
+  }
+
+  const ownerEmail = getBarOwnerEmail(barId);
+  if (ownerEmail) {
+    const byOwner = getLicenseStatusByEmail(ownerEmail);
+    if (byOwner) return byOwner;
+  }
+
+  return getLicenseStatusByBarId(barId);
 }
 
 /**
@@ -337,28 +410,29 @@ function getDefaultView(role) {
  */
 function getSidebarForRole(role) {
   const all = [
-    { id: 'mesas', icon: '🍻', label: 'Mesas', perm: 'tables' },
-    { id: 'mis-mesas', icon: '📋', label: 'Mis Mesas', perm: 'tables_own' },
-    { id: 'comandas', icon: '📋', label: 'Comandas', perm: 'orders' },
-    { id: 'karaoke', icon: '🎤', label: 'Cola Karaoke', perm: 'karaoke' },
-    { id: 'cobrar', icon: '💳', label: 'Cobrar', perm: 'payments' },
-    { id: 'reservaciones', icon: '📅', label: 'Reservaciones', perm: 'reservations' },
-    { id: 'cover', icon: '🎫', label: 'Cover / Entrada', perm: 'covers' },
-    { id: 'cocina', icon: '🍳', label: 'Monitor Cocina', perm: 'kitchen' },
-    { id: 'barra', icon: '🍸', label: 'Monitor Barra', perm: 'bar' },
-    { id: 'inventario', icon: '📦', label: 'Inventario', perm: 'inventory' },
-    { id: 'reportes', icon: '📊', label: 'Reportes', perm: 'reports' },
-    { id: 'corte', icon: '💰', label: 'Corte de Caja', perm: 'corte_own' },
-    { id: 'cfdi', icon: '🧾', label: 'Facturacion CFDI', perm: 'cfdi' },
-    { id: 'empleados', icon: '👥', label: 'Empleados', perm: 'employees' },
-    { id: 'config', icon: '⚙️', label: 'Configuracion', perm: 'config' },
+    { id: 'mesas', icon: '🍻', label: 'Mesas', perms: ['tables', 'tables_view'] },
+    { id: 'mis-mesas', icon: '📋', label: 'Mis Mesas', perms: ['tables_own'] },
+    { id: 'comandas', icon: '📋', label: 'Comandas', perms: ['orders', 'orders_own', 'payments'] },
+    { id: 'karaoke', icon: '🎤', label: 'Cola Karaoke', perms: ['karaoke', 'karaoke_queue', 'karaoke_add'] },
+    { id: 'cobrar', icon: '💳', label: 'Cobrar', perms: ['payments'] },
+    { id: 'reservaciones', icon: '📅', label: 'Reservaciones', perms: ['reservations'] },
+    { id: 'cover', icon: '🎫', label: 'Cover / Entrada', perms: ['covers'] },
+    { id: 'cocina', icon: '🍳', label: 'Monitor Cocina', perms: ['kitchen', 'kitchen_monitor'] },
+    { id: 'barra', icon: '🍸', label: 'Monitor Barra', perms: ['bar', 'bar_monitor'] },
+    { id: 'inventario', icon: '📦', label: 'Inventario', perms: ['inventory', 'inventory_bar'] },
+    { id: 'reportes', icon: '📊', label: 'Reportes', perms: ['reports'] },
+    { id: 'corte', icon: '💰', label: 'Corte de Caja', perms: ['shifts', 'corte_own', 'corte_all'] },
+    { id: 'cfdi', icon: '🧾', label: 'Facturacion CFDI', perms: ['cfdi'] },
+    { id: 'empleados', icon: '👥', label: 'Empleados', perms: ['employees'] },
+    { id: 'config', icon: '⚙️', label: 'Configuracion', perms: ['config'] },
   ];
-  return all.filter(item => hasPermission(role, item.perm));
+  return all.filter((item) => hasAnyPermission(role, item.perms));
 }
 
 module.exports = {
   authenticate, authMiddleware, validateToken,
-  hasPermission, getPermissions, hashPin, verifyPin,
+  hasPermission, getPermissions, requireAnyPermission, requireRoleLevel,
+  getBarLicenseStatus, hashPin, verifyPin,
   authorizeAction, getDefaultView, getSidebarForRole,
   generateTokenForEmployee: generateToken,
   ROLE_LEVELS, ROLE_PERMISSIONS, AUTH_REQUIREMENTS, VALID_ROLES

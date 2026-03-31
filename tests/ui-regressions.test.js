@@ -46,4 +46,21 @@ describe('UI production regressions', () => {
       expect(html).not.toMatch(/onclick="alert\(/i);
     });
   });
+
+  test('POS dashboard ships explicit role nav ids and a dedicated CFDI view', () => {
+    const html = readPublicFile('bares-v2.html');
+
+    expect(html).toMatch(/data-nav-id="cfdi"/);
+    expect(html).toMatch(/id="v-cfdi"/);
+    expect(html).toMatch(/function prepareCfdiFromLastOrder\(/);
+    expect(html).toMatch(/function resolveRequestedView\(/);
+    expect(html).toMatch(/data-nav-id="mis-mesas"|data-nav-id="mesas"/);
+  });
+
+  test('POS admin lets teams register employee emails for Google login', () => {
+    const html = readPublicFile('pos-admin.html');
+
+    expect(html).toMatch(/f-emp-email/);
+    expect(html).toMatch(/Email Google \(opcional\)/);
+  });
 });

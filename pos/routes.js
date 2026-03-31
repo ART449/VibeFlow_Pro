@@ -8,6 +8,7 @@ const express = require('express');
 const { getDb } = require('./database');
 const auth = require('./auth');
 const { getApiUsage } = require('./api-limiter');
+const { normalizeEmail } = require('./license-utils');
 
 // ═══ INPUT VALIDATION HELPERS ═══
 const VALID_TABLE_STATUS = ['libre', 'ocupada', 'cantando', 'reservada', 'cuenta', 'tab'];
@@ -25,6 +26,12 @@ const ALLOWED_SETTINGS = [
   'api_daily_limit', 'api_calls_today', 'api_limit_action'
 ];
 
+const SAFE_SETTINGS_KEYS = [
+  'bar_name', 'tax_rate', 'tip_suggested', 'cover_general', 'cover_vip',
+  'cover_includes', 'max_capacity', 'cfdi_rfc', 'cfdi_razon_social',
+  'whatsapp', 'email_contacto', 'instagram', 'facebook'
+];
+
 function sanitize(str, maxLen) {
   if (typeof str !== 'string') return '';
   return str.replace(/<[^>]*>/g, '').trim().slice(0, maxLen || 500);
@@ -38,6 +45,21 @@ function isPositiveNum(val) {
   return typeof val === 'number' && val > 0 && isFinite(val);
 }
 
+function toPublicProduct(product) {
+  if (!product) return product;
+  return {
+    id: product.id,
+    name: product.name,
+    category_id: product.category_id,
+    category_name: product.category_name,
+    price: product.price,
+    icon: product.icon,
+    happy_hour: product.happy_hour,
+    hh_discount: product.hh_discount,
+    active: product.active
+  };
+}
+
 /**
  * Get the bar_id from the request. Priority: session token > X-Bar-ID header > 'default'
  */
@@ -47,6 +69,74 @@ function getBarId(req) {
 
 function registerRoutes(app) {
   const posJson = express.json({ limit: '1mb' });
+  const requireMenuManage = auth.requireAnyPermission('inventory', 'config');
+  const requireTablesRead = auth.requireAnyPermission('tables', 'tables_view', 'tables_own');
+  const requireTablesWrite = auth.requireAnyPermission('tables', 'assign_tables');
+  const requireOrdersRead = auth.requireAnyPermission('orders', 'orders_own', 'payments');
+  const requireOrdersWrite = auth.requireAnyPermission('orders', 'orders_own');
+  const requirePayments = auth.requireAnyPermission('payments');
+  const requireKitchenView = auth.requireAnyPermission('kitchen', 'bar', 'kitchen_monitor', 'bar_monitor');
+  const requireCovers = auth.requireAnyPermission('covers');
+  const requireKaraoke = auth.requireAnyPermission('karaoke', 'karaoke_queue', 'karaoke_add');
+  const requireEmployees = auth.requireAnyPermission('employees');
+  const requireInventoryRead = auth.requireAnyPermission('inventory', 'inventory_bar');
+  const requireInventoryWrite = auth.requireAnyPermission('inventory', 'inventory_bar');
+  const requireReports = auth.requireAnyPermission('reports');
+  const requireShifts = auth.requireAnyPermission('shifts', 'corte_own', 'corte_all');
+  const requireCancelItems = auth.requireAnyPermission('cancel_items');
+  const requireConfigWrite = auth.requireAnyPermission('config');
+  const requireReservations = auth.requireAnyPermission('reservations');
+  const requireHappyHour = auth.requireAnyPermission('happy_hour', 'config');
+  const requireApiUsage = auth.requireAnyPermission('config', 'reports');
+
+  function isOwnTablesOnly(req) {
+    return auth.hasPermission(req.posSession?.role, 'tables_own') && !auth.hasPermission(req.posSession?.role, 'tables');
+  }
+
+  function isOwnOrdersOnly(req) {
+    return auth.hasPermission(req.posSession?.role, 'orders_own') && !auth.hasPermission(req.posSession?.role, 'orders');
+  }
+
+  function canManageAllShifts(req) {
+    return auth.hasPermission(req.posSession?.role, 'shifts') || auth.hasPermission(req.posSession?.role, 'corte_all');
+  }
+
+  function canViewSensitiveProducts(req) {
+    return auth.hasPermission(req.posSession?.role, 'inventory') || auth.hasPermission(req.posSession?.role, 'config');
+  }
+
+  function canManageRoleLevel(req, targetRoleLevel) {
+    return (req.posSession?.role_level ?? 999) < targetRoleLevel;
+  }
+
+  function ensureEmployeeManagementAccess(req, employee, nextRoleLevel) {
+    const session = req.posSession || {};
+    if (!employee) return { ok: false, error: 'Empleado no encontrado' };
+    if (session.role === 'dueno') return { ok: true };
+
+    if (employee.id !== session.employeeId && (employee.role_level ?? 999) <= (session.role_level ?? 999)) {
+      return { ok: false, error: 'No puedes administrar empleados de tu mismo nivel o superior' };
+    }
+
+    if (typeof nextRoleLevel === 'number' && !canManageRoleLevel(req, nextRoleLevel)) {
+      return { ok: false, error: 'No puedes asignar un rol igual o superior al tuyo' };
+    }
+
+    return { ok: true };
+  }
+
+  function requireOwnEmployee(req, employeeId, label) {
+    if (employeeId !== req.posSession?.employeeId) {
+      return { ok: false, error: `No puedes ${label || 'acceder a este recurso'} de otro empleado` };
+    }
+    return { ok: true };
+  }
+
+  function getManagedOrder(db, orderId, barId) {
+    return db.prepare(
+      'SELECT id, table_id, waiter_id, status, guests, subtotal, discount, tax, total FROM orders WHERE id = ? AND bar_id = ?'
+    ).get(orderId, barId);
+  }
 
   // ═══ AUTH MIDDLEWARE — applied to all /pos/ routes ═══
   app.use('/pos', auth.authMiddleware);
@@ -69,6 +159,11 @@ function registerRoutes(app) {
       return res.status(429).json({ ok: false, error: result.error });
     }
 
+    const licenseStatus = auth.getBarLicenseStatus(result.bar_id);
+    if (!licenseStatus || !licenseStatus.active) {
+      return res.status(402).json({ ok: false, error: 'No tienes licencia POS activa para este bar. Contacta IArtLabs.' });
+    }
+
     res.json({
       ok: true,
       employee: {
@@ -82,7 +177,9 @@ function registerRoutes(app) {
       token: result.token,
       bar_id: result.bar_id,
       defaultView: auth.getDefaultView(result.role),
-      sidebar: auth.getSidebarForRole(result.role)
+      sidebar: auth.getSidebarForRole(result.role),
+      permissions: result.permissions || auth.getPermissions(result.role),
+      license: licenseStatus
     });
   });
 
@@ -93,31 +190,24 @@ function registerRoutes(app) {
     if (!email || typeof email !== 'string') {
       return res.json({ ok: false, error: 'Email requerido' });
     }
-    const cleanEmail = email.trim().toLowerCase();
+    const cleanEmail = normalizeEmail(email);
     const effectiveBarId = (typeof bar_id === 'string' && bar_id) ? bar_id : (req.headers['x-bar-id'] || 'default');
-
-    // Find employee by email in this bar
-    const emp = db.prepare('SELECT * FROM employees WHERE email = ? AND bar_id = ? AND active = 1').get(cleanEmail, effectiveBarId);
-
+    const matches = db.prepare(
+      'SELECT * FROM employees WHERE email = ? AND active = 1 ORDER BY role_level ASC, id ASC'
+    ).all(cleanEmail);
+    let emp = matches.find((candidate) => candidate.bar_id === effectiveBarId);
     if (!emp) {
-      // Not found in this bar — check ALL bars (employee might be in another bar)
-      const empAny = db.prepare('SELECT * FROM employees WHERE email = ? AND active = 1').get(cleanEmail);
-      if (empAny) {
-        // Found in another bar
-        const token = auth.generateTokenForEmployee(empAny.id, empAny.role, empAny.role_level, empAny.bar_id);
-        return res.json({
-          ok: true,
-          employee: {
-            id: empAny.id, name: empAny.name, role: empAny.role,
-            area: empAny.area, avatar: empAny.avatar, bar_id: empAny.bar_id
-          },
-          token,
-          bar_id: empAny.bar_id,
-          defaultView: auth.getDefaultView(empAny.role),
-          sidebar: auth.getSidebarForRole(empAny.role)
-        });
+      const uniqueBars = Array.from(new Set(matches.map((candidate) => candidate.bar_id)));
+      if (uniqueBars.length > 1) {
+        return res.json({ ok: false, error: 'Este email esta asociado a multiples bares. Usa PIN o pide soporte.' });
       }
-      return res.json({ ok: false, error: 'No hay cuenta de empleado con este email' });
+      emp = matches[0];
+    }
+    if (!emp) return res.json({ ok: false, error: 'No hay cuenta de empleado con este email' });
+
+    const licenseStatus = auth.getBarLicenseStatus(emp.bar_id, cleanEmail);
+    if (!licenseStatus || !licenseStatus.active) {
+      return res.status(402).json({ ok: false, error: 'No tienes licencia POS activa para este bar. Contacta IArtLabs.' });
     }
 
     // Found — generate token and login
@@ -133,7 +223,9 @@ function registerRoutes(app) {
       token,
       bar_id: emp.bar_id,
       defaultView: auth.getDefaultView(emp.role),
-      sidebar: auth.getSidebarForRole(emp.role)
+      sidebar: auth.getSidebarForRole(emp.role),
+      permissions: auth.getPermissions(emp.role),
+      license: licenseStatus
     });
   });
 
@@ -144,6 +236,14 @@ function registerRoutes(app) {
 
     if (!name || !pin || !bar_id) {
       return res.json({ ok: false, error: 'name, pin y bar_id requeridos' });
+    }
+    const cleanEmail = normalizeEmail(email);
+    if (!cleanEmail) {
+      return res.status(400).json({ ok: false, error: 'Email requerido para activar un bar POS' });
+    }
+    const licenseStatus = auth.getBarLicenseStatus(bar_id, cleanEmail);
+    if (!licenseStatus || !licenseStatus.active) {
+      return res.status(402).json({ ok: false, error: 'No tienes licencia POS activa para crear este bar.' });
     }
     if (pin.length < 4 || pin.length > 6 || !/^\d+$/.test(pin)) {
       return res.json({ ok: false, error: 'PIN debe ser 4-6 digitos' });
@@ -156,7 +256,6 @@ function registerRoutes(app) {
     }
 
     const hashedPin = auth.hashPin(pin);
-    const cleanEmail = typeof email === 'string' ? email.trim().toLowerCase() : '';
     const result = db.prepare(
       'INSERT INTO employees (name, pin, role, role_level, area, avatar, bar_id, email) VALUES (?,?,?,?,?,?,?,?)'
     ).run(sanitize(name, 100), hashedPin, 'dueno', 0, 'todos', '', bar_id, cleanEmail);
@@ -213,21 +312,27 @@ function registerRoutes(app) {
   });
 
   // ═══ TABLES ═══
-  app.get('/pos/tables', (req, res) => {
+  app.get('/pos/tables', requireTablesRead, (req, res) => {
     const db = getDb();
     const barId = getBarId(req);
-    const tables = db.prepare(`
+    let query = `
       SELECT t.*, e.name as waiter_name,
         (SELECT COUNT(*) FROM karaoke_queue kq WHERE kq.table_id = t.id AND kq.status IN ('espera','cantando') AND kq.bar_id = ?) as karaoke_count
       FROM tables t
       LEFT JOIN employees e ON t.waiter_id = e.id
       WHERE t.bar_id = ?
-      ORDER BY t.area, t.number
-    `).all(barId, barId);
+    `;
+    const params = [barId, barId];
+    if (isOwnTablesOnly(req)) {
+      query += " AND (t.waiter_id = ? OR t.waiter_id IS NULL OR t.status = 'libre')";
+      params.push(req.posSession.employeeId);
+    }
+    query += ' ORDER BY t.area, t.number';
+    const tables = db.prepare(query).all(...params);
     res.json({ ok: true, tables });
   });
 
-  app.put('/pos/tables/:id/status', posJson, (req, res) => {
+  app.put('/pos/tables/:id/status', requireTablesWrite, posJson, (req, res) => {
     const db = getDb();
     const barId = getBarId(req);
     const tableId = parseInt(req.params.id);
@@ -284,19 +389,22 @@ function registerRoutes(app) {
     const barId = getBarId(req);
     const { category_id, show_all } = req.query;
     let query = 'SELECT p.*, c.name as category_name FROM products p JOIN categories c ON p.category_id = c.id WHERE p.bar_id = ?';
-    if (!show_all) query += ' AND p.active = 1';
+    const includeInactive = !!(req.posSession && show_all && canViewSensitiveProducts(req));
+    if (!includeInactive) query += ' AND p.active = 1';
     const params = [barId];
     if (category_id) {
       const cid = parseInt(category_id);
       if (isPositiveInt(cid)) { query += ' AND p.category_id = ?'; params.push(cid); }
     }
     query += ' ORDER BY c.sort_order, p.name';
-    const products = db.prepare(query).all(...params);
+    const products = db.prepare(query).all(...params).map((product) => (
+      canViewSensitiveProducts(req) ? product : toPublicProduct(product)
+    ));
     res.json({ ok: true, products });
   });
 
   // CREATE product
-  app.post('/pos/products', posJson, (req, res) => {
+  app.post('/pos/products', requireMenuManage, posJson, (req, res) => {
     const db = getDb();
     const barId = getBarId(req);
     const { name, category_id, price, cost, icon, stock, happy_hour, hh_discount } = req.body || {};
@@ -318,7 +426,7 @@ function registerRoutes(app) {
     res.json({ ok: true, product_id: result.lastInsertRowid });
   });
 
-  app.put('/pos/products/:id', posJson, (req, res) => {
+  app.put('/pos/products/:id', requireMenuManage, posJson, (req, res) => {
     const db = getDb();
     const barId = getBarId(req);
     const productId = parseInt(req.params.id);
@@ -350,22 +458,28 @@ function registerRoutes(app) {
   });
 
   // ═══ ORDERS ═══
-  app.get('/pos/orders', (req, res) => {
+  app.get('/pos/orders', requireOrdersRead, (req, res) => {
     const db = getDb();
     const barId = getBarId(req);
     const statusFilter = sanitize(req.query.status, 20) || 'abierta';
     if (!VALID_ORDER_STATUS.includes(statusFilter)) {
       return res.json({ ok: false, error: 'Status invalido' });
     }
-    const orders = db.prepare(`
+    let ordersQuery = `
       SELECT o.*, t.number as table_number, t.area, t.guests as table_guests,
         e.name as waiter_name
       FROM orders o
       JOIN tables t ON o.table_id = t.id
       JOIN employees e ON o.waiter_id = e.id
       WHERE o.status = ? AND o.bar_id = ?
-      ORDER BY o.created_at ASC
-    `).all(statusFilter, barId);
+    `;
+    const orderParams = [statusFilter, barId];
+    if (isOwnOrdersOnly(req)) {
+      ordersQuery += ' AND o.waiter_id = ?';
+      orderParams.push(req.posSession.employeeId);
+    }
+    ordersQuery += ' ORDER BY o.created_at ASC';
+    const orders = db.prepare(ordersQuery).all(...orderParams);
 
     // For each order, fetch its items
     const stmtItems = db.prepare(`
@@ -385,13 +499,15 @@ function registerRoutes(app) {
     res.json({ ok: true, orders: result });
   });
 
-  app.post('/pos/orders', posJson, (req, res) => {
+  app.post('/pos/orders', requireOrdersWrite, posJson, (req, res) => {
     const db = getDb();
     const barId = getBarId(req);
     const { table_id, waiter_id, guests } = req.body || {};
     const tid = parseInt(table_id);
     const sessionEmployeeId = req.posSession?.employeeId;
-    const wid = parseInt(waiter_id || sessionEmployeeId);
+    const wid = isOwnOrdersOnly(req)
+      ? sessionEmployeeId
+      : parseInt(waiter_id || sessionEmployeeId);
     if (!isPositiveInt(tid) || !isPositiveInt(wid)) {
       return res.json({ ok: false, error: 'table_id y waiter_id requeridos' });
     }
@@ -399,7 +515,13 @@ function registerRoutes(app) {
     // TRANSACTION: atomic order creation + table update
     const createOrder = db.transaction(() => {
       // Check table is libre first (scoped by bar_id)
-      const table = db.prepare('SELECT status FROM tables WHERE id = ? AND bar_id = ?').get(tid, barId);
+      const table = db.prepare('SELECT status, waiter_id FROM tables WHERE id = ? AND bar_id = ?').get(tid, barId);
+      if (!table) {
+        return { ok: false, error: 'Mesa no encontrada' };
+      }
+      if (isOwnOrdersOnly(req) && table.waiter_id && table.waiter_id !== sessionEmployeeId) {
+        return { ok: false, error: 'No puedes abrir ordenes en mesas asignadas a otro mesero' };
+      }
       if (table && table.status !== 'libre' && table.status !== 'tab') {
         return { ok: false, error: 'Mesa no esta libre (status: ' + table.status + ')' };
       }
@@ -427,17 +549,23 @@ function registerRoutes(app) {
     res.json(createOrder());
   });
 
-  app.get('/pos/orders/:id', (req, res) => {
+  app.get('/pos/orders/:id', requireOrdersRead, (req, res) => {
     const db = getDb();
     const barId = getBarId(req);
     const orderId = parseInt(req.params.id);
     if (!isPositiveInt(orderId)) return res.json({ ok: false, error: 'ID invalido' });
 
-    const order = db.prepare(`
+    let orderQuery = `
       SELECT o.*, t.number as table_number, e.name as waiter_name
       FROM orders o JOIN tables t ON o.table_id = t.id JOIN employees e ON o.waiter_id = e.id
       WHERE o.id = ? AND o.bar_id = ?
-    `).get(orderId, barId);
+    `;
+    const orderParams = [orderId, barId];
+    if (isOwnOrdersOnly(req)) {
+      orderQuery += ' AND o.waiter_id = ?';
+      orderParams.push(req.posSession.employeeId);
+    }
+    const order = db.prepare(orderQuery).get(...orderParams);
     if (!order) return res.json({ ok: false, error: 'Orden no encontrada' });
 
     const items = db.prepare(`
@@ -449,17 +577,24 @@ function registerRoutes(app) {
     res.json({ ok: true, order: { ...order, items }, items });
   });
 
-  app.get('/pos/orders/table/:tableId', (req, res) => {
+  app.get('/pos/orders/table/:tableId', requireOrdersRead, (req, res) => {
     const db = getDb();
     const barId = getBarId(req);
     const tableId = parseInt(req.params.tableId);
     if (!isPositiveInt(tableId)) return res.json({ ok: true, order: null, items: [] });
 
-    const order = db.prepare(`
+    let orderQuery = `
       SELECT o.*, t.number as table_number, e.name as waiter_name
       FROM orders o JOIN tables t ON o.table_id = t.id JOIN employees e ON o.waiter_id = e.id
-      WHERE o.table_id = ? AND o.status = 'abierta' AND o.bar_id = ? ORDER BY o.created_at DESC LIMIT 1
-    `).get(tableId, barId);
+      WHERE o.table_id = ? AND o.status = 'abierta' AND o.bar_id = ?
+    `;
+    const orderParams = [tableId, barId];
+    if (isOwnOrdersOnly(req)) {
+      orderQuery += ' AND o.waiter_id = ?';
+      orderParams.push(req.posSession.employeeId);
+    }
+    orderQuery += ' ORDER BY o.created_at DESC LIMIT 1';
+    const order = db.prepare(orderQuery).get(...orderParams);
     if (!order) return res.json({ ok: true, order: null, items: [] });
 
     const items = db.prepare(`
@@ -471,7 +606,7 @@ function registerRoutes(app) {
     res.json({ ok: true, order: { ...order, items }, items });
   });
 
-  app.delete('/pos/orders/:id', (req, res) => {
+  app.delete('/pos/orders/:id', requireCancelItems, (req, res) => {
     const db = getDb();
     const barId = getBarId(req);
     const orderId = parseInt(req.params.id);
@@ -507,7 +642,7 @@ function registerRoutes(app) {
   });
 
   // ═══ ORDER ITEMS ═══
-  app.post('/pos/orders/:orderId/items', posJson, (req, res) => {
+  app.post('/pos/orders/:orderId/items', requireOrdersWrite, posJson, (req, res) => {
     const db = getDb();
     const barId = getBarId(req);
     const orderId = parseInt(req.params.orderId);
@@ -521,8 +656,11 @@ function registerRoutes(app) {
     if (qty < 1 || qty > 100) return res.json({ ok: false, error: 'Cantidad invalida' });
 
     // Verify order belongs to this bar
-    const order = db.prepare('SELECT id FROM orders WHERE id = ? AND bar_id = ?').get(orderId, barId);
+    const order = getManagedOrder(db, orderId, barId);
     if (!order) return res.json({ ok: false, error: 'Orden no encontrada' });
+    if (isOwnOrdersOnly(req) && order.waiter_id !== req.posSession.employeeId) {
+      return res.status(403).json({ ok: false, error: 'No puedes modificar ordenes de otro mesero' });
+    }
 
     const product = db.prepare('SELECT * FROM products WHERE id = ? AND active = 1 AND bar_id = ?').get(pid, barId);
     if (!product) return res.json({ ok: false, error: 'Producto no encontrado o inactivo' });
@@ -571,17 +709,34 @@ function registerRoutes(app) {
 
     // Verify item belongs to an order in this bar
     const item = db.prepare(`
-      SELECT oi.id, oi.order_id, oi.status as current_status FROM order_items oi JOIN orders o ON oi.order_id = o.id
+      SELECT oi.id, oi.order_id, oi.status as current_status, o.waiter_id FROM order_items oi JOIN orders o ON oi.order_id = o.id
       WHERE oi.id = ? AND o.bar_id = ?
     `).get(itemId, barId);
     if (!item) return res.json({ ok: false, error: 'Item no encontrado' });
+    if (isOwnOrdersOnly(req) && item.waiter_id !== req.posSession.employeeId) {
+      return res.status(403).json({ ok: false, error: 'No puedes modificar items de otro mesero' });
+    }
+
+    const canManageKitchen = auth.hasPermission(req.posSession?.role, 'kitchen')
+      || auth.hasPermission(req.posSession?.role, 'kitchen_monitor')
+      || auth.hasPermission(req.posSession?.role, 'bar')
+      || auth.hasPermission(req.posSession?.role, 'bar_monitor');
+    const canManageOrder = auth.hasPermission(req.posSession?.role, 'orders')
+      || auth.hasPermission(req.posSession?.role, 'orders_own');
+    const canCancel = auth.hasPermission(req.posSession?.role, 'cancel_items');
+    if (status === 'cancelado' && !canCancel) {
+      return res.status(403).json({ ok: false, error: 'No tienes permisos para cancelar items' });
+    }
+    if (status !== 'cancelado' && !canManageKitchen && !canManageOrder) {
+      return res.status(403).json({ ok: false, error: 'No tienes permisos para actualizar este item' });
+    }
 
     const setClauses = ['status = ?'];
     const params = [status];
     if (status === 'enviado') setClauses.push("sent_at = datetime('now')");
     if (status === 'listo') setClauses.push("ready_at = datetime('now')");
     if (status === 'cancelado') {
-      const cancelledById = parseInt(cancelled_by || req.posSession?.employeeId) || null;
+      const cancelledById = parseInt(cancelled_by || req.posSession?.employeeId) || req.posSession?.employeeId || null;
       setClauses.push("cancel_reason = ?");
       params.push(sanitize(cancel_reason, 200) || 'Cancelado desde POS');
       setClauses.push('cancelled_by = ?');
@@ -600,12 +755,12 @@ function registerRoutes(app) {
   });
 
   // ═══ PAYMENTS ═══
-  app.post('/pos/payments', posJson, (req, res) => {
+  app.post('/pos/payments', requirePayments, posJson, (req, res) => {
     const db = getDb();
     const barId = getBarId(req);
     const { order_id, method, amount, cash_received, tip, cashier_id, subtotal, discount, tax } = req.body || {};
     const oid = parseInt(order_id);
-    const cid = parseInt(cashier_id || req.posSession?.employeeId);
+    const cid = parseInt(req.posSession?.employeeId || cashier_id);
 
     if (!isPositiveInt(oid) || !isPositiveInt(cid)) {
       return res.json({ ok: false, error: 'order_id y cashier_id requeridos' });
@@ -659,7 +814,7 @@ function registerRoutes(app) {
   });
 
   // ═══ KITCHEN / BAR MONITOR ═══
-  app.get('/pos/kitchen', (req, res) => {
+  app.get('/pos/kitchen', requireKitchenView, (req, res) => {
     const db = getDb();
     const barId = getBarId(req);
     const items = db.prepare(`
@@ -677,7 +832,7 @@ function registerRoutes(app) {
   });
 
   // ═══ COVERS ═══
-  app.post('/pos/covers', posJson, (req, res) => {
+  app.post('/pos/covers', requireCovers, posJson, (req, res) => {
     const db = getDb();
     const barId = getBarId(req);
     const { type, guests, amount, security_id, notes } = req.body || {};
@@ -690,11 +845,11 @@ function registerRoutes(app) {
 
     const result = db.prepare(
       'INSERT INTO covers (type, guests, amount, security_id, notes, bar_id) VALUES (?,?,?,?,?,?)'
-    ).run(type || 'general', g, parseFloat(amount) || 0, parseInt(security_id) || null, sanitize(notes, 200), barId);
+    ).run(type || 'general', g, parseFloat(amount) || 0, parseInt(req.posSession?.employeeId || security_id) || null, sanitize(notes, 200), barId);
     res.json({ ok: true, cover_id: result.lastInsertRowid });
   });
 
-  app.get('/pos/covers/today', (req, res) => {
+  app.get('/pos/covers/today', requireCovers, (req, res) => {
     const db = getDb();
     const barId = getBarId(req);
     const covers = db.prepare(`
@@ -710,7 +865,7 @@ function registerRoutes(app) {
   });
 
   // ═══ KARAOKE QUEUE ═══
-  app.get('/pos/karaoke/queue', (req, res) => {
+  app.get('/pos/karaoke/queue', requireKaraoke, (req, res) => {
     const db = getDb();
     const barId = getBarId(req);
     const { table_id } = req.query;
@@ -722,7 +877,7 @@ function registerRoutes(app) {
     res.json({ ok: true, queue: db.prepare(query).all(...params) });
   });
 
-  app.post('/pos/karaoke/queue', posJson, (req, res) => {
+  app.post('/pos/karaoke/queue', requireKaraoke, posJson, (req, res) => {
     const db = getDb();
     const barId = getBarId(req);
     const { table_id, song_title, singer_name } = req.body || {};
@@ -736,17 +891,17 @@ function registerRoutes(app) {
   });
 
   // ═══ EMPLOYEES ═══
-  app.get('/pos/employees', (req, res) => {
+  app.get('/pos/employees', requireEmployees, (req, res) => {
     const db = getDb();
     const barId = getBarId(req);
     const employees = db.prepare(
-      'SELECT id, name, role, role_level, active, area, avatar, last_login FROM employees WHERE bar_id = ? ORDER BY role_level, name'
+      'SELECT id, name, role, role_level, active, area, avatar, last_login, email FROM employees WHERE bar_id = ? ORDER BY role_level, name'
     ).all(barId);
     res.json({ ok: true, employees });
   });
 
   // CREATE employee
-  app.post('/pos/employees', posJson, (req, res) => {
+  app.post('/pos/employees', requireEmployees, posJson, (req, res) => {
     const db = getDb();
     const barId = getBarId(req);
     const { name, pin, role, area, avatar } = req.body || {};
@@ -759,8 +914,11 @@ function registerRoutes(app) {
     }
 
     const roleLevel = auth.ROLE_LEVELS[role];
+    if (!canManageRoleLevel(req, roleLevel)) {
+      return res.status(403).json({ ok: false, error: 'No puedes crear empleados con un rol igual o superior al tuyo' });
+    }
     const hashedPin = auth.hashPin(pin);
-    const empEmail = typeof req.body.email === 'string' ? req.body.email.trim().toLowerCase() : '';
+    const empEmail = normalizeEmail(req.body.email);
 
     // Validate PIN unique within this bar
     const allEmps = db.prepare('SELECT id, name, pin FROM employees WHERE active = 1 AND bar_id = ?').all(barId);
@@ -786,7 +944,7 @@ function registerRoutes(app) {
   });
 
   // GET single product (for edit form)
-  app.get('/pos/products/:id', (req, res) => {
+  app.get('/pos/products/:id', requireMenuManage, (req, res) => {
     const db = getDb();
     const barId = getBarId(req);
     const productId = parseInt(req.params.id);
@@ -799,7 +957,7 @@ function registerRoutes(app) {
   });
 
   // GET single category (for edit form)
-  app.get('/pos/categories/:id', (req, res) => {
+  app.get('/pos/categories/:id', requireMenuManage, (req, res) => {
     const db = getDb();
     const barId = getBarId(req);
     const catId = parseInt(req.params.id);
@@ -810,7 +968,7 @@ function registerRoutes(app) {
   });
 
   // UPDATE category
-  app.put('/pos/categories/:id', posJson, (req, res) => {
+  app.put('/pos/categories/:id', requireMenuManage, posJson, (req, res) => {
     const db = getDb();
     const barId = getBarId(req);
     const catId = parseInt(req.params.id);
@@ -833,18 +991,21 @@ function registerRoutes(app) {
   });
 
   // GET single table (for edit form)
-  app.get('/pos/tables/:id', (req, res) => {
+  app.get('/pos/tables/:id', requireTablesRead, (req, res) => {
     const db = getDb();
     const barId = getBarId(req);
     const tableId = parseInt(req.params.id);
     if (!isPositiveInt(tableId)) return res.json({ ok: false, error: 'ID invalido' });
     const table = db.prepare('SELECT * FROM tables WHERE id = ? AND bar_id = ?').get(tableId, barId);
     if (!table) return res.json({ ok: false, error: 'Mesa no encontrada' });
+    if (isOwnTablesOnly(req) && table.waiter_id && table.waiter_id !== req.posSession.employeeId && table.status !== 'libre') {
+      return res.status(403).json({ ok: false, error: 'No puedes ver mesas de otro mesero' });
+    }
     res.json({ ok: true, table });
   });
 
   // UPDATE table
-  app.put('/pos/tables/:id', posJson, (req, res) => {
+  app.put('/pos/tables/:id', requireConfigWrite, posJson, (req, res) => {
     const db = getDb();
     const barId = getBarId(req);
     const tableId = parseInt(req.params.id);
@@ -868,7 +1029,7 @@ function registerRoutes(app) {
   });
 
   // DELETE table
-  app.delete('/pos/tables/:id', (req, res) => {
+  app.delete('/pos/tables/:id', requireConfigWrite, (req, res) => {
     const db = getDb();
     const barId = getBarId(req);
     const tableId = parseInt(req.params.id);
@@ -883,29 +1044,37 @@ function registerRoutes(app) {
   });
 
   // GET single employee (for edit form)
-  app.get('/pos/employees/:id', (req, res) => {
+  app.get('/pos/employees/:id', requireEmployees, (req, res) => {
     const db = getDb();
     const barId = getBarId(req);
     const empId = parseInt(req.params.id);
     if (!isPositiveInt(empId)) return res.json({ ok: false, error: 'ID invalido' });
     const employee = db.prepare(
-      'SELECT id, name, role, role_level, active, area, avatar, last_login FROM employees WHERE id = ? AND bar_id = ?'
+      'SELECT id, name, role, role_level, active, area, avatar, last_login, email FROM employees WHERE id = ? AND bar_id = ?'
     ).get(empId, barId);
     if (!employee) return res.json({ ok: false, error: 'Empleado no encontrado' });
     res.json({ ok: true, employee });
   });
 
   // UPDATE employee
-  app.put('/pos/employees/:id', posJson, (req, res) => {
+  app.put('/pos/employees/:id', requireEmployees, posJson, (req, res) => {
     const db = getDb();
     const barId = getBarId(req);
     const empId = parseInt(req.params.id);
     if (!isPositiveInt(empId)) return res.json({ ok: false, error: 'ID invalido' });
 
-    const existing = db.prepare('SELECT id FROM employees WHERE id = ? AND bar_id = ?').get(empId, barId);
+    const existing = db.prepare('SELECT id, role, role_level, email FROM employees WHERE id = ? AND bar_id = ?').get(empId, barId);
     if (!existing) return res.json({ ok: false, error: 'Empleado no encontrado' });
 
-    const { name, role, area, avatar, pin, active } = req.body || {};
+    const { name, role, area, avatar, pin, active, email } = req.body || {};
+    const nextRoleLevel = role !== undefined && auth.VALID_ROLES.includes(role)
+      ? auth.ROLE_LEVELS[role]
+      : existing.role_level;
+    const employeeAccess = ensureEmployeeManagementAccess(req, existing, nextRoleLevel);
+    if (!employeeAccess.ok) {
+      return res.status(403).json({ ok: false, error: employeeAccess.error });
+    }
+
     const setClauses = [];
     const params = [];
     if (name !== undefined) { setClauses.push('name = ?'); params.push(sanitize(name, 100)); }
@@ -926,6 +1095,20 @@ function registerRoutes(app) {
       }
       setClauses.push('pin = ?'); params.push(auth.hashPin(pin));
     }
+    if (email !== undefined) {
+      const cleanEmail = normalizeEmail(email);
+      if (cleanEmail) {
+        const emailExists = db.prepare('SELECT id FROM employees WHERE email = ? AND bar_id = ? AND id != ? AND active = 1').get(cleanEmail, barId, empId);
+        if (emailExists) {
+          return res.json({ ok: false, error: 'Ya hay un empleado con ese email en este bar.' });
+        }
+        setClauses.push('email = ?');
+        params.push(cleanEmail);
+      } else {
+        setClauses.push('email = ?');
+        params.push(null);
+      }
+    }
 
     if (setClauses.length === 0) return res.json({ ok: false, error: 'Nada que actualizar' });
     params.push(empId, barId);
@@ -934,7 +1117,7 @@ function registerRoutes(app) {
   });
 
   // CREATE table
-  app.post('/pos/tables', posJson, (req, res) => {
+  app.post('/pos/tables', requireConfigWrite, posJson, (req, res) => {
     const db = getDb();
     const barId = getBarId(req);
     const { number, area, capacity } = req.body || {};
@@ -950,7 +1133,7 @@ function registerRoutes(app) {
   });
 
   // ═══ INVENTORY ═══
-  app.get('/pos/inventory', (req, res) => {
+  app.get('/pos/inventory', requireInventoryRead, (req, res) => {
     const db = getDb();
     const barId = getBarId(req);
     const products = db.prepare(`
@@ -968,7 +1151,7 @@ function registerRoutes(app) {
   });
 
   // CREATE inventory item (product with stock tracking)
-  app.post('/pos/inventory', posJson, (req, res) => {
+  app.post('/pos/inventory', requireMenuManage, posJson, (req, res) => {
     const db = getDb();
     const barId = getBarId(req);
     const { name, unit, current_stock, min_stock, cost_per_unit, category_id, price } = req.body || {};
@@ -990,7 +1173,7 @@ function registerRoutes(app) {
   });
 
   // UPDATE inventory item
-  app.put('/pos/inventory/:id', posJson, (req, res) => {
+  app.put('/pos/inventory/:id', requireMenuManage, posJson, (req, res) => {
     const db = getDb();
     const barId = getBarId(req);
     const id = parseInt(req.params.id);
@@ -1013,7 +1196,7 @@ function registerRoutes(app) {
   });
 
   // ADJUST stock (purchase, waste, adjustment)
-  app.post('/pos/inventory/:id/adjust', posJson, (req, res) => {
+  app.post('/pos/inventory/:id/adjust', requireInventoryWrite, posJson, (req, res) => {
     const db = getDb();
     const barId = getBarId(req);
     const id = parseInt(req.params.id);
@@ -1043,7 +1226,7 @@ function registerRoutes(app) {
   });
 
   // LOW STOCK items
-  app.get('/pos/inventory/low-stock', (req, res) => {
+  app.get('/pos/inventory/low-stock', requireInventoryRead, (req, res) => {
     const db = getDb();
     const barId = getBarId(req);
     const items = db.prepare(`
@@ -1056,7 +1239,7 @@ function registerRoutes(app) {
   });
 
   // ═══ REPORTS ═══
-  app.get('/pos/reports/today', (req, res) => {
+  app.get('/pos/reports/today', requireReports, (req, res) => {
     const db = getDb();
     const barId = getBarId(req);
     const sales = db.prepare(`
@@ -1097,7 +1280,7 @@ function registerRoutes(app) {
   });
 
   // REPORTS — date range
-  app.get('/pos/reports/range', (req, res) => {
+  app.get('/pos/reports/range', requireReports, (req, res) => {
     const db = getDb();
     const barId = getBarId(req);
     const { from, to } = req.query;
@@ -1137,7 +1320,7 @@ function registerRoutes(app) {
   });
 
   // REPORTS — product ranking
-  app.get('/pos/reports/products', (req, res) => {
+  app.get('/pos/reports/products', requireReports, (req, res) => {
     const db = getDb();
     const barId = getBarId(req);
     const products = db.prepare(`
@@ -1151,7 +1334,7 @@ function registerRoutes(app) {
   });
 
   // REPORTS — employee performance
-  app.get('/pos/reports/employees', (req, res) => {
+  app.get('/pos/reports/employees', requireReports, (req, res) => {
     const db = getDb();
     const barId = getBarId(req);
     const employees = db.prepare(`
@@ -1167,11 +1350,14 @@ function registerRoutes(app) {
 
   // ═══ SHIFTS (Corte de Caja) ═══
   // OPEN shift
-  app.post('/pos/shifts', posJson, (req, res) => {
+  app.post('/pos/shifts', requireShifts, posJson, (req, res) => {
     const db = getDb();
     const barId = getBarId(req);
     const { employee_id, opening_cash } = req.body || {};
-    const empId = parseInt(employee_id);
+    const sessionEmployeeId = req.posSession?.employeeId;
+    const empId = canManageAllShifts(req)
+      ? parseInt(employee_id || sessionEmployeeId)
+      : parseInt(sessionEmployeeId);
     if (!isPositiveInt(empId)) return res.json({ ok: false, error: 'employee_id requerido' });
 
     const open = db.prepare("SELECT id FROM shifts WHERE ended_at IS NULL AND bar_id = ?").get(barId);
@@ -1184,7 +1370,7 @@ function registerRoutes(app) {
   });
 
   // CLOSE shift
-  app.put('/pos/shifts/:id/close', posJson, (req, res) => {
+  app.put('/pos/shifts/:id/close', requireShifts, posJson, (req, res) => {
     const db = getDb();
     const barId = getBarId(req);
     const shiftId = parseInt(req.params.id);
@@ -1197,6 +1383,9 @@ function registerRoutes(app) {
     const shift = db.prepare('SELECT * FROM shifts WHERE id = ? AND bar_id = ?').get(shiftId, barId);
     if (!shift) return res.json({ ok: false, error: 'Turno no encontrado' });
     if (shift.ended_at) return res.json({ ok: false, error: 'Turno ya cerrado' });
+    if (!canManageAllShifts(req) && shift.employee_id !== req.posSession?.employeeId) {
+      return res.status(403).json({ ok: false, error: 'Solo puedes cerrar tu propio turno' });
+    }
 
     const cashSales = db.prepare(`
       SELECT COALESCE(SUM(p.amount),0) as total
@@ -1215,14 +1404,20 @@ function registerRoutes(app) {
   });
 
   // CURRENT open shift
-  app.get('/pos/shifts/current', (req, res) => {
+  app.get('/pos/shifts/current', requireShifts, (req, res) => {
     const db = getDb();
     const barId = getBarId(req);
-    const shift = db.prepare(`
+    let shiftQuery = `
       SELECT s.*, e.name as employee_name
       FROM shifts s JOIN employees e ON s.employee_id = e.id
       WHERE s.ended_at IS NULL AND s.bar_id = ?
-    `).get(barId);
+    `;
+    const shiftParams = [barId];
+    if (!canManageAllShifts(req)) {
+      shiftQuery += ' AND s.employee_id = ?';
+      shiftParams.push(req.posSession.employeeId);
+    }
+    const shift = db.prepare(shiftQuery).get(...shiftParams);
 
     if (!shift) return res.json({ ok: true, shift: null });
 
@@ -1243,7 +1438,7 @@ function registerRoutes(app) {
   });
 
   // SHIFT summary (for closed shifts too)
-  app.get('/pos/shifts/:id/summary', (req, res) => {
+  app.get('/pos/shifts/:id/summary', requireShifts, (req, res) => {
     const db = getDb();
     const barId = getBarId(req);
     const shiftId = parseInt(req.params.id);
@@ -1255,6 +1450,9 @@ function registerRoutes(app) {
       WHERE s.id = ? AND s.bar_id = ?
     `).get(shiftId, barId);
     if (!shift) return res.json({ ok: false, error: 'Turno no encontrado' });
+    if (!canManageAllShifts(req) && shift.employee_id !== req.posSession?.employeeId) {
+      return res.status(403).json({ ok: false, error: 'Solo puedes ver el resumen de tu propio turno' });
+    }
 
     const salesSummary = db.prepare(`
       SELECT COUNT(*) as total_orders, COALESCE(SUM(o.total),0) as total_sales,
@@ -1278,10 +1476,10 @@ function registerRoutes(app) {
   });
 
   // LIST past shifts (history)
-  app.get('/pos/shifts', (req, res) => {
+  app.get('/pos/shifts', requireShifts, (req, res) => {
     const db = getDb();
     const barId = getBarId(req);
-    const shifts = db.prepare(`
+    let shiftsQuery = `
       SELECT s.*, e.name as employee_name,
         (SELECT COUNT(*) FROM orders o WHERE o.status = 'pagada' AND o.bar_id = s.bar_id
           AND o.created_at >= s.started_at AND (s.ended_at IS NULL OR o.created_at <= s.ended_at)) as order_count,
@@ -1289,8 +1487,14 @@ function registerRoutes(app) {
           AND o.created_at >= s.started_at AND (s.ended_at IS NULL OR o.created_at <= s.ended_at)) as total_sales
       FROM shifts s JOIN employees e ON s.employee_id = e.id
       WHERE s.bar_id = ?
-      ORDER BY s.started_at DESC LIMIT 20
-    `).all(barId);
+    `;
+    const shiftParams = [barId];
+    if (!canManageAllShifts(req)) {
+      shiftsQuery += ' AND s.employee_id = ?';
+      shiftParams.push(req.posSession.employeeId);
+    }
+    shiftsQuery += ' ORDER BY s.started_at DESC LIMIT 20';
+    const shifts = db.prepare(shiftsQuery).all(...shiftParams);
     res.json({ ok: true, shifts });
   });
 
@@ -1300,11 +1504,14 @@ function registerRoutes(app) {
     const barId = getBarId(req);
     const rows = db.prepare('SELECT * FROM bar_settings WHERE bar_id = ?').all(barId);
     const settings = {};
-    for (const r of rows) settings[r.key] = r.value;
+    const keys = auth.hasPermission(req.posSession?.role, 'config') ? null : SAFE_SETTINGS_KEYS;
+    for (const r of rows) {
+      if (!keys || keys.includes(r.key)) settings[r.key] = r.value;
+    }
     res.json({ ok: true, settings });
   });
 
-  app.put('/pos/settings', posJson, (req, res) => {
+  app.put('/pos/settings', requireConfigWrite, posJson, (req, res) => {
     const db = getDb();
     const barId = getBarId(req);
     // bar_settings has composite PK (key, bar_id) — INSERT OR REPLACE works correctly
@@ -1339,7 +1546,7 @@ function registerRoutes(app) {
   });
 
   // ═══ RESERVATIONS CRUD ═══
-  app.post('/pos/reservations', posJson, (req, res) => {
+  app.post('/pos/reservations', requireReservations, posJson, (req, res) => {
     const db = getDb();
     const barId = getBarId(req);
     const { name, phone, date, time, guests, table_id, notes } = req.body || {};
@@ -1356,7 +1563,7 @@ function registerRoutes(app) {
     res.json({ ok: true, reservation_id: result.lastInsertRowid });
   });
 
-  app.get('/pos/reservations', (req, res) => {
+  app.get('/pos/reservations', requireReservations, (req, res) => {
     const db = getDb();
     const barId = getBarId(req);
     const date = sanitize(req.query.date, 10) || new Date().toISOString().slice(0, 10);
@@ -1368,7 +1575,7 @@ function registerRoutes(app) {
     res.json({ ok: true, reservations });
   });
 
-  app.get('/pos/reservations/today', (req, res) => {
+  app.get('/pos/reservations/today', requireReservations, (req, res) => {
     const db = getDb();
     const barId = getBarId(req);
     const today = new Date().toISOString().slice(0, 10);
@@ -1380,7 +1587,7 @@ function registerRoutes(app) {
     res.json({ ok: true, reservations });
   });
 
-  app.put('/pos/reservations/:id', posJson, (req, res) => {
+  app.put('/pos/reservations/:id', requireReservations, posJson, (req, res) => {
     const db = getDb();
     const barId = getBarId(req);
     const resId = parseInt(req.params.id);
@@ -1418,7 +1625,7 @@ function registerRoutes(app) {
     res.json({ ok: true });
   });
 
-  app.delete('/pos/reservations/:id', (req, res) => {
+  app.delete('/pos/reservations/:id', requireReservations, (req, res) => {
     const db = getDb();
     const barId = getBarId(req);
     const resId = parseInt(req.params.id);
@@ -1428,14 +1635,14 @@ function registerRoutes(app) {
   });
 
   // ═══ HAPPY HOURS CRUD ═══
-  app.get('/pos/happy-hours', (req, res) => {
+  app.get('/pos/happy-hours', requireHappyHour, (req, res) => {
     const db = getDb();
     const barId = getBarId(req);
     const hours = db.prepare('SELECT * FROM happy_hours WHERE bar_id = ? ORDER BY start_time').all(barId);
     res.json({ ok: true, happy_hours: hours });
   });
 
-  app.post('/pos/happy-hours', posJson, (req, res) => {
+  app.post('/pos/happy-hours', requireHappyHour, posJson, (req, res) => {
     const db = getDb();
     const barId = getBarId(req);
     const { name, days, start_time, end_time, discount_percent, categories } = req.body || {};
@@ -1453,7 +1660,7 @@ function registerRoutes(app) {
     res.json({ ok: true, happy_hour_id: result.lastInsertRowid });
   });
 
-  app.put('/pos/happy-hours/:id', posJson, (req, res) => {
+  app.put('/pos/happy-hours/:id', requireHappyHour, posJson, (req, res) => {
     const db = getDb();
     const barId = getBarId(req);
     const hhId = parseInt(req.params.id);
@@ -1476,7 +1683,7 @@ function registerRoutes(app) {
     res.json({ ok: true });
   });
 
-  app.delete('/pos/happy-hours/:id', (req, res) => {
+  app.delete('/pos/happy-hours/:id', requireHappyHour, (req, res) => {
     const db = getDb();
     const barId = getBarId(req);
     const hhId = parseInt(req.params.id);
@@ -1486,7 +1693,7 @@ function registerRoutes(app) {
   });
 
   // ═══ COVER DEPARTURE ═══
-  app.put('/pos/covers/:id/departure', posJson, (req, res) => {
+  app.put('/pos/covers/:id/departure', requireCovers, posJson, (req, res) => {
     const db = getDb();
     const barId = getBarId(req);
     const coverId = parseInt(req.params.id);
@@ -1496,7 +1703,7 @@ function registerRoutes(app) {
   });
 
   // ═══ API USAGE / SPENDING BRAKE ═══
-  app.get('/pos/api-usage', (req, res) => {
+  app.get('/pos/api-usage', requireApiUsage, (req, res) => {
     const usage = getApiUsage();
     res.json({ ok: true, usage });
   });

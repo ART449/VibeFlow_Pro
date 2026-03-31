@@ -1,17 +1,13 @@
 // ── Billing (Stripe) — routes/billing.js ────────────────────────────────────
-const path = require('path');
-const fs = require('fs');
 const crypto = require('crypto');
-
-const SUBS_FILE = path.join(__dirname, '..', 'data', 'subscriptions.json');
-
-function readSubs() {
-  try { return fs.existsSync(SUBS_FILE) ? JSON.parse(fs.readFileSync(SUBS_FILE, 'utf8')) : { users: {} }; }
-  catch { return { users: {} }; }
-}
-function writeSubs(data) {
-  try { fs.writeFileSync(SUBS_FILE, JSON.stringify(data, null, 2), 'utf8'); } catch(e) { console.error('[Stripe] Write error:', e.message); }
-}
+const {
+  readSubscriptions: readSubs,
+  writeSubscriptions: writeSubs,
+  normalizeEmail,
+  emailToBarId,
+  getLicenseStatusByEmail,
+  getLicenseStatusByBarId
+} = require('../pos/license-utils');
 function planFromPrice(priceId) {
   if (priceId === process.env.STRIPE_PRICE_PRO_CREATOR) return 'PRO_CREATOR';
   if (priceId === process.env.STRIPE_PRICE_PRO_BAR) return 'PRO_BAR';
@@ -117,7 +113,7 @@ function registerWebhook(app, helpers) {
 
 // Register billing routes AFTER express.json
 function registerRoutes(app, _state, helpers) {
-  const { LICENSE_SECRET } = helpers;
+  const { LICENSE_SECRET, ADMIN_SECRET, MASTER_ADMIN } = helpers;
   const stripe = process.env.STRIPE_SECRET_KEY
     ? require('stripe')(process.env.STRIPE_SECRET_KEY)
     : null;
@@ -156,20 +152,20 @@ function registerRoutes(app, _state, helpers) {
       return res.status(429).json({ ok: false, error: 'Demasiados intentos. Espera 1 minuto.' });
     }
 
-    const email = typeof req.query.email === 'string' ? req.query.email.trim().slice(0, 200) : '';
+    const email = normalizeEmail(req.query.email);
+    const barId = typeof req.query.bar_id === 'string' ? req.query.bar_id.trim().slice(0, 100) : '';
     const key = typeof req.query.key === 'string' ? req.query.key.trim() : '';
     const subs = readSubs();
 
     // Email lookup: return status only, NEVER the key
-    if (email && subs.posLicenses && subs.posLicenses[email]) {
-      const lic = subs.posLicenses[email];
-      const user = subs.users?.[email] || {};
-      const isActive = user.status === 'active' || lic.plan === 'POS_VITALICIO';
-      return res.json({
-        ok: true, active: isActive,
-        plan: lic.plan, email,
-        activatedAt: lic.activatedAt
-      });
+    if (email) {
+      const status = getLicenseStatusByEmail(email, subs);
+      if (status) return res.json(status);
+    }
+
+    if (barId) {
+      const status = getLicenseStatusByBarId(barId, subs);
+      if (status) return res.json(status);
     }
 
     // Key lookup: only confirm if key matches, never expose other keys
@@ -179,12 +175,19 @@ function registerRoutes(app, _state, helpers) {
         if (lic.key === key) {
           const user = subs.users?.[e] || {};
           const isActive = user.status === 'active' || lic.plan === 'POS_VITALICIO';
-          return res.json({ ok: true, active: isActive, plan: lic.plan, email: e, activatedAt: lic.activatedAt });
+          return res.json({
+            ok: true,
+            active: isActive,
+            plan: lic.plan,
+            email: e,
+            activatedAt: lic.activatedAt,
+            bar_id: emailToBarId(e)
+          });
         }
       }
     }
 
-    res.json({ ok: false, error: 'No se encontro licencia POS para este email o clave' });
+    res.json({ ok: false, error: 'No se encontro licencia POS para este email, bar o clave' });
   });
 
   app.get('/api/billing/status', (req, res) => {
@@ -227,14 +230,18 @@ function registerRoutes(app, _state, helpers) {
       res.json({ url: session.url });
     } catch (err) { console.error('[Stripe] Portal error:', err.message); res.status(500).json({ error: 'Error al abrir portal' }); }
   });
-  // ── Bootstrap: grant first owner license (works ONCE, no admin key needed) ──
+  // ── Bootstrap: admin-only seed for first license in a clean environment ──
   app.post('/api/pos/license/bootstrap', (req, res) => {
+    const adminKey = req.headers['x-admin-key'];
+    if (adminKey !== ADMIN_SECRET && adminKey !== MASTER_ADMIN) {
+      return res.status(401).json({ error: 'Acceso denegado' });
+    }
     const subs = readSubs();
     const existingCount = Object.keys(subs.posLicenses || {}).length;
     if (existingCount > 0) {
-      return res.status(403).json({ error: 'Bootstrap ya fue usado. Usa /api/pos/license/grant con admin key.' });
+      return res.status(403).json({ error: 'Bootstrap ya fue usado. Usa /api/pos/license/grant.' });
     }
-    const email = typeof req.body.email === 'string' ? req.body.email.trim().toLowerCase() : '';
+    const email = normalizeEmail(req.body.email);
     if (!email) return res.status(400).json({ error: 'Email requerido' });
 
     const licenseKey = generateLicenseKey(LICENSE_SECRET);
@@ -252,19 +259,16 @@ function registerRoutes(app, _state, helpers) {
     res.json({ ok: true, email, plan: 'POS_VITALICIO', key: licenseKey });
   });
 
-  // ── Admin auth check (admin key OR owner email header) ──────────────────
-  const OWNER_EMAILS = ['elricondelgeekdearturo@gmail.com'];
+  // ── Admin auth check (admin key only) ───────────────────────────────────
   function isAdmin(req) {
     const adminKey = req.headers['x-admin-key'];
-    if (adminKey === ADMIN_SECRET || adminKey === MASTER_ADMIN) return true;
-    const adminEmail = (req.headers['x-admin-email'] || '').trim().toLowerCase();
-    return OWNER_EMAILS.includes(adminEmail);
+    return !!adminKey && (adminKey === ADMIN_SECRET || adminKey === MASTER_ADMIN);
   }
 
   // ── Admin: grant POS license manually ─────────────────────────────────────
   app.post('/api/pos/license/grant', (req, res) => {
     if (!isAdmin(req)) return res.status(401).json({ error: 'Acceso denegado' });
-    const email = typeof req.body.email === 'string' ? req.body.email.trim().toLowerCase() : '';
+    const email = normalizeEmail(req.body.email);
     const plan = typeof req.body.plan === 'string' ? req.body.plan.trim() : 'POS_VITALICIO';
     if (!email) return res.status(400).json({ error: 'Email requerido' });
 

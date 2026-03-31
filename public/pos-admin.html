@@ -153,7 +153,7 @@ select.form-input{cursor:pointer;}
     <div class="section" id="sec-employees">
       <h2>👥 Empleados <button class="add-btn" onclick="openModal('employee')">+ Agregar Empleado</button></h2>
       <table class="tbl">
-        <thead><tr><th></th><th>Nombre</th><th>Rol</th><th>Nivel</th><th>Area</th><th>Ultimo Login</th><th>Estado</th><th>Acciones</th></tr></thead>
+        <thead><tr><th></th><th>Nombre</th><th>Email</th><th>Rol</th><th>Nivel</th><th>Area</th><th>Ultimo Login</th><th>Estado</th><th>Acciones</th></tr></thead>
         <tbody id="employees-body"></tbody>
       </table>
     </div>
@@ -316,6 +316,7 @@ async function loadEmployees() {
     '<tr>' +
     '<td>' + escapeHtml(e.avatar || '👤') + '</td>' +
     '<td><strong>' + escapeHtml(e.name) + '</strong></td>' +
+    '<td style="font-size:10px;color:var(--sub);">' + escapeHtml(e.email || '—') + '</td>' +
     '<td><span class="badge role">' + escapeHtml(roleNames[e.role] || e.role) + '</span></td>' +
     '<td>' + escapeHtml(String(e.role_level)) + '</td>' +
     '<td>' + escapeHtml(e.area || '') + '</td>' +
@@ -385,6 +386,7 @@ function openModal(type) {
 
     employee: `<h3>👥 Nuevo Empleado <span class="close" onclick="closeModal()">✕</span></h3>
       <div class="form-group"><label>Nombre completo</label><input class="form-input" id="f-emp-name" placeholder="Juan Perez"></div>
+      <div class="form-group"><label>Email Google (opcional)</label><input class="form-input" id="f-emp-email" type="email" placeholder="mesero@bar.com"></div>
       <div class="form-row">
         <div class="form-group"><label>PIN (4-6 digitos)</label><input class="form-input" id="f-emp-pin" type="password" maxlength="6" placeholder="****"></div>
         <div class="form-group"><label>Avatar</label><input class="form-input" id="f-emp-avatar" placeholder="👨‍🍳" style="width:60px;text-align:center;"></div>
@@ -506,6 +508,7 @@ async function saveProduct() {
 async function saveEmployee() {
   const data = {
     name: document.getElementById('f-emp-name').value.trim(),
+    email: document.getElementById('f-emp-email').value.trim(),
     pin: document.getElementById('f-emp-pin').value,
     role: document.getElementById('f-emp-role').value,
     area: document.getElementById('f-emp-area').value,
@@ -711,6 +714,7 @@ async function editEmployee(id) {
     document.getElementById('modal-content').innerHTML =
       '<h3>✏️ Editar Empleado <span class="close" onclick="closeModal()">✕</span></h3>' +
       '<div class="form-group"><label>Nombre completo</label><input class="form-input" id="f-emp-name" value="' + escapeHtml(e.name) + '"></div>' +
+      '<div class="form-group"><label>Email Google (opcional)</label><input class="form-input" id="f-emp-email" type="email" value="' + escapeHtml(e.email || '') + '" placeholder="mesero@bar.com"></div>' +
       '<div class="form-row">' +
         '<div class="form-group"><label>PIN (dejar vacio para no cambiar)</label><input class="form-input" id="f-emp-pin" type="password" maxlength="6" placeholder="****"></div>' +
         '<div class="form-group"><label>Avatar</label><input class="form-input" id="f-emp-avatar" value="' + escapeHtml(e.avatar || '') + '" style="width:60px;text-align:center;"></div>' +
@@ -730,6 +734,7 @@ async function editEmployee(id) {
 async function updateEmployee(id) {
   const data = {
     name: document.getElementById('f-emp-name').value.trim(),
+    email: document.getElementById('f-emp-email').value.trim(),
     role: document.getElementById('f-emp-role').value,
     area: document.getElementById('f-emp-area').value,
     avatar: document.getElementById('f-emp-avatar').value.trim()

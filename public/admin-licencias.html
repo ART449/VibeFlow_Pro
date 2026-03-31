@@ -62,6 +62,7 @@ input:focus,select:focus{border-color:rgba(255,138,0,.4);}
   <div id="login-gate" class="login-gate">
     <div style="font-size:3rem;margin-bottom:16px;">&#x1F510;</div>
     <div style="font-size:.85rem;margin-bottom:20px;color:rgba(255,255,255,.5);">Solo el administrador puede acceder</div>
+    <input id="admin-key-input" type="password" placeholder="Clave maestra admin" style="max-width:300px;margin:0 auto 12px;display:block;">
     <button class="btn btn-primary" onclick="adminLogin()" style="max-width:300px;">Entrar con Google</button>
   </div>
 
@@ -112,7 +113,7 @@ input:focus,select:focus{border-color:rgba(255,138,0,.4);}
 
 <script>
 var ADMIN_EMAILS = ['elricondelgeekdearturo@gmail.com'];
-var adminToken = '';
+var adminKey = sessionStorage.getItem('pos_admin_key') || '';
 
 function toast(msg, ms) {
   var t = document.getElementById('toast');
@@ -122,6 +123,12 @@ function toast(msg, ms) {
 }
 
 function adminLogin() {
+  var enteredKey = document.getElementById('admin-key-input').value.trim();
+  if (!enteredKey) {
+    toast('Ingresa la clave maestra admin');
+    return;
+  }
+  sessionStorage.setItem('pos_admin_key_pending', enteredKey);
   var provider = new firebase.auth.GoogleAuthProvider();
   provider.setCustomParameters({ prompt: 'select_account' });
   _fbAuth.signInWithRedirect(provider);
@@ -129,7 +136,9 @@ function adminLogin() {
 
 function adminLogout() {
   _fbAuth.signOut();
-  adminToken = '';
+  adminKey = '';
+  sessionStorage.removeItem('pos_admin_key');
+  sessionStorage.removeItem('pos_admin_key_pending');
   document.getElementById('admin-panel').classList.add('hidden');
   document.getElementById('login-gate').classList.remove('hidden');
   toast('Sesion cerrada');
@@ -150,13 +159,18 @@ function handleAuth(user) {
     _fbAuth.signOut();
     return;
   }
-  user.getIdToken().then(function(token) {
-    adminToken = token;
-    document.getElementById('login-gate').classList.add('hidden');
-    document.getElementById('admin-panel').classList.remove('hidden');
-    toast('Bienvenido, jefe');
-    loadLicenses();
-  });
+  adminKey = sessionStorage.getItem('pos_admin_key_pending') || sessionStorage.getItem('pos_admin_key') || '';
+  if (!adminKey) {
+    toast('Ingresa la clave maestra admin para continuar');
+    _fbAuth.signOut();
+    return;
+  }
+  sessionStorage.setItem('pos_admin_key', adminKey);
+  sessionStorage.removeItem('pos_admin_key_pending');
+  document.getElementById('login-gate').classList.add('hidden');
+  document.getElementById('admin-panel').classList.remove('hidden');
+  toast('Bienvenido, jefe');
+  loadLicenses();
 }
 
 async function generateLicense() {
@@ -177,7 +191,7 @@ async function generateLicense() {
   try {
     var r = await fetch('/api/pos/license/grant', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'X-Admin-Key': adminToken, 'X-Admin-Email': ADMIN_EMAILS[0] },
+      headers: { 'Content-Type': 'application/json', 'X-Admin-Key': adminKey },
       body: JSON.stringify({ email: email, plan: plan })
     });
     var d = await r.json();
@@ -224,7 +238,7 @@ async function loadLicenses() {
   var list = document.getElementById('lic-list');
   try {
     var r = await fetch('/api/pos/license/list', {
-      headers: { 'X-Admin-Key': adminToken, 'X-Admin-Email': ADMIN_EMAILS[0] }
+      headers: { 'X-Admin-Key': adminKey }
     });
     var d = await r.json();
     if (!d.licenses || !d.licenses.length) {
