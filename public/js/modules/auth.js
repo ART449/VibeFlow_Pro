@@ -6,38 +6,19 @@
 
   auth.socialLogin = async function(provider) {
     try {
-      let result;
       if (provider === 'google') {
-        const googleProvider = new firebase.auth.GoogleAuthProvider();
+        var googleProvider = new firebase.auth.GoogleAuthProvider();
         googleProvider.setCustomParameters({ prompt: 'select_account' });
-        const isCapacitor = window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform();
-        const isMobile = /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent);
-        if (isCapacitor) {
-          _fbAuth.signInWithRedirect(googleProvider);
-          return;
-        } else if (isMobile) {
-          await _fbAuth.signInWithRedirect(googleProvider);
-          return;
-        }
-        result = await _fbAuth.signInWithPopup(googleProvider);
+        // Always use redirect — popups get blocked on mobile, WebView, and many browsers
+        _fbAuth.signInWithRedirect(googleProvider);
+        return;
       } else if (provider === 'facebook') {
-        const fbProvider = new firebase.auth.FacebookAuthProvider();
-        result = await _fbAuth.signInWithPopup(fbProvider);
+        var fbProvider = new firebase.auth.FacebookAuthProvider();
+        _fbAuth.signInWithRedirect(fbProvider);
+        return;
       } else if (provider === 'tiktok') {
         showToast('TikTok login proximamente. Usa Google por ahora.', 'warning');
         return;
-      }
-      if (result && result.user) {
-        _fbUser = result.user;
-        localStorage.setItem('byflow_user_name', _fbUser.displayName || 'Usuario');
-        localStorage.setItem('byflow_user_email', _fbUser.email || '');
-        localStorage.setItem('byflow_user_photo', _fbUser.photoURL || '');
-        localStorage.setItem('byflow_user_provider', provider);
-        localStorage.setItem('byflow_user_uid', _fbUser.uid);
-        showToast('Bienvenido, ' + (_fbUser.displayName || 'Usuario') + '!', 'success');
-        auth._updateUserUI();
-        auth.dismissWelcome();
-        setMode('karaoke');
       }
     } catch (e) {
       if (e.code === 'auth/popup-closed-by-user') return;
@@ -48,6 +29,33 @@
       }
     }
   };
+
+  // Handle redirect result when page loads after Google redirect
+  auth._handleRedirectResult = function() {
+    if (!_fbAuth) return;
+    _fbAuth.getRedirectResult().then(function(result) {
+      if (result && result.user) {
+        _fbUser = result.user;
+        var provider = result.additionalUserInfo?.providerId || 'google';
+        localStorage.setItem('byflow_user_name', _fbUser.displayName || 'Usuario');
+        localStorage.setItem('byflow_user_email', _fbUser.email || '');
+        localStorage.setItem('byflow_user_photo', _fbUser.photoURL || '');
+        localStorage.setItem('byflow_user_provider', provider.includes('google') ? 'google' : provider);
+        localStorage.setItem('byflow_user_uid', _fbUser.uid);
+        showToast('Bienvenido, ' + (_fbUser.displayName || 'Usuario') + '!', 'success');
+        auth._updateUserUI();
+        auth.dismissWelcome();
+        setMode('karaoke');
+      }
+    }).catch(function(e) {
+      if (e.code === 'auth/unauthorized-domain') {
+        showToast('Dominio no autorizado en Firebase', 'error');
+      }
+    });
+  };
+
+  // Call on load
+  auth._handleRedirectResult();
 
   auth.emailLogin = async function(isRegister) {
     const email = document.getElementById('bf-email-input')?.value?.trim();
