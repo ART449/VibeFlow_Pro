@@ -316,9 +316,17 @@ async function signInWithGoogle() {
     const licData = await licResp.json();
 
     if (!licData.ok || !licData.active) {
-      // No license — enter anyway in trial mode (bares-v2 handles unlicensed state)
+      // No license — block access, show contact info
       statusEl.style.color = '#fbbf24';
-      statusEl.textContent = 'Modo trial — accediendo al POS...';
+      statusEl.innerHTML = '';
+      var noLicDiv = document.createElement('div');
+      noLicDiv.style.cssText = 'text-align:center;max-width:300px;';
+      noLicDiv.innerHTML = '<div style="font-size:13px;color:#fbbf24;font-weight:600;margin-bottom:8px;">Tu cuenta no tiene licencia POS activa.</div>'
+        + '<div style="font-size:11px;color:rgba(255,255,255,.5);margin-bottom:14px;">Contacta a IArtLabs para adquirir una.</div>'
+        + '<a href="https://wa.me/524494917648" style="display:inline-block;padding:10px 24px;border-radius:10px;background:rgba(0,245,160,.12);color:#00f5a0;font-size:12px;font-weight:700;text-decoration:none;border:1px solid rgba(0,245,160,.25);transition:all .2s;">Contactar IArtLabs</a>';
+      statusEl.parentNode.insertBefore(noLicDiv, statusEl.nextSibling);
+      statusEl.textContent = '';
+      return;
     }
 
     // Licensed! Generate bar_id from email hash
