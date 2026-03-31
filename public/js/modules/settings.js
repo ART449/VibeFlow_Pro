@@ -4,6 +4,99 @@
   VF.modules = VF.modules || {};
   const settings = VF.modules.settings = {};
 
+  function tpStyle() {
+    return VF.modules.teleprompterStyle || null;
+  }
+
+  function nearestFontSizeOption(value) {
+    const target = Number(value) || 5;
+    return [3, 5, 7, 9].reduce((closest, current) =>
+      Math.abs(current - target) < Math.abs(closest - target) ? current : closest, 5
+    ) + 'rem';
+  }
+
+  function applyTpStyleToUi(style) {
+    const helper = tpStyle();
+    if (!helper) return null;
+    const normalized = helper.applyToElement(document.documentElement, style);
+    localStorage.setItem('byflow_tp_fontsize', normalized.fontSizeRem.toFixed(1) + 'rem');
+    settings.updateTpStyleControls(normalized);
+
+    const bridge = VF.modules.twinBridge;
+    if (bridge && typeof bridge.onStyleChanged === 'function') bridge.onStyleChanged();
+    return normalized;
+  }
+
+  settings.updateTpStyle = function(partial, persist) {
+    const helper = tpStyle();
+    if (!helper) return null;
+    const base = helper.load();
+    const source = Object.assign({}, base, partial || {});
+    if (partial && !Object.prototype.hasOwnProperty.call(partial, 'presetKey')) source.presetKey = '';
+    const normalized = helper.normalize(source);
+    if (persist === false) return applyTpStyleToUi(normalized);
+    helper.save(normalized);
+    return applyTpStyleToUi(normalized);
+  };
+
+  settings.ensureTpFontOptions = function() {
+    const helper = tpStyle();
+    const select = document.getElementById('set-tp-font-family');
+    if (!helper || !select || select.options.length) return;
+    select.innerHTML = helper.fontOptions().map((item) =>
+      '<option value="' + item.id + '">' + item.label + '</option>'
+    ).join('');
+  };
+
+  settings.updateTpStyleControls = function(input) {
+    const helper = tpStyle();
+    if (!helper) return;
+    const style = helper.normalize(input);
+    settings.ensureTpFontOptions();
+
+    const fontSelect = document.getElementById('set-tp-font-family');
+    const alignSelect = document.getElementById('set-tp-align');
+    const sizeSelect = document.getElementById('set-font-size');
+
+    if (fontSelect) fontSelect.value = style.fontPreset;
+    if (alignSelect) alignSelect.value = style.textAlign;
+    if (sizeSelect) sizeSelect.value = nearestFontSizeOption(style.fontSizeRem);
+
+    const pairs = [
+      ['set-tp-line-height', style.lineHeight.toFixed(2)],
+      ['set-tp-letter-spacing', style.letterSpacingEm.toFixed(3)],
+      ['set-tp-max-width', String(Math.round(style.maxWidthPx))],
+      ['set-tp-glow', style.glowAlpha.toFixed(2)],
+      ['set-tp-top-padding', String(Math.round(style.stageTopVh))],
+      ['set-tp-bottom-padding', String(Math.round(style.stageBottomVh))],
+      ['set-tp-active-scale', style.activeScale.toFixed(2)]
+    ];
+
+    pairs.forEach(function(pair) {
+      const inputEl = document.getElementById(pair[0]);
+      if (inputEl) inputEl.value = pair[1];
+    });
+
+    const valueEls = {
+      'set-tp-line-height-val': style.lineHeight.toFixed(2),
+      'set-tp-letter-spacing-val': style.letterSpacingEm.toFixed(3) + 'em',
+      'set-tp-max-width-val': Math.round(style.maxWidthPx) + 'px',
+      'set-tp-glow-val': style.glowAlpha.toFixed(2),
+      'set-tp-top-padding-val': Math.round(style.stageTopVh) + 'vh',
+      'set-tp-bottom-padding-val': Math.round(style.stageBottomVh) + 'vh',
+      'set-tp-active-scale-val': style.activeScale.toFixed(2) + 'x'
+    };
+
+    Object.keys(valueEls).forEach(function(id) {
+      const node = document.getElementById(id);
+      if (node) node.textContent = valueEls[id];
+    });
+
+    document.querySelectorAll('[data-tp-preset]').forEach(function(btn) {
+      btn.classList.toggle('on', btn.getAttribute('data-tp-preset') === style.presetKey);
+    });
+  };
+
   settings.saveUserProfile = function() {
     const name = document.getElementById('set-user-name').value.trim();
     const pin = document.getElementById('set-user-pin').value.trim();
@@ -73,9 +166,72 @@
   };
 
   settings.setTpFontSize = function(size) {
-    const tp = document.getElementById('tp-display');
-    if (tp) tp.style.fontSize = size;
-    localStorage.setItem('byflow_tp_fontsize', size);
+    const rem = parseFloat(String(size || '5').replace('rem', ''));
+    settings.updateTpStyle({ fontSizeRem: rem });
+  };
+
+  settings.setTpFontFamily = function(presetId) {
+    const helper = tpStyle();
+    if (!helper) return;
+    const option = helper.fontOptions().find((item) => item.id === presetId) || helper.fontOptions()[0];
+    settings.updateTpStyle({
+      fontPreset: option.id,
+      fontFamily: option.value
+    });
+  };
+
+  settings.setTpTextAlign = function(value) {
+    settings.updateTpStyle({ textAlign: value });
+  };
+
+  settings.setTpLineHeight = function(value) {
+    settings.updateTpStyle({ lineHeight: Number(value) || 1.6 });
+  };
+
+  settings.setTpLetterSpacing = function(value) {
+    settings.updateTpStyle({ letterSpacingEm: Number(value) || 0 });
+  };
+
+  settings.setTpMaxWidth = function(value) {
+    settings.updateTpStyle({ maxWidthPx: Number(value) || 1100 });
+  };
+
+  settings.setTpGlow = function(value) {
+    settings.updateTpStyle({ glowAlpha: Number(value) || 0 });
+  };
+
+  settings.setTpTopPadding = function(value) {
+    settings.updateTpStyle({ stageTopVh: Number(value) || 0 });
+  };
+
+  settings.setTpBottomPadding = function(value) {
+    settings.updateTpStyle({ stageBottomVh: Number(value) || 20 });
+  };
+
+  settings.setTpActiveScale = function(value) {
+    settings.updateTpStyle({ activeScale: Number(value) || 1 });
+  };
+
+  settings.applyTpStylePreset = function(name) {
+    const helper = tpStyle();
+    if (!helper) return;
+    const preset = helper.preset(name);
+    helper.save(preset);
+    applyTpStyleToUi(preset);
+  };
+
+  settings.resetTpStyle = function() {
+    const helper = tpStyle();
+    if (!helper) return;
+    const style = helper.reset();
+    applyTpStyleToUi(style);
+  };
+
+  settings.saveTpStyleAsDefault = function() {
+    const helper = tpStyle();
+    if (!helper) return;
+    helper.save(helper.load());
+    showToast('Look del teleprompter guardado');
   };
 
   settings.toggleVisualizer = function(btn) {
@@ -103,6 +259,7 @@
 
   settings.loadSettingsState = function() {
     settings.loadUserProfile();
+    settings.ensureTpFontOptions();
     const savedTheme = localStorage.getItem('byflow_theme') || 'dark';
     document.documentElement.setAttribute('data-theme', savedTheme);
     const darkBtn = document.getElementById('set-dark-toggle');
@@ -112,12 +269,16 @@
     }
     document.querySelector('meta[name="theme-color"]').content = savedTheme === 'dark' ? '#07070d' : '#f5f5fa';
 
-    const fs = localStorage.getItem('byflow_tp_fontsize');
-    if (fs) {
-      const sel = document.getElementById('set-font-size');
-      if (sel) sel.value = fs;
-      settings.setTpFontSize(fs);
+    const helper = tpStyle();
+    const legacyFontSize = localStorage.getItem('byflow_tp_fontsize');
+    let nextStyle = helper ? helper.load() : null;
+    if (helper && legacyFontSize) {
+      const parsedLegacy = parseFloat(String(legacyFontSize).replace('rem', ''));
+      if (Number.isFinite(parsedLegacy) && Math.abs(nextStyle.fontSizeRem - parsedLegacy) > 0.01) {
+        nextStyle = helper.normalize(Object.assign({}, nextStyle, { fontSizeRem: parsedLegacy }));
+      }
     }
+    if (nextStyle) applyTpStyleToUi(nextStyle);
 
     if (localStorage.getItem('byflow_viz_on') === '0') {
       const btn = document.getElementById('set-viz-toggle');

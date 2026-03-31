@@ -10,6 +10,20 @@
 :root{
   --bg:#07070d;--panel:#11111a;--panel2:#171726;--line:rgba(255,255,255,.08);--text:#f4f4f8;--sub:rgba(255,255,255,.62);
   --pink:#ff006e;--cyan:#00d5ff;--gold:#fbbf24;--good:#00e59b;--bad:#ff6b6b;--shadow:0 30px 80px rgba(0,0,0,.35);
+  --tp-font-family:"Segoe UI",Tahoma,sans-serif;
+  --tp-font-size:5rem;
+  --tp-line-height:1.6;
+  --tp-letter-spacing:.01em;
+  --tp-max-width:1100px;
+  --tp-text-align:center;
+  --tp-active-scale:1.01;
+  --tp-line-opacity:.25;
+  --tp-next-opacity:.45;
+  --tp-done-opacity:.18;
+  --tp-glow-alpha:.28;
+  --tp-glow-secondary-alpha:.12;
+  --tp-stage-padding-top:10vh;
+  --tp-stage-padding-bottom:30vh;
 }
 html,body{margin:0;padding:0;min-height:100%;background:
   radial-gradient(circle at top left,rgba(255,0,110,.18),transparent 26%),
@@ -48,7 +62,7 @@ a{color:inherit}
 .stack{display:grid;gap:14px}
 .field{display:grid;gap:6px}
 .field label{font-size:12px;color:var(--sub);font-weight:700;letter-spacing:.04em;text-transform:uppercase}
-.field input,.field textarea{width:100%;background:rgba(0,0,0,.24);border:1px solid rgba(255,255,255,.08);color:var(--text);
+.field input,.field textarea,.field select{width:100%;background:rgba(0,0,0,.24);border:1px solid rgba(255,255,255,.08);color:var(--text);
   border-radius:14px;padding:12px 14px;font:inherit}
 .field textarea{min-height:180px;resize:vertical;line-height:1.6}
 .mini-note{font-size:12px;color:var(--sub);line-height:1.5}
@@ -82,12 +96,30 @@ a{color:inherit}
 .audio-meta{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;font-size:12px;color:var(--sub)}
 .current-audio{font-weight:700;color:var(--text)}
 .toggle-row{display:flex;justify-content:space-between;align-items:center;gap:12px}.toggle-row input{accent-color:var(--pink)}
+.style-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.style-presets{display:flex;flex-wrap:wrap;gap:8px}
+.style-presets button{appearance:none;border:none;cursor:pointer;padding:10px 12px;border-radius:12px;font-weight:700;font-size:12px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.07);color:var(--text)}
+.style-presets button.active{background:linear-gradient(135deg,rgba(255,0,110,.22),rgba(0,213,255,.16));border-color:rgba(0,213,255,.28)}
+.range-stack{display:grid;gap:8px}
+.range-note{display:flex;justify-content:space-between;gap:12px;font-size:11px;color:var(--sub)}
 .preview-shell{border-radius:22px;border:1px solid rgba(255,255,255,.07);background:
   radial-gradient(circle at top,rgba(255,0,110,.10),transparent 48%),
   linear-gradient(180deg,#090912,#0f0f18 38%,#090912);padding:16px}
-.preview-screen{min-height:520px;max-height:520px;overflow:auto;border-radius:18px;padding:22px;background:rgba(0,0,0,.3);border:1px solid rgba(255,255,255,.06)}
-.preview-line{font-size:30px;line-height:1.55;text-align:center;padding:10px 0;color:rgba(255,255,255,.36);transition:all .18s ease}
-.preview-line.past{color:rgba(255,255,255,.18)}.preview-line.active{color:#fff;transform:scale(1.02);text-shadow:0 0 16px rgba(255,0,110,.28),0 0 36px rgba(0,213,255,.12)}
+.preview-screen{
+  min-height:520px;max-height:520px;overflow:auto;border-radius:18px;padding:var(--tp-stage-padding-top) 22px var(--tp-stage-padding-bottom);
+  background:rgba(0,0,0,.3);border:1px solid rgba(255,255,255,.06)
+}
+.preview-lines{max-width:var(--tp-max-width);margin:0 auto;text-align:var(--tp-text-align);font-family:var(--tp-font-family);letter-spacing:var(--tp-letter-spacing)}
+.preview-line{
+  font-size:var(--tp-font-size);line-height:var(--tp-line-height);text-align:inherit;padding:10px 0;color:rgba(255,255,255,var(--tp-line-opacity));
+  transition:transform .18s ease,color .18s ease,text-shadow .18s ease,opacity .18s ease
+}
+.preview-line.past{color:rgba(255,255,255,var(--tp-done-opacity))}
+.preview-line.active{
+  color:#fff;transform:scale(var(--tp-active-scale));
+  text-shadow:0 0 18px rgba(255,0,110,var(--tp-glow-alpha)),0 0 36px rgba(0,213,255,var(--tp-glow-secondary-alpha))
+}
+.preview-line.next{color:rgba(255,255,255,var(--tp-next-opacity))}
 pre.payload{margin:0;max-height:220px;overflow:auto;border-radius:18px;padding:14px;background:#06060c;border:1px solid rgba(255,255,255,.06);font-size:12px;line-height:1.45;color:#9fe7ff}
 .empty-card{padding:24px;border-radius:16px;border:1px dashed rgba(255,255,255,.12);background:rgba(255,255,255,.03);color:var(--sub);text-align:center;line-height:1.6}
 .empty-card.small{padding:18px;font-size:12px}.footnote{margin-top:16px;font-size:12px;color:var(--sub);line-height:1.6}
@@ -95,7 +127,7 @@ pre.payload{margin:0;max-height:220px;overflow:auto;border-radius:18px;padding:1
 .lrc-toast.show{opacity:1;transform:translateY(0)}.lrc-toast.ok{border-color:rgba(0,229,155,.34)}.lrc-toast.warn{border-color:rgba(255,107,107,.34)}
 ::-webkit-scrollbar{width:10px;height:10px}::-webkit-scrollbar-thumb{background:rgba(255,255,255,.12);border-radius:999px}::-webkit-scrollbar-track{background:transparent}
 @media (max-width:1320px){.workspace{grid-template-columns:1fr}.preview-screen{max-height:380px;min-height:380px}.hero-grid{grid-template-columns:1fr}}
-@media (max-width:720px){.shell{padding:16px 14px 30px}.hero{padding:22px}.hero h1{font-size:38px}.cue-row{grid-template-columns:44px 96px minmax(0,1fr)}.cue-actions{grid-column:1 / -1}.preview-line{font-size:22px}}
+@media (max-width:720px){.shell{padding:16px 14px 30px}.hero{padding:22px}.hero h1{font-size:38px}.cue-row{grid-template-columns:44px 96px minmax(0,1fr)}.cue-actions{grid-column:1 / -1}.style-grid{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
@@ -193,7 +225,65 @@ pre.payload{margin:0;max-height:220px;overflow:auto;border-radius:18px;padding:1
 
         <section class="panel">
           <div class="panel-head"><div><h3>Preview teleprompter</h3><div class="panel-sub">Vista previa del LRC ya resuelto con offset global aplicado.</div></div></div>
-          <div class="panel-body"><div class="preview-shell"><div id="preview-lines" class="preview-screen"></div></div></div>
+          <div class="panel-body"><div class="preview-shell"><div id="preview-lines" class="preview-screen"><div id="preview-lines-inner" class="preview-lines"></div></div></div></div>
+        </section>
+
+        <section class="panel">
+          <div class="panel-head"><div><h3>Canvas tipografico</h3><div class="panel-sub">Ajusta el look del teleprompter y guarda el estilo dentro del package.</div></div></div>
+          <div class="panel-body stack">
+            <div id="tp-style-presets" class="style-presets"></div>
+            <div class="style-grid">
+              <div class="field"><label>Familia</label><select id="tp-style-font-family"></select></div>
+              <div class="field"><label>Alineacion</label><select id="tp-style-align"><option value="left">Izquierda</option><option value="center">Centro</option><option value="right">Derecha</option></select></div>
+            </div>
+            <div class="style-grid">
+              <div class="field range-stack">
+                <label for="tp-style-font-size">Tamano</label>
+                <input id="tp-style-font-size" type="range" min="2" max="9" step="0.1" value="5">
+                <div class="range-note"><span>Compacto</span><strong id="tp-style-font-size-val">5.0rem</strong><span>Gigante</span></div>
+              </div>
+              <div class="field range-stack">
+                <label for="tp-style-line-height">Interlineado</label>
+                <input id="tp-style-line-height" type="range" min="1.1" max="2.4" step="0.05" value="1.6">
+                <div class="range-note"><span>Tenso</span><strong id="tp-style-line-height-val">1.60</strong><span>Amplio</span></div>
+              </div>
+              <div class="field range-stack">
+                <label for="tp-style-letter-spacing">Espaciado</label>
+                <input id="tp-style-letter-spacing" type="range" min="-0.02" max="0.18" step="0.005" value="0.01">
+                <div class="range-note"><span>Cerrado</span><strong id="tp-style-letter-spacing-val">0.010em</strong><span>Abierto</span></div>
+              </div>
+              <div class="field range-stack">
+                <label for="tp-style-max-width">Ancho</label>
+                <input id="tp-style-max-width" type="range" min="420" max="1600" step="20" value="1100">
+                <div class="range-note"><span>Columna</span><strong id="tp-style-max-width-val">1100px</strong><span>Pantalla</span></div>
+              </div>
+              <div class="field range-stack">
+                <label for="tp-style-glow">Glow</label>
+                <input id="tp-style-glow" type="range" min="0" max="0.7" step="0.02" value="0.28">
+                <div class="range-note"><span>Seco</span><strong id="tp-style-glow-val">0.28</strong><span>Neon</span></div>
+              </div>
+              <div class="field range-stack">
+                <label for="tp-style-top-padding">Margen superior</label>
+                <input id="tp-style-top-padding" type="range" min="0" max="30" step="1" value="10">
+                <div class="range-note"><span>Arriba</span><strong id="tp-style-top-padding-val">10vh</strong><span>Abajo</span></div>
+              </div>
+              <div class="field range-stack">
+                <label for="tp-style-bottom-padding">Margen inferior</label>
+                <input id="tp-style-bottom-padding" type="range" min="8" max="45" step="1" value="30">
+                <div class="range-note"><span>Corto</span><strong id="tp-style-bottom-padding-val">30vh</strong><span>Largo</span></div>
+              </div>
+              <div class="field range-stack">
+                <label for="tp-style-active-scale">Zoom activo</label>
+                <input id="tp-style-active-scale" type="range" min="1" max="1.15" step="0.01" value="1.01">
+                <div class="range-note"><span>Plano</span><strong id="tp-style-active-scale-val">1.01x</strong><span>Pop</span></div>
+              </div>
+            </div>
+            <div class="button-row">
+              <button id="tp-style-save-default" class="ghost" type="button">Guardar como look base</button>
+              <button id="tp-style-reset" class="warn" type="button">Resetear look</button>
+            </div>
+            <div class="mini-note">Lo que ajustes aqui viaja con el `Song Package` y se replica en el `Twin Player`.</div>
+          </div>
         </section>
 
         <section class="panel">
@@ -223,6 +313,7 @@ pre.payload{margin:0;max-height:220px;overflow:auto;border-radius:18px;padding:1
 
   <script src="/js/core/namespace.js"></script>
   <script src="/js/modules/lrc-engine.js"></script>
+  <script src="/js/modules/teleprompter-style.js"></script>
   <script src="/js/modules/song-package.js"></script>
   <script src="/js/modules/twin-sync.js"></script>
   <script src="/js/modules/lrc-editor.js"></script>

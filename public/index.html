@@ -54,6 +54,20 @@
   --p:#ff006e;--s:#8338ec;--a:#3a86ff;--g:#00f5a0;
   --text:#f0f0f0;--sub:rgba(255,255,255,.55);
   --glow-p:rgba(255,0,110,.25);--glow-s:rgba(131,56,236,.25);
+  --tp-font-family:"Segoe UI",Tahoma,sans-serif;
+  --tp-font-size:5rem;
+  --tp-line-height:1.6;
+  --tp-letter-spacing:.01em;
+  --tp-max-width:1100px;
+  --tp-text-align:center;
+  --tp-active-scale:1.01;
+  --tp-line-opacity:.25;
+  --tp-next-opacity:.45;
+  --tp-done-opacity:.18;
+  --tp-glow-alpha:.28;
+  --tp-glow-secondary-alpha:.12;
+  --tp-stage-padding-top:10vh;
+  --tp-stage-padding-bottom:30vh;
 }
 /* Light theme override */
 [data-theme="light"]{
@@ -596,23 +610,23 @@ select.inp{cursor:pointer;}
 .visualizer-canvas{position:absolute;inset:0;opacity:.18;pointer-events:none;z-index:0;}
 .tp-area{
   flex:1;display:flex;align-items:flex-start;justify-content:center;
-  padding:40px 32px 20px;position:relative;z-index:2;overflow-y:auto;
+  padding:var(--tp-stage-padding-top) 32px var(--tp-stage-padding-bottom);position:relative;z-index:2;overflow-y:auto;
   scroll-behavior:smooth;
 }
 #tp-display{
-  font-size:5rem;line-height:1.6;text-align:center;max-width:1100px;
-  font-weight:300;letter-spacing:.01em;position:relative;
-  padding-top:10vh;padding-bottom:30vh;word-break:break-word;
+  font-size:var(--tp-font-size);line-height:var(--tp-line-height);text-align:var(--tp-text-align);max-width:var(--tp-max-width);
+  font-family:var(--tp-font-family);font-weight:300;letter-spacing:var(--tp-letter-spacing);position:relative;
+  word-break:break-word;width:100%;
 }
 /* ── Teleprompter Lines ──────────────────────────────────────────────── */
 .tp-line{
   display:block;margin-bottom:14px;position:relative;
   transition:opacity .4s ease, transform .3s ease;
-  opacity:.25;
+  opacity:var(--tp-line-opacity);
 }
-.tp-line.tp-line-active{opacity:1;transform:scale(1.01);}
-.tp-line.tp-line-next{opacity:.45;}
-.tp-line.tp-line-done{opacity:.18;}
+.tp-line.tp-line-active{opacity:1;transform:scale(var(--tp-active-scale));}
+.tp-line.tp-line-next{opacity:var(--tp-next-opacity);}
+.tp-line.tp-line-done{opacity:var(--tp-done-opacity);}
 .tp-line-break{display:block;height:24px;}
 
 /* ── Teleprompter Words ──────────────────────────────────────────────── */
@@ -624,7 +638,7 @@ select.inp{cursor:pointer;}
 .tp-word:hover{opacity:.8;background:rgba(255,255,255,.06);}
 .tp-word.tp-active{
   opacity:1;color:var(--p);font-weight:800;
-  text-shadow:0 0 30px var(--glow-p),0 0 60px rgba(255,0,110,.15);
+  text-shadow:0 0 30px rgba(255,0,110,var(--tp-glow-alpha)),0 0 60px rgba(0,213,255,var(--tp-glow-secondary-alpha));
   transform:scale(1.08);
   animation:wordPop .2s ease-out;
 }
@@ -661,7 +675,7 @@ body:has(.center.tp-fullscreen) #audio-bar{
 .center.tp-fullscreen .now-singing{
   position:fixed;top:0;left:0;right:0;z-index:1000;
 }
-.center.tp-fullscreen #tp-display{font-size:6rem;max-width:1400px;}
+.center.tp-fullscreen #tp-display{font-size:calc(var(--tp-font-size) * 1.12);max-width:calc(var(--tp-max-width) + 220px);}
 .tp-fullscreen-btn{
   position:absolute;top:10px;right:14px;z-index:15;
   width:34px;height:34px;border:1px solid var(--border);border-radius:8px;
@@ -1798,6 +1812,7 @@ body:not(.bar-context) .sidebar #input-mesa{display:none!important;}
 }
 .settings-btn:hover{box-shadow:0 3px 14px rgba(58,134,255,.3);transform:translateY(-1px);}
 .settings-btn.secondary{background:rgba(255,255,255,.06);border:1px solid var(--border);}
+.settings-btn.secondary.on{background:linear-gradient(135deg,rgba(255,0,110,.22),rgba(58,134,255,.18));border-color:rgba(58,134,255,.32);color:#fff;}
 .settings-btn.secondary:hover{background:rgba(255,255,255,.1);}
 .settings-toggle{
   position:relative;width:36px;height:20px;background:rgba(255,255,255,.1);
@@ -1919,7 +1934,7 @@ body:not(.bar-context) .sidebar #input-mesa{display:none!important;}
   .yt-panel.active{display:flex!important;position:fixed;top:48px;left:0;right:0;bottom:100px;width:100%;z-index:90;border-left:none;overflow-y:auto;-webkit-overflow-scrolling:touch;}
   .settings-panel{display:none!important;}
   .settings-panel.active{display:flex!important;position:fixed;top:48px;left:0;right:0;bottom:100px;width:100%;z-index:90;border-left:none;overflow-y:auto;-webkit-overflow-scrolling:touch;}
-  #tp-display{font-size:2rem;}
+  #tp-display{font-size:min(var(--tp-font-size), 2rem);}
   /* ─── Layout: center scrollea ─── */
   .main{overflow:hidden;touch-action:manipulation;}
   .center{overflow-y:auto;-webkit-overflow-scrolling:touch;touch-action:manipulation;padding-bottom:120px;}
@@ -1957,7 +1972,7 @@ body:not(.bar-context) .sidebar #input-mesa{display:none!important;}
   .ctrl-group+.ctrl-group::before{display:none;}
   .tp-lrc-badge{display:none!important;}
   .player-bar .fx-sliders{display:none;}
-  #tp-display{font-size:1.6rem;}
+  #tp-display{font-size:min(var(--tp-font-size), 1.6rem);}
   .catalog-modal{width:96%;max-height:90vh;border-radius:12px;}
   /* Paneles: topbar(50px) + player(48px) + nav(52px) */
   .ia-panel.active,.bares-panel.active,.yt-panel.active,.settings-panel.active{top:50px!important;bottom:100px!important;}
@@ -3066,6 +3081,58 @@ input:focus-visible,textarea:focus-visible{
             </select>
           </div>
           <div class="settings-row">
+            <span class="settings-label">Familia tipografica</span>
+            <select class="settings-inp" id="set-tp-font-family" style="width:auto;margin-bottom:0;" onchange="setTpFontFamily(this.value)"></select>
+          </div>
+          <div class="settings-row">
+            <span class="settings-label">Alineacion</span>
+            <select class="settings-inp" id="set-tp-align" style="width:auto;margin-bottom:0;" onchange="setTpTextAlign(this.value)">
+              <option value="left">Izquierda</option>
+              <option value="center">Centro</option>
+              <option value="right">Derecha</option>
+            </select>
+          </div>
+          <div style="display:grid;gap:10px;margin:10px 0 6px;">
+            <div>
+              <div class="settings-row" style="margin-bottom:6px;"><span class="settings-label">Interlineado</span><span class="settings-value" id="set-tp-line-height-val">1.60</span></div>
+              <input type="range" id="set-tp-line-height" min="1.1" max="2.4" step="0.05" value="1.6" style="width:100%;accent-color:var(--p);" oninput="setTpLineHeight(this.value)">
+            </div>
+            <div>
+              <div class="settings-row" style="margin-bottom:6px;"><span class="settings-label">Espaciado</span><span class="settings-value" id="set-tp-letter-spacing-val">0.010em</span></div>
+              <input type="range" id="set-tp-letter-spacing" min="-0.02" max="0.18" step="0.005" value="0.01" style="width:100%;accent-color:var(--s);" oninput="setTpLetterSpacing(this.value)">
+            </div>
+            <div>
+              <div class="settings-row" style="margin-bottom:6px;"><span class="settings-label">Ancho de escena</span><span class="settings-value" id="set-tp-max-width-val">1100px</span></div>
+              <input type="range" id="set-tp-max-width" min="420" max="1600" step="20" value="1100" style="width:100%;accent-color:var(--a);" oninput="setTpMaxWidth(this.value)">
+            </div>
+            <div>
+              <div class="settings-row" style="margin-bottom:6px;"><span class="settings-label">Glow</span><span class="settings-value" id="set-tp-glow-val">0.28</span></div>
+              <input type="range" id="set-tp-glow" min="0" max="0.7" step="0.02" value="0.28" style="width:100%;accent-color:var(--g);" oninput="setTpGlow(this.value)">
+            </div>
+            <div>
+              <div class="settings-row" style="margin-bottom:6px;"><span class="settings-label">Margen superior</span><span class="settings-value" id="set-tp-top-padding-val">10vh</span></div>
+              <input type="range" id="set-tp-top-padding" min="0" max="30" step="1" value="10" style="width:100%;accent-color:var(--p);" oninput="setTpTopPadding(this.value)">
+            </div>
+            <div>
+              <div class="settings-row" style="margin-bottom:6px;"><span class="settings-label">Margen inferior</span><span class="settings-value" id="set-tp-bottom-padding-val">30vh</span></div>
+              <input type="range" id="set-tp-bottom-padding" min="8" max="45" step="1" value="30" style="width:100%;accent-color:var(--s);" oninput="setTpBottomPadding(this.value)">
+            </div>
+            <div>
+              <div class="settings-row" style="margin-bottom:6px;"><span class="settings-label">Zoom de linea activa</span><span class="settings-value" id="set-tp-active-scale-val">1.01x</span></div>
+              <input type="range" id="set-tp-active-scale" min="1" max="1.15" step="0.01" value="1.01" style="width:100%;accent-color:var(--a);" oninput="setTpActiveScale(this.value)">
+            </div>
+          </div>
+          <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px;">
+            <button class="settings-btn secondary" type="button" data-tp-preset="stage" onclick="applyTpStylePreset('stage')" style="width:auto;padding:7px 10px;">Escenario</button>
+            <button class="settings-btn secondary" type="button" data-tp-preset="compact" onclick="applyTpStylePreset('compact')" style="width:auto;padding:7px 10px;">Compacto</button>
+            <button class="settings-btn secondary" type="button" data-tp-preset="mono" onclick="applyTpStylePreset('mono')" style="width:auto;padding:7px 10px;">Mono</button>
+            <button class="settings-btn secondary" type="button" data-tp-preset="arena" onclick="applyTpStylePreset('arena')" style="width:auto;padding:7px 10px;">Arena</button>
+          </div>
+          <div style="display:flex;gap:8px;">
+            <button class="settings-btn secondary" type="button" onclick="saveTpStyleAsDefault()">Guardar look base</button>
+            <button class="settings-btn secondary" type="button" onclick="resetTpStyle()">Resetear</button>
+          </div>
+          <div class="settings-row">
             <span class="settings-label">Visualizador audio</span>
             <button class="settings-toggle on" id="set-viz-toggle" onclick="toggleVisualizer(this)"></button>
           </div>
@@ -3892,9 +3959,12 @@ const tpState = {
   autoScrolling: false,
   intervalId: null,
   lrcTimerId: null,
+  playbackRafId: 0,
   startTime: 0,     // for LRC playback
   pauseOffset: 0,   // accumulated pause time for LRC
   syncOffset: 0,    // user-adjustable offset in seconds (+ = lyrics earlier, - = lyrics later)
+  wordTimingsMs: [],
+  playbackEndMs: 0
 };
 
 // ── Sync offset controls ─────────────────────────────────────────────
@@ -3993,6 +4063,18 @@ function updateLicenseUI() { return window.VibeFlow.modules.settings.updateLicen
 function loadUserProfile() { return window.VibeFlow.modules.settings.loadUserProfile.apply(this, arguments); }
 function toggleDarkMode() { return window.VibeFlow.modules.settings.toggleDarkMode.apply(this, arguments); }
 function setTpFontSize() { return window.VibeFlow.modules.settings.setTpFontSize.apply(this, arguments); }
+function setTpFontFamily() { return window.VibeFlow.modules.settings.setTpFontFamily.apply(this, arguments); }
+function setTpTextAlign() { return window.VibeFlow.modules.settings.setTpTextAlign.apply(this, arguments); }
+function setTpLineHeight() { return window.VibeFlow.modules.settings.setTpLineHeight.apply(this, arguments); }
+function setTpLetterSpacing() { return window.VibeFlow.modules.settings.setTpLetterSpacing.apply(this, arguments); }
+function setTpMaxWidth() { return window.VibeFlow.modules.settings.setTpMaxWidth.apply(this, arguments); }
+function setTpGlow() { return window.VibeFlow.modules.settings.setTpGlow.apply(this, arguments); }
+function setTpTopPadding() { return window.VibeFlow.modules.settings.setTpTopPadding.apply(this, arguments); }
+function setTpBottomPadding() { return window.VibeFlow.modules.settings.setTpBottomPadding.apply(this, arguments); }
+function setTpActiveScale() { return window.VibeFlow.modules.settings.setTpActiveScale.apply(this, arguments); }
+function applyTpStylePreset() { return window.VibeFlow.modules.settings.applyTpStylePreset.apply(this, arguments); }
+function resetTpStyle() { return window.VibeFlow.modules.settings.resetTpStyle.apply(this, arguments); }
+function saveTpStyleAsDefault() { return window.VibeFlow.modules.settings.saveTpStyleAsDefault.apply(this, arguments); }
 function toggleVisualizer() { return window.VibeFlow.modules.settings.toggleVisualizer.apply(this, arguments); }
 function toggleJingle() { return window.VibeFlow.modules.settings.toggleJingle.apply(this, arguments); }
 function toggleAutoPromo() { return window.VibeFlow.modules.settings.toggleAutoPromo.apply(this, arguments); }
@@ -4040,6 +4122,7 @@ function loadStats() { return window.VibeFlow.modules.settings.loadStats.apply(t
 <script src="/js/modules/ads.js"></script>
 <script src="/js/modules/search.js"></script>
 <script src="/js/modules/lrc-engine.js"></script>
+<script src="/js/modules/teleprompter-style.js"></script>
 <script src="/js/modules/song-package.js"></script>
 <script src="/js/modules/twin-sync.js"></script>
 <script src="/js/modules/twin-bridge.js"></script>

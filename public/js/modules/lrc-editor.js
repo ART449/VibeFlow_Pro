@@ -7,10 +7,12 @@
   const state = {
     pkg: null,
     cues: [],
+    displayStyle: null,
     catalogSongs: [],
     activeIdx: 0,
     objectUrl: '',
     lastPreviewIdx: -1,
+    lastPreviewSignature: '',
     twinSessionId: '',
     twinTransport: null,
     twinWindow: null,
@@ -24,6 +26,10 @@
 
   function packages() {
     return VF.modules.songPackage;
+  }
+
+  function styleHelper() {
+    return VF.modules.teleprompterStyle || null;
   }
 
   function el(id) {
@@ -91,12 +97,126 @@
     state.pkg.globalOffsetMs = Math.round(Number(el('pkg-offset').value || 0));
     state.pkg.notes = (el('pkg-notes').value || '').trim();
     state.pkg.sourceAudioName = (el('pkg-audio-name').textContent || '').trim();
+    state.pkg.displayStyle = state.displayStyle;
   }
 
   function refreshDerived() {
     syncPackageFromForm();
     state.pkg = packages().withCues(state.pkg, state.cues);
     return state.pkg;
+  }
+
+  function populateStyleChoices() {
+    const helper = styleHelper();
+    const fontSelect = el('tp-style-font-family');
+    const presetWrap = el('tp-style-presets');
+    if (!helper) return;
+
+    if (fontSelect && !fontSelect.options.length) {
+      fontSelect.innerHTML = helper.fontOptions().map((item) =>
+        '<option value="' + item.id + '">' + item.label + '</option>'
+      ).join('');
+    }
+
+    if (presetWrap && !presetWrap.children.length) {
+      presetWrap.innerHTML = helper.presetOptions().map((item) =>
+        '<button type="button" class="ghost" data-style-preset="' + item.id + '">' + item.label + '</button>'
+      ).join('');
+    }
+  }
+
+  function renderStyleControls() {
+    const helper = styleHelper();
+    if (!helper) return;
+    populateStyleChoices();
+    const style = helper.normalize(state.displayStyle);
+    state.displayStyle = style;
+
+    const fontSelect = el('tp-style-font-family');
+    const alignSelect = el('tp-style-align');
+    if (fontSelect) fontSelect.value = style.fontPreset;
+    if (alignSelect) alignSelect.value = style.textAlign;
+
+    const sliderValues = {
+      'tp-style-font-size': style.fontSizeRem.toFixed(1),
+      'tp-style-line-height': style.lineHeight.toFixed(2),
+      'tp-style-letter-spacing': style.letterSpacingEm.toFixed(3),
+      'tp-style-max-width': String(Math.round(style.maxWidthPx)),
+      'tp-style-glow': style.glowAlpha.toFixed(2),
+      'tp-style-top-padding': String(Math.round(style.stageTopVh)),
+      'tp-style-bottom-padding': String(Math.round(style.stageBottomVh)),
+      'tp-style-active-scale': style.activeScale.toFixed(2)
+    };
+
+    Object.keys(sliderValues).forEach((id) => {
+      const node = el(id);
+      if (node) node.value = sliderValues[id];
+    });
+
+    const labels = {
+      'tp-style-font-size-val': style.fontSizeRem.toFixed(1) + 'rem',
+      'tp-style-line-height-val': style.lineHeight.toFixed(2),
+      'tp-style-letter-spacing-val': style.letterSpacingEm.toFixed(3) + 'em',
+      'tp-style-max-width-val': Math.round(style.maxWidthPx) + 'px',
+      'tp-style-glow-val': style.glowAlpha.toFixed(2),
+      'tp-style-top-padding-val': Math.round(style.stageTopVh) + 'vh',
+      'tp-style-bottom-padding-val': Math.round(style.stageBottomVh) + 'vh',
+      'tp-style-active-scale-val': style.activeScale.toFixed(2) + 'x'
+    };
+
+    Object.keys(labels).forEach((id) => {
+      const node = el(id);
+      if (node) node.textContent = labels[id];
+    });
+
+    document.querySelectorAll('[data-style-preset]').forEach((btn) => {
+      btn.classList.toggle('active', btn.getAttribute('data-style-preset') === style.presetKey);
+    });
+  }
+
+  function applyPreviewStyle() {
+    const helper = styleHelper();
+    const preview = el('preview-lines');
+    if (!helper || !preview) return;
+    state.displayStyle = helper.applyToElement(preview, state.displayStyle);
+  }
+
+  function previewSignature() {
+    return state.cues.map((cue) => [cue.id, cue.text].join('::')).join('\n');
+  }
+
+  function renderPreviewLines(force) {
+    const inner = el('preview-lines-inner');
+    if (!inner) return;
+    if (!state.cues.length) {
+      state.lastPreviewSignature = '';
+      state.lastPreviewIdx = -1;
+      inner.innerHTML = '<div class="empty-card">El preview del teleprompter aparecera aqui.</div>';
+      return;
+    }
+
+    const signature = previewSignature();
+    if (!force && signature === state.lastPreviewSignature) return;
+    state.lastPreviewSignature = signature;
+    state.lastPreviewIdx = -1;
+    inner.innerHTML = state.cues.map((cue, index) =>
+      '<div class="preview-line" data-preview-idx="' + index + '">' + escapeHtml(cue.text) + '</div>'
+    ).join('');
+  }
+
+  function setDisplayStyle(nextStyle, options) {
+    const helper = styleHelper();
+    if (!helper) return;
+    const opts = options || {};
+    let style = nextStyle;
+    if (typeof nextStyle === 'string') style = helper.preset(nextStyle);
+    state.displayStyle = helper.normalize(style || state.displayStyle);
+    if (opts.persistDefault) helper.save(state.displayStyle);
+    if (state.pkg) state.pkg.displayStyle = state.displayStyle;
+    renderStyleControls();
+    applyPreviewStyle();
+    updatePreview(false);
+    broadcastTwinState('style');
   }
 
   function getTwinSync() {
@@ -172,8 +292,10 @@
   function loadPackage(rawPkg) {
     state.pkg = packages().normalize(rawPkg);
     state.cues = engine().cloneCues(state.pkg.cues);
+    state.displayStyle = styleHelper() ? styleHelper().normalize(state.pkg.displayStyle || styleHelper().load()) : state.pkg.displayStyle;
     state.activeIdx = firstSuggestedIdx(state.cues);
     state.lastPreviewIdx = -1;
+    state.lastPreviewSignature = '';
 
     el('pkg-title').value = state.pkg.title;
     el('pkg-artist').value = state.pkg.artist;
@@ -182,6 +304,8 @@
     el('lyrics-source').value = state.pkg.lyricsPlain || '';
     el('pkg-audio-name').textContent = state.pkg.sourceAudioName || 'Sin audio de referencia';
 
+    renderStyleControls();
+    applyPreviewStyle();
     renderEverything();
     broadcastTwinState('package');
   }
@@ -333,7 +457,8 @@
     const body = {
       titulo: pkg.title,
       artista: pkg.artist,
-      letra: pkg.lrcText || pkg.lyricsPlain
+      letra: pkg.lrcText || pkg.lyricsPlain,
+      displayStyle: pkg.displayStyle
     };
 
     let targetId = pkg.sourceSongId;
@@ -402,14 +527,14 @@
     }).join('');
   }
 
-  function updatePreview() {
+  function updatePreview(forceRender) {
     const preview = el('preview-lines');
+    const previewInner = el('preview-lines-inner');
     const audio = audioEl();
-    if (!preview) return;
-    if (!state.cues.length) {
-      preview.innerHTML = '<div class="empty-card">El preview del teleprompter aparecera aqui.</div>';
-      return;
-    }
+    if (!preview || !previewInner) return;
+    applyPreviewStyle();
+    renderPreviewLines(!!forceRender);
+    if (!state.cues.length) return;
 
     const pkg = refreshDerived();
     const playback = currentPlayback();
@@ -418,17 +543,20 @@
       ? engine().resolveActiveCueIndex(state.cues, playback.currentTimeMs, pkg.globalOffsetMs)
       : state.activeIdx;
 
-    preview.innerHTML = state.cues.map((cue, index) => {
-      let cls = 'preview-line';
-      if (index < resolvedIdx) cls += ' past';
-      else if (index === resolvedIdx) cls += ' active';
-      return '<div class="' + cls + '" data-preview-idx="' + index + '">' + escapeHtml(cue.text) + '</div>';
-    }).join('');
+    previewInner.querySelectorAll('.preview-line').forEach((line, index) => {
+      line.classList.toggle('past', resolvedIdx >= 0 && index < resolvedIdx);
+      line.classList.toggle('active', index === resolvedIdx);
+      line.classList.toggle('next', resolvedIdx >= 0 && index === resolvedIdx + 1);
+    });
 
     if (resolvedIdx >= 0 && resolvedIdx !== state.lastPreviewIdx) {
       state.lastPreviewIdx = resolvedIdx;
-      const active = preview.querySelector('[data-preview-idx="' + resolvedIdx + '"]');
-      if (active) active.scrollIntoView({ block: 'center', behavior: 'smooth' });
+      const active = previewInner.querySelector('[data-preview-idx="' + resolvedIdx + '"]');
+      if (active) {
+        const targetTop = Math.max(0, active.offsetTop - Math.max(32, (preview.clientHeight - active.offsetHeight) * 0.5));
+        const behavior = Math.abs(preview.scrollTop - targetTop) > 24 ? 'smooth' : 'auto';
+        preview.scrollTo({ top: targetTop, behavior });
+      }
     }
 
     const twinPayload = packages().toTwinPayload(pkg, playback);
@@ -673,11 +801,83 @@
     });
   }
 
+  function bindStyleEvents() {
+    const helper = styleHelper();
+    if (!helper) return;
+    populateStyleChoices();
+
+    const fontSelect = el('tp-style-font-family');
+    const alignSelect = el('tp-style-align');
+    if (fontSelect) {
+      fontSelect.addEventListener('change', (event) => {
+        const option = helper.fontOptions().find((item) => item.id === event.target.value) || helper.fontOptions()[0];
+        setDisplayStyle(Object.assign({}, state.displayStyle, {
+          presetKey: '',
+          fontPreset: option.id,
+          fontFamily: option.value
+        }));
+      });
+    }
+    if (alignSelect) {
+      alignSelect.addEventListener('change', (event) => {
+        setDisplayStyle(Object.assign({}, state.displayStyle, {
+          presetKey: '',
+          textAlign: event.target.value
+        }));
+      });
+    }
+
+    const sliderConfig = [
+      ['tp-style-font-size', 'fontSizeRem'],
+      ['tp-style-line-height', 'lineHeight'],
+      ['tp-style-letter-spacing', 'letterSpacingEm'],
+      ['tp-style-max-width', 'maxWidthPx'],
+      ['tp-style-glow', 'glowAlpha'],
+      ['tp-style-top-padding', 'stageTopVh'],
+      ['tp-style-bottom-padding', 'stageBottomVh'],
+      ['tp-style-active-scale', 'activeScale']
+    ];
+
+    sliderConfig.forEach((item) => {
+      const node = el(item[0]);
+      if (!node) return;
+      node.addEventListener('input', (event) => {
+        setDisplayStyle(Object.assign({}, state.displayStyle, {
+          presetKey: '',
+          [item[1]]: Number(event.target.value)
+        }));
+      });
+    });
+
+    document.addEventListener('click', (event) => {
+      const presetBtn = event.target.closest('[data-style-preset]');
+      if (presetBtn) {
+        setDisplayStyle(helper.preset(presetBtn.getAttribute('data-style-preset')));
+      }
+    });
+
+    const saveBtn = el('tp-style-save-default');
+    if (saveBtn) {
+      saveBtn.addEventListener('click', () => {
+        helper.save(state.displayStyle);
+        toast('Look base guardado', 'ok');
+      });
+    }
+
+    const resetBtn = el('tp-style-reset');
+    if (resetBtn) {
+      resetBtn.addEventListener('click', () => {
+        setDisplayStyle(helper.defaultStyle());
+      });
+    }
+  }
+
   editor.init = function() {
     loadPackage(packages().createEmpty());
     bindEditorEvents();
     bindLibraryEvents();
     bindHotkeys();
+    bindStyleEvents();
 
     el('lyrics-build-cues').addEventListener('click', rebuildFromTextarea);
     el('lrc-auto-spread').addEventListener('click', autoSpread);

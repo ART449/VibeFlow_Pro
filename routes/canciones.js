@@ -3,6 +3,10 @@
 function registerRoutes(app, state, helpers) {
   const { debouncedSave, clampStr, generateId, requireRoomAuth } = helpers;
 
+  function sanitizeDisplayStyle(value) {
+    return value && typeof value === 'object' && !Array.isArray(value) ? value : null;
+  }
+
   app.get('/api/canciones', (req, res) => {
     const q = (req.query.q || '').toLowerCase().trim();
     if (!q) return res.json(state.canciones);
@@ -24,7 +28,14 @@ function registerRoutes(app, state, helpers) {
     const letra   = clampStr(req.body.letra, 10000).trim();
     const artista = clampStr(req.body.artista, 100).trim();
     if (!titulo) return res.status(400).json({ error: 'Titulo requerido' });
-    const song = { id: generateId(), titulo, letra, artista, fecha: Date.now() };
+    const song = {
+      id: generateId(),
+      titulo,
+      letra,
+      artista,
+      displayStyle: sanitizeDisplayStyle(req.body.displayStyle),
+      fecha: Date.now()
+    };
     state.canciones.push(song);
     debouncedSave('canciones.json', state.canciones);
     res.json(song);
@@ -36,6 +47,7 @@ function registerRoutes(app, state, helpers) {
     if (req.body.titulo !== undefined) song.titulo = clampStr(req.body.titulo, 200).trim();
     if (req.body.letra !== undefined) song.letra = clampStr(req.body.letra, 10000).trim();
     if (req.body.artista !== undefined) song.artista = clampStr(req.body.artista, 100).trim();
+    if (req.body.displayStyle !== undefined) song.displayStyle = sanitizeDisplayStyle(req.body.displayStyle);
     debouncedSave('canciones.json', state.canciones);
     res.json(song);
   });

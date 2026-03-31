@@ -10,6 +10,20 @@
 :root{
   --bg:#06060b;--panel:#0f0f18;--panel2:#171726;--line:rgba(255,255,255,.07);--text:#f7f7fb;--sub:rgba(255,255,255,.56);
   --pink:#ff006e;--cyan:#00d5ff;--good:#00e59b;
+  --tp-font-family:"Segoe UI",Tahoma,sans-serif;
+  --tp-font-size:4rem;
+  --tp-line-height:1.42;
+  --tp-letter-spacing:.01em;
+  --tp-max-width:1120px;
+  --tp-text-align:center;
+  --tp-active-scale:1.02;
+  --tp-line-opacity:.36;
+  --tp-next-opacity:.5;
+  --tp-done-opacity:.18;
+  --tp-glow-alpha:.30;
+  --tp-glow-secondary-alpha:.12;
+  --tp-stage-padding-top:7vh;
+  --tp-stage-padding-bottom:28vh;
 }
 html,body{margin:0;padding:0;height:100%;overflow:hidden;background:
   radial-gradient(circle at top left,rgba(255,0,110,.16),transparent 28%),
@@ -28,14 +42,15 @@ html,body{margin:0;padding:0;height:100%;overflow:hidden;background:
   border:1px solid rgba(255,255,255,.08);font-size:12px;font-weight:700
 }
 .dot{width:8px;height:8px;border-radius:50%;background:#555}.dot.ok{background:var(--good)}
-.stage{position:relative;overflow:auto;padding:7vh 8vw 28vh;scroll-behavior:smooth}
-.twin-lines{max-width:1120px;margin:0 auto;text-align:center}
+.stage{position:relative;overflow:auto;padding:var(--tp-stage-padding-top) 8vw var(--tp-stage-padding-bottom);scroll-behavior:smooth}
+.twin-lines{max-width:var(--tp-max-width);margin:0 auto;text-align:var(--tp-text-align);font-family:var(--tp-font-family);letter-spacing:var(--tp-letter-spacing)}
 .twin-line{
-  font-size:clamp(30px,4vw,64px);line-height:1.42;padding:14px 0;color:rgba(255,255,255,.36);
+  font-size:var(--tp-font-size);line-height:var(--tp-line-height);padding:14px 0;color:rgba(255,255,255,var(--tp-line-opacity));
   transition:transform .18s ease,color .18s ease,text-shadow .18s ease,opacity .18s ease
 }
-.twin-line.past{color:rgba(255,255,255,.18)}
-.twin-line.active{color:#fff;transform:scale(1.02);text-shadow:0 0 24px rgba(255,0,110,.30),0 0 40px rgba(0,213,255,.12)}
+.twin-line.past{color:rgba(255,255,255,var(--tp-done-opacity))}
+.twin-line.next{color:rgba(255,255,255,var(--tp-next-opacity))}
+.twin-line.active{color:#fff;transform:scale(var(--tp-active-scale));text-shadow:0 0 24px rgba(255,0,110,var(--tp-glow-alpha)),0 0 40px rgba(0,213,255,var(--tp-glow-secondary-alpha))}
 .twin-empty{
   padding:80px 20px;text-align:center;color:var(--sub);font-size:20px;line-height:1.7;border:1px dashed rgba(255,255,255,.12);
   border-radius:26px;background:rgba(255,255,255,.03)
@@ -86,6 +101,7 @@ html,body{margin:0;padding:0;height:100%;overflow:hidden;background:
   </div>
 
   <script src="/js/core/namespace.js"></script>
+  <script src="/js/modules/teleprompter-style.js"></script>
   <script src="/js/modules/lrc-engine.js"></script>
   <script src="/js/modules/twin-sync.js"></script>
   <script src="/js/modules/twin-player.js"></script>

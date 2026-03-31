@@ -9,6 +9,10 @@
     return VF.modules.lrcEngine;
   }
 
+  function styleHelper() {
+    return VF.modules.teleprompterStyle || null;
+  }
+
   function now() {
     return Date.now();
   }
@@ -19,6 +23,12 @@
 
   function cleanString(value) {
     return String(value || '').trim();
+  }
+
+  function normalizeDisplayStyle(value) {
+    const helper = styleHelper();
+    if (helper && typeof helper.normalize === 'function') return helper.normalize(value);
+    return value || null;
   }
 
   function safeFileName(value) {
@@ -50,6 +60,7 @@
       timingMode: 'line',
       globalOffsetMs: 0,
       notes: '',
+      displayStyle: normalizeDisplayStyle(null),
       lyricsPlain: '',
       lrcText: '',
       cues: [],
@@ -80,6 +91,7 @@
       timingMode: cleanString(input.timingMode) || 'line',
       globalOffsetMs,
       notes: cleanString(input.notes),
+      displayStyle: normalizeDisplayStyle(input.displayStyle || input.teleprompterStyle || base.displayStyle),
       lyricsPlain: plainText,
       lrcText: engine().hasCompleteTiming(cues) ? engine().cuesToLRC(cues, { offsetMs: globalOffsetMs }) : '',
       cues,
@@ -107,6 +119,7 @@
       sourceSongId: song && song.id,
       sourceKind: 'catalog',
       sourceRef: song && song.id,
+      displayStyle: song && song.displayStyle,
       lrcText: engine().isLikelyLRC(song && song.letra) ? song.letra : '',
       lyricsPlain: !(engine().isLikelyLRC(song && song.letra)) ? (song && song.letra) : '',
       cues: engine().textToCues(song && song.letra),
@@ -173,6 +186,7 @@
       sourceAudioName: normalized.sourceAudioName,
       timingMode: normalized.timingMode,
       globalOffsetMs: normalized.globalOffsetMs,
+      displayStyle: normalizeDisplayStyle(normalized.displayStyle),
       lrcText: normalized.lrcText || '',
       lyricsPlain: normalized.lyricsPlain,
       currentTimeMs: Math.max(0, Math.round(Number(playback && playback.currentTimeMs) || 0)),

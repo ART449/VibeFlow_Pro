@@ -37,6 +37,10 @@
     return VF.modules.twinSync;
   }
 
+  function styleHelper() {
+    return VF.modules.teleprompterStyle || null;
+  }
+
   function el(id) {
     return document.getElementById(id);
   }
@@ -182,6 +186,7 @@
       sourceAudioName: cleanString(state.trackMeta.sourceAudioName),
       timingMode: hasTpState() && tpState.isLRC ? 'line' : 'manual',
       globalOffsetMs: hasTpState() ? Math.round((Number(tpState.syncOffset) || 0) * 1000) : 0,
+      displayStyle: styleHelper() && typeof styleHelper().load === 'function' ? styleHelper().load() : null,
       lyricsPlain: lrcEngine().isLikelyLRC(lyricsText) ? '' : lyricsText,
       lrcText: lrcEngine().isLikelyLRC(lyricsText) ? lyricsText : '',
       cues: lrcEngine().textToCues(lyricsText),
@@ -386,6 +391,10 @@
     updateTwinBadge();
   };
 
+  twinBridge.onStyleChanged = function() {
+    syncNow('style');
+  };
+
   twinBridge.onPlayerPlay = function(playerType) {
     ensureGlobals();
     window._activePlayerType = cleanString(playerType) || window._activePlayerType;
@@ -455,49 +464,9 @@
       return;
     }
 
-    const elapsed = (Number(currentTimeSec) || 0) + (Number(tpState.syncOffset) || 0);
-    let activeLine = -1;
-
-    for (let i = tpState.lrcData.length - 1; i >= 0; i--) {
-      if (elapsed >= tpState.lrcData[i].time) {
-        activeLine = i;
-        break;
-      }
-    }
-
-    if (activeLine >= 0 && activeLine !== tpState.currentLine) {
-      const line = tpState.lines[activeLine];
-      if (line && line.words.length > 0) {
-        for (let lineIdx = tpState.currentLine + 1; lineIdx <= activeLine; lineIdx++) {
-          const prevLine = tpState.lines[lineIdx];
-          if (!prevLine) continue;
-          prevLine.words.forEach((word) => {
-            const node = document.getElementById('tw-' + word.globalIdx);
-            if (node && !node.classList.contains('tp-done')) {
-              node.classList.remove('tp-active');
-              node.classList.add('tp-done');
-            }
-          });
-        }
-
-        highlightWord(line.words[0].globalIdx);
-
-        if (line.words.length > 1) {
-          const nextLineTime = activeLine + 1 < tpState.lrcData.length
-            ? tpState.lrcData[activeLine + 1].time
-            : tpState.lrcData[activeLine].time + 5;
-          const lineDuration = (nextLineTime - tpState.lrcData[activeLine].time) * 1000;
-          const wordDelay = lineDuration / line.words.length;
-
-          for (let wordIdx = 1; wordIdx < line.words.length; wordIdx++) {
-            setTimeout(() => {
-              if (tpState.currentLine === activeLine && tpState.autoScrolling) {
-                highlightWord(line.words[wordIdx].globalIdx);
-              }
-            }, wordDelay * wordIdx);
-          }
-        }
-      }
+    const lyricsModule = VF.modules.lyrics;
+    if (lyricsModule && typeof lyricsModule.syncToExternalTime === 'function') {
+      lyricsModule.syncToExternalTime(currentTimeSec);
     }
 
     syncNow('tick');

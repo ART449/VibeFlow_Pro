@@ -10,7 +10,9 @@
     envelope: null,
     cues: [],
     rafId: 0,
-    lastResolvedIdx: -1
+    lastResolvedIdx: -1,
+    lastCueSignature: '',
+    lastStyleSignature: ''
   };
 
   function engine() {
@@ -19,6 +21,10 @@
 
   function sync() {
     return VF.modules.twinSync;
+  }
+
+  function styleHelper() {
+    return VF.modules.teleprompterStyle || null;
   }
 
   function el(id) {
@@ -53,11 +59,30 @@
     if (text) text.textContent = label || (ok ? 'Conectado' : 'Sin enlace');
   }
 
+  function cueSignature(payload) {
+    return [
+      payload && payload.songId,
+      payload && payload.lrcText,
+      payload && payload.lyricsPlain
+    ].join('::');
+  }
+
+  function applyDisplayStyle(payload) {
+    const helper = styleHelper();
+    const stage = document.querySelector('.stage');
+    if (!helper || !stage) return;
+    const nextSignature = helper.signature(payload && payload.displayStyle);
+    if (nextSignature === state.lastStyleSignature) return;
+    state.lastStyleSignature = nextSignature;
+    helper.applyToElement(stage, payload && payload.displayStyle);
+  }
+
   function setCuesFromPayload(payload) {
     const sourceText = payload && payload.lrcText ? payload.lrcText : payload && payload.lyricsPlain ? payload.lyricsPlain : '';
     state.cues = engine().textToCues(sourceText);
     state.lastResolvedIdx = -1;
     renderLines();
+    applyDisplayStyle(payload);
   }
 
   function renderLines() {
@@ -119,11 +144,17 @@
     lines.forEach((line, lineIdx) => {
       line.classList.toggle('past', idx >= 0 && lineIdx < idx);
       line.classList.toggle('active', lineIdx === idx);
+      line.classList.toggle('next', idx >= 0 && lineIdx === idx + 1);
     });
 
     if (idx >= 0) {
       const active = document.querySelector('.twin-line.active');
-      if (active) active.scrollIntoView({ block: 'center', behavior: 'smooth' });
+      const stage = document.querySelector('.stage');
+      if (active && stage) {
+        const targetTop = Math.max(0, active.offsetTop - Math.max(40, (stage.clientHeight - active.offsetHeight) * 0.5));
+        const behavior = Math.abs(stage.scrollTop - targetTop) > 28 ? 'smooth' : 'auto';
+        stage.scrollTo({ top: targetTop, behavior });
+      }
     }
   }
 
@@ -141,14 +172,17 @@
 
   function consumeEnvelope(envelope) {
     if (!envelope || !envelope.payload) return;
-    const prevPayload = state.envelope && state.envelope.payload;
-    const prevSignature = prevPayload ? [prevPayload.songId, prevPayload.lrcText, prevPayload.lyricsPlain].join('::') : '';
     const nextPayload = envelope.payload;
-    const nextSignature = [nextPayload.songId, nextPayload.lrcText, nextPayload.lyricsPlain].join('::');
+    const nextSignature = cueSignature(nextPayload);
 
     state.envelope = envelope;
     setStatus(true, 'Sesion local activa');
-    if (prevSignature !== nextSignature) setCuesFromPayload(nextPayload);
+    if (state.lastCueSignature !== nextSignature) {
+      state.lastCueSignature = nextSignature;
+      setCuesFromPayload(nextPayload);
+    } else {
+      applyDisplayStyle(nextPayload);
+    }
     renderEnvelope();
   }
 
