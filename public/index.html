@@ -2288,6 +2288,20 @@ input,select,textarea{font-size:16px!important;}
 }
 .dj-kill.killed{background:rgba(239,68,68,.5)!important;color:#fff!important;animation:faderGlow 1s infinite;}
 
+/* ── MIDI Panel ── */
+.midi-panel{padding:12px 0;border-top:1px solid rgba(255,255,255,.04);margin-top:4px;}
+.midi-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;font-size:.75rem;font-weight:700;}
+.midi-status{font-size:.6rem;color:rgba(255,255,255,.4);}
+.midi-devices{margin-bottom:6px;}
+.midi-device{font-size:.6rem;color:rgba(0,245,160,.6);padding:3px 8px;background:rgba(0,245,160,.05);border:1px solid rgba(0,245,160,.1);border-radius:6px;margin-bottom:3px;}
+.midi-none{font-size:.6rem;color:rgba(255,255,255,.2);text-align:center;padding:8px;}
+.midi-monitor-wrap{display:flex;align-items:center;gap:6px;margin-bottom:6px;}
+.midi-monitor-label{font-size:.55rem;color:rgba(255,255,255,.3);}
+.midi-monitor{font-size:.6rem;font-family:monospace;color:rgba(255,255,255,.3);transition:color .3s;}
+.midi-actions{display:flex;gap:4px;}
+.midi-btn{flex:1;padding:6px;border-radius:6px;border:1px solid rgba(255,255,255,.06);background:rgba(255,255,255,.02);color:rgba(255,255,255,.4);font-size:.6rem;cursor:pointer;text-align:center;}
+.midi-btn:hover{background:rgba(255,255,255,.06);color:#fff;}
+
 /* ── Teleprompter PRO Features ─────────────────────────────────────── */
 
 /* Voice Scroll active state */
@@ -4232,6 +4246,10 @@ function djFileLoaded(id, input) { return window.VibeFlow.modules.djMixer.fileLo
 function autoDJSetStyle(id) { return window.VibeFlow.modules.autoDJ.setStyle(id); }
 function autoDJToggle() { return window.VibeFlow.modules.autoDJ.toggle(); }
 function autoDJLoadFiles() { return window.VibeFlow.modules.autoDJ.loadFilesToPlaylist(); }
+// MIDI wrappers
+function midiResetMapping() { return window.VibeFlow.modules.midiController.resetMapping(); }
+function midiRefresh() { return window.VibeFlow.modules.midiController.refresh(); }
+function midiLearn(action) { return window.VibeFlow.modules.midiController.startLearn(action); }
 // catalogo y datos del estudio extraidos a /js/modules/studio-data.js
 
 // utilidades de UI, catalogo y paneles extraidas a /js/modules/misc-ui.js
@@ -4317,6 +4335,7 @@ function loadStats() { return window.VibeFlow.modules.settings.loadStats.apply(t
 <script src="/js/modules/teleprompter-pro.js"></script>
 <script src="/js/modules/dj-mixer.js"></script>
 <script src="/js/modules/autodj.js"></script>
+<script src="/js/modules/midi-controller.js"></script>
 <script src="/js/modules/studio-data.js"></script>
 <script src="/js/modules/misc-ui.js"></script>
 <script src="/js/modules/events-talent.js"></script>
