@@ -32,6 +32,7 @@ function registerRoutes(app, state, helpers) {
   });
 
   app.patch('/api/cola/:id', (req, res) => {
+    if (!helpers.requireRoomAuth(req, res)) return;
     const item = state.cola.find(c => c.id === req.params.id);
     if (!item) return res.status(404).json({ error: 'No encontrado' });
     if (req.body.estado) item.estado = clampStr(req.body.estado, 20);
@@ -69,6 +70,7 @@ function registerRoutes(app, state, helpers) {
   app.get('/api/mesas', (req, res) => res.json(state.mesas));
 
   app.patch('/api/mesas/:num', (req, res) => {
+    if (!helpers.requireRoomAuth(req, res)) return;
     const mesa = state.mesas.find(m => m.numero === parseInt(req.params.num));
     if (!mesa) return res.status(404).json({ error: 'Mesa no encontrada' });
     if (req.body.estado) mesa.estado = clampStr(req.body.estado, 20);

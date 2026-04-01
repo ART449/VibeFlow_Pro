@@ -294,7 +294,7 @@ function registerRoutes(app, _state, helpers) {
     const subs = readSubs();
     const licenses = Object.entries(subs.posLicenses || {}).map(([email, lic]) => ({
       email,
-      key: lic.key,
+      key: lic.key ? lic.key.substring(0, 9) + '•••••' : '—',
       plan: lic.plan,
       active: true,
       activatedAt: lic.activatedAt,

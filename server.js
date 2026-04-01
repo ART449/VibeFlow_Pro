@@ -563,7 +563,17 @@ io.on('connection', (socket) => {
   });
 
   // ── Sync por tiempo real (Fase 4 karaoke rework) ──
+  // Helper: require room membership for tp events
+  function requireRoom(eventName) {
+    if (!myRoom) {
+      console.warn('[WS] ' + eventName + ' rejected — no room joined');
+      return false;
+    }
+    return true;
+  }
+
   socket.on('tp_scroll', (data) => {
+    if (!requireRoom('tp_scroll')) return;
     const word = typeof data.currentWord === 'number' ? data.currentWord : undefined;
     const playing = typeof data.isPlaying === 'boolean' ? data.isPlaying : undefined;
     const currentTime = typeof data.currentTime === 'number' ? data.currentTime : undefined;
@@ -578,6 +588,7 @@ io.on('connection', (socket) => {
   });
 
   socket.on('tp_lyrics', (data) => {
+    if (!requireRoom('tp_lyrics')) return;
     const lyrics = typeof data.lyrics === 'string' ? data.lyrics.slice(0, 50000) : '';
     const singer = typeof data.singer === 'string' ? data.singer.slice(0, 100) : '';
     const song = typeof data.song === 'string' ? data.song.slice(0, 200) : '';
@@ -605,6 +616,7 @@ io.on('connection', (socket) => {
   });
 
   socket.on('tp_speed', (data) => {
+    if (!requireRoom('tp_speed')) return;
     const speed = Math.max(0.1, Math.min(10, Number(data.speed) || 1));
     if (myRoom) {
       const room = getRoom(myRoom);

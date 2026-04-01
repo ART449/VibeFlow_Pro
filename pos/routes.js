@@ -700,7 +700,7 @@ function registerRoutes(app) {
     const db = getDb();
     const barId = getBarId(req);
     const itemId = parseInt(req.params.id);
-    const { status, cancel_reason, cancelled_by } = req.body || {};
+    const { status, cancel_reason } = req.body || {};
 
     if (!isPositiveInt(itemId)) return res.json({ ok: false, error: 'ID invalido' });
     if (!status || !VALID_ITEM_STATUS.includes(status)) {
@@ -736,7 +736,7 @@ function registerRoutes(app) {
     if (status === 'enviado') setClauses.push("sent_at = datetime('now')");
     if (status === 'listo') setClauses.push("ready_at = datetime('now')");
     if (status === 'cancelado') {
-      const cancelledById = parseInt(cancelled_by || req.posSession?.employeeId) || req.posSession?.employeeId || null;
+      const cancelledById = req.posSession?.employeeId || null;
       setClauses.push("cancel_reason = ?");
       params.push(sanitize(cancel_reason, 200) || 'Cancelado desde POS');
       setClauses.push('cancelled_by = ?');
@@ -1714,12 +1714,21 @@ function registerRoutes(app) {
     const orderId = parseInt(req.params.orderId);
     if (!isPositiveInt(orderId)) return res.status(400).json({ ok: false, error: 'ID invalido' });
 
+    // Rate limit public cuenta endpoint (5 per minute per IP)
+    const ip = req.ip || 'unknown';
+    if (!helpers.checkRateLimit(ip + ':cuenta', 5, 60000)) {
+      return res.status(429).json({ ok: false, error: 'Demasiados intentos' });
+    }
+
+    // Require bar_id to prevent cross-tenant enumeration
+    const barId = req.query.bar_id || req.headers['x-bar-id'] || '';
     const order = db.prepare(`
       SELECT o.id, o.subtotal, o.tax, o.total, o.discount, o.status, o.created_at, o.tip,
-        t.number as table_number, t.area
+        t.number as table_number, t.area, o.bar_id
       FROM orders o JOIN tables t ON o.table_id = t.id
-      WHERE o.id = ?
-    `).get(orderId);
+      WHERE o.id = ? AND o.bar_id = ?
+    `).get(orderId, barId);
+    if (!barId) return res.status(400).json({ ok: false, error: 'bar_id requerido' });
     if (!order) return res.status(404).json({ ok: false, error: 'Orden no encontrada' });
 
     const items = db.prepare(`

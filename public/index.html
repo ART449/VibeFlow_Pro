@@ -2135,6 +2135,46 @@ input:focus-visible,textarea:focus-visible{
   transition:width .35s ease-out;
 }
 
+/* ── AUDIT FIXES: Touch targets, fonts, z-index, inputs ───────────── */
+
+/* Touch targets min 44px */
+.ctrl-btn{min-width:40px;min-height:40px;}
+.mode-btn{min-height:40px;padding:8px 16px;}
+.cc{min-height:40px;padding:8px 12px;}
+.pi{min-height:44px;padding:10px;}
+.pt{min-height:40px;padding:8px 12px;}
+.mnav-btn{min-height:48px;}
+.usearch-item-action{min-height:36px;padding:6px 12px;}
+
+/* Input font 16px prevents iOS zoom */
+input,select,textarea{font-size:16px!important;}
+.yt-search-inp,.yt-apikey-inp,.mf-input{font-size:16px!important;}
+
+/* z-index hierarchy */
+.topbar{z-index:1000!important;}
+.welcome-overlay{z-index:9000;}
+.lyrics-overlay,.catalog-overlay,.legal-overlay,.tutorial-overlay{z-index:8000;}
+.cola-modal{z-index:7000;}
+.player-bar{z-index:500;}
+.mobile-nav{z-index:600;}
+.center.tp-fullscreen{z-index:5000;}
+
+/* Color contrast fix: --sub too low for small text */
+.usearch-group-title{color:rgba(255,255,255,.7);}
+
+/* Tablet breakpoint */
+@media(min-width:600px) and (max-width:900px){
+  .ctrl-btn{width:40px;height:40px;}
+  .ctrl-btn.play{width:44px;height:44px;}
+}
+
+/* Small phone fix: more content space */
+@media(max-width:400px){
+  .topbar{height:44px;}
+  .player-bar{bottom:50px;}
+  .mobile-nav{height:50px;}
+}
+
 /* ── Teleprompter PRO Features ─────────────────────────────────────── */
 
 /* Voice Scroll active state */

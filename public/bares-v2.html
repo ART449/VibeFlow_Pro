@@ -349,6 +349,63 @@ button:disabled{
 .pos-fab .fab-label{font-size:11px;letter-spacing:.2px;white-space:nowrap;}
 .pos-fab .fab-badge{position:absolute;top:-2px;right:-2px;background:var(--red);color:#fff;font-size:8px;font-weight:800;padding:1px 4px;border-radius:6px;min-width:16px;text-align:center;}
 @media(max-width:600px){.pos-fab{display:flex;}}
+
+/* ═══ AUDIT FIXES: Touch targets, fonts, z-index, inputs ═══ */
+
+/* Touch targets: min 48px */
+.nav{min-height:44px;padding:10px 12px;}
+.tb{min-height:40px;padding:8px 12px;}
+.cc{min-height:40px;padding:8px 14px;}
+.pt{min-height:40px;padding:8px 12px;}
+.floor-tab{min-height:40px;padding:8px 12px;}
+.pos-sheet-close{width:40px;height:40px;line-height:40px;}
+.k-btn{min-height:40px;padding:8px 12px;}
+
+/* Font minimums: nothing below 10px */
+.tc .tc-s{font-size:10px;padding:3px 6px;}
+.tc .tc-l{font-size:10px;}
+.tc .tc-time{font-size:10px;}
+.sb-title{font-size:10px;}
+.tb .notif{font-size:10px;padding:2px 5px;}
+.nav .nb{font-size:10px;padding:2px 6px;}
+.pi .pi-hh{font-size:10px;}
+.kq-i .kq-p{font-size:10px;width:20px;height:20px;}
+.ki-status{font-size:10px;}
+.inv-table th{font-size:10px;}
+.chart-bar .cb-val{font-size:10px;}
+.chart-bar .cb-label{font-size:10px;}
+.entry-row .er-type{font-size:10px;}
+.res-badge{font-size:10px;}
+.cobrar-section-title{font-size:10px;}
+.pos-fab .fab-badge{font-size:10px;}
+
+/* Input font-size 16px to prevent iOS zoom */
+input,select,textarea{font-size:16px!important;}
+.mf-input{font-size:16px!important;}
+
+/* z-index hierarchy fix */
+.topbar{z-index:1000!important;}
+.pos-overlay{z-index:900;}
+.modal-overlay{z-index:800;}
+.cobrar-overlay{z-index:850;}
+.qr-overlay{z-index:850;}
+.karaoke-overlay{z-index:860;}
+.post-payment{z-index:870;}
+.setup-wizard{z-index:950;}
+#toast-container{z-index:1100;}
+#print-ticket{z-index:9999;}
+
+/* Mobile bottom spacing */
+.pos-sheet{max-height:88vh;}
+
+/* Tablet breakpoint */
+@media(min-width:600px) and (max-width:900px){
+  .tc{min-height:100px;}
+  .tc .tc-l{font-size:11px;}
+  .tc .tc-s{font-size:10px;}
+  .inv-table th{font-size:11px;}
+  .report-grid{grid-template-columns:repeat(2,1fr)!important;}
+}
 </style>
 </head>
 <body>

@@ -41,7 +41,7 @@ function registerRoutes(app, state, helpers) {
     res.json(song);
   });
 
-  app.patch('/api/canciones/:id', (req, res) => {
+  app.patch('/api/canciones/:id', requireRoomAuth, (req, res) => {
     const song = state.canciones.find(s => s.id === req.params.id);
     if (!song) return res.status(404).json({ error: 'Cancion no encontrada' });
     if (req.body.titulo !== undefined) song.titulo = clampStr(req.body.titulo, 200).trim();
