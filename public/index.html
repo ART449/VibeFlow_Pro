@@ -2175,6 +2175,44 @@ input,select,textarea{font-size:16px!important;}
   .mobile-nav{height:50px;}
 }
 
+/* ── DJ Mixer ─────────────────────────────────────────────────────── */
+.dj-mixer-panel{
+  position:fixed;inset:0;z-index:8500;background:rgba(7,7,13,.97);
+  backdrop-filter:blur(12px);display:flex;flex-direction:column;
+  padding:16px;overflow-y:auto;
+}
+.dj-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;font-size:1.1rem;font-weight:900;letter-spacing:2px;color:#ff8a00;}
+.dj-close{background:none;border:1px solid rgba(255,255,255,.1);color:#fff;font-size:18px;width:36px;height:36px;border-radius:50%;cursor:pointer;}
+.dj-decks{display:grid;grid-template-columns:1fr 1fr;gap:16px;flex:1;}
+@media(max-width:700px){.dj-decks{grid-template-columns:1fr;}}
+.dj-deck{background:rgba(14,14,24,.8);border:1px solid rgba(255,255,255,.06);border-radius:16px;padding:16px;display:flex;flex-direction:column;gap:8px;}
+.dj-deck-label{font-size:.7rem;font-weight:800;letter-spacing:3px;color:#00f5a0;text-transform:uppercase;}
+.dj-waveform{width:100%;height:60px;border-radius:8px;background:rgba(0,0,0,.3);border:1px solid rgba(255,255,255,.05);}
+.dj-name{font-size:.75rem;color:rgba(255,255,255,.5);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.dj-time{font-size:.65rem;color:rgba(255,255,255,.3);font-family:monospace;}
+.dj-bpm{font-size:.85rem;font-weight:800;color:#fbbf24;}
+.dj-controls{display:flex;gap:6px;flex-wrap:wrap;}
+.dj-btn{padding:8px 14px;border-radius:8px;border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.04);color:#e8e8f0;font-size:.75rem;font-weight:700;cursor:pointer;min-height:40px;transition:all .15s;}
+.dj-btn:hover{background:rgba(255,255,255,.1);border-color:rgba(255,255,255,.2);}
+.dj-btn:active{transform:scale(.95);}
+.dj-play{font-size:1.2rem;width:48px;height:48px;border-radius:50%;background:linear-gradient(135deg,#00f5a0,#00d9f5);border:none;color:#07070d;}
+.dj-hot{color:#ff6b9d;border-color:rgba(255,107,157,.2);}
+.dj-sync{color:#3a86ff;border-color:rgba(58,134,255,.3);background:rgba(58,134,255,.08);}
+.dj-eq{display:flex;flex-direction:column;gap:4px;}
+.dj-eq-band{display:flex;align-items:center;gap:6px;}
+.dj-eq-band label{font-size:.6rem;color:rgba(255,255,255,.4);width:28px;text-align:right;letter-spacing:1px;}
+.dj-eq-band input[type="range"]{flex:1;height:4px;accent-color:#ff8a00;}
+.dj-kill{padding:2px 6px;border-radius:4px;border:1px solid rgba(239,68,68,.3);background:rgba(239,68,68,.08);color:#ef4444;font-size:.6rem;font-weight:800;cursor:pointer;min-height:24px;}
+.dj-kill:hover{background:rgba(239,68,68,.2);}
+.dj-vol{display:flex;align-items:center;gap:8px;}
+.dj-vol label{font-size:.6rem;color:rgba(255,255,255,.4);letter-spacing:1px;}
+.dj-vol input[type="range"]{flex:1;accent-color:#00f5a0;}
+.dj-load{padding:10px;border-radius:10px;border:1px solid rgba(255,138,0,.2);background:rgba(255,138,0,.06);color:#ff8a00;font-size:.75rem;font-weight:700;cursor:pointer;text-align:center;min-height:44px;}
+.dj-load:hover{background:rgba(255,138,0,.15);}
+.dj-crossfader{display:flex;align-items:center;gap:12px;padding:16px;background:rgba(14,14,24,.8);border:1px solid rgba(255,255,255,.06);border-radius:12px;margin-top:12px;}
+.dj-crossfader span{font-size:.85rem;font-weight:800;color:rgba(255,255,255,.4);}
+.dj-crossfader input[type="range"]{flex:1;height:8px;accent-color:#ff006e;}
+
 /* ── Teleprompter PRO Features ─────────────────────────────────────── */
 
 /* Voice Scroll active state */
@@ -2421,6 +2459,10 @@ input,select,textarea{font-size:16px!important;}
           <button class="mode-btn ia-btn" data-mode="ia" onclick="toggleMode('ia');closeModeMore()" title="GFlow — DJ IA para letras y sets">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 2a9 9 0 0 1 9 9c0 4.56-2.87 8.5-7 9.7V22h-4v-1.3C5.87 19.5 3 15.56 3 11a9 9 0 0 1 9-9z"/><circle cx="9" cy="11" r="1" fill="currentColor"/><circle cx="15" cy="11" r="1" fill="currentColor"/></svg>
             IA Studio
+          </button>
+          <button class="mode-btn" style="color:#00f5a0;" onclick="djMixerOpen();closeModeMore()" title="DJ Mixer — doble deck, crossfader, EQ, BPM sync">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="8" cy="16" r="4"/><circle cx="16" cy="16" r="4"/><path d="M8 12V4h8v8"/></svg>
+            DJ Mixer
           </button>
           <button class="mode-btn vistas-btn" data-mode="vistas" onclick="toggleMode('vistas');closeModeMore()" title="Dashboard DJ multi-panel">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
@@ -4098,6 +4140,19 @@ function socialLogin() { return window.VibeFlow.modules.auth.socialLogin.apply(t
 function bfLogout() { return window.VibeFlow.modules.auth.bfLogout.apply(this, arguments); }
 function dismissWelcome() { if (window.VibeFlow && window.VibeFlow.modules && window.VibeFlow.modules.auth) return window.VibeFlow.modules.auth.dismissWelcome.apply(this, arguments); }
 function siguienteCantante() { return window.VibeFlow.modules.queue.siguienteCantante.apply(this, arguments); }
+// DJ Mixer wrappers
+function djMixerOpen() { return window.VibeFlow.modules.djMixer.open(); }
+function djMixerClose() { return window.VibeFlow.modules.djMixer.close(); }
+function djDeckToggle(id) { return window.VibeFlow.modules.djMixer.deckToggle(id); }
+function djDeckCue(id) { return window.VibeFlow.modules.djMixer.deckCue(id); }
+function djDeckHotCue(id, idx) { return window.VibeFlow.modules.djMixer.deckHotCue(id, idx); }
+function djDeckEQ(id, band, val) { return window.VibeFlow.modules.djMixer.deckEQ(id, band, val); }
+function djDeckKill(id, band) { return window.VibeFlow.modules.djMixer.deckKill(id, band); }
+function djDeckVol(id, val) { return window.VibeFlow.modules.djMixer.deckVol(id, val); }
+function djCrossfade(val) { return window.VibeFlow.modules.djMixer.setCrossfade(val); }
+function djSync() { return window.VibeFlow.modules.djMixer.sync(); }
+function djLoadFile(id) { return window.VibeFlow.modules.djMixer.loadFile(id); }
+function djFileLoaded(id, input) { return window.VibeFlow.modules.djMixer.fileLoaded(id, input); }
 // catalogo y datos del estudio extraidos a /js/modules/studio-data.js
 
 // utilidades de UI, catalogo y paneles extraidas a /js/modules/misc-ui.js
@@ -4181,6 +4236,7 @@ function loadStats() { return window.VibeFlow.modules.settings.loadStats.apply(t
 <script src="/js/modules/youtube.js"></script>
 <script src="/js/modules/lyrics.js"></script>
 <script src="/js/modules/teleprompter-pro.js"></script>
+<script src="/js/modules/dj-mixer.js"></script>
 <script src="/js/modules/studio-data.js"></script>
 <script src="/js/modules/misc-ui.js"></script>
 <script src="/js/modules/events-talent.js"></script>
