@@ -2277,6 +2277,17 @@ input,select,textarea{font-size:16px!important;}
 .autodj-active{border-color:rgba(239,68,68,.3)!important;color:#ef4444!important;background:rgba(239,68,68,.08)!important;}
 .autodj-status{font-size:.6rem;color:rgba(255,191,36,.5);margin-top:6px;text-align:center;min-height:16px;}
 
+/* AutoDJ motorized fader effect — sliders glow when AI moves them */
+.dj-eq-band input[type="range"]:active,
+.dj-vol input[type="range"]:active,
+.dj-cf-track input[type="range"]:active{box-shadow:0 0 12px rgba(251,191,36,.5);}
+@keyframes faderGlow{
+  0%{box-shadow:0 0 4px rgba(251,191,36,.3);}
+  50%{box-shadow:0 0 12px rgba(251,191,36,.6);}
+  100%{box-shadow:0 0 4px rgba(251,191,36,.3);}
+}
+.dj-kill.killed{background:rgba(239,68,68,.5)!important;color:#fff!important;animation:faderGlow 1s infinite;}
+
 /* ── Teleprompter PRO Features ─────────────────────────────────────── */
 
 /* Voice Scroll active state */

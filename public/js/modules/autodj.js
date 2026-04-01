@@ -254,9 +254,62 @@
     _scheduleNextTransition();
   }
 
+  // ═══ UI SYNC — Mover sliders visualmente como Yamaha ═══
+  function _syncSliderUI(selector, value) {
+    var el = typeof selector === 'string' ? document.querySelector(selector) : selector;
+    if (el && el.tagName === 'INPUT') {
+      el.value = value;
+      // Trigger visual update + glow effect
+      el.style.transition = 'box-shadow 0.3s';
+      el.style.boxShadow = '0 0 8px rgba(251,191,36,.4)';
+      setTimeout(function() { el.style.boxShadow = ''; }, 300);
+    }
+  }
+
+  function _syncCrossfaderUI(value) {
+    var cf = document.getElementById('dj-crossfader');
+    if (cf) {
+      cf.value = Math.round(value * 100);
+      // Glow on crossfader track
+      var track = cf.parentElement;
+      if (track) {
+        track.style.transition = 'filter 0.2s';
+        track.style.filter = 'brightness(1.5)';
+        setTimeout(function() { track.style.filter = ''; }, 200);
+      }
+    }
+  }
+
+  function _syncEQUI(deckId, band, db) {
+    // Find the EQ slider for this deck/band
+    var deck = document.getElementById('dj-deck-' + deckId);
+    if (!deck) return;
+    var bands = deck.querySelectorAll('.dj-eq-band');
+    var idx = band === 'low' ? 0 : band === 'mid' ? 1 : 2;
+    if (bands[idx]) {
+      var slider = bands[idx].querySelector('input[type="range"]');
+      _syncSliderUI(slider, Math.round(db));
+
+      // Kill button visual feedback
+      var killBtn = bands[idx].querySelector('.dj-kill');
+      if (killBtn) {
+        var isKilled = db <= -20;
+        killBtn.style.background = isKilled ? 'rgba(239,68,68,.4)' : '';
+        killBtn.style.color = isKilled ? '#fff' : '';
+      }
+    }
+  }
+
+  function _syncVolumeUI(deckId, vol) {
+    var deck = document.getElementById('dj-deck-' + deckId);
+    if (!deck) return;
+    var volSlider = deck.querySelector('.dj-vol input[type="range"]');
+    _syncSliderUI(volSlider, Math.round(vol * 100));
+  }
+
   function _crossfadeTransition(incomingDeck, duration, style) {
     var mixer = VF.modules.djMixer;
-    var steps = 30;
+    var steps = 40;
     var stepTime = duration / steps;
     var startVal = incomingDeck === 'b' ? 0 : 1;
     var endVal = incomingDeck === 'b' ? 1 : 0;
@@ -265,18 +318,22 @@
     var interval = setInterval(function() {
       step++;
       var progress = step / steps;
-      // Equal power curve
-      var val = startVal + (endVal - startVal) * progress;
+      // Smooth S-curve for more natural feel
+      var curve = progress < 0.5
+        ? 2 * progress * progress
+        : 1 - Math.pow(-2 * progress + 2, 2) / 2;
+      var val = startVal + (endVal - startVal) * curve;
       mixer.setCrossfade(val);
+      _syncCrossfaderUI(val);
 
-      // Restore EQ on incoming halfway through
+      // Restore EQ on incoming at 60%
       if (step === Math.floor(steps * 0.6) && style.eqStyle.cutLowOnIncoming) {
         mixer.getDeck(incomingDeck).setEQ('low', 0);
+        _syncEQUI(incomingDeck, 'low', 0);
       }
 
       if (step >= steps) {
         clearInterval(interval);
-        // Stop outgoing deck
         var outgoing = incomingDeck === 'a' ? 'b' : 'a';
         mixer.getDeck(outgoing).pause();
       }
@@ -288,29 +345,43 @@
     var outgoing = incomingDeck === 'a' ? 'b' : 'a';
     var halfDuration = duration / 2;
 
-    // Phase 1: bring in highs of incoming
+    // Phase 1: bring in highs of incoming, crossfader center
     mixer.getDeck(incomingDeck).setEQ('high', 0);
     mixer.getDeck(incomingDeck).setEQ('mid', -6);
     mixer.getDeck(incomingDeck).setEQ('low', -24);
-    mixer.setCrossfade(0.5); // both playing
+    mixer.setCrossfade(0.5);
+    _syncEQUI(incomingDeck, 'high', 0);
+    _syncEQUI(incomingDeck, 'mid', -6);
+    _syncEQUI(incomingDeck, 'low', -24);
+    _syncCrossfaderUI(0.5);
 
     setTimeout(function() {
-      // Phase 2: swap bass
+      // Phase 2: swap bass — incoming gets bass, outgoing loses it
       mixer.getDeck(incomingDeck).setEQ('low', 0);
       mixer.getDeck(incomingDeck).setEQ('mid', 0);
       mixer.getDeck(outgoing).setEQ('low', -24);
       mixer.getDeck(outgoing).setEQ('mid', -6);
+      _syncEQUI(incomingDeck, 'low', 0);
+      _syncEQUI(incomingDeck, 'mid', 0);
+      _syncEQUI(outgoing, 'low', -24);
+      _syncEQUI(outgoing, 'mid', -6);
     }, halfDuration);
 
     setTimeout(function() {
-      // Phase 3: fade out outgoing
+      // Phase 3: kill outgoing highs, then fade out
       mixer.getDeck(outgoing).setEQ('high', -24);
+      _syncEQUI(outgoing, 'high', -24);
       setTimeout(function() {
         mixer.getDeck(outgoing).pause();
         mixer.getDeck(outgoing).setEQ('low', 0);
         mixer.getDeck(outgoing).setEQ('mid', 0);
         mixer.getDeck(outgoing).setEQ('high', 0);
-        mixer.setCrossfade(incomingDeck === 'b' ? 1 : 0);
+        _syncEQUI(outgoing, 'low', 0);
+        _syncEQUI(outgoing, 'mid', 0);
+        _syncEQUI(outgoing, 'high', 0);
+        var finalCf = incomingDeck === 'b' ? 1 : 0;
+        mixer.setCrossfade(finalCf);
+        _syncCrossfaderUI(finalCf);
       }, 2000);
     }, duration);
   }
@@ -319,21 +390,25 @@
     var mixer = VF.modules.djMixer;
     var outgoing = incomingDeck === 'a' ? 'b' : 'a';
 
-    // Instant cut
+    // Instant cut — snap all controls
     mixer.getDeck(incomingDeck).setEQ('low', 0);
-    mixer.setCrossfade(incomingDeck === 'b' ? 1 : 0);
+    _syncEQUI(incomingDeck, 'low', 0);
+    var finalCf = incomingDeck === 'b' ? 1 : 0;
+    mixer.setCrossfade(finalCf);
+    _syncCrossfaderUI(finalCf);
     mixer.getDeck(outgoing).pause();
   }
 
   function _echoTransition(incomingDeck, duration, style) {
     var mixer = VF.modules.djMixer;
-    var outgoing = incomingDeck === 'a' ? 'b' : 'a';
 
-    // Start incoming at half volume
+    // Start at center
     mixer.setCrossfade(0.5);
+    _syncCrossfaderUI(0.5);
     mixer.getDeck(incomingDeck).setEQ('low', -12);
+    _syncEQUI(incomingDeck, 'low', -12);
 
-    // Fade crossfader over duration
+    // Crossfade with visual sync
     _crossfadeTransition(incomingDeck, duration, style);
   }
 
