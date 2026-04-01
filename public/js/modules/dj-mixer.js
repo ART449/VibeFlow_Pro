@@ -277,6 +277,9 @@
       if (decks.a.isPlaying) decks.a.detectBPM();
       if (decks.b.isPlaying) decks.b.detectBPM();
 
+      // Vinyl rotation + progress rings
+      _updateVinyls();
+
       // Draw waveforms
       _drawWaveform('a');
       _drawWaveform('b');
@@ -335,7 +338,12 @@
     var nameEl = document.getElementById('dj-name-' + id);
     if (nameEl) nameEl.textContent = d.trackName || 'Sin track';
     var playBtn = document.getElementById('dj-play-' + id);
-    if (playBtn) playBtn.textContent = d.isPlaying ? '⏸' : '▶';
+    if (playBtn) playBtn.innerHTML = d.isPlaying ? '&#x23F8;' : '&#x25B6;';
+    var vtitle = document.getElementById('dj-vtitle-' + id);
+    if (vtitle) vtitle.textContent = d.trackName ? d.trackName.substring(0, 12) : 'ByFlow';
+    // Vinyl spinning class
+    var vinyl = document.getElementById('dj-vinyl-' + id);
+    if (vinyl) vinyl.classList.toggle('dj-spinning', d.isPlaying);
   }
 
   function _formatTime(s) {
@@ -345,69 +353,102 @@
     return m + ':' + (sec < 10 ? '0' : '') + sec;
   }
 
+  // ═══ VINYL ROTATION ═══
+  var _vinylAngleA = 0;
+  var _vinylAngleB = 0;
+
+  function _updateVinyls() {
+    if (decks.a && decks.a.isPlaying) _vinylAngleA = (_vinylAngleA + 1.8) % 360;
+    if (decks.b && decks.b.isPlaying) _vinylAngleB = (_vinylAngleB + 1.8) % 360;
+    var va = document.getElementById('dj-vinyl-a');
+    var vb = document.getElementById('dj-vinyl-b');
+    if (va) va.style.transform = 'rotate(' + _vinylAngleA + 'deg)';
+    if (vb) vb.style.transform = 'rotate(' + _vinylAngleB + 'deg)';
+
+    // Progress rings
+    _updateProgressRing('a');
+    _updateProgressRing('b');
+  }
+
+  function _updateProgressRing(id) {
+    var d = decks[id];
+    if (!d || !d.audio.duration) return;
+    var pct = (d.audio.currentTime / d.audio.duration) * 100;
+    var ring = document.getElementById('dj-ring-' + id);
+    if (ring) ring.style.background = 'conic-gradient(' + (id === 'a' ? '#00f5a0' : '#3a86ff') + ' ' + pct + '%, transparent ' + pct + '%)';
+  }
+
   // ═══ UI INJECTION ═══
   function _injectUI() {
-    // Check if DJ panel already exists
     if (document.getElementById('dj-mixer-panel')) return;
+
+    function deckHTML(id, color, label) {
+      var c1 = id === 'a' ? '#00f5a0' : '#3a86ff';
+      var c2 = id === 'a' ? '#00d9f5' : '#8338ec';
+      return ''
+        + '<div class="dj-deck" id="dj-deck-' + id + '">'
+        + '  <div class="dj-deck-label" style="color:' + c1 + ';">DECK ' + label + '</div>'
+        // Vinyl + artwork
+        + '  <div class="dj-vinyl-wrap">'
+        + '    <div class="dj-ring" id="dj-ring-' + id + '"></div>'
+        + '    <div class="dj-vinyl" id="dj-vinyl-' + id + '">'
+        + '      <div class="dj-vinyl-groove"></div>'
+        + '      <div class="dj-vinyl-groove dj-vg2"></div>'
+        + '      <div class="dj-vinyl-groove dj-vg3"></div>'
+        + '      <div class="dj-vinyl-label" style="background:linear-gradient(135deg,' + c1 + ',' + c2 + ');">'
+        + '        <div class="dj-vinyl-dot"></div>'
+        + '        <div class="dj-vinyl-title" id="dj-vtitle-' + id + '">ByFlow</div>'
+        + '      </div>'
+        + '    </div>'
+        + '  </div>'
+        // Waveform
+        + '  <canvas id="dj-wave-' + id + '" class="dj-waveform" width="400" height="50"></canvas>'
+        // Info
+        + '  <div class="dj-info-row">'
+        + '    <div class="dj-name" id="dj-name-' + id + '">Sin track</div>'
+        + '    <div class="dj-bpm" id="dj-bpm-' + id + '" style="color:' + c1 + ';">— BPM</div>'
+        + '  </div>'
+        + '  <div class="dj-time" id="dj-time-' + id + '">0:00 / 0:00</div>'
+        // Controls
+        + '  <div class="dj-controls">'
+        + '    <button class="dj-btn dj-play" id="dj-play-' + id + '" onclick="djDeckToggle(\'' + id + '\')" style="background:linear-gradient(135deg,' + c1 + ',' + c2 + ');">&#x25B6;</button>'
+        + '    <button class="dj-btn dj-cue" onclick="djDeckCue(\'' + id + '\')">CUE</button>'
+        + '    <button class="dj-btn dj-hot" onclick="djDeckHotCue(\'' + id + '\',0)">&#x266B;1</button>'
+        + '    <button class="dj-btn dj-hot" onclick="djDeckHotCue(\'' + id + '\',1)">&#x266B;2</button>'
+        + (id === 'b' ? '    <button class="dj-btn dj-sync" onclick="djSync()">SYNC</button>' : '')
+        + '  </div>'
+        // EQ
+        + '  <div class="dj-eq">'
+        + '    <div class="dj-eq-band"><span class="dj-eq-label">LOW</span><input type="range" min="-12" max="12" value="0" oninput="djDeckEQ(\'' + id + '\',\'low\',this.value)"><button class="dj-kill" onclick="djDeckKill(\'' + id + '\',\'low\')">K</button></div>'
+        + '    <div class="dj-eq-band"><span class="dj-eq-label">MID</span><input type="range" min="-12" max="12" value="0" oninput="djDeckEQ(\'' + id + '\',\'mid\',this.value)"><button class="dj-kill" onclick="djDeckKill(\'' + id + '\',\'mid\')">K</button></div>'
+        + '    <div class="dj-eq-band"><span class="dj-eq-label">HI</span><input type="range" min="-12" max="12" value="0" oninput="djDeckEQ(\'' + id + '\',\'high\',this.value)"><button class="dj-kill" onclick="djDeckKill(\'' + id + '\',\'high\')">K</button></div>'
+        + '  </div>'
+        // Volume
+        + '  <div class="dj-vol"><span class="dj-vol-label">VOL</span><input type="range" min="0" max="100" value="80" oninput="djDeckVol(\'' + id + '\',this.value/100)"></div>'
+        // Load
+        + '  <button class="dj-load" onclick="djLoadFile(\'' + id + '\')" style="border-color:' + c1 + '33;color:' + c1 + ';">&#x1F4C2; CARGAR ' + label + '</button>'
+        + '</div>';
+    }
 
     var panel = document.createElement('div');
     panel.id = 'dj-mixer-panel';
     panel.className = 'dj-mixer-panel';
     panel.style.display = 'none';
     panel.innerHTML = ''
-      + '<div class="dj-header"><span>DJ MIXER</span><button class="dj-close" onclick="djMixerClose()">✕</button></div>'
+      + '<div class="dj-header">'
+      + '  <div class="dj-logo">&#x1F3A7; DJ MIXER</div>'
+      + '  <div class="dj-master-bpm" id="dj-master-bpm">—</div>'
+      + '  <button class="dj-close" onclick="djMixerClose()">&#x2715;</button>'
+      + '</div>'
       + '<div class="dj-decks">'
-      // Deck A
-      + '<div class="dj-deck" id="dj-deck-a">'
-      + '  <div class="dj-deck-label">DECK A</div>'
-      + '  <canvas id="dj-wave-a" class="dj-waveform" width="300" height="60"></canvas>'
-      + '  <div class="dj-name" id="dj-name-a">Sin track</div>'
-      + '  <div class="dj-time" id="dj-time-a">0:00 / 0:00</div>'
-      + '  <div class="dj-bpm" id="dj-bpm-a">— BPM</div>'
-      + '  <div class="dj-controls">'
-      + '    <button class="dj-btn dj-play" id="dj-play-a" onclick="djDeckToggle(\'a\')">▶</button>'
-      + '    <button class="dj-btn" onclick="djDeckCue(\'a\')">CUE</button>'
-      + '    <button class="dj-btn dj-hot" onclick="djDeckHotCue(\'a\',0)">♫1</button>'
-      + '    <button class="dj-btn dj-hot" onclick="djDeckHotCue(\'a\',1)">♫2</button>'
-      + '  </div>'
-      + '  <div class="dj-eq">'
-      + '    <div class="dj-eq-band"><label>LOW</label><input type="range" min="-12" max="12" value="0" oninput="djDeckEQ(\'a\',\'low\',this.value)"><button class="dj-kill" onclick="djDeckKill(\'a\',\'low\')">K</button></div>'
-      + '    <div class="dj-eq-band"><label>MID</label><input type="range" min="-12" max="12" value="0" oninput="djDeckEQ(\'a\',\'mid\',this.value)"><button class="dj-kill" onclick="djDeckKill(\'a\',\'mid\')">K</button></div>'
-      + '    <div class="dj-eq-band"><label>HI</label><input type="range" min="-12" max="12" value="0" oninput="djDeckEQ(\'a\',\'high\',this.value)"><button class="dj-kill" onclick="djDeckKill(\'a\',\'high\')">K</button></div>'
-      + '  </div>'
-      + '  <div class="dj-vol"><label>VOL</label><input type="range" min="0" max="100" value="80" oninput="djDeckVol(\'a\',this.value/100)"></div>'
-      + '  <button class="dj-load" onclick="djLoadFile(\'a\')">LOAD A</button>'
+      + deckHTML('a', '#00f5a0', 'A')
+      + deckHTML('b', '#3a86ff', 'B')
       + '</div>'
-      // Deck B
-      + '<div class="dj-deck" id="dj-deck-b">'
-      + '  <div class="dj-deck-label" style="color:#3a86ff;">DECK B</div>'
-      + '  <canvas id="dj-wave-b" class="dj-waveform" width="300" height="60"></canvas>'
-      + '  <div class="dj-name" id="dj-name-b">Sin track</div>'
-      + '  <div class="dj-time" id="dj-time-b">0:00 / 0:00</div>'
-      + '  <div class="dj-bpm" id="dj-bpm-b">— BPM</div>'
-      + '  <div class="dj-controls">'
-      + '    <button class="dj-btn dj-play" id="dj-play-b" onclick="djDeckToggle(\'b\')">▶</button>'
-      + '    <button class="dj-btn" onclick="djDeckCue(\'b\')">CUE</button>'
-      + '    <button class="dj-btn dj-hot" onclick="djDeckHotCue(\'b\',0)">♫1</button>'
-      + '    <button class="dj-btn dj-hot" onclick="djDeckHotCue(\'b\',1)">♫2</button>'
-      + '    <button class="dj-btn dj-sync" onclick="djSync()">SYNC</button>'
-      + '  </div>'
-      + '  <div class="dj-eq">'
-      + '    <div class="dj-eq-band"><label>LOW</label><input type="range" min="-12" max="12" value="0" oninput="djDeckEQ(\'b\',\'low\',this.value)"><button class="dj-kill" onclick="djDeckKill(\'b\',\'low\')">K</button></div>'
-      + '    <div class="dj-eq-band"><label>MID</label><input type="range" min="-12" max="12" value="0" oninput="djDeckEQ(\'b\',\'mid\',this.value)"><button class="dj-kill" onclick="djDeckKill(\'b\',\'mid\')">K</button></div>'
-      + '    <div class="dj-eq-band"><label>HI</label><input type="range" min="-12" max="12" value="0" oninput="djDeckEQ(\'b\',\'high\',this.value)"><button class="dj-kill" onclick="djDeckKill(\'b\',\'high\')">K</button></div>'
-      + '  </div>'
-      + '  <div class="dj-vol"><label>VOL</label><input type="range" min="0" max="100" value="80" oninput="djDeckVol(\'b\',this.value/100)"></div>'
-      + '  <button class="dj-load" onclick="djLoadFile(\'b\')">LOAD B</button>'
+      + '<div class="dj-crossfader-zone">'
+      + '  <div class="dj-cf-label">A</div>'
+      + '  <div class="dj-cf-track"><input type="range" min="0" max="100" value="50" id="dj-crossfader" oninput="djCrossfade(this.value/100)"></div>'
+      + '  <div class="dj-cf-label">B</div>'
       + '</div>'
-      + '</div>'
-      // Crossfader
-      + '<div class="dj-crossfader">'
-      + '  <span>A</span>'
-      + '  <input type="range" min="0" max="100" value="50" id="dj-crossfader" oninput="djCrossfade(this.value/100)">'
-      + '  <span>B</span>'
-      + '</div>'
-      // Hidden file inputs
       + '<input type="file" id="dj-file-a" accept="audio/*" style="display:none" onchange="djFileLoaded(\'a\',this)">'
       + '<input type="file" id="dj-file-b" accept="audio/*" style="display:none" onchange="djFileLoaded(\'b\',this)">';
 
