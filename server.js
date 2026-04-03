@@ -16,6 +16,7 @@ const http        = require('http');
 const { Server }  = require('socket.io');
 const cors        = require('cors');
 const compression = require('compression');
+const morgan       = require('morgan');
 const path        = require('path');
 const os          = require('os');
 const fs          = require('fs');
@@ -335,6 +336,10 @@ const io = new Server(server, {
 });
 
 app.use(cors(corsOptions));
+
+// ── HTTP Request Logging ───────────────────────────────────────────────────
+const logStream = fs.createWriteStream(path.join(DATA_DIR, 'access.log'), { flags: 'a' });
+app.use(morgan(':date[iso] :method :url :status :res[content-length] :response-time ms :remote-addr', { stream: logStream }));
 
 // ── Stripe webhook (MUST be BEFORE express.json for raw body) ───────────────
 billingRoutes.registerWebhook(app, { LICENSE_SECRET });

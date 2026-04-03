@@ -18,6 +18,142 @@ var _palabrasProhibidas = ['puta', 'puto', 'mierda', 'coño', 'pendejo', 'culero
     window[name] = value;
   }
 
+  const welcomeFlowState = { step: 1, business: '', goal: '' };
+  let tutorialBootTimer = null;
+  let welcomeTutorialObserver = null;
+  const WELCOME_FLOW = {
+    business: {
+      bar: {
+        goalTitle: 'Que quieres mover hoy dentro del bar?',
+        goalCopy: 'Te mando a demo, licencia o entrada operativa segun lo que necesites.',
+        options: [
+          { id: 'operate', icon: '&#128203;', title: 'Operar el negocio', desc: 'Quiero revisar POS, comandas, reportes y flujo del bar.' },
+          { id: 'demo', icon: '&#128421;', title: 'Ensenar el sistema', desc: 'Quiero mostrar el potencial del POS a duenos o socios.' },
+          { id: 'launch', icon: '&#128273;', title: 'Entrar al POS real', desc: 'Ya tengo licencia y quiero abrir la operacion.' }
+        ]
+      },
+      creator: {
+        goalTitle: 'Que quieres hacer hoy como creador?',
+        goalCopy: 'ByFlow te puede poner a cantar ya o abrir el estudio creativo.',
+        options: [
+          { id: 'sing', icon: '&#127908;', title: 'Cantar ya', desc: 'Entrar directo a karaoke con letras y cola.' },
+          { id: 'create', icon: '&#9998;', title: 'Escribir o producir', desc: 'Abrir Estudio para letras, beats y GFlow.' },
+          { id: 'practice', icon: '&#127926;', title: 'Explorar rapido', desc: 'Probar la plataforma sin meterte al POS.' }
+        ]
+      },
+      event: {
+        goalTitle: 'Que necesitas sacar adelante hoy?',
+        goalCopy: 'Elige si vas a animar la noche, controlar remoto o entrar por el flujo mas rapido.',
+        options: [
+          { id: 'host', icon: '&#10024;', title: 'Animar la noche', desc: 'Karaoke rapido para correr el show.' },
+          { id: 'control', icon: '&#128241;', title: 'Control remoto', desc: 'Mover la cabina desde otro equipo.' },
+          { id: 'music', icon: '&#128266;', title: 'Ir por lo simple', desc: 'Entrar por el modo mas rapido para operar ya.' }
+        ]
+      }
+    },
+    results: {
+      'bar:operate': {
+        eyebrow: 'Ruta recomendada',
+        title: 'Empieza por el showroom del POS',
+        desc: 'Primero ensenas mesas, cocina, inventario y reportes con datos ficticios. Luego brincas a licencia o POS real sin perder el hilo.',
+        points: [
+          'No pide PIN y no toca datos del negocio.',
+          'Sirve para vender el sistema sin miedo a romper nada.'
+        ],
+        primary: { kind: 'link', target: '/pos-demo.html', label: 'Abrir demo POS' },
+        secondary: { kind: 'link', target: '/pos.html', label: 'Ya tengo licencia' }
+      },
+      'bar:demo': {
+        eyebrow: 'Ruta comercial',
+        title: 'Muestrales el POS antes de hablar de licencia',
+        desc: 'La demo comercial esta pensada para duenos: ven el alcance del sistema, entienden el flujo y luego pasan a contratar o entrar.',
+        points: [
+          'El demo ya explica mesas, reportes y edicion.',
+          'Despues puedes mandarlos directo a precios o licencia.'
+        ],
+        primary: { kind: 'link', target: '/pos-demo.html#demo', label: 'Ver demo interactiva' },
+        secondary: { kind: 'link', target: '/pos-demo.html#precios', label: 'Ir a precios' }
+      },
+      'bar:launch': {
+        eyebrow: 'Entrada operativa',
+        title: 'Tu siguiente paso es el POS real',
+        desc: 'Si ya tienes licencia o PIN, entra directo al POS. Si antes quieres ensenar el alcance, deja el showroom como respaldo comercial.',
+        points: [
+          'Ruta corta para staff y operacion diaria.',
+          'La demo se queda como apoyo para ventas y onboarding.'
+        ],
+        primary: { kind: 'link', target: '/pos.html', label: 'Entrar al POS real' },
+        secondary: { kind: 'link', target: '/pos-demo.html', label: 'Ver demo primero' }
+      },
+      'creator:sing': {
+        eyebrow: 'Entrada rapida',
+        title: 'Te conviene abrir Karaoke',
+        desc: 'Es la forma mas rapida de buscar canciones, cargar letras y empezar a cantar sin desviarte por menus premium o del POS.',
+        points: [
+          'Cola, letras y teleprompter en el mismo flujo.',
+          'Ideal para primer uso y para pruebas rapidas.'
+        ],
+        primary: { kind: 'mode', target: 'karaoke', label: 'Entrar a Karaoke' },
+        secondary: { kind: 'mode', target: 'estudio', label: 'Ir a Estudio despues' }
+      },
+      'creator:create': {
+        eyebrow: 'Ruta creativa',
+        title: 'Tu mejor entrada es Estudio',
+        desc: 'Ahi separas la parte creativa del uso en vivo: letras, beats, GFlow y herramientas para crear sin contaminar el escenario principal.',
+        points: [
+          'Mas orden para escribir, producir y guardar ideas.',
+          'Luego puedes volver a Karaoke para ejecutar rapido.'
+        ],
+        primary: { kind: 'mode', target: 'estudio', label: 'Abrir Estudio' },
+        secondary: { kind: 'mode', target: 'karaoke', label: 'Ir a Karaoke' }
+      },
+      'creator:practice': {
+        eyebrow: 'Ruta simple',
+        title: 'Empieza por Karaoke y explora luego',
+        desc: 'Si solo quieres entender la plataforma rapido, Karaoke te da el mapa mental correcto antes de brincar a Estudio o funciones avanzadas.',
+        points: [
+          'Menos ruido para primer contacto.',
+          'Perfecto para ensenar ByFlow en segundos.'
+        ],
+        primary: { kind: 'mode', target: 'karaoke', label: 'Entrar a Karaoke' },
+        secondary: { kind: 'mode', target: 'estudio', label: 'Abrir Estudio' }
+      },
+      'event:host': {
+        eyebrow: 'Ruta de escenario',
+        title: 'Abre Karaoke para correr la noche',
+        desc: 'Cuando el objetivo es animar el evento, Karaoke sigue siendo la entrada mas rapida y clara para lanzar canciones y letras en vivo.',
+        points: [
+          'Ideal para arrancar rapido sin setup extra.',
+          'Luego puedes apoyarte en remoto si hace falta.'
+        ],
+        primary: { kind: 'mode', target: 'karaoke', label: 'Abrir Karaoke' },
+        secondary: { kind: 'mode', target: 'remote', label: 'Usar remoto' }
+      },
+      'event:control': {
+        eyebrow: 'Ruta remota',
+        title: 'Empieza por Control Remoto',
+        desc: 'Si ya tienes la cabina corriendo y solo quieres operar a distancia, esta es la entrada correcta para no saturar la pantalla principal.',
+        points: [
+          'Pensado para mover la sesion desde otro equipo.',
+          'Mantiene la operacion principal limpia.'
+        ],
+        primary: { kind: 'mode', target: 'remote', label: 'Abrir remoto' },
+        secondary: { kind: 'mode', target: 'karaoke', label: 'Volver a Karaoke' }
+      },
+      'event:music': {
+        eyebrow: 'Ruta mas rapida',
+        title: 'Entra por Karaoke y simplifica',
+        desc: 'Para resolver rapido, Karaoke te deja correr musica, letras y flujo base sin tener que pasar por la parte comercial o el estudio.',
+        points: [
+          'Menos friccion para eventos cortos.',
+          'Puedes cambiar a remoto cuando el show ya este andando.'
+        ],
+        primary: { kind: 'mode', target: 'karaoke', label: 'Entrar a Karaoke' },
+        secondary: { kind: 'mode', target: 'remote', label: 'Abrir remoto' }
+      }
+    }
+  };
+
   function escHtml(value) {
     const div = document.createElement('div');
     div.textContent = value;
@@ -179,6 +315,135 @@ var _palabrasProhibidas = ['puta', 'puto', 'mierda', 'coño', 'pendejo', 'culero
     if (icon) icon.classList.toggle('collapsed', mesasCollapsed);
   }
 
+  function renderWelcomeGoalOptions() {
+    const goalWrap = document.getElementById('welcome-goal-options');
+    const goalTitle = document.getElementById('welcome-goal-title');
+    const goalCopy = document.getElementById('welcome-goal-copy');
+    const businessCfg = WELCOME_FLOW.business[welcomeFlowState.business];
+    if (!goalWrap || !businessCfg) return;
+    if (goalTitle) goalTitle.textContent = businessCfg.goalTitle;
+    if (goalCopy) goalCopy.textContent = businessCfg.goalCopy;
+    goalWrap.innerHTML = businessCfg.options.map((option) =>
+      '<button type="button" class="welcome-choice' + (welcomeFlowState.goal === option.id ? ' active' : '') + '" onclick="welcomeChooseGoal(\'' + option.id + '\')">' +
+        '<div class="welcome-choice-icon">' + option.icon + '</div>' +
+        '<div class="welcome-choice-body">' +
+          '<div class="welcome-choice-title">' + escHtml(option.title) + '</div>' +
+          '<div class="welcome-choice-desc">' + escHtml(option.desc) + '</div>' +
+        '</div>' +
+      '</button>'
+    ).join('');
+  }
+
+  function renderWelcomeResult() {
+    const resultWrap = document.getElementById('welcome-result-card');
+    const resultCfg = WELCOME_FLOW.results[welcomeFlowState.business + ':' + welcomeFlowState.goal];
+    if (!resultWrap || !resultCfg) return;
+    const points = Array.isArray(resultCfg.points) ? resultCfg.points : [];
+    resultWrap.innerHTML =
+      '<div class="welcome-result-card">' +
+        '<div class="welcome-result-eyebrow">' + escHtml(resultCfg.eyebrow || 'Ruta recomendada') + '</div>' +
+        '<div class="welcome-result-title">' + escHtml(resultCfg.title) + '</div>' +
+        '<div class="welcome-result-desc">' + escHtml(resultCfg.desc) + '</div>' +
+        (points.length ? '<div class="welcome-result-points">' + points.map((point) =>
+          '<div class="welcome-result-point">' + escHtml(point) + '</div>'
+        ).join('') + '</div>' : '') +
+        '<div class="welcome-result-actions">' +
+          '<button type="button" class="welcome-result-btn primary" onclick="welcomeRunAction(\'' + resultCfg.primary.kind + '\',\'' + resultCfg.primary.target + '\')">' + escHtml(resultCfg.primary.label) + '</button>' +
+          (resultCfg.secondary
+            ? '<button type="button" class="welcome-result-btn secondary" onclick="welcomeRunAction(\'' + resultCfg.secondary.kind + '\',\'' + resultCfg.secondary.target + '\')">' + escHtml(resultCfg.secondary.label) + '</button>'
+            : '') +
+        '</div>' +
+      '</div>';
+  }
+
+  function updateWelcomeFlow() {
+    document.querySelectorAll('.welcome-step-card').forEach((card) => {
+      card.classList.toggle('active', Number(card.dataset.welcomeStep) === welcomeFlowState.step);
+    });
+    document.querySelectorAll('#welcome-progress .welcome-progress-step').forEach((stepEl) => {
+      const stepNumber = Number(stepEl.dataset.step);
+      stepEl.classList.toggle('active', stepNumber === welcomeFlowState.step);
+      stepEl.classList.toggle('done', stepNumber < welcomeFlowState.step);
+    });
+    const backBtn = document.getElementById('welcome-back-btn');
+    if (backBtn) backBtn.disabled = welcomeFlowState.step === 1;
+    if (welcomeFlowState.step === 2) renderWelcomeGoalOptions();
+    if (welcomeFlowState.step === 3) renderWelcomeResult();
+  }
+
+  function welcomeChooseBusiness(id) {
+    if (!WELCOME_FLOW.business[id]) return;
+    welcomeFlowState.business = id;
+    welcomeFlowState.goal = '';
+    welcomeFlowState.step = 2;
+    updateWelcomeFlow();
+  }
+
+  function welcomeChooseGoal(id) {
+    if (!welcomeFlowState.business) return;
+    welcomeFlowState.goal = id;
+    welcomeFlowState.step = 3;
+    updateWelcomeFlow();
+  }
+
+  function welcomeGoBack() {
+    if (welcomeFlowState.step <= 1) return;
+    welcomeFlowState.step -= 1;
+    if (welcomeFlowState.step === 1) {
+      welcomeFlowState.business = '';
+      welcomeFlowState.goal = '';
+    } else if (welcomeFlowState.step === 2) {
+      welcomeFlowState.goal = '';
+    }
+    updateWelcomeFlow();
+  }
+
+  function welcomeResetFlow() {
+    welcomeFlowState.step = 1;
+    welcomeFlowState.business = '';
+    welcomeFlowState.goal = '';
+    updateWelcomeFlow();
+  }
+
+  function welcomeRunAction(kind, target) {
+    if (kind === 'link') {
+      window.location.href = target;
+      return;
+    }
+    if (kind === 'mode') {
+      welcomeSelect(target);
+    }
+  }
+
+  function initWelcomeFlow() {
+    updateWelcomeFlow();
+  }
+
+  function getTutorialStepCount() {
+    return document.querySelectorAll('.tutorial-step').length || TUTORIAL_STEPS;
+  }
+
+  function scheduleFirstRunTutorial(delayMs) {
+    clearTimeout(tutorialBootTimer);
+    tutorialBootTimer = setTimeout(() => {
+      if (localStorage.getItem('byflow_tutorial_done')) return;
+      const welcomeOverlay = document.getElementById('welcome-overlay');
+      if (welcomeOverlay && !welcomeOverlay.classList.contains('hidden')) return;
+      openTutorial();
+    }, delayMs || 0);
+  }
+
+  function bindWelcomeTutorialObserver() {
+    const welcomeOverlay = document.getElementById('welcome-overlay');
+    if (!welcomeOverlay || welcomeTutorialObserver) return;
+    welcomeTutorialObserver = new MutationObserver(() => {
+      if (welcomeOverlay.classList.contains('hidden') && !localStorage.getItem('byflow_tutorial_done')) {
+        scheduleFirstRunTutorial(450);
+      }
+    });
+    welcomeTutorialObserver.observe(welcomeOverlay, { attributes: true, attributeFilter: ['class'] });
+  }
+
   function forceCloseWelcome() {
     const overlay = document.getElementById('welcome-overlay');
     if (overlay) {
@@ -288,19 +553,23 @@ var _palabrasProhibidas = ['puta', 'puto', 'mierda', 'coño', 'pendejo', 'culero
   }
 
   function openTutorial() {
+    const overlay = document.getElementById('tutorial-overlay');
+    if (!overlay) return;
     _tutorialStep = 0;
     updateTutorial();
-    document.getElementById('tutorial-overlay').classList.add('open');
+    overlay.classList.add('open');
   }
 
   function closeTutorial() {
-    document.getElementById('tutorial-overlay').classList.remove('open');
+    const overlay = document.getElementById('tutorial-overlay');
+    if (overlay) overlay.classList.remove('open');
     localStorage.setItem('byflow_tutorial_done', '1');
   }
 
   function nextTutorialStep() {
+    const totalSteps = getTutorialStepCount();
     _tutorialStep += 1;
-    if (_tutorialStep >= TUTORIAL_STEPS) {
+    if (_tutorialStep >= totalSteps) {
       closeTutorial();
       return;
     }
@@ -308,13 +577,16 @@ var _palabrasProhibidas = ['puta', 'puto', 'mierda', 'coño', 'pendejo', 'culero
   }
 
   function updateTutorial() {
+    const totalSteps = getTutorialStepCount();
     document.querySelectorAll('.tutorial-step').forEach((step) => step.classList.remove('active'));
     const step = document.querySelector('.tutorial-step[data-step="' + _tutorialStep + '"]');
     if (step) step.classList.add('active');
+    const progressLabel = document.getElementById('tutorial-progress-label');
+    if (progressLabel) progressLabel.textContent = 'Paso ' + (_tutorialStep + 1) + ' de ' + totalSteps;
     const dots = document.getElementById('tutorial-dots');
     if (!dots) return;
     dots.innerHTML = '';
-    for (let i = 0; i < TUTORIAL_STEPS; i += 1) {
+    for (let i = 0; i < totalSteps; i += 1) {
       const dot = document.createElement('div');
       dot.className = 'tutorial-dot' + (i === _tutorialStep ? ' active' : '');
       dot.onclick = () => {
@@ -324,9 +596,9 @@ var _palabrasProhibidas = ['puta', 'puto', 'mierda', 'coño', 'pendejo', 'culero
       dots.appendChild(dot);
     }
     const nextBtn = document.getElementById('tutorial-next');
-    if (nextBtn) nextBtn.textContent = _tutorialStep === TUTORIAL_STEPS - 1 ? 'Empezar' : 'Siguiente';
+    if (nextBtn) nextBtn.textContent = _tutorialStep === totalSteps - 1 ? 'Empezar' : 'Siguiente';
     const skipBtn = document.getElementById('tutorial-skip');
-    if (skipBtn) skipBtn.style.display = _tutorialStep === TUTORIAL_STEPS - 1 ? 'none' : '';
+    if (skipBtn) skipBtn.style.display = _tutorialStep === totalSteps - 1 ? 'none' : '';
   }
 
   function adRenderMini(container) {
@@ -487,8 +759,10 @@ var _palabrasProhibidas = ['puta', 'puto', 'mierda', 'coño', 'pendejo', 'culero
       const btn = document.getElementById('toggle-right');
       if (btn) btn.innerHTML = '&#x25C0;';
     }
+    initWelcomeFlow();
     if (!localStorage.getItem('byflow_tutorial_done')) {
-      setTimeout(openTutorial, 1500);
+      bindWelcomeTutorialObserver();
+      scheduleFirstRunTutorial(1500);
     }
     setTimeout(() => {
       const cola = document.getElementById('lista-cola');
@@ -565,6 +839,11 @@ var _palabrasProhibidas = ['puta', 'puto', 'mierda', 'coño', 'pendejo', 'culero
   expose('applyMesasCollapse', applyMesasCollapse);
   expose('_forceCloseWelcome', forceCloseWelcome);
   expose('welcomeSelect', welcomeSelect);
+  expose('welcomeChooseBusiness', welcomeChooseBusiness);
+  expose('welcomeChooseGoal', welcomeChooseGoal);
+  expose('welcomeGoBack', welcomeGoBack);
+  expose('welcomeResetFlow', welcomeResetFlow);
+  expose('welcomeRunAction', welcomeRunAction);
   expose('toggleModeMore', toggleModeMore);
   expose('closeModeMore', closeModeMore);
   expose('togglePlayerBar', togglePlayerBar);

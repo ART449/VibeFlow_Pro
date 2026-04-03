@@ -309,40 +309,61 @@
   };
 
   settings.loadStats = async function() {
+    const byId = function(id) { return document.getElementById(id); };
+    const setText = function(id, value) {
+      const node = byId(id);
+      if (node) node.textContent = value;
+    };
+    const safe = function(value) {
+      if (typeof escHtml === 'function') return escHtml(value || '');
+      const div = document.createElement('div');
+      div.textContent = value || '';
+      return div.innerHTML;
+    };
+    const renderRanking = function(node, items, accentVar) {
+      if (!node) return;
+      if (Array.isArray(items) && items.length) {
+        node.innerHTML = items.slice(0, 5).map(function(item, index) {
+          return '<div style="display:flex;justify-content:space-between;padding:3px 0;border-bottom:1px solid var(--border);">' +
+            '<span style="color:var(--text);">' + (index + 1) + '. ' + safe(item.name) + '</span>' +
+            '<span style="color:' + accentVar + ';font-weight:700;">' + (item.count || 0) + 'x</span></div>';
+        }).join('');
+        return;
+      }
+      node.innerHTML = '<div style="opacity:.5;">Sin datos aun</div>';
+    };
+    const renderBaresExecutive = function(data) {
+      const topSong = data && Array.isArray(data.topSongs) && data.topSongs.length ? data.topSongs[0] : null;
+      const last7 = data && data.last7 ? Object.values(data.last7).map(function(value) { return Number(value) || 0; }) : [];
+      const totalWeek = last7.reduce(function(sum, value) { return sum + value; }, 0);
+      const status = data ? 'Actualizado desde /api/stats' : 'Sin conexion al resumen';
+
+      setText('bares-kpi-total-songs', data && data.totalSongs ? data.totalSongs : 0);
+      setText('bares-kpi-total-singers', data && data.totalSingers ? data.totalSingers : 0);
+      setText('bares-kpi-top-song', topSong ? topSong.name : 'Sin datos');
+      setText('bares-kpi-top-song-meta', topSong ? (topSong.count || 0) + ' solicitudes registradas' : 'Aun no hay historial suficiente.');
+      setText('bares-kpi-last7', totalWeek);
+      setText('bares-kpi-last7-meta', totalWeek ? 'Interacciones acumuladas en los ultimos 7 dias.' : 'Todavia no hay actividad registrada.');
+      setText('bares-kpi-status', status);
+    };
+
     try {
       const r = await fetch('/api/stats');
       const d = await r.json();
-      document.getElementById('stat-total-songs').textContent = d.totalSongs || 0;
-      document.getElementById('stat-total-singers').textContent = d.totalSingers || 0;
+      setText('stat-total-songs', d.totalSongs || 0);
+      setText('stat-total-singers', d.totalSingers || 0);
 
-      const topSongsEl = document.getElementById('stat-top-songs');
-      if (d.topSongs && d.topSongs.length) {
-        topSongsEl.innerHTML = d.topSongs.slice(0, 5).map((s, i) =>
-          '<div style="display:flex;justify-content:space-between;padding:3px 0;border-bottom:1px solid var(--border);">' +
-          '<span style="color:var(--text);">' + (i + 1) + '. ' + escHtml(s.name) + '</span>' +
-          '<span style="color:var(--p);font-weight:700;">' + s.count + 'x</span></div>'
-        ).join('');
-      } else {
-        topSongsEl.innerHTML = '<div style="opacity:.5;">Sin datos aun</div>';
-      }
+      renderRanking(byId('stat-top-songs'), d.topSongs, 'var(--p)');
+      renderRanking(byId('stat-top-singers'), d.topSingers, 'var(--s)');
 
-      const topSingersEl = document.getElementById('stat-top-singers');
-      if (d.topSingers && d.topSingers.length) {
-        topSingersEl.innerHTML = d.topSingers.slice(0, 5).map((s, i) =>
-          '<div style="display:flex;justify-content:space-between;padding:3px 0;border-bottom:1px solid var(--border);">' +
-          '<span style="color:var(--text);">' + (i + 1) + '. ' + escHtml(s.name) + '</span>' +
-          '<span style="color:var(--s);font-weight:700;">' + s.count + 'x</span></div>'
-        ).join('');
-      } else {
-        topSingersEl.innerHTML = '<div style="opacity:.5;">Sin datos aun</div>';
-      }
-
-      const chartEl = document.getElementById('stat-chart');
-      if (d.last7) {
-        const vals = Object.values(d.last7);
-        const max = Math.max(...vals, 1);
+      const chartEl = byId('stat-chart');
+      if (chartEl && d.last7) {
+        const vals = Object.values(d.last7).map(function(value) { return Number(value) || 0; });
+        const max = Math.max.apply(null, vals.concat([1]));
         const days = ['Dom', 'Lun', 'Mar', 'Mie', 'Jue', 'Vie', 'Sab'];
-        chartEl.innerHTML = Object.entries(d.last7).map(([date, count]) => {
+        chartEl.innerHTML = Object.entries(d.last7).map(function(entry) {
+          const date = entry[0];
+          const count = Number(entry[1]) || 0;
           const h = Math.max(4, (count / max) * 46);
           const day = days[new Date(date + 'T12:00:00').getDay()];
           return '<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;">' +
@@ -351,9 +372,15 @@
             '<div style="font-size:10px;color:var(--sub);">' + day + '</div></div>';
         }).join('');
       }
+
+      renderBaresExecutive(d);
     } catch {
-      document.getElementById('stat-top-songs').innerHTML = '<div style="opacity:.5;">Error cargando</div>';
-      document.getElementById('stat-top-singers').innerHTML = '<div style="opacity:.5;">Error cargando</div>';
+      const errorHtml = '<div style="opacity:.5;">Error cargando</div>';
+      const topSongsEl = byId('stat-top-songs');
+      const topSingersEl = byId('stat-top-singers');
+      if (topSongsEl) topSongsEl.innerHTML = errorHtml;
+      if (topSingersEl) topSingersEl.innerHTML = errorHtml;
+      renderBaresExecutive(null);
     }
   };
 })(window.VibeFlow);

@@ -31,9 +31,21 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--t
 .hero h1{font-size:clamp(28px,5vw,48px);font-weight:900;line-height:1.1;margin-bottom:12px;}
 .hero h1 span{background:linear-gradient(135deg,var(--orange),var(--amber));-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
 .hero p{font-size:16px;color:var(--sub);max-width:600px;margin:0 auto 24px;line-height:1.6;}
+.hero-actions{display:flex;align-items:center;justify-content:center;gap:10px;flex-wrap:wrap;margin-top:18px;}
+.hero>a.hero-cta{display:none;}
 .hero-cta{display:inline-flex;align-items:center;gap:8px;padding:14px 32px;border-radius:14px;background:linear-gradient(135deg,#f97316,var(--orange));color:#fff;font-size:15px;font-weight:700;border:none;cursor:pointer;text-decoration:none;transition:all .3s;box-shadow:0 8px 30px rgba(255,138,0,.25);}
 .hero-cta:hover{transform:translateY(-3px);box-shadow:0 12px 40px rgba(255,138,0,.35);}
+.hero-cta.secondary{background:rgba(255,255,255,.04);border:1px solid var(--border);box-shadow:none;color:var(--text);}
 .hero-sub{font-size:11px;color:var(--sub);margin-top:12px;}
+
+.journey-strip{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin:0 auto 28px;max-width:920px;}
+.journey-step{padding:14px;border-radius:16px;background:var(--surface);border:1px solid var(--border);display:flex;align-items:flex-start;gap:12px;}
+.journey-step.active{border-color:rgba(255,138,0,.3);background:rgba(255,138,0,.08);}
+.journey-step-num{width:30px;height:30px;min-width:30px;border-radius:999px;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,.08);font-size:12px;font-weight:800;color:#fff;}
+.journey-step.active .journey-step-num{background:linear-gradient(135deg,#f97316,var(--orange));}
+.journey-step-copy{display:flex;flex-direction:column;gap:4px;min-width:0;}
+.journey-step-copy strong{font-size:13px;}
+.journey-step-copy span{font-size:12px;color:var(--sub);line-height:1.45;}
 
 /* SECTION */
 .section{padding:40px 0;}
@@ -56,6 +68,19 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--t
 .demo-section{background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:24px;margin:30px 0;overflow:hidden;}
 .demo-section h3{font-size:16px;font-weight:700;margin-bottom:4px;display:flex;align-items:center;gap:8px;}
 .demo-section .demo-sub{font-size:12px;color:var(--sub);margin-bottom:16px;}
+.demo-badges{display:flex;gap:8px;flex-wrap:wrap;margin:-4px 0 16px;}
+.demo-badge{padding:6px 10px;border-radius:999px;background:rgba(255,255,255,.04);border:1px solid var(--border);font-size:10px;font-weight:700;color:var(--sub);letter-spacing:.3px;}
+.demo-badge strong{color:var(--orange);}
+.demo-journey{
+  display:flex;align-items:center;justify-content:space-between;gap:14px;
+  margin:0 0 16px;padding:12px 14px;border-radius:14px;
+  background:rgba(255,255,255,.03);border:1px solid var(--border);flex-wrap:wrap;
+}
+.demo-journey-meta{display:flex;flex-direction:column;gap:4px;min-width:0;}
+.demo-journey-meta span{font-size:10px;font-weight:800;letter-spacing:1.1px;text-transform:uppercase;color:var(--sub);}
+.demo-journey-meta strong{font-size:15px;color:#fff;}
+.demo-journey-meta small{font-size:12px;color:var(--sub);line-height:1.45;}
+.demo-journey-link{display:inline-flex;align-items:center;justify-content:center;min-height:44px;padding:10px 16px;border-radius:12px;border:1px solid rgba(255,138,0,.22);background:rgba(255,138,0,.08);color:var(--orange);font-size:12px;font-weight:800;text-decoration:none;white-space:nowrap;}
 .demo-frame{border-radius:12px;overflow:hidden;border:1px solid var(--border);min-height:500px;}
 .demo-frame iframe{width:100%;height:100%;min-height:500px;border:none;}
 .demo-tabs{display:flex;gap:4px;margin-bottom:12px;overflow-x:auto;}
@@ -137,6 +162,11 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--t
   .features{grid-template-columns:1fr;}
   .pricing{grid-template-columns:1fr;}
   .hero h1{font-size:28px;}
+  .hero-actions{flex-direction:column;}
+  .hero-cta{width:100%;justify-content:center;}
+  .journey-strip{grid-template-columns:1fr;}
+  .demo-journey{align-items:flex-start;}
+  .demo-journey-link{width:100%;}
 }
 </style>
 </head>
@@ -155,7 +185,35 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--t
   <h1>Tu bar merece <span>tecnologia de primer mundo</span></h1>
   <p>El unico punto de venta en Mexico que integra POS + Karaoke + Entretenimiento. Tus clientes cantan, piden y pagan — todo desde un solo sistema.</p>
   <a class="hero-cta" href="#demo">🚀 Ver Demo en Vivo</a>
+  <div class="hero-actions">
+    <a class="hero-cta" href="#demo">Ver demo interactiva</a>
+    <a class="hero-cta secondary" href="#precios">Ver licencia</a>
+  </div>
   <div class="hero-sub">Sin tarjeta de credito &bull; Sin compromisos &bull; Prueba gratis 14 dias</div>
+</div>
+
+<div class="journey-strip">
+  <div class="journey-step active">
+    <div class="journey-step-num">1</div>
+    <div class="journey-step-copy">
+      <strong>Ver demo</strong>
+      <span>Ensena el alcance del POS con datos ficticios y sin PIN.</span>
+    </div>
+  </div>
+  <div class="journey-step">
+    <div class="journey-step-num">2</div>
+    <div class="journey-step-copy">
+      <strong>Activar licencia</strong>
+      <span>Cuando el dueno ya entendio el valor, brinca a planes o checkout.</span>
+    </div>
+  </div>
+  <div class="journey-step">
+    <div class="journey-step-num">3</div>
+    <div class="journey-step-copy">
+      <strong>Entrar al POS real</strong>
+      <span>Con licencia activa o PIN, el equipo ya entra a operar el negocio.</span>
+    </div>
+  </div>
 </div>
 
 <!-- EL PROBLEMA -->
@@ -273,7 +331,21 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--t
 <!-- DEMO EN VIVO -->
 <div class="demo-section" id="demo">
   <h3>🖥️ Demo en Vivo — Mira como funciona</h3>
-  <div class="demo-sub">Esto es lo que ves cuando abres ByFlow POS. Click en las tabs para explorar cada modulo.</div>
+  <div class="demo-sub">Showroom interactivo con datos ficticios. No pide PIN, no toca tu operacion real y sirve para ensenar a duenos como se mueve el POS.</div>
+  <div class="demo-badges">
+    <span class="demo-badge"><strong>Sin PIN</strong> para la demo</span>
+    <span class="demo-badge"><strong>Editable</strong> con datos sembrados</span>
+    <span class="demo-badge"><strong>Sin datos reales</strong> del bar</span>
+    <span class="demo-badge"><strong>Vista comercial</strong> para cierres</span>
+  </div>
+  <div class="demo-journey">
+    <div class="demo-journey-meta">
+      <span>Paso actual de la ruta comercial</span>
+      <strong id="demo-current-view">Mesas</strong>
+      <small id="demo-current-copy">Ocupacion, estados y movimiento del piso para abrir la conversacion con el dueno.</small>
+    </div>
+    <a class="demo-journey-link" href="#precios">Seguir a licencia</a>
+  </div>
   <div class="demo-tabs">
     <div class="demo-tab active" onclick="loadDemo('mesas',this)">🍻 Mesas</div>
     <div class="demo-tab" onclick="loadDemo('cocina',this)">🍳 Cocina</div>
@@ -284,7 +356,7 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--t
     <div class="demo-tab" onclick="loadDemo('corte',this)">💰 Corte</div>
   </div>
   <div class="demo-frame">
-    <iframe id="demo-iframe" src="/bares-v2.html?demo=true" scrolling="auto"></iframe>
+    <iframe id="demo-iframe" src="/bares-v2.html?demo=true&view=mesas" scrolling="auto"></iframe>
   </div>
 </div>
 
@@ -466,18 +538,54 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--t
 </div>
 
 <script>
+const DEMO_VIEW_META = {
+  mesas: { label: 'Mesas', copy: 'Ocupacion, estados y movimiento del piso para abrir la conversacion con el dueno.' },
+  cocina: { label: 'Cocina', copy: 'Comandas en fila y claridad operativa para cocina y barra.' },
+  inventario: { label: 'Inventario', copy: 'Stock, costos y alertas para que el negocio no opere a ciegas.' },
+  reportes: { label: 'Reportes', copy: 'Resumen visible para que el dueno vea negocio, no solo botones.' },
+  cover: { label: 'Cover', copy: 'Entrada, control de acceso y experiencia de eatertainment en la misma historia.' },
+  empleados: { label: 'Empleados', copy: 'Roles, permisos y operacion ordenada sin compartir accesos.' },
+  corte: { label: 'Corte', copy: 'Cierre de caja y visibilidad comercial antes de entrar al POS real.' }
+};
+
+function updateDemoContext(view) {
+  const meta = DEMO_VIEW_META[view] || DEMO_VIEW_META.mesas;
+  const titleEl = document.getElementById('demo-current-view');
+  const copyEl = document.getElementById('demo-current-copy');
+  if (titleEl) titleEl.textContent = meta.label;
+  if (copyEl) copyEl.textContent = meta.copy;
+}
+
 function loadDemo(view, el) {
   document.querySelectorAll('.demo-tab').forEach(t => t.classList.remove('active'));
-  el.classList.add('active');
+  if (el) el.classList.add('active');
   const iframe = document.getElementById('demo-iframe');
-  // Navigate iframe to specific view
-  iframe.contentWindow.postMessage({ action: 'showView', view }, '*');
-  // Also try direct navigation
+  const nextSrc = '/bares-v2.html?demo=true&view=' + encodeURIComponent(view);
+  updateDemoContext(view);
+  iframe.dataset.pendingView = view;
   try {
-    const navBtn = iframe.contentDocument.querySelector('[onclick*="' + view + '"]');
-    if (navBtn) navBtn.click();
-  } catch(e) {}
+    if (iframe.contentWindow) {
+      iframe.contentWindow.postMessage({ action: 'showView', view }, '*');
+      return;
+    }
+  } catch (e) {}
+  if (!iframe.getAttribute('src') || iframe.getAttribute('src') !== nextSrc) {
+    iframe.setAttribute('src', nextSrc);
+  }
 }
+
+(function initDemoIframeBridge() {
+  const iframe = document.getElementById('demo-iframe');
+  if (!iframe) return;
+  iframe.dataset.pendingView = 'mesas';
+  updateDemoContext('mesas');
+  iframe.addEventListener('load', function() {
+    const pendingView = iframe.dataset.pendingView || 'mesas';
+    try {
+      iframe.contentWindow.postMessage({ action: 'showView', view: pendingView }, '*');
+    } catch (e) {}
+  });
+})();
 
 // Stripe checkout — pago automatico
 async function comprar(plan) {

@@ -6,6 +6,7 @@
 <title>ByFlow Bares — POS + Karaoke + Eatertainment</title>
 <link href="https://fonts.googleapis.com/css2?family=Great+Vibes&family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
 <script src="/js/pos-auth.js"></script>
+<script src="/js/pos-demo-sim.js"></script>
 <style>
 *{margin:0;padding:0;box-sizing:border-box;}
 :root{
@@ -2108,6 +2109,25 @@ function applyInitialViewFromQuery() {
   if (resolved === 'cfdi') refreshCfdiState();
   activateAuxiliaryViewState(view);
 }
+
+window.addEventListener('message', function(event) {
+  var data = event && event.data;
+  if (!data || data.action !== 'showView' || !data.view) return;
+  var requestedView = String(data.view || '').trim();
+  if (!requestedView) return;
+  showViewDirect(requestedView);
+  document.querySelectorAll('.nav').forEach(function(nav) { nav.classList.remove('active'); });
+  var nav = findNavItemById(requestedView) || findNativeNavByView(resolveRequestedView(requestedView));
+  if (nav) nav.classList.add('active');
+  var resolved = resolveRequestedView(requestedView);
+  if (resolved === 'comandas') loadComandas();
+  if (resolved === 'cocina') loadCocina();
+  if (resolved === 'inventario') loadInventory();
+  if (resolved === 'reportes') loadReports();
+  if (resolved === 'corte') loadCorte();
+  if (resolved === 'cfdi') refreshCfdiState();
+  activateAuxiliaryViewState(requestedView);
+});
 
 // ═══ INIT: Wire up category buttons ═══
 document.addEventListener('DOMContentLoaded', () => {

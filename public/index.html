@@ -69,6 +69,7 @@
   --tp-stage-padding-top:10vh;
   --tp-stage-padding-bottom:30vh;
 }
+html,body{max-width:100%;overflow-x:hidden;}
 /* Light theme override */
 [data-theme="light"]{
   --bg:#f5f5fa;--card:#ffffff;--card2:#eeeef4;--border:rgba(0,0,0,.1);
@@ -200,6 +201,10 @@ input,textarea,select{font-family:inherit;}
 .tutorial-icon{font-size:48px;margin-bottom:16px;}
 .tutorial-title{font-size:1.2rem;font-weight:900;margin-bottom:8px;}
 .tutorial-desc{font-size:.85rem;color:var(--sub);line-height:1.6;margin-bottom:24px;}
+.tutorial-progress-label{
+  font-size:11px;letter-spacing:1.2px;text-transform:uppercase;
+  color:rgba(255,255,255,.4);font-weight:800;margin-bottom:12px;
+}
 .tutorial-dots{display:flex;justify-content:center;gap:6px;margin-bottom:20px;}
 .tutorial-dot{width:8px;height:8px;border-radius:50%;background:var(--border);transition:all .2s;}
 .tutorial-dot.active{background:var(--p);width:20px;border-radius:4px;}
@@ -1125,6 +1130,42 @@ body:has(.center.tp-fullscreen) #audio-bar{
 }
 .bares-section-title svg{width:12px;height:12px;opacity:.6;}
 
+.bares-kpi-summary{
+  margin-bottom:14px;padding:14px;border-radius:14px;
+  background:linear-gradient(135deg,rgba(96,165,250,.09),rgba(52,211,153,.05));
+  border:1px solid rgba(96,165,250,.16);
+}
+.bares-kpi-head{
+  display:flex;align-items:flex-start;justify-content:space-between;
+  gap:12px;flex-wrap:wrap;margin-bottom:12px;
+}
+.bares-kpi-title{
+  font-size:11px;text-transform:uppercase;letter-spacing:1.3px;
+  color:rgba(255,255,255,.45);font-weight:800;
+}
+.bares-kpi-copy{font-size:13px;color:#fff;font-weight:700;margin-top:4px;}
+.bares-kpi-status{font-size:10px;color:rgba(255,255,255,.45);}
+.bares-kpi-grid{
+  display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;
+}
+.bares-kpi-card{
+  padding:12px;border-radius:12px;
+  background:rgba(7,7,13,.28);border:1px solid rgba(255,255,255,.05);
+  min-width:0;
+}
+.bares-kpi-eyebrow{
+  font-size:10px;letter-spacing:1px;text-transform:uppercase;
+  color:var(--sub);font-weight:700;margin-bottom:6px;
+}
+.bares-kpi-value{
+  font-size:22px;font-weight:900;line-height:1;color:#fff;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+.bares-kpi-value.label{
+  font-size:15px;line-height:1.2;white-space:normal;
+}
+.bares-kpi-meta{font-size:11px;color:rgba(255,255,255,.56);line-height:1.45;margin-top:6px;}
+
 /* Stats cards */
 .bares-stats{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:14px;}
 .bstat{
@@ -1615,6 +1656,151 @@ body:not(.bar-context) .sidebar #input-mesa{display:none!important;}
 }
 .welcome-sub{font-size:1rem;color:var(--sub);text-align:center;margin-top:-8px;opacity:0;animation:fadeUp .7s ease .15s forwards;}
 .welcome-brand{font-size:.7rem;color:rgba(255,255,255,.2);letter-spacing:3px;text-transform:uppercase;opacity:0;animation:fadeUp .7s ease .05s forwards;}
+.welcome-journey{
+  width:min(920px,92%);
+  padding:22px;
+  border-radius:24px;
+  border:1px solid rgba(255,255,255,.08);
+  background:linear-gradient(135deg,rgba(255,255,255,.06),rgba(255,255,255,.03));
+  box-shadow:0 18px 50px rgba(0,0,0,.35);
+  backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);
+  overflow:hidden;
+}
+.welcome-journey-head{display:flex;flex-direction:column;align-items:center;gap:8px;text-align:center;}
+.welcome-kicker{
+  font-size:11px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;
+  color:rgba(255,255,255,.45);
+}
+.welcome-journey-title{font-size:clamp(1.05rem,2.2vw,1.5rem);font-weight:900;letter-spacing:-.02em;}
+.welcome-journey-copy{
+  font-size:.95rem;color:rgba(255,255,255,.62);
+  max-width:620px;line-height:1.55;
+}
+.welcome-progress{
+  display:grid;grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:10px;margin-top:18px;
+}
+.welcome-progress-step{
+  display:flex;align-items:center;gap:10px;min-width:0;
+  padding:12px 14px;border-radius:16px;
+  background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);
+  transition:all .2s ease;
+}
+.welcome-progress-step .num{
+  width:28px;height:28px;min-width:28px;border-radius:999px;
+  display:flex;align-items:center;justify-content:center;
+  background:rgba(255,255,255,.08);color:#fff;font-size:12px;font-weight:900;
+}
+.welcome-progress-step .text{display:flex;flex-direction:column;gap:2px;min-width:0;}
+.welcome-progress-step .text strong{font-size:12px;color:#fff;}
+.welcome-progress-step .text span{
+  font-size:11px;color:rgba(255,255,255,.46);
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+.welcome-progress-step.active{
+  border-color:rgba(255,0,110,.28);
+  background:rgba(255,0,110,.08);
+  box-shadow:0 10px 24px rgba(255,0,110,.12);
+}
+.welcome-progress-step.active .num{background:linear-gradient(135deg,var(--p),var(--s));}
+.welcome-progress-step.done{
+  border-color:rgba(0,245,160,.18);
+  background:rgba(0,245,160,.06);
+}
+.welcome-progress-step.done .num{
+  background:rgba(0,245,160,.18);color:var(--g);
+}
+.welcome-step-card{
+  display:none;margin-top:18px;padding:18px;border-radius:18px;
+  background:rgba(7,7,13,.35);border:1px solid rgba(255,255,255,.05);
+}
+.welcome-step-card.active{display:block;}
+.welcome-step-label{
+  font-size:11px;font-weight:800;letter-spacing:1.4px;text-transform:uppercase;
+  color:rgba(255,255,255,.35);margin-bottom:8px;
+}
+.welcome-step-title{font-size:1.2rem;font-weight:800;margin-bottom:6px;}
+.welcome-step-copy{
+  font-size:.95rem;color:rgba(255,255,255,.6);
+  line-height:1.55;margin-bottom:16px;
+}
+.welcome-step-options{
+  display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;
+}
+.welcome-choice{
+  width:100%;padding:16px;min-height:112px;
+  border-radius:16px;border:1px solid rgba(255,255,255,.08);
+  background:rgba(255,255,255,.04);
+  display:flex;align-items:flex-start;gap:12px;text-align:left;
+  cursor:pointer;transition:all .2s ease;
+}
+.welcome-choice:hover,.welcome-choice.active{
+  transform:translateY(-2px);
+  border-color:rgba(255,255,255,.18);
+  background:rgba(255,255,255,.07);
+  box-shadow:0 12px 30px rgba(0,0,0,.2);
+}
+.welcome-choice-icon{
+  width:44px;height:44px;min-width:44px;border-radius:14px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:22px;background:linear-gradient(135deg,rgba(255,0,110,.18),rgba(58,134,255,.2));
+  border:1px solid rgba(255,255,255,.08);
+}
+.welcome-choice-body{display:flex;flex-direction:column;gap:4px;min-width:0;}
+.welcome-choice-title{font-size:14px;font-weight:800;color:#fff;}
+.welcome-choice-desc{font-size:12px;color:rgba(255,255,255,.58);line-height:1.45;}
+.welcome-flow-actions{
+  display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;
+  margin-top:16px;
+}
+.welcome-flow-btn{
+  min-height:44px;padding:0 16px;border-radius:12px;
+  border:1px solid rgba(255,255,255,.12);
+  background:rgba(255,255,255,.04);color:#fff;font-size:13px;font-weight:700;
+  cursor:pointer;transition:all .2s ease;
+}
+.welcome-flow-btn:hover{background:rgba(255,255,255,.08);}
+.welcome-flow-btn.secondary{color:var(--sub);}
+.welcome-flow-btn[disabled]{opacity:.35;cursor:not-allowed;}
+.welcome-result-card{
+  padding:18px;border-radius:18px;
+  background:linear-gradient(135deg,rgba(255,0,110,.08),rgba(58,134,255,.06));
+  border:1px solid rgba(255,255,255,.08);
+}
+.welcome-result-eyebrow{
+  font-size:11px;letter-spacing:1.3px;text-transform:uppercase;
+  color:#ffb86a;font-weight:800;margin-bottom:8px;
+}
+.welcome-result-title{font-size:1.25rem;font-weight:900;margin-bottom:8px;}
+.welcome-result-desc{font-size:.95rem;color:rgba(255,255,255,.62);line-height:1.6;}
+.welcome-result-points{
+  display:grid;grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:10px;margin-top:14px;
+}
+.welcome-result-point{
+  padding:12px;border-radius:14px;
+  background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.06);
+  font-size:12px;color:rgba(255,255,255,.72);line-height:1.5;
+}
+.welcome-result-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px;}
+.welcome-result-btn{
+  min-height:44px;padding:10px 18px;border-radius:12px;border:none;
+  display:inline-flex;align-items:center;justify-content:center;gap:8px;
+  font-size:13px;font-weight:800;cursor:pointer;text-decoration:none;
+  transition:all .2s ease;
+}
+.welcome-result-btn.primary{
+  background:linear-gradient(135deg,var(--p),var(--s));
+  color:#fff;box-shadow:0 8px 24px rgba(255,0,110,.22);
+}
+.welcome-result-btn.secondary{
+  background:rgba(255,255,255,.04);color:#fff;border:1px solid rgba(255,255,255,.12);
+}
+.welcome-result-btn:hover{transform:translateY(-1px);}
+.welcome-shortcuts-label{
+  font-size:11px;font-weight:800;letter-spacing:1.4px;text-transform:uppercase;
+  color:rgba(255,255,255,.28);margin-top:8px;
+}
 .welcome-cards{
   display:grid;grid-template-columns:repeat(2,1fr);gap:16px;
   max-width:700px;width:90%;margin-top:16px;
@@ -1940,6 +2126,10 @@ body:not(.bar-context) .sidebar #input-mesa{display:none!important;}
   .center{overflow-y:auto;-webkit-overflow-scrolling:touch;touch-action:manipulation;padding-bottom:120px;}
   .scrollable{-webkit-overflow-scrolling:touch;touch-action:manipulation;}
   /* ─── Welcome screen mobile ─── */
+  .welcome-journey{width:100%;padding:18px;}
+  .welcome-progress{grid-template-columns:1fr;}
+  .welcome-step-options,.welcome-result-points{grid-template-columns:1fr;}
+  .welcome-choice{min-height:96px;}
   .welcome-cards{grid-template-columns:1fr;max-width:360px;gap:12px;}
   .welcome-card{padding:18px 16px;flex-direction:row;gap:14px;text-align:left;}
   .welcome-card .wc-glow{display:none;}
@@ -1985,6 +2175,12 @@ body:not(.bar-context) .sidebar #input-mesa{display:none!important;}
   .mnav-btn svg{width:20px;height:20px;}
   /* Welcome */
   .welcome-logo{font-size:2rem;}
+  .welcome-journey{padding:16px 14px;border-radius:18px;}
+  .welcome-journey-title{font-size:1.1rem;}
+  .welcome-journey-copy{font-size:.88rem;}
+  .welcome-step-card{padding:14px;}
+  .welcome-flow-actions{flex-direction:column-reverse;align-items:stretch;}
+  .welcome-flow-btn,.welcome-result-btn{width:100%;}
   .welcome-cards{max-width:300px;gap:8px;}
   .welcome-card{padding:10px 12px;}
   .welcome-card .wc-icon{width:40px;height:40px;min-width:40px;font-size:18px;}
@@ -1992,6 +2188,19 @@ body:not(.bar-context) .sidebar #input-mesa{display:none!important;}
   .welcome-card .wc-desc{font-size:10px;}
   .welcome-sub{font-size:.8rem;}
   .welcome-footer{margin-top:8px;}
+  .tutorial-card{padding:22px 18px;}
+  .tutorial-btns{flex-direction:column-reverse;}
+  .tutorial-btn{width:100%;min-height:44px;}
+  .tutorial-icon{font-size:40px;}
+  .bares-kpi-grid{grid-template-columns:1fr 1fr;}
+  .bar-order-inp-row{flex-wrap:wrap;}
+  #bares-order-mesa{width:100%!important;max-width:none;}
+  .bar-order-inp,.menu-edit-inp{min-height:44px;}
+  .bar-add-btn{width:44px;height:44px;font-size:20px;}
+  .menu-toolbar{flex-wrap:wrap;gap:8px;}
+  .menu-toolbar-btn{min-height:44px;padding:0 14px;font-size:12px;}
+  .menu-items-grid{grid-template-columns:1fr;}
+  .bares-grid{grid-template-columns:repeat(3,1fr);}
 }
 
 /* ── UI Interaction Improvements ─────────────────────────────────────── */
@@ -3025,6 +3234,38 @@ input,select,textarea{font-size:16px!important;}
         </div>
         <div class="bares-body">
 
+          <div class="bares-kpi-summary">
+            <div class="bares-kpi-head">
+              <div>
+                <div class="bares-kpi-title">Resumen ejecutivo</div>
+                <div class="bares-kpi-copy">Lo primero que ve el dueno antes del detalle operativo.</div>
+              </div>
+              <div class="bares-kpi-status" id="bares-kpi-status">Conectando resumen...</div>
+            </div>
+            <div class="bares-kpi-grid">
+              <div class="bares-kpi-card">
+                <div class="bares-kpi-eyebrow">Catalogo</div>
+                <div class="bares-kpi-value" id="bares-kpi-total-songs">--</div>
+                <div class="bares-kpi-meta">Canciones listas para correr esta noche.</div>
+              </div>
+              <div class="bares-kpi-card">
+                <div class="bares-kpi-eyebrow">Cantantes</div>
+                <div class="bares-kpi-value" id="bares-kpi-total-singers">--</div>
+                <div class="bares-kpi-meta">Personas registradas en la operacion.</div>
+              </div>
+              <div class="bares-kpi-card">
+                <div class="bares-kpi-eyebrow">Top cancion</div>
+                <div class="bares-kpi-value label" id="bares-kpi-top-song">Sin datos</div>
+                <div class="bares-kpi-meta" id="bares-kpi-top-song-meta">Aun no hay historial suficiente.</div>
+              </div>
+              <div class="bares-kpi-card">
+                <div class="bares-kpi-eyebrow">Ultimos 7 dias</div>
+                <div class="bares-kpi-value" id="bares-kpi-last7">--</div>
+                <div class="bares-kpi-meta" id="bares-kpi-last7-meta">Movimiento comercial reciente.</div>
+              </div>
+            </div>
+          </div>
+
           <!-- Stats -->
           <div class="bares-stats">
             <div class="bstat amber">
@@ -3586,6 +3827,77 @@ input,select,textarea{font-size:16px!important;}
   <div class="welcome-logo">ByFlow</div>
   <div class="welcome-sub">Vive Cantando</div>
 
+  <div class="welcome-journey">
+    <div class="welcome-journey-head">
+      <div class="welcome-kicker">Guia rapida de entrada</div>
+      <div class="welcome-journey-title">Dinos que negocio tienes y te llevo al modo correcto</div>
+      <div class="welcome-journey-copy">Si vienes por karaoke, estudio o POS para bar, ByFlow te acomoda en 3 pasos para que no pierdas tiempo adivinando menus.</div>
+    </div>
+
+    <div class="welcome-progress" id="welcome-progress">
+      <div class="welcome-progress-step active" data-step="1">
+        <div class="num">1</div>
+        <div class="text"><strong>Negocio</strong><span>Que operas hoy</span></div>
+      </div>
+      <div class="welcome-progress-step" data-step="2">
+        <div class="num">2</div>
+        <div class="text"><strong>Objetivo</strong><span>Que quieres hacer</span></div>
+      </div>
+      <div class="welcome-progress-step" data-step="3">
+        <div class="num">3</div>
+        <div class="text"><strong>Ruta</strong><span>Entrada recomendada</span></div>
+      </div>
+    </div>
+
+    <div class="welcome-step-card active" data-welcome-step="1">
+      <div class="welcome-step-label">Paso 1</div>
+      <div class="welcome-step-title">Que tipo de negocio tienes?</div>
+      <div class="welcome-step-copy">Elige el contexto para que ByFlow te recomiende el flujo correcto desde el inicio.</div>
+      <div class="welcome-step-options">
+        <button type="button" class="welcome-choice" onclick="welcomeChooseBusiness('bar')">
+          <div class="welcome-choice-icon">&#127867;</div>
+          <div class="welcome-choice-body">
+            <div class="welcome-choice-title">Bar o karaoke</div>
+            <div class="welcome-choice-desc">Quiero operar mesas, ventas, comandas y shows.</div>
+          </div>
+        </button>
+        <button type="button" class="welcome-choice" onclick="welcomeChooseBusiness('creator')">
+          <div class="welcome-choice-icon">&#127908;</div>
+          <div class="welcome-choice-body">
+            <div class="welcome-choice-title">Artista o creador</div>
+            <div class="welcome-choice-desc">Quiero cantar, escribir o producir ideas rapido.</div>
+          </div>
+        </button>
+        <button type="button" class="welcome-choice" onclick="welcomeChooseBusiness('event')">
+          <div class="welcome-choice-icon">&#127881;</div>
+          <div class="welcome-choice-body">
+            <div class="welcome-choice-title">Fiesta o evento</div>
+            <div class="welcome-choice-desc">Quiero correr karaoke o controlar la noche desde otro equipo.</div>
+          </div>
+        </button>
+      </div>
+    </div>
+
+    <div class="welcome-step-card" data-welcome-step="2">
+      <div class="welcome-step-label">Paso 2</div>
+      <div class="welcome-step-title" id="welcome-goal-title">Que quieres hacer hoy?</div>
+      <div class="welcome-step-copy" id="welcome-goal-copy">Elige tu objetivo y te mando directo al mejor camino.</div>
+      <div class="welcome-step-options" id="welcome-goal-options"></div>
+    </div>
+
+    <div class="welcome-step-card" data-welcome-step="3">
+      <div class="welcome-step-label">Paso 3</div>
+      <div id="welcome-result-card"></div>
+    </div>
+
+    <div class="welcome-flow-actions">
+      <button class="welcome-flow-btn secondary" id="welcome-back-btn" onclick="welcomeGoBack()" disabled>Atras</button>
+      <button class="welcome-flow-btn" id="welcome-reset-btn" onclick="welcomeResetFlow()">Reiniciar guia</button>
+    </div>
+  </div>
+
+  <div class="welcome-shortcuts-label">Ya tienes cuenta o quieres entrar rapido</div>
+
   <!-- Login — Google principal, email+nombre alternativa -->
   <div style="display:flex;flex-direction:column;align-items:center;gap:10px;width:100%;max-width:340px;">
     <button id="btn-google-login" style="display:flex;align-items:center;justify-content:center;gap:10px;width:100%;padding:14px 20px;border-radius:14px;border:1px solid rgba(66,133,244,.3);background:rgba(66,133,244,.08);color:#fff;font-size:14px;font-weight:600;cursor:pointer;transition:all .2s;min-height:48px;" ontouchstart="">
@@ -3605,7 +3917,7 @@ input,select,textarea{font-size:16px!important;}
   <!-- Separador -->
   <div style="display:flex;align-items:center;gap:10px;width:90%;max-width:500px;margin:4px 0;">
     <div style="flex:1;height:1px;background:rgba(255,255,255,.06);"></div>
-    <span style="font-size:9px;color:rgba(255,255,255,.15);">o elige un modo</span>
+    <span style="font-size:9px;color:rgba(255,255,255,.15);">o entra por acceso directo</span>
     <div style="flex:1;height:1px;background:rgba(255,255,255,.06);"></div>
   </div>
 
@@ -3979,30 +4291,31 @@ input,select,textarea{font-size:16px!important;}
 <div class="tutorial-overlay" id="tutorial-overlay">
   <div class="tutorial-card">
     <div class="tutorial-step active" data-step="0">
-      <div class="tutorial-icon">&#127908;</div>
-      <div class="tutorial-title">Bienvenido a ByFlow</div>
-      <div class="tutorial-desc">Tu plataforma de karaoke inteligente y entretenimiento en vivo. Te mostramos lo basico en 4 pasos.</div>
+      <div class="tutorial-icon">&#129504;</div>
+      <div class="tutorial-title">Primero ubica tu ruta</div>
+      <div class="tutorial-desc">ByFlow no es una sola pantalla. Puedes entrar a cantar, escribir, correr remoto o ensenar el POS del bar sin tocar la operacion real.</div>
     </div>
     <div class="tutorial-step" data-step="1">
-      <div class="tutorial-icon">&#127925;</div>
-      <div class="tutorial-title">Karaoke + Musica</div>
-      <div class="tutorial-desc">Agrega cantantes a la cola, busca canciones en YouTube/SoundCloud y las letras se cargan automaticamente en el teleprompter.</div>
+      <div class="tutorial-icon">&#127908;</div>
+      <div class="tutorial-title">Karaoke en 2 clics</div>
+      <div class="tutorial-desc">Busca canciones, agrega cantantes a la cola y deja que el teleprompter haga el resto. Es la entrada mas rapida para usar ByFlow al momento.</div>
     </div>
     <div class="tutorial-step" data-step="2">
-      <div class="tutorial-icon">&#127911;</div>
-      <div class="tutorial-title">Estudio de Letras</div>
-      <div class="tutorial-desc">Escribe tus propias letras, graba tu voz sobre beats de YouTube, publica y sube al ranking. Tu creatividad sin limites.</div>
+      <div class="tutorial-icon">&#127867;</div>
+      <div class="tutorial-title">Si operas un bar, empieza por el demo</div>
+      <div class="tutorial-desc">El POS comercial vive en otra ruta para que puedas ensenar mesas, cocina, inventario y reportes sin exponer datos reales ni pedir PIN.</div>
     </div>
     <div class="tutorial-step" data-step="3">
-      <div class="tutorial-icon">&#10024;</div>
-      <div class="tutorial-title">IA Studio + Vistas</div>
-      <div class="tutorial-desc">Genera letras con IA, usa el Panel Vistas para ver todo a la vez, y comparte la pantalla remota via QR. Todo desde el menu "Mas" del topbar.</div>
+      <div class="tutorial-icon">&#9998;</div>
+      <div class="tutorial-title">Estudio para crear, no para distraerte</div>
+      <div class="tutorial-desc">Cuando quieras producir letras, beats o ideas, entra a Estudio. Asi separas la parte creativa del flujo rapido de karaoke y operacion.</div>
     </div>
     <div class="tutorial-step" data-step="4">
-      <div class="tutorial-icon">&#128640;</div>
-      <div class="tutorial-title">Listo para cantar!</div>
-      <div class="tutorial-desc">Usa los botones &#x25C0; &#x25B6; en los laterales para esconder/mostrar paneles y tener mas espacio. Cero contaminacion visual.</div>
+      <div class="tutorial-icon">&#128241;</div>
+      <div class="tutorial-title">Remoto, paneles y vista limpia</div>
+      <div class="tutorial-desc">Si necesitas mas espacio, esconde paneles laterales o usa la vista remota. Este tutorial se puede saltar y volver a abrir despues.</div>
     </div>
+    <div class="tutorial-progress-label" id="tutorial-progress-label">Paso 1 de 5</div>
     <div class="tutorial-dots" id="tutorial-dots"></div>
     <div class="tutorial-btns">
       <button class="tutorial-btn secondary" id="tutorial-skip" onclick="closeTutorial()">Saltar</button>

@@ -230,6 +230,7 @@
     baresRenderOrders();
     menuInit();
     talentLoadEvents();
+    if (typeof loadStats === 'function') loadStats();
   }
 
   function baresSetupBar() {
