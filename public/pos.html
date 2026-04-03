@@ -146,6 +146,7 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--t
 }
 .gl-btn:hover{transform:translateY(-1px);box-shadow:0 4px 20px rgba(0,0,0,.4);}
 .gl-btn:active{transform:scale(.97);}
+.gl-btn[disabled]{opacity:.72;cursor:wait;transform:none;box-shadow:0 2px 12px rgba(0,0,0,.2);}
 .gl-btn img{width:20px;height:20px;}
 .gl-back{font-size:12px;color:var(--sub);cursor:pointer;margin-top:8px;transition:color .2s;}
 .gl-back:hover{color:var(--text);}
@@ -185,7 +186,7 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--t
       <div class="rb-icon">&#x1F464;</div>
       <div class="rb-text">
         <div class="rb-label">Soy Empleado</div>
-        <div class="rb-desc">Ingresa con tu PIN de 4-6 digitos</div>
+          <div class="rb-desc">Ingresa con tu PIN de 4-6 dígitos</div>
       </div>
     </div>
   </div>
@@ -196,7 +197,7 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--t
   <div class="logo" style="font-family:'Great Vibes',cursive;font-size:2.5rem;background:linear-gradient(135deg,var(--orange),#fbbf24);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">ByFlow</div>
   <div class="gl-title">Acceso con Google</div>
   <div class="gl-sub">Inicia sesión con tu cuenta Google. Si tu correo ya está vinculado al POS, entras directo; si eres dueño con licencia activa, configuramos tu bar la primera vez.</div>
-  <button class="gl-btn" onclick="signInWithGoogle()">
+  <button class="gl-btn" id="google-login-btn" onclick="signInWithGoogle()">
     <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="G">
     Continuar con Google
   </button>
@@ -253,7 +254,7 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--t
 
 <div class="devices-hint">
   ByFlow POS v1.0 &bull; powered by IArtLabs<br>
-  Conecta tablets y PCs a la misma red para sync automatico
+          Conecta tablets y PCs a la misma red para sincronización automática
 </div>
 
 <script>
@@ -292,118 +293,19 @@ function showEmployeeLogin() {
 // ═══ GOOGLE SIGN-IN (Firebase Auth) ═══
 async function signInWithGoogle() {
   const statusEl = document.getElementById('gl-status');
-  statusEl.textContent = 'Conectando con Google...';
+  clearGoogleStatusArtifacts();
+  statusEl.textContent = 'Abriendo Google...';
+  statusEl.style.color = '';
+
+  const provider = new firebase.auth.GoogleAuthProvider();
+  provider.setCustomParameters({ prompt: 'select_account' });
 
   try {
-    const provider = new firebase.auth.GoogleAuthProvider();
-    provider.setCustomParameters({ prompt: 'select_account' });
-    let result;
-    const isCapacitor = window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform();
-    const isMobile = /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent);
-    if (isCapacitor || isMobile) {
-      _fbAuth.signInWithRedirect(provider);
-      return; // redirect handles the rest via getRedirectResult below
-    } else {
-      result = await _fbAuth.signInWithPopup(provider);
-    }
-    const user = result.user;
-    const email = user.email;
-
-    statusEl.textContent = 'Verificando licencia POS...';
-
-    // Check POS license for this email
-    const licResp = await fetch('/api/pos/license?email=' + encodeURIComponent(email));
-    const licData = await licResp.json();
-
-    if (!licData.ok || !licData.active) {
-      // No license — block access, show contact info
-      statusEl.style.color = '#fbbf24';
-      statusEl.innerHTML = '';
-      var noLicDiv = document.createElement('div');
-      noLicDiv.style.cssText = 'text-align:center;max-width:300px;';
-      noLicDiv.innerHTML = '<div style="font-size:13px;color:#fbbf24;font-weight:600;margin-bottom:8px;">Tu cuenta no tiene licencia POS activa.</div>'
-        + '<div style="font-size:11px;color:rgba(255,255,255,.5);margin-bottom:14px;">Contacta a IArtLabs para adquirir una.</div>'
-        + '<a href="https://wa.me/524494917648" style="display:inline-block;padding:10px 24px;border-radius:10px;background:rgba(0,245,160,.12);color:#00f5a0;font-size:12px;font-weight:700;text-decoration:none;border:1px solid rgba(0,245,160,.25);transition:all .2s;">Contactar IArtLabs</a>';
-      statusEl.parentNode.insertBefore(noLicDiv, statusEl.nextSibling);
-      statusEl.textContent = '';
-      return;
-    }
-
-    // Licensed! Generate bar_id from email hash
-    const barId = await emailToBarId(email);
-    _currentBarId = barId;
-
-    // Store owner info
-    sessionStorage.setItem('pos_bar_id', barId);
-    sessionStorage.setItem('pos_owner_email', email);
-    sessionStorage.setItem('pos_owner_name', user.displayName || email);
-    sessionStorage.setItem('pos_owner_photo', user.photoURL || '');
-    localStorage.setItem('pos_bar_email', email);
-
-    statusEl.textContent = 'Licencia activa! Accediendo...';
-    statusEl.style.color = '#34d399';
-
-    // Try login by email first (employee or owner already registered)
-    var loginResp = await fetch('/pos/auth/login-email', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'X-Bar-ID': barId },
-      body: JSON.stringify({ email: email, bar_id: barId })
-    });
-    var loginData = await loginResp.json();
-
-    if (!loginData.ok) {
-      // No employee with this email — first-time setup as owner
-      statusEl.textContent = 'Configurando tu bar por primera vez...';
-
-      // Generate a random PIN for the owner (not 000000)
-      var ownerPin = String(Math.floor(100000 + Math.random() * 899999));
-
-      await fetch('/pos/auth/setup-owner', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'X-Bar-ID': barId },
-        body: JSON.stringify({
-          name: user.displayName || email.split('@')[0],
-          pin: ownerPin,
-          bar_id: barId,
-          email: email
-        })
-      });
-
-      // Now login by email (owner was just created with email)
-      loginResp = await fetch('/pos/auth/login-email', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'X-Bar-ID': barId },
-        body: JSON.stringify({ email: email, bar_id: barId })
-      });
-      loginData = await loginResp.json();
-    }
-
-    if (loginData.ok) {
-      sessionStorage.setItem('pos_employee', JSON.stringify(loginData.employee));
-      sessionStorage.setItem('pos_token', loginData.token);
-      sessionStorage.setItem('pos_license', JSON.stringify({ active: true, plan: licData.plan, email }));
-
-      // Seed bar settings with owner's name
-      try {
-        await fetch('/pos/settings', {
-          method: 'PUT',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': 'Bearer ' + loginData.token,
-            'X-Bar-ID': barId
-          },
-          body: JSON.stringify({ bar_name: 'Mi Bar — ' + (user.displayName || email.split('@')[0]) })
-        });
-      } catch (_) {}
-
-      showGreeting(loginData.employee, loginData.defaultView, { active: true, plan: licData.plan });
-    } else {
-      showEmployeeLogin();
-    }
-
+    await startGoogleRedirectSignIn(statusEl, provider);
   } catch (err) {
-    console.error('[POS] Google sign-in error:', err);
-    statusEl.textContent = 'Error: ' + (err.message || 'No se pudo conectar');
+    console.error('[POS] Google sign-in bootstrap error:', err);
+    setGoogleRedirectPending(false);
+    statusEl.textContent = 'No pudimos abrir Google. Intenta de nuevo.';
     statusEl.style.color = '#ef4444';
   }
 }
@@ -431,9 +333,38 @@ function clearGoogleStatusArtifacts() {
   });
 }
 
+let _googleLoginInFlight = sessionStorage.getItem('pos_google_redirect_pending') === '1';
+
+function setGoogleLoginBusy(isBusy) {
+  var button = document.getElementById('google-login-btn');
+  if (!button) return;
+  button.disabled = !!isBusy;
+}
+
+function setGoogleRedirectPending(isPending) {
+  _googleLoginInFlight = !!isPending;
+  if (isPending) {
+    sessionStorage.setItem('pos_google_redirect_pending', '1');
+  } else {
+    sessionStorage.removeItem('pos_google_redirect_pending');
+  }
+  setGoogleLoginBusy(isPending);
+}
+
+setGoogleLoginBusy(_googleLoginInFlight);
+
+async function startGoogleRedirectSignIn(statusEl, provider) {
+  if (statusEl) {
+    statusEl.textContent = 'Abriendo Google...';
+    statusEl.style.color = '';
+  }
+  setGoogleRedirectPending(true);
+  await _fbAuth.signInWithRedirect(provider);
+}
+
 async function completeGooglePosLogin(user, statusEl) {
   const email = (user && user.email ? user.email : '').trim().toLowerCase();
-  if (!email) throw new Error('Tu cuenta de Google no devolvio un email valido');
+  if (!email) throw new Error('Tu cuenta de Google no devolvió un email válido');
 
   clearGoogleStatusArtifacts();
   statusEl.textContent = 'Buscando tu acceso POS...';
@@ -492,7 +423,7 @@ async function completeGooglePosLogin(user, statusEl) {
         showNoLicenseState(statusEl, loginData.error || 'No tienes licencia POS activa para este bar.');
         return;
       }
-      throw new Error(loginData.error || 'No se pudo iniciar sesion en el POS');
+      throw new Error(loginData.error || 'No se pudo iniciar sesión en el POS');
     }
   }
 
@@ -540,23 +471,26 @@ async function completeGooglePosLogin(user, statusEl) {
 
 async function signInWithGoogle() {
   const statusEl = document.getElementById('gl-status');
-  statusEl.textContent = 'Conectando con Google...';
+  if (_googleLoginInFlight) {
+    statusEl.textContent = 'Ya estamos abriendo Google. Espera un momento...';
+    statusEl.style.color = '';
+    return;
+  }
+
+  clearGoogleStatusArtifacts();
+  statusEl.textContent = 'Abriendo Google...';
+  statusEl.style.color = '';
+
+  const provider = new firebase.auth.GoogleAuthProvider();
+  provider.setCustomParameters({ prompt: 'select_account' });
 
   try {
-    const provider = new firebase.auth.GoogleAuthProvider();
-    provider.setCustomParameters({ prompt: 'select_account' });
-    let result;
-    const isCapacitor = window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform();
-    const isMobile = /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent);
-    if (isCapacitor || isMobile) {
-      _fbAuth.signInWithRedirect(provider);
-      return;
-    }
-    result = await _fbAuth.signInWithPopup(provider);
-    await completeGooglePosLogin(result.user, statusEl);
+    await startGoogleRedirectSignIn(statusEl, provider);
+    return;
   } catch (err) {
     console.error('[POS] Google sign-in error:', err);
-    statusEl.textContent = 'Error: ' + (err.message || 'No se pudo conectar');
+    setGoogleRedirectPending(false);
+    statusEl.textContent = 'No pudimos abrir Google. Intenta de nuevo.';
     statusEl.style.color = '#ef4444';
   }
 }
@@ -607,13 +541,13 @@ function showError(msg) {
 
 function clearMsg() {
   const el = document.getElementById('pin-msg');
-  el.textContent = pin.length === 0 ? 'Ingresa tu PIN para acceder' : pin.length + ' digitos';
+  el.textContent = pin.length === 0 ? 'Ingresa tu PIN para acceder' : pin.length + ' dígitos';
   el.className = 'pin-msg';
 }
 
 async function submitPin() {
   if (pin.length < MIN_PIN) {
-    showError('PIN debe tener al menos ' + MIN_PIN + ' digitos');
+    showError('El PIN debe tener al menos ' + MIN_PIN + ' dígitos');
     return;
   }
 
@@ -647,7 +581,7 @@ async function submitPin() {
     showGreeting(emp, data.defaultView || 'mesas', licenseData);
 
   } catch (err) {
-    showError('Error de conexion');
+    showError('Error de conexión');
     console.error(err);
   }
 }
@@ -746,8 +680,9 @@ loadSessions();
 
 // ═══ PWA: Service Worker + Install Prompt ═══
 if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('/pos-sw.js').then((reg) => {
+  navigator.serviceWorker.register('/pos-sw.js?v=20260403b', { updateViaCache: 'none' }).then((reg) => {
     console.log('[POS] Service Worker registered:', reg.scope);
+    reg.update().catch(() => {});
   }).catch((err) => {
     console.log('[POS] SW registration failed:', err);
   });
@@ -781,11 +716,15 @@ window.addEventListener('appinstalled', () => {
 
 // Handle Google redirect result (for mobile)
 _fbAuth.getRedirectResult().then(async function(result) {
-  if (!result || !result.user) return;
+  if (!result || !result.user) {
+    setGoogleRedirectPending(false);
+    return;
+  }
   var redirectStatusEl = document.getElementById('gl-status');
   if (redirectStatusEl) redirectStatusEl.textContent = 'Verificando...';
   try {
     await completeGooglePosLogin(result.user, redirectStatusEl);
+    setGoogleRedirectPending(false);
     return;
   } catch (redirectErr) {
     console.log('[POS] Redirect login fallback:', redirectErr.message);
@@ -840,7 +779,9 @@ _fbAuth.getRedirectResult().then(async function(result) {
       if (statusEl) statusEl.textContent = 'No tienes licencia POS. Contacta IArtLabs.';
     }
   } catch(e) {}
+  setGoogleRedirectPending(false);
 }).catch(function(err) {
+  setGoogleRedirectPending(false);
   console.log('[POS] Redirect result:', err.message);
 });
 </script>

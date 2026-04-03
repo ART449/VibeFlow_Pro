@@ -3,7 +3,7 @@
  * Offline support + caching for PWA
  */
 
-const CACHE_NAME = 'byflow-pos-' + '20260328';
+const CACHE_NAME = 'byflow-pos-' + '20260403b';
 const OFFLINE_URL = '/pos-offline.html';
 
 const PRECACHE_URLS = [
