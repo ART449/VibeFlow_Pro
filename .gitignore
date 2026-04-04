@@ -28,3 +28,9 @@ docs/.credentials
 .claude/worktrees/
 .android-sdk/
 .android-sdk-tmp/
+
+# Release signing (NEVER commit — lose this = can't update app on Play Store)
+.keystore/
+*.jks
+*.keystore
+keystore.properties

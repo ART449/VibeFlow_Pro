@@ -12,12 +12,15 @@
 
   PosAuth.getToken = function() {
     return sessionStorage.getItem('pos_token') ||
+      localStorage.getItem('pos_token') ||
       new URLSearchParams(location.search).get('token') ||
       '';
   };
 
   PosAuth.getBarId = function() {
-    return sessionStorage.getItem('pos_bar_id') || 'default';
+    return sessionStorage.getItem('pos_bar_id') ||
+      localStorage.getItem('pos_bar_id') ||
+      'default';
   };
 
   PosAuth.getPermissions = function() {
@@ -122,11 +125,19 @@
     if (meta.sidebar) sessionStorage.setItem('pos_sidebar', JSON.stringify(meta.sidebar));
     if (meta.defaultView) sessionStorage.setItem('pos_default_view', meta.defaultView);
     if (meta.license) sessionStorage.setItem('pos_license', JSON.stringify(meta.license));
+    // Persist token + identity to localStorage so session survives tab close / browser restart
+    localStorage.setItem('pos_token', token);
+    localStorage.setItem('pos_employee', JSON.stringify(employee));
+    if (barId) localStorage.setItem('pos_bar_id', barId);
   };
 
   PosAuth.getEmployee = function() {
     try {
-      return JSON.parse(sessionStorage.getItem('pos_employee') || 'null');
+      return JSON.parse(
+        sessionStorage.getItem('pos_employee') ||
+        localStorage.getItem('pos_employee') ||
+        'null'
+      );
     } catch (e) {
       return null;
     }
@@ -140,6 +151,9 @@
     sessionStorage.removeItem('pos_permissions');
     sessionStorage.removeItem('pos_sidebar');
     sessionStorage.removeItem('pos_default_view');
+    localStorage.removeItem('pos_token');
+    localStorage.removeItem('pos_employee');
+    localStorage.removeItem('pos_bar_id');
     localStorage.removeItem('pos_bar_name');
     localStorage.removeItem('pos_bar_email');
     localStorage.removeItem('pos_setup_complete');

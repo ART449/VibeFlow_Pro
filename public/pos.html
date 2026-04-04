@@ -264,7 +264,7 @@ function escapeHtml(str) {
 }
 
 // ═══ MULTI-TENANT: bar_id from owner auth ═══
-let _currentBarId = sessionStorage.getItem('pos_bar_id') || 'default';
+let _currentBarId = sessionStorage.getItem('pos_bar_id') || localStorage.getItem('pos_bar_id') || 'default';
 
 // emailToBarId — uses shared PosAuth module
 const emailToBarId = PosAuth.emailToBarId;
@@ -708,12 +708,48 @@ function quickSwitch() {
 loadSessions();
 
 // ═══ AUTO-DETECT: if bar_id already set (returning user), skip role selection ═══
-(function autoDetectBar() {
-  const savedBarId = sessionStorage.getItem('pos_bar_id');
-  const savedToken = sessionStorage.getItem('pos_token');
+(async function autoDetectBar() {
+  const savedBarId = sessionStorage.getItem('pos_bar_id') || localStorage.getItem('pos_bar_id');
+  const savedToken = sessionStorage.getItem('pos_token') || localStorage.getItem('pos_token');
+  const savedEmail = localStorage.getItem('pos_bar_email');
+
   if (savedBarId && savedBarId !== 'default' && savedToken) {
-    // Returning user with a bar — go directly to PIN login
+    // Restore sessionStorage from localStorage if needed
+    if (!sessionStorage.getItem('pos_bar_id')) sessionStorage.setItem('pos_bar_id', savedBarId);
+    if (!sessionStorage.getItem('pos_token')) sessionStorage.setItem('pos_token', savedToken);
+    const savedEmp = localStorage.getItem('pos_employee');
+    if (savedEmp && !sessionStorage.getItem('pos_employee')) sessionStorage.setItem('pos_employee', savedEmp);
+
     _currentBarId = savedBarId;
+
+    // Validate token against server; if expired (server restart), re-auth via email
+    try {
+      const check = await fetch('/pos/tables', {
+        headers: { 'Authorization': 'Bearer ' + savedToken, 'X-Bar-ID': savedBarId }
+      });
+      if (check.status === 401 && savedEmail) {
+        // Token expired — silently re-authenticate via stored email
+        const reLogin = await fetch('/pos/auth/login-email', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'X-Bar-ID': savedBarId },
+          body: JSON.stringify({ email: savedEmail, bar_id: savedBarId })
+        });
+        const reData = await reLogin.json();
+        if (reData.ok && reData.employee) {
+          PosAuth.saveSession(reData.employee, reData.token, reData.bar_id || savedBarId, {
+            sidebar: reData.sidebar || [],
+            permissions: reData.permissions || [],
+            defaultView: reData.defaultView || 'mesas',
+            license: reData.license || null
+          });
+          _currentBarId = reData.bar_id || savedBarId;
+          showGreeting(reData.employee, reData.defaultView || 'mesas', reData.license || null);
+          return;
+        }
+      }
+    } catch (_) {}
+
+    // Token still valid — go directly to PIN login screen
     showEmployeeLogin();
   }
 })();

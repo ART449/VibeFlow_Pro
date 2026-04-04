@@ -159,6 +159,10 @@
         localStorage.setItem('byflow_user_email', user.email || '');
         localStorage.setItem('byflow_user_photo', user.photoURL || '');
         localStorage.setItem('byflow_user_uid', user.uid);
+        // Returning user: auto-dismiss welcome overlay without requiring manual interaction
+        if (!window._byflowWelcomed) {
+          auth.dismissWelcome();
+        }
       }
       auth._updateUserUI();
     });
