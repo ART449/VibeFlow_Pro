@@ -2,8 +2,9 @@
 const http = require('http');
 const { exec } = require('child_process');
 
-const PORT = 9091;
-const TOKEN = 'nq2026mx-sandbox';
+const PORT = process.env.SHELL_PORT || 9091;
+const TOKEN = process.env.SHELL_TOKEN || '';
+if (!TOKEN) { console.error('SHELL_TOKEN requerido. Uso: SHELL_TOKEN=tutoken node secure-shell.js'); process.exit(1); }
 
 // Strip sensitive env vars from child processes
 const SAFE_ENV = Object.fromEntries(
