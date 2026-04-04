@@ -1,11 +1,18 @@
 // ── YouTube Search (proxy para evitar CORS) — routes/youtube.js ─────────────
 
-// Piped instances (fallback sin API key)
+// Piped instances (fallback sin API key) — actualizado 2026-04-04
+// Piped es inestable; rotamos y cacheamos la instancia que responda
 const PIPED_INSTANCES = [
+  'https://api.piped.private.coffee',
   'https://pipedapi.kavin.rocks',
+  'https://pipedapi-libre.kavin.rocks',
   'https://pipedapi.adminforge.de',
-  'https://pipedapi.in.projectsegfau.lt'
+  'https://pipedapi.reallyaweso.me',
+  'https://pipedapi.orangenet.cc'
 ];
+let _lastWorkingPiped = null;
+let _lastPipedCheck = 0;
+const PIPED_CACHE_TTL = 300000; // 5 min
 
 function resolveYouTubeKey(req) {
   const headerKey = typeof req.headers['x-youtube-key'] === 'string' ? req.headers['x-youtube-key'].trim() : '';
@@ -20,16 +27,29 @@ function registerRoutes(app, _state, _helpers) {
     const q = (req.query.q || '').trim();
     if (!q) return res.status(400).json({ error: 'Falta parametro: q' });
 
+    // Intentar la instancia cacheada primero
+    const now = Date.now();
+    const orderedInstances = (_lastWorkingPiped && (now - _lastPipedCheck) < PIPED_CACHE_TTL)
+      ? [_lastWorkingPiped, ...PIPED_INSTANCES.filter(i => i !== _lastWorkingPiped)]
+      : PIPED_INSTANCES;
+
     let lastErr = 'Todos los servidores fallaron';
-    for (const instance of PIPED_INSTANCES) {
+    for (const instance of orderedInstances) {
       try {
         const r = await fetch(`${instance}/search?q=${encodeURIComponent(q)}&filter=videos`, {
           headers: { 'User-Agent': 'ByFlow/2.1' },
-          signal: AbortSignal.timeout(8000)
+          signal: AbortSignal.timeout(6000)
         });
         if (!r.ok) { lastErr = `${instance}: HTTP ${r.status}`; continue; }
         const data = await r.json();
+        // Piped a veces devuelve texto como "Service has been shutdown"
+        if (!data.items && typeof data === 'string') { lastErr = `${instance}: servicio cerrado`; continue; }
         const items = (data.items || []).filter(i => i.type === 'stream').slice(0, 12);
+        if (!items.length) { lastErr = `${instance}: sin resultados`; continue; }
+
+        // Cache esta instancia como funcional
+        _lastWorkingPiped = instance;
+        _lastPipedCheck = Date.now();
 
         const formatted = {
           items: items.map(v => ({
@@ -51,7 +71,9 @@ function registerRoutes(app, _state, _helpers) {
         continue;
       }
     }
-    res.status(502).json({ error: 'Busqueda libre no disponible: ' + lastErr });
+    // Invalidar cache si ningun server respondio
+    _lastWorkingPiped = null;
+    res.status(502).json({ error: 'Busqueda libre no disponible. Configura una YouTube API key en Settings para mejores resultados.' });
   });
 
   // Busqueda con API key de Google (metodo original)

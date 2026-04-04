@@ -1,0 +1,1827 @@
+{
+  "_meta": {
+    "version": "2.0.0",
+    "total": 62,
+    "updated": "2026-04-04",
+    "author": "Arturo Torres (ArT-AtR) / IArtLabs",
+    "description": "Registro maestro de todos los agentes de La Colmena"
+  },
+  "layers": {
+    "produccion": "Agentes que generan contenido y dinero",
+    "maquinacion": "Agentes de infraestructura IArtLabs OS",
+    "desarrollo": "Agentes de desarrollo de software",
+    "seguridad": "Agentes de seguridad y auditoria",
+    "gsd": "Agentes del sistema GSD (Get Stuff Done)",
+    "especialistas": "Revisores por lenguaje"
+  },
+  "agents": [
+    {
+      "id": "robot-dj",
+      "name": "ROBOT DJ",
+      "emoji": "🎧",
+      "color": "#ff006e",
+      "layer": "produccion",
+      "role": "Marketing & Content",
+      "tier": "free",
+      "room": "creative",
+      "gx": 2,
+      "gy": 14,
+      "description": "Posts, campanas, ad copy, calendarios de contenido",
+      "local": true,
+      "source": "colmena",
+      "taskTypes": [
+        "social-post",
+        "ad-copy",
+        "content-calendar",
+        "email-campaign",
+        "hashtags"
+      ],
+      "reactions": [
+        "Post listo, jefe!",
+        "Copy que vende!",
+        "Contenido viral incoming"
+      ],
+      "runner_profile": "code-runner"
+    },
+    {
+      "id": "michi",
+      "name": "MICHI",
+      "emoji": "🐱",
+      "color": "#ef4444",
+      "layer": "produccion",
+      "role": "Legal & Docs",
+      "room": "dev-b",
+      "gx": 14,
+      "gy": 14,
+      "description": "Contratos, terminos, FAQs legales, templates",
+      "local": true,
+      "source": "colmena",
+      "taskTypes": [
+        "contract-template",
+        "document-review",
+        "legal-faq",
+        "terms-generator"
+      ],
+      "reactions": [
+        "Clausula lista!",
+        "Todo legal, patron",
+        "Disclaimer puesto"
+      ],
+      "tier": "starter",
+      "runner_profile": "code-runner"
+    },
+    {
+      "id": "gflow",
+      "name": "GFLOW",
+      "emoji": "💰",
+      "color": "#fbbf24",
+      "layer": "produccion",
+      "role": "Finance & Analysis",
+      "room": "dev-a",
+      "gx": 4,
+      "gy": 2,
+      "description": "Analisis de mercado, presupuestos, pitch inversionistas",
+      "local": true,
+      "source": "colmena",
+      "taskTypes": [
+        "market-analysis",
+        "budget",
+        "investment-overview",
+        "crypto-brief"
+      ],
+      "reactions": [
+        "Los numeros cuadran!",
+        "ROI positivo, jefe",
+        "Lana asegurada"
+      ],
+      "tier": "starter",
+      "runner_profile": "code-runner"
+    },
+    {
+      "id": "clip-flow",
+      "name": "CLIP FLOW",
+      "emoji": "📚",
+      "color": "#60a5fa",
+      "layer": "produccion",
+      "role": "Education & Training",
+      "room": "dev-b",
+      "gx": 16,
+      "gy": 12,
+      "description": "Manuales, guias, flashcards, study guides",
+      "local": true,
+      "source": "colmena",
+      "taskTypes": [
+        "summary",
+        "study-guide",
+        "flashcards",
+        "explain"
+      ],
+      "reactions": [
+        "Manual listo!",
+        "Aprende facil, jefe",
+        "Flashcards servidas"
+      ],
+      "tier": "free",
+      "runner_profile": "code-runner"
+    },
+    {
+      "id": "bolita",
+      "name": "BOLITA DJ",
+      "emoji": "💛",
+      "color": "#eab308",
+      "layer": "produccion",
+      "role": "Wellness & Health",
+      "room": "cafe",
+      "gx": 22,
+      "gy": 14,
+      "description": "Rutinas, meditacion, nutricion, bienestar",
+      "local": true,
+      "source": "colmena",
+      "taskTypes": [
+        "routine",
+        "meditation",
+        "nutrition",
+        "wellness-tip"
+      ],
+      "reactions": [
+        "Respira, jefe...",
+        "Tu salud primero!",
+        "Namaste, patron"
+      ],
+      "tier": "free",
+      "runner_profile": "code-runner"
+    },
+    {
+      "id": "nexo",
+      "name": "NEXO",
+      "emoji": "🎵",
+      "color": "#ff006e",
+      "layer": "maquinacion",
+      "role": "Orquestador",
+      "room": "war",
+      "gx": 8,
+      "gy": 8,
+      "description": "Punto de contacto. Filtra ordenes, coordina a todos",
+      "local": true,
+      "source": "iartlabs",
+      "taskTypes": [
+        "orchestrate",
+        "prioritize",
+        "delegate"
+      ],
+      "reactions": [
+        "IArtLabs operativo!",
+        "Coordinando equipo",
+        "Ordenes recibidas, jefe"
+      ],
+      "tier": "starter",
+      "runner_profile": "infra-runner"
+    },
+    {
+      "id": "estructura",
+      "name": "ESTRUCTURA",
+      "emoji": "🏗️",
+      "color": "#3a86ff",
+      "layer": "maquinacion",
+      "role": "Arquitecto",
+      "room": "war",
+      "gx": 10,
+      "gy": 6,
+      "description": "Disena planos y logica antes de codear",
+      "local": true,
+      "source": "iartlabs",
+      "taskTypes": [
+        "design",
+        "blueprint",
+        "architecture"
+      ],
+      "reactions": [
+        "Plano listo!",
+        "Arquitectura solida",
+        "Disenar antes de picar"
+      ],
+      "tier": "starter",
+      "runner_profile": "infra-runner"
+    },
+    {
+      "id": "forja",
+      "name": "FORJA",
+      "emoji": "🔨",
+      "color": "#ff8a00",
+      "layer": "maquinacion",
+      "role": "Compilador/Ejecutor",
+      "room": "server",
+      "gx": 18,
+      "gy": 4,
+      "description": "Compila y ejecuta en sandbox. Solo entrega lo que funciono",
+      "local": true,
+      "source": "iartlabs",
+      "taskTypes": [
+        "compile",
+        "execute",
+        "sandbox-test"
+      ],
+      "reactions": [
+        "Build exitoso!",
+        "Compilando...",
+        "Sandbox validado"
+      ],
+      "tier": "pro",
+      "runner_profile": "infra-runner"
+    },
+    {
+      "id": "refactor-safe",
+      "name": "REFACTOR",
+      "emoji": "🧹",
+      "color": "#00f5a0",
+      "layer": "maquinacion",
+      "role": "Kaizen Seguro",
+      "room": "dev-a",
+      "gx": 2,
+      "gy": 4,
+      "description": "Limpia y organiza SOLO en sandbox",
+      "local": true,
+      "source": "iartlabs",
+      "taskTypes": [
+        "cleanup",
+        "organize",
+        "dead-code"
+      ],
+      "reactions": [
+        "Codigo limpio!",
+        "0 basura",
+        "Kaizen completado"
+      ],
+      "tier": "pro",
+      "runner_profile": "infra-runner"
+    },
+    {
+      "id": "boveda",
+      "name": "BOVEDA",
+      "emoji": "🛡️",
+      "color": "#8338ec",
+      "layer": "maquinacion",
+      "role": "Infra/DevOps/Sandbox",
+      "room": "server",
+      "gx": 20,
+      "gy": 6,
+      "description": "Levanta y destruye sandboxes Linux",
+      "local": true,
+      "source": "iartlabs",
+      "taskTypes": [
+        "sandbox-create",
+        "sandbox-destroy",
+        "health-check"
+      ],
+      "reactions": [
+        "Sandbox UP!",
+        "VM lista",
+        "Infraestructura al 100"
+      ],
+      "tier": "enterprise",
+      "runner_profile": "infra-runner"
+    },
+    {
+      "id": "crew-chief",
+      "name": "CREW CHIEF",
+      "emoji": "🧭",
+      "color": "#22d3ee",
+      "layer": "maquinacion",
+      "role": "Python/CrewAI Migration Conductor",
+      "room": "war",
+      "gx": 12,
+      "gy": 7,
+      "description": "Coordina la migracion de Node a Python/CrewAI, define crews, ownership, paridad, handoffs y rollback sin romper produccion.",
+      "local": true,
+      "source": "iartlabs",
+      "taskTypes": [
+        "crew-design",
+        "migration-plan",
+        "parity-check",
+        "handoff-sync",
+        "ownership-map",
+        "rollback-plan"
+      ],
+      "focus": [
+        "Python",
+        "CrewAI",
+        "migracion incremental",
+        "paridad con Node",
+        "handoffs entre agentes"
+      ],
+      "deliverables": [
+        "plan por fases",
+        "mapa de ownership",
+        "checklist de paridad",
+        "riesgos y rollback"
+      ],
+      "rules": [
+        "No duplicar trabajo entre crews si no hay una razon clara",
+        "Mantener compatibilidad con la base actual mientras dure la migracion",
+        "Definir rollback antes de cambios grandes",
+        "Priorizar visibilidad de estado, no solo velocidad"
+      ],
+      "reactions": [
+        "Crew listo!",
+        "Paridad validada!",
+        "Ownership claro!",
+        "Rollback preparado!"
+      ],
+      "tier": "pro",
+      "runner_profile": "infra-runner"
+    },
+    {
+      "id": "architect",
+      "name": "ARCHITECT",
+      "emoji": "🏛️",
+      "color": "#7c3aed",
+      "layer": "desarrollo",
+      "role": "System Design",
+      "room": "war",
+      "gx": 7,
+      "gy": 7,
+      "description": "Diseno de sistemas, escalabilidad, trade-offs tecnicos",
+      "local": false,
+      "source": "claude-agents",
+      "promptFile": "architect.md",
+      "taskTypes": [
+        "system-design",
+        "scalability-review",
+        "tech-decision"
+      ],
+      "reactions": [
+        "Arquitectura revisada",
+        "Escalable y limpio",
+        "Trade-off analizado"
+      ],
+      "tier": "starter",
+      "runner_profile": "code-runner"
+    },
+    {
+      "id": "planner",
+      "name": "PLANNER",
+      "emoji": "📝",
+      "color": "#6366f1",
+      "layer": "desarrollo",
+      "role": "Implementation Planning",
+      "room": "war",
+      "gx": 11,
+      "gy": 9,
+      "description": "Planes detallados, dependencias, riesgos, fases",
+      "local": false,
+      "source": "claude-agents",
+      "promptFile": "planner.md",
+      "taskTypes": [
+        "implementation-plan",
+        "risk-analysis",
+        "phase-breakdown"
+      ],
+      "reactions": [
+        "Plan listo!",
+        "Fases definidas",
+        "Sin riesgos, jefe"
+      ],
+      "tier": "starter",
+      "runner_profile": "code-runner"
+    },
+    {
+      "id": "code-reviewer",
+      "name": "CODE REVIEW",
+      "emoji": "🔍",
+      "color": "#10b981",
+      "layer": "desarrollo",
+      "role": "Code Quality",
+      "room": "dev-a",
+      "gx": 5,
+      "gy": 6,
+      "description": "Review de calidad, seguridad, mantenibilidad",
+      "local": false,
+      "source": "claude-agents",
+      "promptFile": "code-reviewer.md",
+      "taskTypes": [
+        "code-review",
+        "quality-check",
+        "pr-review"
+      ],
+      "reactions": [
+        "LGTM!",
+        "Un fix menor",
+        "Codigo solido, jefe"
+      ],
+      "tier": "starter",
+      "runner_profile": "code-runner"
+    },
+    {
+      "id": "security-reviewer",
+      "name": "SECURITY",
+      "emoji": "🔒",
+      "color": "#ef4444",
+      "layer": "seguridad",
+      "role": "Vulnerability Detection",
+      "room": "server",
+      "gx": 19,
+      "gy": 2,
+      "description": "OWASP Top 10, secrets, auth, injection, XSS",
+      "local": false,
+      "source": "claude-agents",
+      "promptFile": "security-reviewer.md",
+      "taskTypes": [
+        "security-audit",
+        "vuln-scan",
+        "secret-check"
+      ],
+      "reactions": [
+        "0 vulnerabilidades!",
+        "Secret detectado!",
+        "Seguro, patron"
+      ],
+      "tier": "pro",
+      "runner_profile": "security-runner"
+    },
+    {
+      "id": "build-resolver",
+      "name": "BUILD FIX",
+      "emoji": "🛠️",
+      "color": "#f97316",
+      "layer": "desarrollo",
+      "role": "Build Error Resolution",
+      "room": "dev-a",
+      "gx": 3,
+      "gy": 8,
+      "description": "Arregla builds rotos con cambios minimos",
+      "local": false,
+      "source": "claude-agents",
+      "promptFile": "build-error-resolver.md",
+      "taskTypes": [
+        "build-fix",
+        "type-error",
+        "dependency-fix"
+      ],
+      "reactions": [
+        "Build verde!",
+        "Error fixeado",
+        "Ya compila, jefe"
+      ],
+      "tier": "pro",
+      "runner_profile": "code-runner"
+    },
+    {
+      "id": "tdd-guide",
+      "name": "TDD GUIDE",
+      "emoji": "✅",
+      "color": "#22c55e",
+      "layer": "desarrollo",
+      "role": "Test-Driven Development",
+      "room": "dev-b",
+      "gx": 13,
+      "gy": 15,
+      "description": "Tests primero, implementar despues, 80%+ coverage",
+      "local": false,
+      "source": "claude-agents",
+      "promptFile": "tdd-guide.md",
+      "taskTypes": [
+        "write-tests",
+        "tdd-cycle",
+        "coverage-check"
+      ],
+      "reactions": [
+        "Tests verdes!",
+        "Coverage 85%!",
+        "RED-GREEN-REFACTOR"
+      ],
+      "tier": "pro",
+      "runner_profile": "code-runner"
+    },
+    {
+      "id": "e2e-runner",
+      "name": "E2E RUNNER",
+      "emoji": "🎭",
+      "color": "#8b5cf6",
+      "layer": "desarrollo",
+      "role": "End-to-End Testing",
+      "room": "dev-b",
+      "gx": 15,
+      "gy": 16,
+      "description": "Playwright E2E, test journeys, artifacts",
+      "local": false,
+      "source": "claude-agents",
+      "promptFile": "e2e-runner.md",
+      "taskTypes": [
+        "e2e-test",
+        "journey-test",
+        "regression"
+      ],
+      "reactions": [
+        "E2E pasando!",
+        "Screenshot capturado",
+        "User flow OK"
+      ],
+      "tier": "pro",
+      "runner_profile": "browser-runner"
+    },
+    {
+      "id": "refactor-cleaner",
+      "name": "REFACTOR",
+      "emoji": "🧹",
+      "color": "#14b8a6",
+      "layer": "desarrollo",
+      "role": "Dead Code Cleanup",
+      "room": "dev-a",
+      "gx": 6,
+      "gy": 3,
+      "description": "Elimina codigo muerto, duplicados, dependencias",
+      "local": false,
+      "source": "claude-agents",
+      "promptFile": "refactor-cleaner.md",
+      "taskTypes": [
+        "dead-code",
+        "dedup",
+        "prune-deps"
+      ],
+      "reactions": [
+        "Codigo limpio!",
+        "0 muerto",
+        "-500 lineas!"
+      ],
+      "tier": "pro",
+      "runner_profile": "code-runner"
+    },
+    {
+      "id": "doc-updater",
+      "name": "DOC UPDATER",
+      "emoji": "📖",
+      "color": "#0ea5e9",
+      "layer": "desarrollo",
+      "role": "Documentation & Codemaps",
+      "room": "creative",
+      "gx": 3,
+      "gy": 16,
+      "description": "READMEs, codemaps, changelogs, architectural docs",
+      "local": false,
+      "source": "claude-agents",
+      "promptFile": "doc-updater.md",
+      "taskTypes": [
+        "update-docs",
+        "codemap",
+        "changelog"
+      ],
+      "reactions": [
+        "Docs actualizados!",
+        "README listo",
+        "Wiki sync"
+      ],
+      "tier": "pro",
+      "runner_profile": "code-runner"
+    },
+    {
+      "id": "database-reviewer",
+      "name": "DB REVIEW",
+      "emoji": "🗄️",
+      "color": "#06b6d4",
+      "layer": "desarrollo",
+      "role": "Database & SQL",
+      "room": "server",
+      "gx": 17,
+      "gy": 5,
+      "description": "Queries, schemas, RLS, pooling, performance",
+      "local": false,
+      "source": "claude-agents",
+      "promptFile": "database-reviewer.md",
+      "taskTypes": [
+        "query-optimize",
+        "schema-review",
+        "rls-check"
+      ],
+      "reactions": [
+        "Query optimizada!",
+        "Schema solido",
+        "0 deadlocks"
+      ],
+      "tier": "pro",
+      "runner_profile": "data-runner"
+    },
+    {
+      "id": "chief-of-staff",
+      "name": "CHIEF STAFF",
+      "emoji": "📧",
+      "color": "#f472b6",
+      "layer": "desarrollo",
+      "role": "Communication Manager",
+      "room": "creative",
+      "gx": 1,
+      "gy": 13,
+      "description": "Triage email/Slack/LINE, draft replies, follow-up",
+      "local": false,
+      "source": "claude-agents",
+      "promptFile": "chief-of-staff.md",
+      "taskTypes": [
+        "email-triage",
+        "draft-reply",
+        "followup"
+      ],
+      "reactions": [
+        "Inbox limpio!",
+        "Reply drafted",
+        "Follow-up agendado"
+      ],
+      "tier": "pro",
+      "runner_profile": "code-runner"
+    },
+    {
+      "id": "loop-operator",
+      "name": "LOOP OPS",
+      "emoji": "🔄",
+      "color": "#a855f7",
+      "layer": "desarrollo",
+      "role": "Autonomous Loop Manager",
+      "room": "war",
+      "gx": 9,
+      "gy": 10,
+      "description": "Corre loops autonomos, detecta stalls, checkpoints",
+      "local": false,
+      "source": "claude-agents",
+      "promptFile": "loop-operator.md",
+      "taskTypes": [
+        "loop-run",
+        "stall-detect",
+        "checkpoint"
+      ],
+      "reactions": [
+        "Loop estable!",
+        "Stall detectado!",
+        "Checkpoint guardado"
+      ],
+      "tier": "pro",
+      "runner_profile": "code-runner"
+    },
+    {
+      "id": "harness-optimizer",
+      "name": "HARNESS",
+      "emoji": "⚙️",
+      "color": "#64748b",
+      "layer": "desarrollo",
+      "role": "Agent Harness Optimization",
+      "room": "server",
+      "gx": 21,
+      "gy": 3,
+      "description": "Optimiza config de agentes, hooks, routing, cost",
+      "local": false,
+      "source": "claude-agents",
+      "promptFile": "harness-optimizer.md",
+      "taskTypes": [
+        "harness-audit",
+        "config-optimize",
+        "cost-reduce"
+      ],
+      "reactions": [
+        "Config optimizada!",
+        "Costo reducido",
+        "Throughput +30%"
+      ],
+      "tier": "pro",
+      "runner_profile": "code-runner"
+    },
+    {
+      "id": "python-reviewer",
+      "name": "PY REVIEW",
+      "emoji": "🐍",
+      "color": "#3b82f6",
+      "layer": "especialistas",
+      "role": "Python Code Review",
+      "room": "dev-b",
+      "gx": 14,
+      "gy": 17,
+      "description": "PEP 8, type hints, seguridad, patrones Pythonic",
+      "local": false,
+      "source": "claude-agents",
+      "promptFile": "python-reviewer.md",
+      "taskTypes": [
+        "python-review",
+        "pep8-check",
+        "type-check"
+      ],
+      "reactions": [
+        "Pythonic!",
+        "PEP 8 compliant",
+        "Types checked"
+      ],
+      "tier": "pro",
+      "runner_profile": "code-runner"
+    },
+    {
+      "id": "docs-lookup",
+      "name": "DOCS LOOKUP",
+      "emoji": "📚",
+      "color": "#0284c7",
+      "layer": "desarrollo",
+      "role": "Documentation Search",
+      "room": "creative",
+      "gx": 4,
+      "gy": 15,
+      "description": "Busca docs de librerias, APIs, frameworks via Context7",
+      "local": false,
+      "source": "claude-agents",
+      "promptFile": "docs-lookup.md",
+      "taskTypes": [
+        "docs-search",
+        "api-lookup",
+        "examples"
+      ],
+      "reactions": [
+        "Docs encontrados!",
+        "API documentada",
+        "Ejemplo listo"
+      ],
+      "tier": "pro",
+      "runner_profile": "code-runner"
+    },
+    {
+      "id": "gsd-executor",
+      "name": "GSD EXEC",
+      "emoji": "🚀",
+      "color": "#dc2626",
+      "layer": "gsd",
+      "role": "Plan Executor",
+      "room": "war",
+      "gx": 8,
+      "gy": 6,
+      "description": "Ejecuta planes atomicamente, commits por tarea, checkpoints",
+      "local": false,
+      "source": "claude-agents",
+      "promptFile": "gsd-executor.md",
+      "taskTypes": [
+        "execute-plan",
+        "atomic-commit",
+        "state-manage"
+      ],
+      "reactions": [
+        "Plan ejecutado!",
+        "Commit atomico",
+        "Fase completa"
+      ],
+      "tier": "enterprise",
+      "runner_profile": "code-runner"
+    },
+    {
+      "id": "gsd-debugger",
+      "name": "GSD DEBUG",
+      "emoji": "🔬",
+      "color": "#b91c1c",
+      "layer": "gsd",
+      "role": "Scientific Debugger",
+      "room": "dev-a",
+      "gx": 1,
+      "gy": 6,
+      "description": "Debugging con metodo cientifico, hipotesis, pruebas",
+      "local": false,
+      "source": "claude-agents",
+      "promptFile": "gsd-debugger.md",
+      "taskTypes": [
+        "debug-investigate",
+        "hypothesis-test",
+        "root-cause"
+      ],
+      "reactions": [
+        "Bug encontrado!",
+        "Hipotesis confirmada",
+        "Root cause: fixeado"
+      ],
+      "tier": "enterprise",
+      "runner_profile": "code-runner"
+    },
+    {
+      "id": "gsd-planner",
+      "name": "GSD PLAN",
+      "emoji": "📊",
+      "color": "#9333ea",
+      "layer": "gsd",
+      "role": "Phase Planner",
+      "room": "war",
+      "gx": 10,
+      "gy": 10,
+      "description": "Planes de fase con dependencias y verificacion",
+      "local": false,
+      "source": "claude-agents",
+      "promptFile": "gsd-planner.md",
+      "taskTypes": [
+        "phase-plan",
+        "dependency-map",
+        "verify-plan"
+      ],
+      "reactions": [
+        "Fase planeada!",
+        "Dependencias claras",
+        "Plan verificado"
+      ],
+      "tier": "enterprise",
+      "runner_profile": "code-runner"
+    },
+    {
+      "id": "gsd-verifier",
+      "name": "GSD VERIFY",
+      "emoji": "🏁",
+      "color": "#16a34a",
+      "layer": "gsd",
+      "role": "Phase Verifier",
+      "room": "dev-b",
+      "gx": 16,
+      "gy": 16,
+      "description": "Verifica que las fases cumplieron su objetivo",
+      "local": false,
+      "source": "claude-agents",
+      "promptFile": "gsd-verifier.md",
+      "taskTypes": [
+        "verify-phase",
+        "goal-check",
+        "acceptance"
+      ],
+      "reactions": [
+        "Fase verificada!",
+        "Objetivo cumplido",
+        "PASS"
+      ],
+      "tier": "enterprise",
+      "runner_profile": "code-runner"
+    },
+    {
+      "id": "halcon",
+      "name": "HALCON",
+      "emoji": "🦅",
+      "color": "#10b981",
+      "layer": "seguridad",
+      "role": "OSINT/Recon",
+      "room": "server",
+      "gx": 19,
+      "gy": 9,
+      "description": "Escaneo de puertos, reconocimiento, targets",
+      "local": true,
+      "source": "iartlabs",
+      "taskTypes": [
+        "port-scan",
+        "recon",
+        "osint"
+      ],
+      "reactions": [
+        "Target detectado!",
+        "Scan completo",
+        "Puerto abierto"
+      ],
+      "tier": "enterprise",
+      "runner_profile": "security-runner"
+    },
+    {
+      "id": "armpix",
+      "name": "ARMPIX",
+      "emoji": "🛡️",
+      "color": "#dc2626",
+      "layer": "seguridad",
+      "role": "IPS/Defensa Activa",
+      "room": "server",
+      "gx": 21,
+      "gy": 5,
+      "description": "Canon MAC, firewall, null routing, fail2ban",
+      "local": true,
+      "source": "iartlabs",
+      "taskTypes": [
+        "block-ip",
+        "firewall-rule",
+        "intrusion-detect"
+      ],
+      "reactions": [
+        "IP bloqueada!",
+        "Canon disparado!",
+        "Firewall activo"
+      ],
+      "tier": "enterprise",
+      "runner_profile": "security-runner"
+    },
+    {
+      "id": "sincro",
+      "name": "SINCRO",
+      "emoji": "🔗",
+      "color": "#06b6d4",
+      "layer": "maquinacion",
+      "role": "Middleware/Orchestration",
+      "room": "war",
+      "gx": 9,
+      "gy": 5,
+      "description": "Logs sync, despierta agentes, pipelines",
+      "local": true,
+      "source": "iartlabs",
+      "taskTypes": [
+        "sync-logs",
+        "wake-agent",
+        "pipeline"
+      ],
+      "reactions": [
+        "Pipeline OK!",
+        "Agente despierto",
+        "Sync completado"
+      ],
+      "tier": "pro",
+      "runner_profile": "infra-runner"
+    },
+    {
+      "id": "oraculo",
+      "name": "ORACULO",
+      "emoji": "🔮",
+      "color": "#a855f7",
+      "layer": "desarrollo",
+      "role": "Analytics/Predictions",
+      "room": "dev-a",
+      "gx": 5,
+      "gy": 4,
+      "description": "Predicciones, modelos ML, metricas",
+      "local": true,
+      "source": "colmena",
+      "taskTypes": [
+        "predict",
+        "model-train",
+        "metrics"
+      ],
+      "reactions": [
+        "Prediccion lista!",
+        "Modelo entrenado",
+        "Metricas Q2 OK"
+      ],
+      "tier": "pro",
+      "runner_profile": "code-runner"
+    },
+    {
+      "id": "custodio",
+      "name": "CUSTODIO",
+      "emoji": "📝",
+      "color": "#f97316",
+      "layer": "desarrollo",
+      "role": "QA/Testing Manual",
+      "room": "dev-b",
+      "gx": 12,
+      "gy": 13,
+      "description": "Testing manual, acceptance criteria, bug reports",
+      "local": true,
+      "source": "colmena",
+      "taskTypes": [
+        "manual-test",
+        "acceptance",
+        "bug-report"
+      ],
+      "reactions": [
+        "0 bugs criticos!",
+        "Test pasado",
+        "Bug reportado"
+      ],
+      "tier": "pro",
+      "runner_profile": "browser-runner"
+    },
+    {
+      "id": "mercurio",
+      "name": "MERCURIO",
+      "emoji": "⚡",
+      "color": "#14b8a6",
+      "layer": "maquinacion",
+      "role": "API Gateway/Cache",
+      "room": "server",
+      "gx": 20,
+      "gy": 8,
+      "description": "Rate limiting, cache, latencia, load balancing",
+      "local": true,
+      "source": "colmena",
+      "taskTypes": [
+        "rate-limit",
+        "cache-manage",
+        "latency-check"
+      ],
+      "reactions": [
+        "Cache hit 94%!",
+        "Latencia 12ms",
+        "Gateway OK"
+      ],
+      "tier": "pro",
+      "runner_profile": "infra-runner"
+    },
+    {
+      "id": "kronos",
+      "name": "KRONOS",
+      "emoji": "⏰",
+      "color": "#8b5cf6",
+      "layer": "maquinacion",
+      "role": "Scheduler/Cron",
+      "room": "war",
+      "gx": 11,
+      "gy": 8,
+      "description": "Cron jobs, batch nocturno, tareas programadas",
+      "local": true,
+      "source": "colmena",
+      "taskTypes": [
+        "schedule",
+        "cron-set",
+        "batch-run"
+      ],
+      "reactions": [
+        "Cron 9am set!",
+        "Batch completado",
+        "3 tareas en cola"
+      ],
+      "tier": "pro",
+      "runner_profile": "infra-runner"
+    },
+    {
+      "id": "fenix",
+      "name": "FENIX",
+      "emoji": "🔥",
+      "color": "#f43f5e",
+      "layer": "maquinacion",
+      "role": "Recovery/Backup",
+      "room": "server",
+      "gx": 18,
+      "gy": 7,
+      "description": "Backups, restore, disaster recovery, 0 data loss",
+      "local": true,
+      "source": "colmena",
+      "taskTypes": [
+        "backup",
+        "restore",
+        "disaster-recovery"
+      ],
+      "reactions": [
+        "Backup completo!",
+        "Restore exitoso",
+        "0 data loss"
+      ],
+      "tier": "pro",
+      "runner_profile": "infra-runner"
+    },
+    {
+      "id": "atlas",
+      "name": "ATLAS",
+      "emoji": "🗺️",
+      "color": "#0ea5e9",
+      "layer": "desarrollo",
+      "role": "Docs/Wiki Maintainer",
+      "room": "creative",
+      "gx": 2,
+      "gy": 16,
+      "description": "Wiki interna, README, changelog, knowledge base",
+      "local": true,
+      "source": "colmena",
+      "taskTypes": [
+        "wiki-update",
+        "readme-write",
+        "knowledge-add"
+      ],
+      "reactions": [
+        "Wiki actualizada!",
+        "README v3 listo",
+        "Knowledge guardado"
+      ],
+      "tier": "pro",
+      "runner_profile": "code-runner"
+    },
+    {
+      "id": "vortex",
+      "name": "VORTEX",
+      "emoji": "🌀",
+      "color": "#d946ef",
+      "layer": "desarrollo",
+      "role": "Data Pipeline/ETL",
+      "room": "dev-a",
+      "gx": 3,
+      "gy": 5,
+      "description": "ETL, JSON/CSV, data cleaning, exports",
+      "local": true,
+      "source": "colmena",
+      "taskTypes": [
+        "etl-run",
+        "data-clean",
+        "export-csv"
+      ],
+      "reactions": [
+        "ETL completo!",
+        "Data limpia",
+        "CSV exportado"
+      ],
+      "tier": "pro",
+      "runner_profile": "data-runner"
+    },
+    {
+      "id": "centinela",
+      "name": "CENTINELA",
+      "emoji": "👁️",
+      "color": "#22c55e",
+      "layer": "seguridad",
+      "role": "Monitor 24/7",
+      "room": "server",
+      "gx": 17,
+      "gy": 8,
+      "description": "Uptime, ping, alertas, health monitoring",
+      "local": true,
+      "source": "colmena",
+      "taskTypes": [
+        "monitor",
+        "ping-check",
+        "alert"
+      ],
+      "reactions": [
+        "Uptime 99.9%!",
+        "Ping 45ms",
+        "0 alertas"
+      ],
+      "tier": "enterprise",
+      "runner_profile": "security-runner"
+    },
+    {
+      "id": "nebula",
+      "name": "NEBULA",
+      "emoji": "🌌",
+      "color": "#7c3aed",
+      "layer": "desarrollo",
+      "role": "ML/Model Training",
+      "room": "dev-b",
+      "gx": 15,
+      "gy": 13,
+      "description": "Epochs, loss functions, model persistence",
+      "local": true,
+      "source": "colmena",
+      "taskTypes": [
+        "train-model",
+        "eval-model",
+        "save-model"
+      ],
+      "reactions": [
+        "Epoch 45/100!",
+        "Loss 0.003",
+        "Modelo guardado"
+      ],
+      "tier": "pro",
+      "runner_profile": "data-runner"
+    },
+    {
+      "id": "titan",
+      "name": "TITAN",
+      "emoji": "💪",
+      "color": "#dc2626",
+      "layer": "maquinacion",
+      "role": "Heavy Compute/GPU",
+      "room": "server",
+      "gx": 19,
+      "gy": 4,
+      "description": "Tareas pesadas GPU, renders, batch processing",
+      "local": true,
+      "source": "colmena",
+      "taskTypes": [
+        "gpu-task",
+        "render",
+        "batch-heavy"
+      ],
+      "reactions": [
+        "GPU 89%!",
+        "Render completo",
+        "Batch 3/10"
+      ],
+      "tier": "enterprise",
+      "runner_profile": "infra-runner"
+    },
+    {
+      "id": "eco",
+      "name": "ECO",
+      "emoji": "🌿",
+      "color": "#16a34a",
+      "layer": "maquinacion",
+      "role": "Cost Optimizer",
+      "room": "war",
+      "gx": 7,
+      "gy": 9,
+      "description": "Ahorro API, tier gratis, freno emergencia, ROI",
+      "local": true,
+      "source": "colmena",
+      "taskTypes": [
+        "cost-audit",
+        "tier-optimize",
+        "brake-check"
+      ],
+      "reactions": [
+        "Ahorro $2.40/dia!",
+        "Tier gratis OK",
+        "Freno: todo bien"
+      ],
+      "tier": "pro",
+      "runner_profile": "infra-runner"
+    },
+    {
+      "id": "pixel",
+      "name": "PIXEL",
+      "emoji": "🎨",
+      "color": "#e879f9",
+      "layer": "desarrollo",
+      "role": "UI/UX Design",
+      "room": "creative",
+      "gx": 1,
+      "gy": 11,
+      "description": "Mockups, colores, responsive, UX audit",
+      "local": true,
+      "source": "colmena",
+      "taskTypes": [
+        "mockup",
+        "color-palette",
+        "responsive-fix"
+      ],
+      "reactions": [
+        "Mockup listo!",
+        "Colores on point",
+        "Responsive fixeado"
+      ],
+      "tier": "pro",
+      "runner_profile": "browser-runner"
+    },
+    {
+      "id": "dharma",
+      "name": "DHARMA",
+      "emoji": "⚖️",
+      "color": "#fb923c",
+      "layer": "seguridad",
+      "role": "Compliance/GDPR",
+      "room": "dev-b",
+      "gx": 12,
+      "gy": 16,
+      "description": "GDPR, audit logs, ISO compliance",
+      "local": true,
+      "source": "colmena",
+      "taskTypes": [
+        "gdpr-check",
+        "audit-log",
+        "compliance-report"
+      ],
+      "reactions": [
+        "GDPR compliant!",
+        "Audit log OK",
+        "ISO checkeado"
+      ],
+      "tier": "enterprise",
+      "runner_profile": "security-runner"
+    },
+    {
+      "id": "pulsar",
+      "name": "PULSAR",
+      "emoji": "📡",
+      "color": "#38bdf8",
+      "layer": "desarrollo",
+      "role": "Notifications/Push",
+      "room": "creative",
+      "gx": 4,
+      "gy": 13,
+      "description": "Push notifications, email queue, SMS gateway",
+      "local": true,
+      "source": "colmena",
+      "taskTypes": [
+        "push-send",
+        "email-queue",
+        "sms-send"
+      ],
+      "reactions": [
+        "Push enviado!",
+        "Email queue 0",
+        "Notificacion lista"
+      ],
+      "tier": "pro",
+      "runner_profile": "code-runner"
+    },
+    {
+      "id": "cipher",
+      "name": "CIPHER",
+      "emoji": "🔐",
+      "color": "#facc15",
+      "layer": "seguridad",
+      "role": "Encryption/Keys",
+      "room": "server",
+      "gx": 18,
+      "gy": 2,
+      "description": "AES-256, TLS, key rotation, hashing",
+      "local": true,
+      "source": "colmena",
+      "taskTypes": [
+        "encrypt",
+        "key-rotate",
+        "tls-check"
+      ],
+      "reactions": [
+        "AES-256 OK!",
+        "Keys rotadas",
+        "TLS 1.3 activo"
+      ],
+      "tier": "enterprise",
+      "runner_profile": "security-runner"
+    },
+    {
+      "id": "ghost",
+      "name": "GHOST",
+      "emoji": "👻",
+      "color": "#6b7280",
+      "layer": "seguridad",
+      "role": "Stealth Ops",
+      "room": "war",
+      "gx": 10,
+      "gy": 7,
+      "description": "Operaciones silenciosas, sin rastro, limpieza",
+      "local": true,
+      "source": "colmena",
+      "taskTypes": [
+        "stealth-op",
+        "trace-clean",
+        "silent-deploy"
+      ],
+      "reactions": [
+        "...",
+        "Sin rastro",
+        "Operacion limpia"
+      ],
+      "tier": "enterprise",
+      "runner_profile": "security-runner"
+    },
+    {
+      "id": "aurora",
+      "name": "AURORA",
+      "emoji": "🌍",
+      "color": "#f472b6",
+      "layer": "desarrollo",
+      "role": "i18n/Localization",
+      "room": "dev-a",
+      "gx": 6,
+      "gy": 7,
+      "description": "Traduccion ES/EN, locales, strings sync",
+      "local": true,
+      "source": "colmena",
+      "taskTypes": [
+        "translate",
+        "locale-sync",
+        "string-extract"
+      ],
+      "reactions": [
+        "ES/EN sync!",
+        "23 strings",
+        "Locale MX OK"
+      ],
+      "tier": "pro",
+      "runner_profile": "code-runner"
+    },
+    {
+      "id": "omega",
+      "name": "OMEGA",
+      "emoji": "Ω",
+      "color": "#fcd34d",
+      "layer": "gsd",
+      "role": "Orchestrator v2/DAG",
+      "room": "war",
+      "gx": 8,
+      "gy": 10,
+      "description": "Pipeline DAG, waves, orchestracion avanzada",
+      "local": true,
+      "source": "colmena",
+      "taskTypes": [
+        "dag-run",
+        "wave-orchestrate",
+        "pipeline-manage"
+      ],
+      "reactions": [
+        "DAG completo!",
+        "Wave 3 corriendo",
+        "All green"
+      ],
+      "tier": "enterprise",
+      "runner_profile": "code-runner"
+    },
+    {
+      "id": "sabueso-azul",
+      "name": "SABUESO AZUL",
+      "emoji": "🐕",
+      "color": "#3b82f6",
+      "layer": "seguridad",
+      "role": "Descubrimiento defensivo de superficie de ataque",
+      "room": "lab",
+      "gx": 2,
+      "gy": 8,
+      "description": "Inventario subdominios, DNS, CT logs, ASN, banners. Solo activos propios.",
+      "local": true,
+      "source": "colmena",
+      "runner_profile": "security-runner",
+      "taskTypes": [
+        "attack-surface",
+        "dns-enum",
+        "ct-logs",
+        "banner-grab",
+        "metadata-extract"
+      ],
+      "tools": [
+        "query_attack_surface",
+        "run_safe_nmap_scan",
+        "scrape_public_metadata",
+        "lookup_dns_ct_records"
+      ],
+      "constraints": {
+        "scope": "own_assets_only",
+        "network": "outbound_limited",
+        "approval_required": [
+          "nmap_scan"
+        ]
+      },
+      "reactions": [
+        "Superficie mapeada",
+        "Subdominios encontrados",
+        "Banners capturados"
+      ]
+    },
+    {
+      "id": "inquisidor",
+      "name": "INQUISIDOR",
+      "emoji": "⚖️",
+      "color": "#dc2626",
+      "layer": "seguridad",
+      "role": "Auditor SAST de software",
+      "room": "tribunal",
+      "gx": 4,
+      "gy": 8,
+      "description": "SAST Python/SQL, OWASP, secretos expuestos, hardening. Linea, riesgo, parche.",
+      "local": true,
+      "source": "colmena",
+      "runner_profile": "code-runner",
+      "taskTypes": [
+        "sast-scan",
+        "secret-detection",
+        "sql-audit",
+        "owasp-check",
+        "patch-generation"
+      ],
+      "tools": [
+        "run_bandit_scan",
+        "analyze_sql_query",
+        "scan_credentials_leak",
+        "generate_secure_patch"
+      ],
+      "constraints": {
+        "scope": "codebase_only",
+        "network": "none",
+        "can_write": false
+      },
+      "reactions": [
+        "Vulnerability encontrada",
+        "Codigo limpio",
+        "Parche generado"
+      ]
+    },
+    {
+      "id": "cerrajero",
+      "name": "CERRAJERO",
+      "emoji": "🔐",
+      "color": "#7c3aed",
+      "layer": "seguridad",
+      "role": "Ingeniero de seguridad infra",
+      "room": "boveda",
+      "gx": 6,
+      "gy": 8,
+      "description": "SSH/TLS, cifrado, rotacion llaves, hardening Linux, minimo privilegio.",
+      "local": true,
+      "source": "colmena",
+      "runner_profile": "infra-runner",
+      "taskTypes": [
+        "ssh-hardening",
+        "tls-audit",
+        "key-rotation",
+        "encryption",
+        "infra-hardening"
+      ],
+      "tools": [
+        "manage_ssh_keys",
+        "establish_ssh_tunnel",
+        "encrypt_payload",
+        "audit_tls_config"
+      ],
+      "constraints": {
+        "scope": "infra_own",
+        "network": "vpn_only",
+        "approval_required": [
+          "key_rotation",
+          "ssh_tunnel"
+        ]
+      },
+      "reactions": [
+        "Llaves rotadas",
+        "TLS endurecido",
+        "Cifrado aplicado"
+      ]
+    },
+    {
+      "id": "alquimista-qa",
+      "name": "ALQUIMISTA QA",
+      "emoji": "🧪",
+      "color": "#f59e0b",
+      "layer": "seguridad",
+      "role": "Fuzzing controlado staging",
+      "room": "lab",
+      "gx": 8,
+      "gy": 8,
+      "description": "Fuzzing controlado, mutacion payloads, crash analysis. Solo staging.",
+      "local": true,
+      "source": "colmena",
+      "runner_profile": "security-runner",
+      "taskTypes": [
+        "fuzzing",
+        "payload-mutation",
+        "crash-analysis",
+        "edge-case-gen",
+        "repro-case"
+      ],
+      "tools": [
+        "generate_mutated_payload",
+        "run_fuzzing_campaign_staging",
+        "analyze_crash_log",
+        "generate_repro_case"
+      ],
+      "constraints": {
+        "scope": "staging_only",
+        "network": "staging_network",
+        "never_production": true
+      },
+      "reactions": [
+        "Crash encontrado!",
+        "Edge case detectado",
+        "Payload mutado"
+      ]
+    },
+    {
+      "id": "centinela-norm",
+      "name": "CENTINELA NORM",
+      "emoji": "🛡️",
+      "color": "#06b6d4",
+      "layer": "seguridad",
+      "role": "Verificador proxies/WAF/parsers",
+      "room": "lab",
+      "gx": 10,
+      "gy": 8,
+      "description": "Diferencias proxy/app, reglas WAF, canonicalizacion, desincronizacion HTTP.",
+      "local": true,
+      "source": "colmena",
+      "runner_profile": "security-runner",
+      "taskTypes": [
+        "waf-validation",
+        "proxy-diff",
+        "header-audit",
+        "desync-test",
+        "canonicalization"
+      ],
+      "tools": [
+        "replay_safe_http_cases",
+        "compare_proxy_app_parsing",
+        "validate_waf_rules",
+        "diff_security_headers"
+      ],
+      "constraints": {
+        "scope": "own_infra_only",
+        "network": "outbound_limited",
+        "approval_required": [
+          "desync_tests"
+        ]
+      },
+      "reactions": [
+        "WAF validado",
+        "Desajuste detectado",
+        "Headers corregidos"
+      ]
+    },
+    {
+      "id": "actor-qa",
+      "name": "ACTOR QA",
+      "emoji": "🎭",
+      "color": "#ec4899",
+      "layer": "desarrollo",
+      "role": "QA sintetico browser automation",
+      "room": "lab",
+      "gx": 12,
+      "gy": 8,
+      "description": "Browser automation defensiva, UX, sesiones, rate limits, anti-bot testing.",
+      "local": true,
+      "source": "colmena",
+      "runner_profile": "browser-runner",
+      "taskTypes": [
+        "browser-qa",
+        "session-test",
+        "rate-limit-test",
+        "ux-friction",
+        "anti-bot-validation"
+      ],
+      "tools": [
+        "spin_up_test_browser",
+        "generate_user_journey",
+        "extract_ui_and_auth_failures",
+        "capture_session_trace"
+      ],
+      "constraints": {
+        "scope": "own_sites_only",
+        "network": "standard",
+        "no_fake_accounts": true
+      },
+      "reactions": [
+        "Journey completado",
+        "Friccion detectada",
+        "Sesion validada"
+      ]
+    },
+    {
+      "id": "mercenario-finops",
+      "name": "MERCENARIO FINOPS",
+      "emoji": "💸",
+      "color": "#10b981",
+      "layer": "maquinacion",
+      "role": "FinOps agresivo",
+      "room": "hangar",
+      "gx": 14,
+      "gy": 8,
+      "description": "Arbitraje costo, rightsizing, spot strategy, limpieza recursos ociosos.",
+      "local": true,
+      "source": "colmena",
+      "runner_profile": "infra-runner",
+      "taskTypes": [
+        "cost-optimization",
+        "spot-arbitrage",
+        "rightsizing",
+        "idle-cleanup",
+        "migration-plan"
+      ],
+      "tools": [
+        "query_global_spot_prices",
+        "recommend_migration_plan",
+        "migrate_container_state",
+        "kill_idle_resources"
+      ],
+      "constraints": {
+        "scope": "own_infra_only",
+        "network": "cloud_apis",
+        "approval_required": [
+          "kill_resources",
+          "migrate"
+        ],
+        "cost_guardrail_usd": 50
+      },
+      "reactions": [
+        "Ahorro encontrado!",
+        "Recurso ocioso eliminado",
+        "Migracion lista"
+      ]
+    },
+    {
+      "id": "crypto-observador",
+      "name": "OBSERVADOR",
+      "emoji": "👁️",
+      "color": "#f59e0b",
+      "layer": "produccion",
+      "role": "Scraper de order books multi-exchange",
+      "room": "hangar",
+      "gx": 2,
+      "gy": 12,
+      "description": "WebSockets a Binance, Kraken, Coinbase. Monitorea order books en tiempo real (ms). Envia bids/asks al Calculador via Redis.",
+      "local": true,
+      "source": "colmena",
+      "runner_profile": "data-runner",
+      "taskTypes": [
+        "orderbook-stream",
+        "price-monitor",
+        "exchange-connect",
+        "latency-check"
+      ],
+      "tools": [
+        "watch_order_book",
+        "stream_ticker",
+        "check_exchange_status",
+        "measure_latency"
+      ],
+      "constraints": {
+        "scope": "exchange_apis",
+        "network": "cloud_apis",
+        "requires": [
+          "ccxt",
+          "redis"
+        ]
+      },
+      "reactions": [
+        "Spread detectado!",
+        "Order book actualizado",
+        "Exchange conectado"
+      ]
+    },
+    {
+      "id": "crypto-calculador",
+      "name": "CALCULADOR",
+      "emoji": "🧮",
+      "color": "#8b5cf6",
+      "layer": "produccion",
+      "role": "Quant de arbitraje inter-exchange",
+      "room": "hangar",
+      "gx": 4,
+      "gy": 12,
+      "description": "Calcula spread entre exchanges, verifica que cubra fees (compra+venta+transferencia) y margen. Pura matematica, cero emocion.",
+      "local": true,
+      "source": "colmena",
+      "runner_profile": "data-runner",
+      "taskTypes": [
+        "spread-calculation",
+        "fee-analysis",
+        "opportunity-detection",
+        "profitability-check"
+      ],
+      "tools": [
+        "calculate_spread",
+        "estimate_fees",
+        "validate_opportunity",
+        "signal_executor"
+      ],
+      "constraints": {
+        "scope": "internal_only",
+        "network": "none",
+        "min_profit_pct": 0.1
+      },
+      "reactions": [
+        "Oportunidad encontrada!",
+        "Spread insuficiente",
+        "Fees > ganancia, paso"
+      ]
+    },
+    {
+      "id": "crypto-ejecutor",
+      "name": "EJECUTOR",
+      "emoji": "⚡",
+      "color": "#ef4444",
+      "layer": "produccion",
+      "role": "Ejecutor de ordenes simultaneas",
+      "room": "hangar",
+      "gx": 6,
+      "gy": 12,
+      "description": "Dispara ordenes simultaneas: compra donde esta barato, vende donde esta caro. APIs REST de exchanges.",
+      "local": true,
+      "source": "colmena",
+      "runner_profile": "infra-runner",
+      "taskTypes": [
+        "order-execution",
+        "simultaneous-trade",
+        "order-verification",
+        "slippage-check"
+      ],
+      "tools": [
+        "place_buy_order",
+        "place_sell_order",
+        "verify_fills",
+        "cancel_order"
+      ],
+      "constraints": {
+        "scope": "exchange_apis",
+        "network": "cloud_apis",
+        "approval_required": [
+          "large_trades"
+        ],
+        "max_trade_usd": 100
+      },
+      "reactions": [
+        "Trade ejecutado!",
+        "Ordenes simultaneas OK",
+        "Slippage detectado, abortando"
+      ]
+    },
+    {
+      "id": "crypto-supervisor",
+      "name": "SUPERVISOR",
+      "emoji": "🛡️",
+      "color": "#10b981",
+      "layer": "seguridad",
+      "role": "Gestor de riesgo crypto",
+      "room": "hangar",
+      "gx": 8,
+      "gy": 12,
+      "description": "Monitorea balances, latencia de red, status de APIs. Apaga el sistema si detecta anomalias.",
+      "local": true,
+      "source": "colmena",
+      "runner_profile": "infra-runner",
+      "taskTypes": [
+        "balance-monitor",
+        "latency-guard",
+        "api-health",
+        "emergency-shutdown",
+        "risk-report"
+      ],
+      "tools": [
+        "check_balances",
+        "monitor_latency",
+        "health_check_apis",
+        "emergency_stop",
+        "generate_risk_report"
+      ],
+      "constraints": {
+        "scope": "exchange_apis",
+        "network": "cloud_apis",
+        "can_shutdown": true,
+        "max_loss_pct": 2
+      },
+      "reactions": [
+        "Todo estable",
+        "Latencia alta! Pausando",
+        "SHUTDOWN activado"
+      ]
+    }
+  ]
+}

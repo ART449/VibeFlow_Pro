@@ -611,7 +611,7 @@
     results.innerHTML = '<div style="text-align:center;padding:30px;"><div style="font-size:24px;animation:pulse 1s infinite;">...</div><div style="font-size:12px;color:var(--sub);margin-top:8px;">Buscando letras...</div></div>';
 
     try {
-      let url = 'https://lrclib.net/api/search?track_name=' + encodeURIComponent(title);
+      let url = '/api/lrclib/search?track_name=' + encodeURIComponent(title);
       if (artist) url += '&artist_name=' + encodeURIComponent(artist);
 
       const r = await fetch(url);

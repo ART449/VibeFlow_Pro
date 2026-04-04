@@ -64,36 +64,58 @@
     if (!container) return;
     container.innerHTML = '<div class="est-empty">Buscando beats...</div>';
     try {
-      const apiKey = localStorage.getItem('byflow_yt_api_key') || localStorage.getItem('yt_api_key') || '';
-      const headers = apiKey ? { 'X-YouTube-Key': apiKey } : {};
-      const res = await fetch('/api/youtube/search?q=' + encodeURIComponent(searchQ), Object.keys(headers).length ? { headers } : {});
-      const data = await res.json();
-      if (!data.items || !data.items.length) {
-        container.innerHTML = '<div class="est-empty">No se encontraron beats. Intenta otro genero.</div>';
+      let items = null;
+
+      // Strategy: API key (server or client) first, then Piped free search
+      var hasServerKey = !!window.__ytServerConfigured;
+      var apiKey = localStorage.getItem('byflow_yt_api_key') || localStorage.getItem('yt_api_key') || '';
+      var hasClientKey = !!apiKey;
+
+      if (hasServerKey || hasClientKey) {
+        try {
+          var headers = hasClientKey ? { 'X-YouTube-Key': apiKey } : {};
+          var opts = Object.keys(headers).length ? { headers } : {};
+          var r = await fetch('/api/youtube/search?q=' + encodeURIComponent(searchQ), opts);
+          var data = await r.json();
+          if (!data.error && data.items && data.items.length) items = data.items;
+        } catch (apiErr) { /* fallback below */ }
+      }
+
+      // Fallback: Piped free search (no key needed)
+      if (!items) {
+        try {
+          var freeRes = await fetch('/api/youtube/free-search?q=' + encodeURIComponent(searchQ));
+          var freeData = await freeRes.json();
+          if (!freeData.error && freeData.items && freeData.items.length) items = freeData.items;
+        } catch (freeErr) { /* handled below */ }
+      }
+
+      if (!items || !items.length) {
+        container.innerHTML = '<div class="est-empty">No se encontraron beats. Intenta otro genero o configura una YouTube API key en Settings.</div>';
         return;
       }
       container.innerHTML = '';
-      data.items.forEach((item) => {
+      items.forEach((item) => {
         const vid = item.id.videoId;
         const title = item.snippet.title;
         const channel = item.snippet.channelTitle;
-        const thumb = item.snippet.thumbnails.default.url;
+        const thumb = (item.snippet.thumbnails.medium || item.snippet.thumbnails.default || {}).url || '';
         const div = document.createElement('div');
         const isLiked = estIsLiked(vid);
         div.className = 'est-result-item';
         div.innerHTML = `
-          <img class="est-result-thumb" src="${thumb}" alt="" loading="lazy">
+          <img class="est-result-thumb" src="${escapeHtml(thumb)}" alt="" loading="lazy">
           <div class="est-result-info">
             <div class="est-result-title" title="${escapeHtml(title)}">${escapeHtml(title)}</div>
             <div class="est-result-channel">&#127908; ${escapeHtml(channel)}</div>
           </div>
-          <button class="est-like-btn ${isLiked ? 'liked' : ''}" onclick="estToggleLike(event,'${vid}',\`${title.replace(/`/g, "'")}\`,'${channel}','${thumb}')" title="${isLiked ? 'Quitar de favoritos' : 'Agregar a favoritos'}">&#10084;&#65039;</button>
+          <button class="est-like-btn ${isLiked ? 'liked' : ''}" onclick="estToggleLike(event,'${vid}',\`${title.replace(/`/g, "'")}\`,'${channel}','${escapeHtml(thumb)}')" title="${isLiked ? 'Quitar de favoritos' : 'Agregar a favoritos'}">&#10084;&#65039;</button>
           <button class="est-result-use" onclick="estSelectBeat('${vid}',\`${title.replace(/`/g, "'")}\`,'${channel}')">Usar Beat</button>
         `;
         container.appendChild(div);
       });
     } catch {
-      container.innerHTML = '<div class="est-empty">Error buscando. Revisa tu configuracion de YouTube o del servidor.</div>';
+      container.innerHTML = '<div class="est-empty">Error buscando. Revisa tu conexion o configura una YouTube API key en Settings.</div>';
     }
   }
 

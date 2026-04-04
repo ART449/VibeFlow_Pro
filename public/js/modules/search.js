@@ -198,7 +198,7 @@
   search.uSearchLyrics = async function(q) {
     const results = [];
     try {
-      const r = await fetch('https://lrclib.net/api/search?track_name=' + encodeURIComponent(q), { signal: AbortSignal.timeout(4000) });
+      const r = await fetch('/api/lrclib/search?track_name=' + encodeURIComponent(q), { signal: AbortSignal.timeout(4000) });
       if (r.ok) {
         const data = await r.json();
         data.slice(0, 5).forEach((d) => results.push(d));
