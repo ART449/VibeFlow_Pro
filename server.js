@@ -346,6 +346,14 @@ billingRoutes.registerWebhook(app, { LICENSE_SECRET });
 
 app.use(express.json({ limit: '1mb' }));
 
+// ── JSON Parse Error Handler (no exponer stack traces) ──
+app.use((err, _req, res, next) => {
+  if (err.type === 'entity.parse.failed') {
+    return res.status(400).json({ error: 'JSON invalido' });
+  }
+  next(err);
+});
+
 // ── POS Eatertainment Module ────────────────────────────────────────────────
 let _posReady = Promise.resolve();
 try {
