@@ -275,7 +275,8 @@
     }
 
     try {
-      let url = 'https://lrclib.net/api/search?track_name=' + encodeURIComponent(track);
+      // Usar proxy del server para evitar CORS
+      let url = '/api/lrclib/search?track_name=' + encodeURIComponent(track);
       if (artist) url += '&artist_name=' + encodeURIComponent(artist);
       const r = await fetch(url);
       if (!r.ok) return false;

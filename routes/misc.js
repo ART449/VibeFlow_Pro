@@ -13,9 +13,9 @@ function registerRoutes(app, state, helpers) {
     try {
       const QRCode = require('qrcode');
       const qr = await QRCode.toDataURL(url, { width: 256, margin: 1 });
-      res.json({ qr, url, ip });
+      res.json({ qr, url });
     } catch {
-      res.json({ qr: null, url, ip });
+      res.json({ qr: null, url });
     }
   });
 
@@ -162,7 +162,11 @@ function registerRoutes(app, state, helpers) {
   // Analytics — cuantos usuarios, sesiones, para vender espacios publicitarios
   const _analytics = { sessions: 0, uniqueUsers: new Set(), pageViews: 0, lastReset: Date.now() };
   app.post('/api/analytics/ping', (req, res) => {
-    const uid = req.body.uid || req.ip;
+    const ip = req.ip || req.socket.remoteAddress || '';
+    if (helpers.checkRateLimit && !helpers.checkRateLimit(ip, 5, 60000, 'analytics')) {
+      return res.status(429).json({ error: 'Rate limit' });
+    }
+    const uid = String(req.body.uid || req.ip).substring(0, 64);
     _analytics.sessions++;
     _analytics.uniqueUsers.add(uid);
     _analytics.pageViews++;
@@ -182,21 +186,30 @@ function registerRoutes(app, state, helpers) {
   });
 
   // Health
-  app.get('/api/health', (req, res) => res.json({
-    status: 'ok', version: '2.1.0-shield', uptime: process.uptime(),
-    ip: getLocalIp(),
-    port: (typeof server.address() === 'object' && server.address()) ? server.address().port : PORT,
-    songs: state.canciones.length,
-    queue: state.cola.length,
-    shield: true,
-    blocked_total: securityLog.summary.total
-  }));
+  app.get('/api/health', (req, res) => {
+    const adminKey = req.headers['x-admin-key'];
+    const isAdmin = adminKey === ADMIN_SECRET || adminKey === MASTER_ADMIN;
+    if (isAdmin) {
+      return res.json({
+        status: 'ok', version: '2.1.0-shield', uptime: process.uptime(),
+        ip: getLocalIp(),
+        port: (typeof server.address() === 'object' && server.address()) ? server.address().port : PORT,
+        songs: state.canciones.length, queue: state.cola.length,
+        shield: true, blocked_total: securityLog.summary.total
+      });
+    }
+    res.json({ status: 'ok', songs: state.canciones.length, queue: state.cola.length });
+  });
 
   // ── Error tracking from client ─────────────────
   const _clientErrors = [];
   const MAX_CLIENT_ERRORS = 200;
 
   app.post('/api/errors', (req, res) => {
+    const ip = req.ip || req.socket.remoteAddress || '';
+    if (helpers.checkRateLimit && !helpers.checkRateLimit(ip, 10, 60000, 'errors')) {
+      return res.status(429).json({ error: 'Rate limit: max 10 errores/min' });
+    }
     const { message, source, line, col, stack, url, ua } = req.body || {};
     if (!message) return res.json({ ok: false });
     _clientErrors.push({

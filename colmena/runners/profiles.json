@@ -1,0 +1,87 @@
+{
+  "version": "1.0",
+  "profiles": {
+    "code-runner": {
+      "description": "Node, Python, Git, tests, linters",
+      "image": "colmena-runner:code",
+      "dockerfile": "Dockerfile.code",
+      "packages": ["nodejs", "python3", "git", "npm", "pip"],
+      "tools": ["eslint", "bandit", "semgrep", "prettier"],
+      "network": "none",
+      "memory_mb": 512,
+      "cpu_shares": 256,
+      "timeout_seconds": 300,
+      "ephemeral": true,
+      "volumes": {
+        "/workspace": "task-specific",
+        "/artifacts": "shared-minio"
+      }
+    },
+    "data-runner": {
+      "description": "Postgres client, migraciones, ETL",
+      "image": "colmena-runner:data",
+      "dockerfile": "Dockerfile.data",
+      "packages": ["postgresql-client", "python3", "pip"],
+      "tools": ["pgcli", "csvkit", "jq"],
+      "network": "colmena-net",
+      "memory_mb": 1024,
+      "cpu_shares": 512,
+      "timeout_seconds": 600,
+      "ephemeral": true,
+      "volumes": {
+        "/workspace": "task-specific",
+        "/artifacts": "shared-minio"
+      }
+    },
+    "security-runner": {
+      "description": "Solo staging, herramientas auditadas, red limitada",
+      "image": "colmena-runner:security",
+      "dockerfile": "Dockerfile.security",
+      "packages": ["nmap", "python3", "curl", "openssl"],
+      "tools": ["bandit", "semgrep", "nikto", "testssl"],
+      "network": "staging_only",
+      "memory_mb": 768,
+      "cpu_shares": 256,
+      "timeout_seconds": 600,
+      "ephemeral": true,
+      "never_production": true,
+      "volumes": {
+        "/workspace": "task-specific",
+        "/artifacts": "shared-minio"
+      }
+    },
+    "browser-runner": {
+      "description": "Playwright, screenshots, QA visual",
+      "image": "colmena-runner:browser",
+      "dockerfile": "Dockerfile.browser",
+      "packages": ["nodejs", "chromium"],
+      "tools": ["playwright", "lighthouse"],
+      "network": "standard",
+      "memory_mb": 2048,
+      "cpu_shares": 512,
+      "timeout_seconds": 300,
+      "ephemeral": true,
+      "volumes": {
+        "/workspace": "task-specific",
+        "/artifacts": "shared-minio",
+        "/screenshots": "task-specific"
+      }
+    },
+    "infra-runner": {
+      "description": "Docker, logs, despliegues, observabilidad",
+      "image": "colmena-runner:infra",
+      "dockerfile": "Dockerfile.infra",
+      "packages": ["docker-cli", "curl", "jq", "python3"],
+      "tools": ["docker", "kubectl", "terraform"],
+      "network": "cloud_apis",
+      "memory_mb": 512,
+      "cpu_shares": 256,
+      "timeout_seconds": 300,
+      "ephemeral": true,
+      "volumes": {
+        "/workspace": "task-specific",
+        "/artifacts": "shared-minio"
+      }
+    }
+  }
+}

@@ -1,0 +1,8 @@
+El registro maestro de agentes vive en UN SOLO LUGAR:
+
+  C:\BYFLOW\Colmena\agents\registry.json
+
+NO crear copias. NO duplicar. Una sola Colmena, un solo registry.
+Si necesitas leer agentes desde ByFlow, apunta al maestro.
+
+bzzz bzzz — Necuapahtli

@@ -1,0 +1,57 @@
+{
+  "version": "1.0",
+  "rules": {
+    "global": {
+      "max_concurrent_tasks": 5,
+      "max_cost_per_task_usd": 10,
+      "max_daily_cost_usd": 50,
+      "require_approval_for": ["critical", "high"],
+      "auto_approve": ["low"],
+      "staging_only_agents": ["alquimista-qa", "centinela-normalizacion"],
+      "no_production_access": true,
+      "no_fake_accounts": true,
+      "no_exfiltration": true,
+      "no_evasion": true,
+      "json_output_required": true,
+      "evidence_required": true
+    },
+    "network_policies": {
+      "none": {
+        "description": "Sin acceso a red",
+        "allowed": []
+      },
+      "staging_only": {
+        "description": "Solo red de staging",
+        "allowed": ["10.0.0.0/8", "172.16.0.0/12"]
+      },
+      "outbound_limited": {
+        "description": "Solo APIs publicas autorizadas",
+        "allowed_domains": ["api.github.com", "registry.npmjs.org", "crt.sh"]
+      },
+      "cloud_apis": {
+        "description": "APIs de cloud providers",
+        "allowed_domains": ["*.amazonaws.com", "*.googleapis.com", "*.azure.com"]
+      },
+      "vpn_only": {
+        "description": "Solo via VPN corporativa",
+        "requires_vpn": true
+      },
+      "standard": {
+        "description": "Red normal con restricciones basicas",
+        "blocked": ["darkweb", "tor"]
+      }
+    },
+    "approval_levels": {
+      "low": "auto",
+      "medium": "auto_with_log",
+      "high": "human_approval",
+      "critical": "human_approval_2fa"
+    },
+    "cost_guardrails": {
+      "warn_at_usd": 5,
+      "block_at_usd": 25,
+      "daily_budget_usd": 50,
+      "alert_channel": "slack"
+    }
+  }
+}
